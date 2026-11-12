@@ -118,6 +118,11 @@ NE, NW, SE, SW = (1, -1), (-1, -1), (1, 1), (-1, 1)
 
 # GND vias beside pads the pours cannot reach, and the short stubs to them (filled in from DRC)
 GND_VIAS = [(15.2, -2.55), (15.55, -4.3)]
+# just outside the crystal keep-out: without these the B.Cu pour under the crystal is an
+# island (NRST and the +3.3VA hop ring it) and KiCad removes it
+GND_VIAS += [(32.95, -6.0), (30.8, -6.95)]
+# stitching between the two pours (scripts/via_spots.py grid 4, minus the spots under J1)
+GND_VIAS += [(49.78, -10.55), (-1.22, -8.55), (1.78, -7.55), (18.78, -7.55), (21.78, -7.55), (42.78, -6.55), (45.78, -6.55), (34.78, -5.55), (36.78, -3.55), (9.78, -2.55), (41.78, -2.55), (8.78, 1.45), (29.78, 2.45), (32.78, 2.45), (41.78, 2.45), (32.78, 5.45), (39.78, 5.45), (46.78, 5.45), (-1.22, 6.45), (3.78, 6.45), (11.78, 6.45), (14.78, 6.45), (17.78, 7.45), (28.78, 7.45), (41.78, 7.45), (44.78, 7.45), (0.78, 8.45), (8.78, 8.45), (21.78, 8.45), (49.78, 8.45)]
 GND_STUBS = [[(15.2, -2.55), (15.8, -2.55)], [(15.0, -4.3), (16.1, -4.3)]]
 
 # ---------------------------------------------------------------- crystal
