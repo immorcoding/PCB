@@ -15,6 +15,7 @@ Differences from the ST drawing (see README.md for the reasons):
   DP/DM -> USB_CONN_D+/USB_CONN_D-
   MOTORn- -> MOTORn_N
   R25 (0R between two ground symbols) is dropped: one GND net.
+  Motor headers P1/P4/P2/P5 -> solder pads MP1..MP8; Pn_2 -> Mn_OUT.
 
 Once the schematic is edited by hand in KiCad, the .kicad_sch is the source of
 truth and re-running this script would overwrite those edits.
@@ -41,7 +42,8 @@ FP_SOD323 = "Diode_SMD:D_SOD-323"
 FP_H2 = "Connector_PinHeader_2.54mm:PinHeader_1x02_P2.54mm_Horizontal"
 FP_V4 = "Connector_PinHeader_2.54mm:PinHeader_1x04_P2.54mm_Vertical"
 FP_V6 = "Connector_PinHeader_2.54mm:PinHeader_1x06_P2.54mm_Vertical"
-FP_FET = "Package_SON:VSON-8_3.3x3.3mm_P0.65mm_NexFET"
+FP_MPAD = "Connector_Wire:SolderWirePad_1x01_SMD_1.5x3mm"
+FP_FET ="Package_SON:VSON-8_3.3x3.3mm_P0.65mm_NexFET"
 
 s = Sch("steval_fcu001v2", "STEVAL-FCU001V2 flight controller (re-capture)", paper="A3",
         rev="A", date="2026-11-12")
@@ -134,8 +136,10 @@ def title(text, i, j):
 # Row A: USB, charger, regulator, clock, reset
 # ======================================================================
 title("USB", 6, 7)
-ic("Connector:USB_B_Micro", "CN1", "Micro_USB_AB 47590-0001", 10, 17,
-   "Connector_USB:USB_Micro-AB_Molex_47590-0001",
+# ST fits Molex 47590-0001 (micro-AB, sits in a board-edge cut-out). 47346-0001 is the
+# plain surface-mount micro-B from the same maker: same five contacts, straight board edge.
+ic("Connector:USB_B_Micro", "CN1", "Micro_USB_B 47346-0001", 10, 17,
+   "Connector_USB:USB_Micro-B_Molex_47346-0001",
    {"1": "VBUS", "2": "USB_CONN_D-", "3": "USB_CONN_D+", "4": NC, "5": "GND", "SH": "USB_SHIELD"})
 ic("Power_Protection:USBLC6-2P6", "U3", "USBULC6-2M6", 30, 17,
    "Package_SON:Texas_USON-6_1x1.45mm_P0.5mm_SMD",
@@ -212,16 +216,26 @@ def conn(ref, val, n, i, fp, nets, lib=None):
        ref_at=(i * U, 64 * U), val_at=(i * U, 74.5 * U))
 
 conn("BT1", "Battery", 2, 12, FP_H2, ["+BATT", "GND"])
-conn("P1", "Motor_Panel1", 2, 24, FP_H2, ["+BATT", "P1_2"])
-conn("P4", "Motor_Panel2", 2, 36, FP_H2, ["+BATT", "P4_2"])
-conn("P2", "Motor_Panel3", 2, 48, FP_H2, ["+BATT", "P2_2"])
-conn("P5", "Motor_Panel4", 2, 60, FP_H2, ["+BATT", "P5_2"])
+# Motor outputs: bare solder pads instead of ST's 2-pin headers P1/P4/P2/P5
+# (MP1/MP2 = motor 1 +/-, MP3/MP4 = motor 2, ...). One pad per part so the
+# pads can go on either side of the board.
+for n in range(4):
+    for k, (sign, net) in enumerate([("+", "+BATT"), ("-", f"M{n + 1}_OUT")]):
+        i = 22 + 12 * n + 6 * k
+        ic("Connector_Generic:Conn_01x01", f"MP{2 * n + k + 1}", f"M{n + 1}{sign}", i, 69, FP_MPAD, {"1": net},
+           ref_at=(i * U, 67 * U), val_at=(i * U, 71 * U))
 conn("P3", "I2C", 4, 72, FP_V4, ["VDD", "I2C2_SDA", "I2C2_SCL", "GND"])
 conn("P7", "USART", 4, 84, FP_V4, ["VDD", "GND", "USART1_RX", "USART1_TX"])
 conn("P6", "FC_Signal", 6, 96, FP_V6, ["+BATT", "TIM2_CH1", "TIM2_CH2", "TIM2_CH3", "TIM2_CH4", "GND"])
 conn("P8", "SWD", 10, 110, "Connector_PinHeader_1.27mm:PinHeader_2x05_P1.27mm_Vertical_SMD",
      ["VDD", "SWDIO", "GND", "SWCLK", "GND", NC, "GND", NC, "GND", "NRST"],
      lib="Connector_Generic:Conn_02x05_Odd_Even")
+
+title("Mounting holes", 100, 48)
+for n in range(4):                    # not on the ST schematic
+    i = 102 + 4 * n
+    ic("Mechanical:MountingHole", f"H{n + 1}", "M3", i, 53, "MountingHole:MountingHole_3.2mm_M3", {},
+       ref_at=(i * U, 51 * U), hide_value=True)
 
 title("Motor low-side switches", 122, 68)
 for n in range(4):
@@ -267,16 +281,16 @@ cells = [
     # motors: gate resistor, gate pull-down, flyback diode, output select
     ("R", "R2", "1k", "MOTOR1", "M1_GATE"), ("R", "R4", "10k", "M1_GATE", "GND"),
     ("SK", "D1", "BAT60J", "+BATT", "MOTOR1_N"),
-    ("R0", "R12", "0R", "MOTOR1_N", "P1_2"), ("DNP", "R14", "0R", "MOTOR1", "P1_2"),
+    ("R0", "R12", "0R", "MOTOR1_N", "M1_OUT"), ("DNP", "R14", "0R", "MOTOR1", "M1_OUT"),
     ("R", "R3", "1k", "MOTOR2", "M2_GATE"), ("R", "R5", "10k", "M2_GATE", "GND"),
     ("SK", "D2", "BAT60J", "+BATT", "MOTOR2_N"),
-    ("R0", "R16", "0R", "MOTOR2_N", "P4_2"), ("DNP", "R18", "0R", "MOTOR2", "P4_2"),
+    ("R0", "R16", "0R", "MOTOR2_N", "M2_OUT"), ("DNP", "R18", "0R", "MOTOR2", "M2_OUT"),
     ("R", "R6", "1k", "MOTOR3", "M3_GATE"), ("R", "R7", "10k", "M3_GATE", "GND"),
     ("SK", "D3", "BAT60J", "+BATT", "MOTOR3_N"),
-    ("R0", "R13", "0R", "MOTOR3_N", "P2_2"), ("DNP", "R15", "0R", "MOTOR3", "P2_2"),
+    ("R0", "R13", "0R", "MOTOR3_N", "M3_OUT"), ("DNP", "R15", "0R", "MOTOR3", "M3_OUT"),
     ("R", "R8", "1k", "MOTOR4", "M4_GATE"), ("R", "R9", "10k", "M4_GATE", "GND"),
     ("SK", "D4", "BAT60J", "+BATT", "MOTOR4_N"),
-    ("R0", "R17", "0R", "MOTOR4_N", "P5_2"), ("DNP", "R19", "0R", "MOTOR4", "P5_2"),
+    ("R0", "R17", "0R", "MOTOR4_N", "M4_OUT"), ("DNP", "R19", "0R", "MOTOR4", "M4_OUT"),
 ]
 for k, (kind, ref, val, top, bot) in enumerate(cells):
     i, j = 8 + 5 * (k % 30), 89 + 15 * (k // 30)
