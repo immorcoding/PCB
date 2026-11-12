@@ -1,0 +1,83 @@
+(version 1)
+# Custom DRC rules migrated from E:\AD25workspace\pcb_rules\common.RUL
+# Later rules override earlier ones.
+# ANY syntax error silently disables this WHOLE file (kicad-cli reports
+# nothing). Known traps: angles are unitless ("135", not "135deg");
+# min_resolved_spokes takes a bare number ("2", not "(min 2)").
+# After editing, run DRC and confirm a corner_angle hit appears.
+# Full rationale and AD mapping: docs/design-rules.md
+#
+# PROJECT OVERRIDES for JLCPCB 2-layer (differs from templates/common):
+#   signal_width min 0.1016 -> 0.127 (JLC 1-2 layer limit is 5 mil)
+#   via_size     hole min 0.3048 -> 0.3, diameter min 0.4064 -> 0.6
+#   USB2 net class (USB_D+/-): 0.2 mm, pair gap 0.15 mm, impedance NOT controlled
+#     (1.6 mm 2-layer), skew <= 0.5 mm  -> rules usb2_width / usb2_gap / usb2_skew
+#   Net-(U1-VCAP1) joins PWR (pattern *VCAP* in the .kicad_pro)
+#
+# ROUTING CONVENTIONS agreed 2026-11-12 (not all machine-checkable):
+#   - VBUS / +5V / +3V3 trunks 0.5 mm, branches to decoupling caps 0.3 mm
+#   - signals 0.2 mm, 0.15 mm allowed in the MCU escape and next to the headers
+#   - F.Cu carries signals and power; B.Cu is a solid GND pour and only takes
+#     short unavoidable hops (USB crossing, NRST, SWD, the VDDA link)
+#   - F.Cu spare area is GND pour too, stitched to B.Cu
+#   - U1 exposed pad: 3x3 vias 0.3/0.6 to B.Cu GND; no other via-in-pad
+#   - nothing but GND on B.Cu under Y1 (rule area XTAL_KEEPOUT on the board)
+
+# --- Track width (AD Width rules, min / preferred / max) ---
+(rule "signal_width"
+  (condition "A.Type == 'Track'")
+  (constraint track_width (min 0.127mm) (opt 0.2032mm) (max 0.8128mm)))
+
+(rule "pwr_width"
+  (condition "A.Type == 'Track' && A.NetClass == 'PWR'")
+  (constraint track_width (min 0.1524mm) (opt 0.3048mm) (max 2.54mm)))
+
+(rule "usb2_width"
+  (condition "A.Type == 'Track' && A.NetClass == 'USB2'")
+  (constraint track_width (min 0.15mm) (opt 0.2mm) (max 0.25mm)))
+
+(rule "xtal_width"
+  (condition "A.Type == 'Track' && A.NetClass == 'XTAL'")
+  (constraint track_width (min 0.254mm) (opt 0.254mm) (max 0.254mm)))
+
+# --- Holes and vias (AD HoleSize 10-120 mil; RoutingVias hole 12-30, dia 16-50 mil) ---
+(rule "hole_range"
+  (constraint hole_size (min 0.254mm) (max 3.048mm)))
+
+(rule "via_size"
+  (condition "A.Type == 'Via'")
+  (constraint hole_size (min 0.3mm) (max 0.762mm))
+  (constraint via_diameter (min 0.6mm) (max 1.27mm)))
+
+# --- Corners: no 90-degree or acute bends (interior angle >= 135) ---
+# Also reports 90-degree T-junctions; triage those case by case.
+(rule "corner_angle"
+  (constraint track_angle (min 135)))
+
+# --- Pour connection: thermal relief for through-hole, solid for SMD ---
+(rule "tht_thermal"
+  (condition "A.Type == 'Pad' && A.Pad_Type == 'Through-hole'")
+  (constraint zone_connection thermal_reliefs)
+  (constraint thermal_spoke_width (min 0.254mm))
+  (constraint thermal_relief_gap (min 0.254mm))
+  (constraint min_resolved_spokes 2))
+
+(rule "smd_solid"
+  (condition "A.Type == 'Pad' && A.Pad_Type == 'SMD'")
+  (constraint zone_connection solid))
+
+# --- Matched length (AD MatchedLengths USB3.0, tolerance 5 mil) ---
+# Width/gap of diff pairs are NOT set here: compute them from the fab's
+# stackup before layout, then add a net class per interface.
+(rule "usb3_skew"
+  (condition "A.NetClass == 'USB3'")
+  (constraint skew (max 0.127mm)))
+
+# --- USB 2.0 full speed pair: loose skew, gap kept tight ---
+(rule "usb2_skew"
+  (condition "A.NetClass == 'USB2'")
+  (constraint skew (max 0.5mm)))
+
+(rule "usb2_gap"
+  (condition "A.NetClass == 'USB2' && A.inDiffPair('*')")
+  (constraint diff_pair_gap (min 0.127mm) (opt 0.15mm) (max 0.3mm)))

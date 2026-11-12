@@ -13,3 +13,9 @@ fp-info-cache
 # Fabrication outputs are regenerated from the design
 *.zip
 gerbers/
+
+# Python caches
+__pycache__/
+
+# kicad-happy analyzer runs (regenerable); the manifest stays tracked
+analysis/*/

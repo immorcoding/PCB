@@ -10,6 +10,14 @@ KiCad 10 硬件设计。分工：Claude 完成原理图、布局、布线；用�
 - **规则是否生效**：每次新建工程或改动 `.kicad_dru` 后跑金丝雀，输出 `OK` 才算完成：
   `D:\KiCad\bin\python.exe scripts\dru_canary.py <工程>.kicad_pcb`
   KiCad 遇到 `.kicad_dru` 语法错误会静默跳过整个文件，DRC 报告干净不代表规则在工作。
+- **用户开着 KiCad 时改 `.kicad_pro` 会丢**：KiCad 关闭工程时用内存里的旧设置覆盖文件（2026-11-12 丢过一次 USB2 网络类）。改完网络类/规则后，在用户下次关闭 KiCad 之后重新读回核对；工程目录下有 `~*.lck` 说明 KiCad 正开着。
+
+## 原理图
+
+没有现成的原理图生成工具，用 `scripts/kisch.py`（从官方符号库取符号、按引脚坐标连线）。每个工程一个 `gen_sch.py`，参考 `stm32f411_minsys/gen_sch.py`。
+构建并检查：`sh scripts/sch_build.sh <工程目录> <输出目录>`（生成 → 升级到 KiCad 10 格式 → ERC → 网表 → PDF）。
+连接关系以导出的网表为准，逐网络核对；版面用 `pdftoppm -r 200 -png -x -y -W -H` 裁剪放大看文字重叠。
+用户在 KiCad 里手工改过原理图之后，`.kicad_sch` 是 source of truth，不要再跑 `gen_sch.py` 覆盖。
 
 ## 改板循环
 

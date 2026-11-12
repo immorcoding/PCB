@@ -36,7 +36,7 @@ def main(board_path):
         rpt = os.path.join(tmp, "drc.rpt")
         subprocess.run([KICAD_CLI, "pcb", "drc", "--severity-all", pcb, "-o", rpt], capture_output=True)
         text = open(rpt, encoding="utf-8", errors="replace").read()
-        if "rule 'corner_angle'" in text:
+        if "Rule: corner_angle" in text:  # locale-independent line; the message line is translated
             print("OK: custom rules loaded (corner_angle fired on the canary bend)"); return 0
         print("FAIL: custom rules NOT loaded -- syntax error somewhere in", dru)
         print("      known traps: '135deg' (write 135), 'min_resolved_spokes (min 2)' (write 2)")
