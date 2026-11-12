@@ -855,6 +855,54 @@
       {
         "netclass": "XTAL",
         "pattern": "*-XOUT"
+      },
+      {
+        "netclass": "USB2",
+        "pattern": "*USB_D+"
+      },
+      {
+        "netclass": "USB2",
+        "pattern": "*USB_D-"
+      },
+      {
+        "netclass": "USB2",
+        "pattern": "*USB_CONN_D+"
+      },
+      {
+        "netclass": "USB2",
+        "pattern": "*USB_CONN_D-"
+      },
+      {
+        "netclass": "PWR",
+        "pattern": "*MOTOR1_N"
+      },
+      {
+        "netclass": "PWR",
+        "pattern": "*MOTOR2_N"
+      },
+      {
+        "netclass": "PWR",
+        "pattern": "*MOTOR3_N"
+      },
+      {
+        "netclass": "PWR",
+        "pattern": "*MOTOR4_N"
+      },
+      {
+        "netclass": "PWR",
+        "pattern": "*M1_OUT"
+      },
+      {
+        "netclass": "PWR",
+        "pattern": "*M2_OUT"
+      },
+      {
+        "netclass": "PWR",
+        "pattern": "*M3_OUT"
+      },
+      {
+        "netclass": "PWR",
+        "pattern": "*M4_OUT"
       }
     ]
   },

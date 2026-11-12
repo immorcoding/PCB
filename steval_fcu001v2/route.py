@@ -173,7 +173,12 @@ def usb_charger():
     u1, u3 = pad("U3", 1), pad("U3", 3)
     a = (XP + 0.3, p33[1]); b = (XP, p33[1] + 0.3)
     c = (XP, 5.0); d = to_x(c, SE, LP)
-    T("/USB_D+", W, [p33, a, b, c, d, (LP, 11.95), to_x((LP, 11.95), SW, u1[0])])
+    # D+ is the inside trace on both turns and ends 1.7 mm short of D-; three 0.5 mm bumps in
+    # the free area left of the MCU make up 1.24 mm of that (skew rule 0.5 mm, pair gap <= 0.7).
+    bumps = []
+    for y0 in (5.9, 7.1, 8.3):
+        bumps += [(LP, y0), (LP + 0.5, y0 + 0.5), (LP + 0.5, y0 + 0.6), (LP, y0 + 1.1)]
+    T("/USB_D+", W, [p33, a, b, c, d] + bumps + [(LP, 11.95), to_x((LP, 11.95), SW, u1[0])])
     a = (XM + 0.3, p32[1]); b = (XM, p32[1] + 0.3)
     c = (XM, 5.12); d = to_x(c, SE, LM)
     e = (LM, 11.82); f = to_y(e, SW, 12.3)
@@ -256,7 +261,169 @@ def leds():
     T("VDD", 0.3, [r211, v]); V("VDD", v)
 
 
-REGIONS = [mcu_core, usb_charger, leds]
+# ====================================================================== battery in, LDO, divider
+def power_in():
+    # BT1 is through-hole: its pins land on the In2 +BATT pour and the In1 ground directly.
+    c181, c161, u61, u63, r101 = pad("C18", 1), pad("C16", 1), pad("U6", 1), pad("U6", 3), pad("R10", 1)
+    T("+BATT", 0.4, [c181, c161])
+    a = (-13.75, u61[1])
+    T("+BATT", 0.3, [u61, a, (-13.9, u61[1] + 0.15), (-13.9, 3.2), to_y((-13.9, 3.2), SW, c161[1]), c161])
+    T("+BATT", 0.3, [c161, to_y(c161, SE, u63[1]), u63])
+    v = (c181[0], 4.3)
+    T("+BATT", 0.4, [c181, v]); V("+BATT", v)
+    T("+BATT", 0.3, [v, (v[0], r101[1] - (r101[0] - v[0])), r101])
+    for ref in ("C16", "C18"):
+        p = pad(ref, 2); v = (p[0], 1.7)
+        T("GND", 0.3, [p, v]); V("GND", v)
+    u62 = pad("U6", 2); v = (-11.8, u62[1])
+    T("GND", 0.3, [u62, v]); V("GND", v)
+    # 3.3 V out
+    u65, c171, c172 = pad("U6", 5), pad("C17", 1), pad("C17", 2)
+    T("VDD", 0.4, [u65, c171])
+    cap_vias("C17", (0.0, 0.8), (0.0, 0.8), "VDD")
+    # USART header pin 1 sits over the +BATT part of In2: feed it from the LDO on the top layer
+    p71 = pad("P7", 1)
+    a = (-13.0, p71[1])
+    T("VDD", 0.4, [p71, a, to_x(a, SE, u65[0]), u65])
+    # battery divider
+    r102, r111, c21 = pad("R10", 2), pad("R11", 1), pad("C2", 1)
+    T("/VBAT_SENSE", 0.2, [r102, r111])
+    a = to_y(r111, SE, 6.25); b = (c21[0] - (6.25 - c21[1]), 6.25)
+    T("/VBAT_SENSE", 0.2, [r111, a, b, c21])
+
+
+# ====================================================================== motor switches
+def motor(n, sx, sy, q, d, rg, rp, rb, rn, pp, pn, gnd2):
+    """One corner. sy = -1 for the top edge. gnd2 = offset of the second source via."""
+    out, dr = f"/M{n}_OUT", f"/MOTOR{n}_N"
+    drain, b1, b2, n2 = pad(q, 5), pad(rb, 1), pad(rb, 2), pad(rn, 2)
+    # drain -> 0R bridge -> pad, 1 mm / 0.8 mm
+    k = abs(b1[0] - drain[0])
+    T(dr, 1.0, [(drain[0], drain[1] + sy * 0.4), (drain[0], b1[1] - sy * k), b1])
+    pm = pad(pn, 1)
+    k = abs(pm[0] - b2[0])
+    T(out, 0.8, [b2, (b2[0], b2[1] + sy * 0.65), (pm[0], b2[1] + sy * (0.65 + k)), (pm[0], pm[1] - sy * 1.0)])
+    k = abs(b2[0] - n2[0])
+    T(out, 0.3, [n2, (b2[0], n2[1] + sy * k), b2])
+    # the top and bottom solder pads share three vias each
+    for ref, name in ((pp, "+BATT"), (pn, out)):
+        p = pad(ref, 1)
+        for dy in (-1.0, 0.0, 1.0):
+            V(name, (p[0], p[1] + dy))
+    # flyback diode: anode into the drain pad, cathode to the In2 +BATT pour
+    an, ka = pad(d, 2), pad(d, 1)
+    a = (an[0] - sx * 0.75, an[1] + sy * 0.75)
+    T(dr, 0.5, [an, a, (drain[0] + sx * 1.0, a[1])])
+    v = (ka[0], ka[1] - sy * 0.8)
+    T("+BATT", 0.5, [ka, v]); V("+BATT", v)
+    # sources: joined, two vias to ground on the side away from the gate
+    g = pad(q, 4)
+    src = sorted((pad(q, i) for i in (1, 2, 3)), key=lambda p: abs(p[0] - g[0]))
+    far = src[-1]
+    dirx = 1 if far[0] > g[0] else -1
+    v1 = (far[0] + dirx * 0.75, far[1])
+    T("GND", 0.5, [src[0], v1]); V("GND", v1)
+    v2 = (v1[0] + gnd2[0], v1[1] + gnd2[1]); V("GND", v2)
+    # gate
+    g2, p1 = pad(rg, 2), pad(rp, 1)
+    T(f"/M{n}_GATE", 0.2, [g, g2])
+    T(f"/M{n}_GATE", 0.2, [p1, g2])
+
+
+def motors():
+    motor(1, -1, -1, "Q1", "D1", "R2", "R4", "R12", "R14", "MP1", "MP2", (0.0, 0.75))
+    motor(2, +1, -1, "Q2", "D2", "R3", "R5", "R16", "R18", "MP3", "MP4", (0.0, 0.75))
+    motor(3, -1, +1, "Q3", "D3", "R6", "R7", "R13", "R15", "MP5", "MP6", (0.0, 0.75))
+    motor(4, +1, +1, "Q4", "D4", "R8", "R9", "R17", "R19", "MP7", "MP8", (0.0, -0.75))
+
+
+# ====================================================================== sensors (SPI2)
+def sensors():
+    # ---- IMU supply. Nothing runs under the package on the top layer.
+    c211, c221 = pad("C21", 1), pad("C22", 1)
+    u85, u83, u82, u88 = pad("U8", 5), pad("U8", 3), pad("U8", 2), pad("U8", 8)
+    T("VDD", 0.25, [c211, (-8.6, c211[1]), (-8.5, u85[1]), u85])
+    v = (c211[0], -1.85)
+    T("VDD", 0.25, [c211, v]); V("VDD", v)
+    a = to_y(v, NE, -2.3); b = (-7.6, -2.3)
+    T("VDD", 0.25, [v, a, b, to_x(b, SE, u83[0]), u83])
+    T("VDD", 0.2, [u83, u82])
+    a = (-9.0, c221[1])
+    T("VDD", 0.25, [c221, a, to_y(a, SE, 0.9), (u88[0], 0.9)])
+    v = (c221[0], 0.9)
+    T("VDD", 0.25, [c221, v]); V("VDD", v)
+    u86, u87 = pad("U8", 6), pad("U8", 7)
+    T("GND", 0.25, [u87, u86])
+    v = (pad("C21", 2)[0], u86[1])                  # lands between the two caps' ground pads
+    T("GND", 0.25, [u86, v]); V("GND", v)
+
+    # ---- barometer supply
+    c191, c201, u71, u710 = pad("C19", 1), pad("C20", 1), pad("U7", 1), pad("U7", 10)
+    T("VDD", 0.25, [c191, (-8.6, c191[1]), to_y((-8.6, c191[1]), SE, u71[1]), u71])
+    T("VDD", 0.25, [c191, (c191[0], -6.1), to_y((c191[0], -6.1), NE, -6.6), (u710[0] - 0.15, -6.6),
+                    (u710[0], -6.45), u710])
+    T("VDD", 0.25, [c191, c201]); V("VDD", (c191[0], -5.0))
+    u78, u79, u73 = pad("U7", 8), pad("U7", 9), pad("U7", 3)
+    T("GND", 0.2, [u79, u78])
+    v = (u78[0], -6.6); T("GND", 0.25, [u78, v]); V("GND", v)
+    v = (u73[0], -3.45); T("GND", 0.25, [u73, v]); V("GND", v)
+
+    # ---- SPI2. Top layer: SDO chains MCU -> U8.1 -> U7.5; SDI and CS go straight to the IMU.
+    # CLK crosses SDO/SDI, and SDI needs a second way round to the barometer: both on the bottom.
+    p26, p27, p28, p29 = (pad("U2", i) for i in (26, 27, 28, 29))
+    u81, u75 = pad("U8", 1), pad("U7", 5)
+    a = (-3.4, p27[1])
+    T("/S2_SDO", 0.2, [p27, a, to_y(a, NW, u81[1]), u81])
+    T("/S2_SDO", 0.2, [u81, (u81[0], -3.5), to_x((u81[0], -3.5), NW, u75[0]), u75])
+    u814, D = pad("U8", 14), (-5.45, -1.1)
+    a = (-4.9, p28[1])
+    T("/S2_SDI", 0.2, [p28, a, to_y(a, NW, D[1]), D]); V("/S2_SDI", D)
+    T("/S2_SDI", 0.2, [D, (-6.0, D[1]), (-6.1, u814[1]), u814])
+    u74, E = pad("U7", 4), (-6.95, -3.0)
+    T("/S2_SDI", 0.2, [D, (D[0], -1.5), to_x((D[0], -1.5), NW, E[0])], B); V("/S2_SDI", E)
+    T("/S2_SDI", 0.2, [E, (E[0], -3.6), to_x((E[0], -3.6), NW, u74[0]), u74])
+    u812 = pad("U8", 12)
+    a = (-3.2, p29[1]); b = to_y(a, SW, 0.45); c = (-5.45, 0.45)
+    T("/LSM6DSR_CS", 0.2, [p29, a, b, c, to_y(c, NW, u812[1]), u812])
+    A, Bv, C = (-2.2, -2.1), (-4.4, -0.1), (-8.35, -2.9)
+    a = (-1.85, p26[1])
+    T("/S2_CLK", 0.2, [p26, a, to_x(a, NW, A[0])]); V("/S2_CLK", A)
+    T("/S2_CLK", 0.2, [A, (-2.4, A[1]), Bv], B); V("/S2_CLK", Bv)
+    u813, u72 = pad("U8", 13), pad("U7", 2)
+    a = (-4.9, Bv[1])
+    T("/S2_CLK", 0.2, [Bv, a, to_y(a, NW, u813[1]), u813])
+    a = (C[0] + (Bv[1] - C[1]), Bv[1])
+    T("/S2_CLK", 0.2, [Bv, a, C], B); V("/S2_CLK", C)
+    T("/S2_CLK", 0.2, [u72, (-8.2, u72[1]), (C[0], u72[1] + 0.15), C])
+
+
+# ====================================================================== BLE module, reset, header supplies
+def ble_misc():
+    c11, u15 = pad("C1", 1), pad("U1", 5)
+    T("VDD", 0.3, [c11, (u15[0] - 0.6, c11[1])])
+    cap_vias("C1", (0.0, 0.8), (0.0, 0.8), "VDD")
+    T("/BLE_IRQ", 0.2, [pad("R1", 1), (pad("U1", 4)[0] - 0.6, pad("R1", 1)[1])])
+    u16 = pad("U1", 6); v = (u16[0], -6.9)
+    T("GND", 0.4, [u16, v]); V("GND", v)
+
+    # NRST: bottom layer from the via at pin 7 to the RC, then to the switch
+    N1 = (6.95, pad("U2", 7)[1] - 0.1)
+    r222, c101 = pad("R22", 2), pad("C10", 1)
+    N2 = (8.9, 5.1)
+    T("/NRST", 0.2, [(r222[0], 5.1), N2]); V("/NRST", N2)
+    T("/NRST", 0.2, [N1, (N1[0], N2[1] - (N2[0] - N1[0])), N2], B)
+    s = (9.35, 7.7); N3 = (10.25, 7.7)
+    T("/NRST", 0.2, [s, N3]); V("/NRST", N3)
+    T("/NRST", 0.2, [N2, (N2[0], N3[1] - (N3[0] - N2[0])), N3], B)
+    T("/NRST", 0.2, [(5.25, 8.0), (5.75, 8.5), (8.85, 8.5), (9.35, 8.0)])   # the switch's two NRST pads
+
+    # header / pull-up supplies inside the VDD island
+    p81 = pad("P8", 1); v = (1.1, p81[1])
+    T("VDD", 0.3, [p81, v]); V("VDD", v)
+    cap_vias("R23", (0.0, 0.8), None, "VDD")
+
+
+REGIONS = [mcu_core, usb_charger, leds, power_in, motors, sensors, ble_misc]
 
 # ====================================================================== pours
 # In2: +BATT everywhere, VDD island on top of it. (x, y) corners in the local frame.

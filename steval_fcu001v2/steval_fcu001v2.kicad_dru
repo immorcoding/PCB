@@ -71,9 +71,11 @@
   (constraint skew (max 0.127mm)))
 
 # --- USB 2.0 full speed pair: loose skew, gap kept tight (max covers the connector breakout) ---
+# within_diff_pairs: compare D+ with D- of the same pair. Without it the MCU-side pair
+# (about 16 mm) is compared with the connector-side pair (about 2 mm).
 (rule "usb2_skew"
   (condition "A.NetClass == 'USB2'")
-  (constraint skew (max 0.5mm)))
+  (constraint skew (max 0.5mm) (within_diff_pairs)))
 
 (rule "usb2_gap"
   (condition "A.NetClass == 'USB2' && A.inDiffPair('*')")

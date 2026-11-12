@@ -55,7 +55,7 @@ PLACE = {
     # ---- reset
     "S1": (7.3, 8.5, 0),
     "R22": (6.9, 5.6, 90),
-    "C10": (8.0, 5.6, 90),
+    "C10": (8.0, 5.6, 270),           # NRST pad up, level with R22.2
 
     # ---- BLE module, antenna end at the top edge
     "U1": (BX, -YE + 8.9, 0),
