@@ -1,0 +1,244 @@
+=== Design Analysis ===
+
+--- battery ---
+  [1] INFO BC-DET: Battery charger U4 (STC4054GR) [single_cell_linear]
+      Detail: Detected single_cell_linear battery charger IC U4.
+      Stages: schematic
+
+--- certification ---
+  [2] INFO CERT-001: Battery charging/management circuitry detected
+      Detail: IEC 62133 / UL 2054: Battery charging/management circuitry detected
+      Stages: schematic
+  [3] INFO CERT-001: Lithium battery transport safety testing
+      Detail: UN 38.3: Lithium battery transport safety testing
+      Stages: schematic
+
+--- crystal ---
+  [4] INFO DO-DET: Crystal load cap Y1 = 10.5pF
+      Detail: Crystal load capacitance observation
+      Component: Y1
+      Stages: schematic
+
+--- debug ---
+  [5] INFO DI-DET: Debug interface P8 (swd): pass
+      Detail: Detected swd debug interface on connector P8.
+      Stages: schematic, bring_up
+
+--- decoupling ---
+  [6] INFO DC-DET: Decoupling on VDD
+      Detail: Decoupling capacitors on power rail VDD
+      Stages: schematic, layout
+  [7] INFO DC-DET: Decoupling on VBUS
+      Detail: Decoupling capacitors on power rail VBUS
+      Stages: schematic, layout
+  [8] INFO DC-DET: Decoupling on +BATT
+      Detail: Decoupling capacitors on power rail +BATT
+      Stages: schematic, layout
+  [9] INFO DC-DET: Decoupling on USBLC_VBUS
+      Detail: Decoupling capacitors on power rail USBLC_VBUS
+      Stages: schematic, layout
+
+--- decoupling_coverage ---
+  [10] INFO DO-DET: Decoupling coverage on VDD
+      Detail: Decoupling frequency coverage for rail VDD
+      Stages: schematic
+  [11] INFO DO-DET: Decoupling coverage on VBUS
+      Detail: Decoupling frequency coverage for rail VBUS
+      Stages: schematic
+  [12] INFO DO-DET: Decoupling coverage on +BATT
+      Detail: Decoupling frequency coverage for rail +BATT
+      Stages: schematic
+  [13] INFO DO-DET: Decoupling coverage on USBLC_VBUS
+      Detail: Decoupling frequency coverage for rail USBLC_VBUS
+      Stages: schematic
+
+--- discrete_semiconductors ---
+  [14] INFO TR-DET: Transistor Q1 mosfet
+      Detail: Transistor circuit (mosfet) detected
+      Stages: schematic
+  [15] INFO TR-DET: Transistor Q2 mosfet
+      Detail: Transistor circuit (mosfet) detected
+      Stages: schematic
+  [16] INFO TR-DET: Transistor Q3 mosfet
+      Detail: Transistor circuit (mosfet) detected
+      Stages: schematic
+  [17] INFO TR-DET: Transistor Q4 mosfet
+      Detail: Transistor circuit (mosfet) detected
+      Stages: schematic
+
+--- i2c_bus ---
+  [18] INFO DO-DET: I2C SCL bus on I2C2_SCL
+      Detail: I2C SCL bus detected with 1 device(s)
+      Stages: schematic
+  [19] INFO DO-DET: I2C SDA bus on I2C2_SDA
+      Detail: I2C SDA bus detected with 1 device(s)
+      Stages: schematic
+
+--- lifecycle ---
+  [20] INFO LC-007: Lifecycle audit not run — --lifecycle flag not passed
+      Detail: Component lifecycle / obsolescence audit was not run this session. Reason: --lifecycle flag not passed (run with --lifecycle to query DigiKey / Mouser / LCSC / element14 for obsolescence + operating-temp coverage; requires network + API keys). The review cannot report active / NRND / EOL / obsolete status, last-time-buy windows, or operating-temperature coverage for any BOM part. Treat the lifecycle section of the report as 'not performed'.
+      Fix:    Run with --lifecycle (requires DIGIKEY_CLIENT_ID / MOUSER_SEARCH_API_KEY / ELEMENT14_API_KEY env vars; LCSC needs no auth) to populate this section. If intentionally skipped, note it explicitly in the report's 'Not Performed' section.
+      Stages: schematic
+
+--- passive_filters ---
+  [21] INFO RC-DET: RC filter R22/C10 at 15.92Hz
+      Detail: low-pass RC filter
+      Stages: schematic
+
+--- power ---
+  [22] WARNING RS-001: USBLC_VBUS has no declared source
+      Detail: Net USBLC_VBUS is named like a power rail (no power_in pin on it) but has no power_out pin, no PWR_FLAG, no regulator output mapping, and no bridged solder jumper path to a sourced net.
+      Fix:    Add a PWR_FLAG to declare the rail as externally powered (e.g. from a connector) or trace the rail back to a regulator output. If the source lives on another sheet, promote the net name to a global label.
+      Stages: schematic
+
+--- power_integrity ---
+  [23] INFO PS-001: Regulator U2: PG status unknown for STM32F401CCU6 (no datasheet extraction)
+      Detail: Regulator U2 (STM32F401CCU6) supplies LED1 to U2 but PG status is unknown. Run sync_datasheets to verify.
+      Fix:    Run sync_datasheets to verify whether STM32F401CCU6 has a PG pin.
+      Stages: schematic
+  [24] INFO PS-001: Regulator U6: PG status unknown for LD39015M33R (no datasheet extraction)
+      Detail: Regulator U6 (LD39015M33R) supplies VDD to U2, U2, U2 but PG status is unknown. Run sync_datasheets to verify.
+      Fix:    Run sync_datasheets to verify whether LD39015M33R has a PG pin.
+      Stages: schematic
+
+--- power_management ---
+  [25] INFO PR-DET: Regulator U2 ic_with_internal_regulator
+      Detail: Power regulator (ic_with_internal_regulator) detected
+      Component: U2
+      Stages: schematic
+  [26] INFO PR-DET: Regulator U6 LDO
+      Detail: Power regulator (LDO) detected
+      Component: U6
+      Stages: schematic
+  [27] INFO RS-DET: RC reset network on NRST (10.0 ms)
+      Detail: Detected RC reset network on net NRST.
+      Stages: schematic, bring_up
+
+--- protection ---
+  [28] INFO EP-AUD: ESD audit CN1 (generic): partial coverage
+      Detail: ESD protection audit for generic connector CN1: partial coverage.
+      Stages: schematic
+  [29] INFO EP-AUD: ESD audit MP10 (header): none coverage
+      Detail: ESD protection audit for header connector MP10: none coverage.
+      Stages: schematic
+  [30] INFO EP-AUD: ESD audit MP12 (header): none coverage
+      Detail: ESD protection audit for header connector MP12: none coverage.
+      Stages: schematic
+  [31] INFO EP-AUD: ESD audit MP14 (header): none coverage
+      Detail: ESD protection audit for header connector MP14: none coverage.
+      Stages: schematic
+  [32] INFO EP-AUD: ESD audit MP16 (header): none coverage
+      Detail: ESD protection audit for header connector MP16: none coverage.
+      Stages: schematic
+  [33] INFO EP-AUD: ESD audit MP2 (header): none coverage
+      Detail: ESD protection audit for header connector MP2: none coverage.
+      Stages: schematic
+  [34] INFO EP-AUD: ESD audit MP4 (header): none coverage
+      Detail: ESD protection audit for header connector MP4: none coverage.
+      Stages: schematic
+  [35] INFO EP-AUD: ESD audit MP6 (header): none coverage
+      Detail: ESD protection audit for header connector MP6: none coverage.
+      Stages: schematic
+  [36] INFO EP-AUD: ESD audit MP8 (header): none coverage
+      Detail: ESD protection audit for header connector MP8: none coverage.
+      Stages: schematic
+  [37] INFO EP-AUD: ESD audit P3 (i2c): none coverage
+      Detail: ESD protection audit for i2c connector P3: none coverage.
+      Stages: schematic
+  [38] INFO EP-AUD: ESD audit P6 (header): none coverage
+      Detail: ESD protection audit for header connector P6: none coverage.
+      Stages: schematic
+  [39] INFO EP-AUD: ESD audit P7 (header): none coverage
+      Detail: ESD protection audit for header connector P7: none coverage.
+      Stages: schematic
+  [40] INFO EP-AUD: ESD audit P8 (header): none coverage
+      Detail: ESD protection audit for header connector P8: none coverage.
+      Stages: schematic
+  [41] INFO PD-DET: Protection D5 diode
+      Detail: Protection device (diode) on VBUS
+      Component: D5
+      Stages: schematic
+  [42] INFO PD-DET: Protection U3 esd_ic
+      Detail: IC-based ESD protection device detected
+      Component: U3
+      Stages: schematic
+
+--- protocol_integrity ---
+  [43] ERROR PR-001: I2C bus S2_SDI/S2_CLK: SCL missing pull-up
+      Detail: I2C bus with 1 device(s) (U8) has no pull-up on SCL net S2_CLK.
+      Fix:    Add a 4.7k pull-up resistor from SCL to VDD.
+      Stages: schematic
+  [44] ERROR PR-001: I2C bus S2_SDI/S2_CLK: SDA missing pull-up
+      Detail: I2C bus with 1 device(s) (U8) has no pull-up on SDA net S2_SDI.
+      Fix:    Add a 4.7k pull-up resistor from SDA to VDD.
+      Stages: schematic
+  [45] INFO PR-004: USB connector CN1: D+ (USB_CONN_D+) missing series resistor
+      Detail: USB D+ on CN1 has no series resistor (typically 22R for USB 2.0).
+      Fix:    Add a 22R series resistor on D+ near the connector.
+      Stages: schematic
+  [46] INFO PR-004: USB connector CN1: D- (USB_CONN_D-) missing series resistor
+      Detail: USB D- on CN1 has no series resistor (typically 22R for USB 2.0).
+      Fix:    Add a 22R series resistor on D- near the connector.
+      Stages: schematic
+
+--- regulator_caps ---
+  [47] INFO DO-DET: Regulator U2 missing capacitors
+      Detail: Regulator missing input or output capacitors
+      Component: U2
+      Stages: schematic
+
+--- reset_pin ---
+  [48] INFO DO-DET: Reset pin on U2 (NRST)
+      Detail: Reset pin configuration for U2
+      Component: U2
+      Stages: schematic
+
+--- sensors ---
+  [49] INFO SI-DET: Sensor U7 (LPS22HH) [environmental/i2c]
+      Detail: Detected environmental sensor IC U7.
+      Component: U7
+      Stages: schematic
+  [50] INFO SI-DET: Sensor U8 (LSM6DSR) [motion/spi]
+      Detail: Detected motion sensor IC U8.
+      Component: U8
+      Stages: schematic
+
+--- signal_integrity ---
+  [51] WARNING PU-001: U4 pin STAT (CHG_STAT) missing pull-up resistor
+      Detail: Pin STAT on U4 (STC4054GR) is connected to net CHG_STAT but has no pull-up resistor. This pin type typically requires an external pull-up to a power rail for correct operation.
+      Fix:    Add a 4.7k-10k pull-up resistor from CHG_STAT to the appropriate power rail.
+      Stages: schematic
+
+--- sourcing ---
+  [52] ERROR SS-001: Sourcing blocker: BOM has <50% MPN coverage (0/34 unique parts). Board is not pre-fab ready.
+      Detail: Sourcing audit: 0 of 34 unique BOM lines (grouped by value + footprint) carry a manufacturer part number (0.0%). Pre-fab readiness requires 100% coverage; production assembly requires all parts sourceable via one of the supported distributors.
+      Fix:    Populate the MPN field on the listed refs (use the digikey / mouser / lcsc / element14 skill to search by value/footprint when the MPN isn't already known).
+      Stages: pre_fab
+
+--- timing ---
+  [53] INFO XL-DET: Crystal Y1 at 16000000.0Hz
+      Detail: Crystal oscillator circuit detected
+      Stages: schematic
+
+--- usb_data ---
+  [54] INFO DO-DET: USB data line USB_D+
+      Detail: USB data net USB_D+ detected
+      Stages: schematic
+  [55] INFO DO-DET: USB data line USB_D-
+      Detail: USB data net USB_D- detected
+      Stages: schematic
+
+--- verification ---
+  [56] ERROR DS-001: No datasheets directory found and no BOM parts have MPNs. Review is a consistency check only — manufacturer specs cannot be verified.
+      Fix:    Before reporting 'verified' findings, (1) populate the MPN field on BOM parts, (2) run the datasheet sync skill (digikey, mouser, lcsc, or element14) to download PDFs into ./datasheets/, then re-run analysis. If datasheets are unreachable, state every pin-level and electrical claim as 'per symbol/library' (consistency), not 'verified against datasheet' (correctness).
+      Stages: schematic
+
+--- voltage_dividers ---
+  [57] INFO VD-DET: Voltage divider R10/R11
+      Detail: Resistive voltage divider detected
+      Stages: schematic
+  [58] INFO VD-DET: Voltage divider R27/R28
+      Detail: Resistive voltage divider detected
+      Stages: schematic
+
+Total: 58 (4 errors, 2 warnings, 52 info)

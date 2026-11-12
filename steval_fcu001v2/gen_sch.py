@@ -168,7 +168,7 @@ ic("Switch:SW_Push_Shielded", "S1", "KMR231GLFS", 106, 17,
 for n, net in enumerate(["SWDIO", "SWCLK", "NRST"]):
     x = 100 + 4 * n
     ic("Connector:TestPoint", f"TP{n + 1}", "TP", x, 26, "TestPoint:TestPoint_Pad_D1.0mm", {"1": net},
-       ref_at=((x + 0.8) * U, 24 * U, "left"), hide_value=True)
+       ref_at=((x + 0.8) * U, 24 * U, "left"), hide_value=True, in_bom=False)
 
 # ======================================================================
 # Row B: sensors and BLE module
@@ -223,10 +223,10 @@ for n in range(4):
     for k, (sign, net) in enumerate([("+", "+BATT"), ("-", f"M{n + 1}_OUT")]):
         i = 22 + 12 * n + 6 * k
         ic("Connector_Generic:Conn_01x01", f"MP{2 * n + k + 1}", f"M{n + 1}{sign}", i, 69, FP_MPAD, {"1": net},
-           ref_at=(i * U, 67 * U), val_at=(i * U, 71 * U))
+           ref_at=(i * U, 67 * U), val_at=(i * U, 71 * U), in_bom=False)
         # same pad again for the bottom side of the board (MP9..MP16)
         ic("Connector_Generic:Conn_01x01", f"MP{2 * n + k + 9}", f"M{n + 1}{sign} bot", i, 75, FP_MPAD, {"1": net},
-           ref_at=(i * U, 73 * U), val_at=(i * U, 77 * U))
+           ref_at=(i * U, 73 * U), val_at=(i * U, 77 * U), in_bom=False)
 conn("P3", "I2C", 4, 72, FP_V4, ["VDD", "I2C2_SDA", "I2C2_SCL", "GND"])
 conn("P7", "USART", 4, 84, FP_V4, ["VDD", "GND", "USART1_RX", "USART1_TX"])
 conn("P6", "FC_Signal", 6, 96, FP_V6, ["+BATT", "TIM2_CH1", "TIM2_CH2", "TIM2_CH3", "TIM2_CH4", "GND"])
@@ -238,7 +238,7 @@ title("Mounting holes", 100, 48)
 for n in range(4):                    # not on the ST schematic
     i = 102 + 4 * n
     ic("Mechanical:MountingHole", f"H{n + 1}", "M3", i, 53, "MountingHole:MountingHole_3.2mm_M3", {},
-       ref_at=(i * U, 51 * U), hide_value=True)
+       ref_at=(i * U, 51 * U), hide_value=True, in_bom=False)
 
 title("Motor low-side switches", 122, 68)
 for n in range(4):

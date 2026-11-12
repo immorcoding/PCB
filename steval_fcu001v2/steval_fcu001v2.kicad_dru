@@ -17,9 +17,19 @@
 #     In1.Cu by the IPC-2141 formula, assuming 0.0994 mm prepreg with Er 4.1 (stackup
 #     figures not confirmed with JLC's calculator; USB here is full speed only).
 #   hole_range   max 3.048 -> 3.3 (M3 mounting holes are 3.2 mm)
-#   PWR also takes *VCAP*, *MOTOR?_N and *M?_OUT (patterns in the .kicad_pro)
+#   usb2_gap     max 0.7 -> 0.8 mm (the pair splits round U3's ground pad for 1.4 mm)
+#   usb2_skew    compares within each pair (within_diff_pairs)
+#   PWR also takes *VCAP*, MOTORn_N and Mn_OUT (patterns in the .kicad_pro, one per net:
+#     "?" and "[+-]" do not work in net class patterns)
 #
-# Layer use and routing conventions: not agreed yet, to be added here before routing.
+# ROUTING CONVENTIONS agreed 2026-11-12 (not all machine-checkable):
+#   - F.Cu signals and parts; In1.Cu solid GND; In2.Cu +BATT with a VDD island; B.Cu signals
+#     over a GND pour. No tracks on In1 / In2.
+#   - crystal: F.Cu only, 0.254 mm, no vias; B.Cu under it is rule area XTAL_KEEPOUT
+#   - USB pair: F.Cu only, 0.15 / 0.15 mm, skew <= 0.5 mm
+#   - motor current: >= 0.8 mm on F.Cu from drain to pad, +BATT on In2, three vias per pad
+#   - signals 0.2 mm, 0.15 mm from a 0.5 mm-pitch pin to its via and on the BLE SPI bus
+#   - vias 0.6 / 0.3; 0.45 / 0.2 only in the MCU pin fan-out and where noted in route.py
 
 # --- Track width (AD Width rules, min / preferred / max) ---
 (rule "signal_width"

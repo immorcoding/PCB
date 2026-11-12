@@ -494,6 +494,18 @@ def gnd_stitch():
     # right pad crosses MOTOR3, and MOTOR3 does not route with that track in place): one small
     # via in the pad. It is a 0.9 x 1.0 mm hand-solder pad.
     V("GND", (5.0, 9.6), *SMALL)                     # clear of I2C2_SDA passing under the pad on B.Cu
+    # stitching between the F.Cu / B.Cu pours and the In1 plane: scripts/via_spots.py grid 5,
+    # minus one spot inside the BLE antenna keep-out and one on the edge of the VDD island
+    for v in STITCH:
+        V("GND", v)
+
+
+STITCH = [(-14.8, -18.55), (13.95, -18.55), (-18.55, -14.8), (-14.8, -14.8), (13.95, -14.8), (17.7, -14.8),
+          (-18.55, -11.05), (16.45, -11.05), (-16.05, -8.55), (-4.8, -8.55), (-1.05, -8.55), (12.7, -8.55),
+          (18.95, -8.55), (2.7, -7.3), (-18.55, -6.05), (-13.55, -6.05), (16.45, -6.05), (-4.8, -4.8),
+          (-9.8, -3.55), (-18.55, -2.3), (-14.8, -2.3), (-2.3, 5.2), (16.45, 6.45), (-16.05, 7.7), (18.95, 8.95),
+          (-7.3, 10.2), (-18.55, 11.45), (16.45, 11.45), (-14.8, 12.7), (-3.55, 12.7), (13.95, 13.95),
+          (18.95, 13.95), (-8.55, 15.2), (0.2, 15.2), (8.95, 15.2), (-14.8, 16.45), (13.95, 17.7), (8.95, 18.95)]
 
 
 REGIONS = [mcu_core, mcu_fanout, usb_charger, leds, power_in, motors, sensors, ble_misc, auto_fixes, gnd_stitch]

@@ -1,0 +1,393 @@
+** Drc report for steval_fcu001v2.kicad_pcb **
+** Created on 2026-11-12T14:22:41 **
+** Report includes: Errors, Warnings, Exclusions **
+
+** Found 19 DRC violations **
+[track_angle]: 走线角度 (规则 'corner_angle' 最小角度 134.000°; 实际 90.000°)
+    Rule: corner_angle; error
+    @(109.2000 mm, 111.7000 mm): Track [/MOTOR4] on B.Cu, length 1.6971 mm
+    @(107.2000 mm, 113.7000 mm): Track [/MOTOR4] on B.Cu, length 4.3841 mm
+[track_angle]: 走线角度 (规则 'corner_angle' 最小角度 134.000°; 实际 90.000°)
+    Rule: corner_angle; error
+    @(107.2000 mm, 113.7000 mm): Track [/MOTOR4] on B.Cu, length 4.3841 mm
+    @(109.2000 mm, 111.7000 mm): Track [/MOTOR4] on B.Cu, length 1.6971 mm
+[starved_thermal]: 缓释热焊盘 (花焊盘) 与填充区的连接不完整 (层 F.Cu; 规则 'tht_thermal' 最小引线数量 2; 实际 1)
+    Rule: tht_thermal; error
+    @(79.5000 mm, 79.5000 mm): Zone 'GND_F' [GND] on F.Cu, priority 0
+    @(114.4000 mm, 103.8200 mm): PTH pad 4 [GND] of P3
+[silk_edge_clearance]: 被板边截断的丝印 (<电路板配置> 中的 "丝印" 约束 间距 0.1000 mm; 实际 0.0000 mm)
+    Rule: <电路板配置> 中的 "丝印" 约束; warning
+    @(80.0000 mm, 118.0000 mm): Segment on Edge.Cuts
+    @(74.3500 mm, 92.5000 mm): Segment of BT1 on F.Silkscreen
+[silk_edge_clearance]: 被板边截断的丝印 (<电路板配置> 中的 "丝印" 约束 间距 0.1000 mm; 实际 0.0000 mm)
+    Rule: <电路板配置> 中的 "丝印" 约束; warning
+    @(80.0000 mm, 118.0000 mm): Segment on Edge.Cuts
+    @(80.3500 mm, 93.3600 mm): Segment of BT1 on F.Silkscreen
+[silk_edge_clearance]: 被板边截断的丝印 (<电路板配置> 中的 "丝印" 约束 间距 0.1000 mm; 实际 0.0000 mm)
+    Rule: <电路板配置> 中的 "丝印" 约束; warning
+    @(80.0000 mm, 118.0000 mm): Segment on Edge.Cuts
+    @(80.3500 mm, 95.9000 mm): Rectangle of BT1 on F.Silkscreen
+[silk_edge_clearance]: 被板边截断的丝印 (<电路板配置> 中的 "丝印" 约束 间距 0.1000 mm; 实际 0.0400 mm)
+    Rule: <电路板配置> 中的 "丝印" 约束; warning
+    @(118.0000 mm, 120.0000 mm): Segment on Edge.Cuts
+    @(91.7400 mm, 119.9000 mm): Segment of CN1 on F.Silkscreen
+[silk_edge_clearance]: 被板边截断的丝印 (<电路板配置> 中的 "丝印" 约束 间距 0.1000 mm; 实际 0.0400 mm)
+    Rule: <电路板配置> 中的 "丝印" 约束; warning
+    @(118.0000 mm, 120.0000 mm): Segment on Edge.Cuts
+    @(99.3600 mm, 119.6400 mm): Segment of CN1 on F.Silkscreen
+[lib_footprint_mismatch]: 封装 'LGA-14_3x2.5mm_P0.5mm_LayoutBorder3x4y' 与库 'Package_LGA' 中的副本不匹配
+    Local override; warning
+    @(92.9000 mm, 99.5000 mm): Footprint U8
+[lib_footprint_mismatch]: 封装 'ST_HLGA-10_2x2mm_P0.5mm_LayoutBorder3x2y' 与库 'Package_LGA' 中的副本不匹配
+    Local override; warning
+    @(92.9000 mm, 95.0000 mm): Footprint U7
+[lib_footprint_mismatch]: 封装 'VSON-8_3.3x3.3mm_P0.65mm_NexFET' 与库 'Package_SON' 中的副本不匹配
+    Local override; warning
+    @(87.4000 mm, 89.0000 mm): Footprint Q1
+[lib_footprint_mismatch]: 封装 'VSON-8_3.3x3.3mm_P0.65mm_NexFET' 与库 'Package_SON' 中的副本不匹配
+    Local override; warning
+    @(112.6000 mm, 89.0000 mm): Footprint Q2
+[lib_footprint_mismatch]: 封装 'VSON-8_3.3x3.3mm_P0.65mm_NexFET' 与库 'Package_SON' 中的副本不匹配
+    Local override; warning
+    @(87.4000 mm, 111.0000 mm): Footprint Q3
+[lib_footprint_mismatch]: 封装 'VSON-8_3.3x3.3mm_P0.65mm_NexFET' 与库 'Package_SON' 中的副本不匹配
+    Local override; warning
+    @(112.6000 mm, 111.0000 mm): Footprint Q4
+[silk_overlap]: 丝印间距 (<电路板配置> 中的 "丝印" 约束 间距 0.1000 mm; 实际 0.0100 mm)
+    Rule: <电路板配置> 中的 "丝印" 约束; warning
+    @(101.8000 mm, 108.7350 mm): Segment of LD2 on F.Silkscreen
+    @(104.0850 mm, 108.8650 mm): Segment of LD1 on F.Silkscreen
+[silk_overlap]: 丝印间距 (<电路板配置> 中的 "丝印" 约束 间距 0.1000 mm; 实际 0.0100 mm)
+    Rule: <电路板配置> 中的 "丝印" 约束; warning
+    @(104.0850 mm, 108.7350 mm): Segment of LD2 on F.Silkscreen
+    @(104.0850 mm, 108.8650 mm): Segment of LD1 on F.Silkscreen
+[silk_overlap]: 丝印间距 (<电路板配置> 中的 "丝印" 约束 间距 0.1000 mm; 实际 0.0100 mm)
+    Rule: <电路板配置> 中的 "丝印" 约束; warning
+    @(101.8000 mm, 108.7350 mm): Segment of LD2 on F.Silkscreen
+    @(104.0850 mm, 110.3350 mm): Segment of LD1 on F.Silkscreen
+[silk_overlap]: 丝印间距 (<电路板配置> 中的 "丝印" 约束 间距 0.1000 mm; 实际 0.0100 mm)
+    Rule: <电路板配置> 中的 "丝印" 约束; warning
+    @(104.0850 mm, 108.7350 mm): Segment of LD2 on F.Silkscreen
+    @(104.0850 mm, 110.3350 mm): Segment of LD1 on F.Silkscreen
+[silk_overlap]: 丝印间距 (<电路板配置> 中的 "丝印" 约束 间距 0.1000 mm; 实际 0.0654 mm)
+    Rule: <电路板配置> 中的 "丝印" 约束; warning
+    @(88.1150 mm, 108.3350 mm): Segment of LD3 on F.Silkscreen
+    @(90.6500 mm, 108.7900 mm): Polygon of U4 on F.Silkscreen
+
+** Found 0 unconnected pads **
+
+** Found 102 Footprint errors **
+[footprint_symbol_field_mismatch]: 封装中缺少符号字段 'ki_keywords'
+    Local override; warning
+    @(84.5000 mm, 95.4700 mm): Footprint BT1
+[footprint_symbol_field_mismatch]: 封装中缺少符号字段 'ki_keywords'
+    Local override; warning
+    @(91.7500 mm, 90.8000 mm): Footprint C1
+[footprint_symbol_field_mismatch]: 封装中缺少符号字段 'ki_keywords'
+    Local override; warning
+    @(89.2000 mm, 105.6000 mm): Footprint C2
+[footprint_symbol_field_mismatch]: 封装中缺少符号字段 'ki_keywords'
+    Local override; warning
+    @(98.1000 mm, 95.6000 mm): Footprint C3
+[footprint_symbol_field_mismatch]: 封装中缺少符号字段 'ki_keywords'
+    Local override; warning
+    @(97.0000 mm, 103.2500 mm): Footprint C4
+[footprint_symbol_field_mismatch]: 封装中缺少符号字段 'ki_keywords'
+    Local override; warning
+    @(105.4000 mm, 105.7000 mm): Footprint C5
+[footprint_symbol_field_mismatch]: 封装中缺少符号字段 'ki_keywords'
+    Local override; warning
+    @(107.7000 mm, 103.5000 mm): Footprint C6
+[footprint_symbol_field_mismatch]: 封装中缺少符号字段 'ki_keywords'
+    Local override; warning
+    @(108.2500 mm, 99.1500 mm): Footprint C7
+[footprint_symbol_field_mismatch]: 封装中缺少符号字段 'ki_keywords'
+    Local override; warning
+    @(110.3000 mm, 104.5500 mm): Footprint C8
+[footprint_symbol_field_mismatch]: 封装中缺少符号字段 'ki_keywords'
+    Local override; warning
+    @(109.7500 mm, 98.7000 mm): Footprint C9
+[footprint_symbol_field_mismatch]: 封装中缺少符号字段 'ki_keywords'
+    Local override; warning
+    @(108.0000 mm, 105.6000 mm): Footprint C10
+[footprint_symbol_field_mismatch]: 封装中缺少符号字段 'ki_keywords'
+    Local override; warning
+    @(100.0000 mm, 95.2000 mm): Footprint C11
+[footprint_symbol_field_mismatch]: 封装中缺少符号字段 'ki_keywords'
+    Local override; warning
+    @(91.5000 mm, 113.3000 mm): Footprint C12
+[footprint_symbol_field_mismatch]: 封装中缺少符号字段 'ki_keywords'
+    Local override; warning
+    @(99.7000 mm, 113.3000 mm): Footprint C13
+[footprint_symbol_field_mismatch]: 封装中缺少符号字段 'ki_keywords'
+    Local override; warning
+    @(95.3000 mm, 110.2000 mm): Footprint C14
+[footprint_symbol_field_mismatch]: 封装中缺少符号字段 'ki_keywords'
+    Local override; warning
+    @(95.3000 mm, 109.1500 mm): Footprint C15
+[footprint_symbol_field_mismatch]: 封装中缺少符号字段 'ki_keywords'
+    Local override; warning
+    @(85.5000 mm, 103.0000 mm): Footprint C16
+[footprint_symbol_field_mismatch]: 封装中缺少符号字段 'ki_keywords'
+    Local override; warning
+    @(91.3000 mm, 102.0500 mm): Footprint C17
+[footprint_symbol_field_mismatch]: 封装中缺少符号字段 'ki_keywords'
+    Local override; warning
+    @(84.3000 mm, 103.0000 mm): Footprint C18
+[footprint_symbol_field_mismatch]: 封装中缺少符号字段 'ki_keywords'
+    Local override; warning
+    @(90.4000 mm, 94.4000 mm): Footprint C19
+[footprint_symbol_field_mismatch]: 封装中缺少符号字段 'ki_keywords'
+    Local override; warning
+    @(90.4000 mm, 95.6000 mm): Footprint C20
+[footprint_symbol_field_mismatch]: 封装中缺少符号字段 'ki_keywords'
+    Local override; warning
+    @(90.1000 mm, 98.9000 mm): Footprint C21
+[footprint_symbol_field_mismatch]: 封装中缺少符号字段 'ki_keywords'
+    Local override; warning
+    @(90.1000 mm, 100.1000 mm): Footprint C22
+[footprint_symbol_field_mismatch]: 封装中缺少符号字段 'ki_keywords'
+    Local override; warning
+    @(97.3000 mm, 113.3000 mm): Footprint C23
+[footprint_symbol_field_mismatch]: 封装中缺少符号字段 'ki_keywords'
+    Local override; warning
+    @(95.5500 mm, 117.3000 mm): Footprint CN1
+[footprint_symbol_field_mismatch]: 封装中缺少符号字段 'ki_keywords'
+    Local override; warning
+    @(83.0000 mm, 90.0000 mm): Footprint D1
+[footprint_symbol_field_mismatch]: 封装中缺少符号字段 'ki_keywords'
+    Local override; warning
+    @(117.0000 mm, 90.0000 mm): Footprint D2
+[footprint_symbol_field_mismatch]: 封装中缺少符号字段 'ki_keywords'
+    Local override; warning
+    @(83.0000 mm, 110.0000 mm): Footprint D3
+[footprint_symbol_field_mismatch]: 封装中缺少符号字段 'ki_keywords'
+    Local override; warning
+    @(117.0000 mm, 110.0000 mm): Footprint D4
+[footprint_symbol_field_mismatch]: 封装中缺少符号字段 'ki_keywords'
+    Local override; warning
+    @(92.9000 mm, 113.3000 mm): Footprint D5
+[footprint_symbol_field_mismatch]: 封装中缺少符号字段 'ki_keywords'
+    Local override; warning
+    @(82.7500 mm, 82.7500 mm): Footprint H1
+[footprint_symbol_field_mismatch]: 封装中缺少符号字段 'ki_keywords'
+    Local override; warning
+    @(117.2500 mm, 82.7500 mm): Footprint H2
+[footprint_symbol_field_mismatch]: 封装中缺少符号字段 'ki_keywords'
+    Local override; warning
+    @(82.7500 mm, 117.2500 mm): Footprint H3
+[footprint_symbol_field_mismatch]: 封装中缺少符号字段 'ki_keywords'
+    Local override; warning
+    @(117.2500 mm, 117.2500 mm): Footprint H4
+[footprint_symbol_field_mismatch]: 封装中缺少符号字段 'Sim.Pins'
+    Local override; warning
+    @(102.6000 mm, 109.6000 mm): Footprint LD1
+[footprint_symbol_field_mismatch]: 封装中缺少符号字段 'Sim.Pins'
+    Local override; warning
+    @(102.6000 mm, 108.0000 mm): Footprint LD2
+[footprint_symbol_field_mismatch]: 封装中缺少符号字段 'Sim.Pins'
+    Local override; warning
+    @(89.6000 mm, 107.6000 mm): Footprint LD3
+[footprint_symbol_field_mismatch]: 封装中缺少符号字段 'ki_keywords'
+    Local override; warning
+    @(87.4000 mm, 82.0000 mm): Footprint MP1
+[footprint_symbol_field_mismatch]: 封装中缺少符号字段 'ki_keywords'
+    Local override; warning
+    @(89.6000 mm, 82.0000 mm): Footprint MP2
+[footprint_symbol_field_mismatch]: 封装中缺少符号字段 'ki_keywords'
+    Local override; warning
+    @(112.6000 mm, 82.0000 mm): Footprint MP3
+[footprint_symbol_field_mismatch]: 封装中缺少符号字段 'ki_keywords'
+    Local override; warning
+    @(110.4000 mm, 82.0000 mm): Footprint MP4
+[footprint_symbol_field_mismatch]: 封装中缺少符号字段 'ki_keywords'
+    Local override; warning
+    @(87.4000 mm, 118.0000 mm): Footprint MP5
+[footprint_symbol_field_mismatch]: 封装中缺少符号字段 'ki_keywords'
+    Local override; warning
+    @(89.6000 mm, 118.0000 mm): Footprint MP6
+[footprint_symbol_field_mismatch]: 封装中缺少符号字段 'ki_keywords'
+    Local override; warning
+    @(112.6000 mm, 118.0000 mm): Footprint MP7
+[footprint_symbol_field_mismatch]: 封装中缺少符号字段 'ki_keywords'
+    Local override; warning
+    @(110.4000 mm, 118.0000 mm): Footprint MP8
+[footprint_symbol_field_mismatch]: 封装中缺少符号字段 'ki_keywords'
+    Local override; warning
+    @(87.4000 mm, 82.0000 mm): Footprint MP9
+[footprint_symbol_field_mismatch]: 封装中缺少符号字段 'ki_keywords'
+    Local override; warning
+    @(89.6000 mm, 82.0000 mm): Footprint MP10
+[footprint_symbol_field_mismatch]: 封装中缺少符号字段 'ki_keywords'
+    Local override; warning
+    @(112.6000 mm, 82.0000 mm): Footprint MP11
+[footprint_symbol_field_mismatch]: 封装中缺少符号字段 'ki_keywords'
+    Local override; warning
+    @(110.4000 mm, 82.0000 mm): Footprint MP12
+[footprint_symbol_field_mismatch]: 封装中缺少符号字段 'ki_keywords'
+    Local override; warning
+    @(87.4000 mm, 118.0000 mm): Footprint MP13
+[footprint_symbol_field_mismatch]: 封装中缺少符号字段 'ki_keywords'
+    Local override; warning
+    @(89.6000 mm, 118.0000 mm): Footprint MP14
+[footprint_symbol_field_mismatch]: 封装中缺少符号字段 'ki_keywords'
+    Local override; warning
+    @(112.6000 mm, 118.0000 mm): Footprint MP15
+[footprint_symbol_field_mismatch]: 封装中缺少符号字段 'ki_keywords'
+    Local override; warning
+    @(110.4000 mm, 118.0000 mm): Footprint MP16
+[footprint_symbol_field_mismatch]: 封装中缺少符号字段 'ki_keywords'
+    Local override; warning
+    @(114.4000 mm, 96.2000 mm): Footprint P3
+[footprint_symbol_field_mismatch]: 封装中缺少符号字段 'ki_keywords'
+    Local override; warning
+    @(118.1000 mm, 93.6500 mm): Footprint P6
+[footprint_symbol_field_mismatch]: 封装中缺少符号字段 'ki_keywords'
+    Local override; warning
+    @(81.9000 mm, 99.2100 mm): Footprint P7
+[footprint_symbol_field_mismatch]: 封装中缺少符号字段 'ki_keywords'
+    Local override; warning
+    @(104.8000 mm, 116.2700 mm): Footprint P8
+[footprint_symbol_field_mismatch]: 封装中缺少符号字段 'ki_keywords'
+    Local override; warning
+    @(87.4000 mm, 89.0000 mm): Footprint Q1
+[footprint_symbol_field_mismatch]: 封装中缺少符号字段 'ki_keywords'
+    Local override; warning
+    @(112.6000 mm, 89.0000 mm): Footprint Q2
+[footprint_symbol_field_mismatch]: 封装中缺少符号字段 'ki_keywords'
+    Local override; warning
+    @(87.4000 mm, 111.0000 mm): Footprint Q3
+[footprint_symbol_field_mismatch]: 封装中缺少符号字段 'ki_keywords'
+    Local override; warning
+    @(112.6000 mm, 111.0000 mm): Footprint Q4
+[footprint_symbol_field_mismatch]: 封装中缺少符号字段 'ki_keywords'
+    Local override; warning
+    @(91.7500 mm, 89.5000 mm): Footprint R1
+[footprint_symbol_field_mismatch]: 封装中缺少符号字段 'ki_keywords'
+    Local override; warning
+    @(88.3700 mm, 92.4000 mm): Footprint R2
+[footprint_symbol_field_mismatch]: 封装中缺少符号字段 'ki_keywords'
+    Local override; warning
+    @(113.5700 mm, 92.4000 mm): Footprint R3
+[footprint_symbol_field_mismatch]: 封装中缺少符号字段 'ki_keywords'
+    Local override; warning
+    @(87.0700 mm, 92.4000 mm): Footprint R4
+[footprint_symbol_field_mismatch]: 封装中缺少符号字段 'ki_keywords'
+    Local override; warning
+    @(114.8700 mm, 92.4000 mm): Footprint R5
+[footprint_symbol_field_mismatch]: 封装中缺少符号字段 'ki_keywords'
+    Local override; warning
+    @(86.4300 mm, 107.6000 mm): Footprint R6
+[footprint_symbol_field_mismatch]: 封装中缺少符号字段 'ki_keywords'
+    Local override; warning
+    @(85.1300 mm, 107.6000 mm): Footprint R7
+[footprint_symbol_field_mismatch]: 封装中缺少符号字段 'ki_keywords'
+    Local override; warning
+    @(111.6300 mm, 107.6000 mm): Footprint R8
+[footprint_symbol_field_mismatch]: 封装中缺少符号字段 'ki_keywords'
+    Local override; warning
+    @(112.9300 mm, 107.6000 mm): Footprint R9
+[footprint_symbol_field_mismatch]: 封装中缺少符号字段 'ki_keywords'
+    Local override; warning
+    @(85.2000 mm, 105.6000 mm): Footprint R10
+[footprint_symbol_field_mismatch]: 封装中缺少符号字段 'ki_keywords'
+    Local override; warning
+    @(87.2000 mm, 105.6000 mm): Footprint R11
+[footprint_symbol_field_mismatch]: 封装中缺少符号字段 'ki_keywords'
+    Local override; warning
+    @(89.0000 mm, 84.6500 mm): Footprint R12
+[footprint_symbol_field_mismatch]: 封装中缺少符号字段 'ki_keywords'
+    Local override; warning
+    @(89.0000 mm, 115.3500 mm): Footprint R13
+[footprint_symbol_field_mismatch]: 封装中缺少符号字段 'ki_keywords'
+    Local override; warning
+    @(89.0000 mm, 86.0500 mm): Footprint R14
+[footprint_symbol_field_mismatch]: 封装中缺少符号字段 'ki_keywords'
+    Local override; warning
+    @(89.0000 mm, 113.9500 mm): Footprint R15
+[footprint_symbol_field_mismatch]: 封装中缺少符号字段 'ki_keywords'
+    Local override; warning
+    @(111.0000 mm, 84.6500 mm): Footprint R16
+[footprint_symbol_field_mismatch]: 封装中缺少符号字段 'ki_keywords'
+    Local override; warning
+    @(111.0000 mm, 115.3500 mm): Footprint R17
+[footprint_symbol_field_mismatch]: 封装中缺少符号字段 'ki_keywords'
+    Local override; warning
+    @(111.0000 mm, 86.0500 mm): Footprint R18
+[footprint_symbol_field_mismatch]: 封装中缺少符号字段 'ki_keywords'
+    Local override; warning
+    @(111.0000 mm, 113.9500 mm): Footprint R19
+[footprint_symbol_field_mismatch]: 封装中缺少符号字段 'ki_keywords'
+    Local override; warning
+    @(100.1000 mm, 109.6000 mm): Footprint R20
+[footprint_symbol_field_mismatch]: 封装中缺少符号字段 'ki_keywords'
+    Local override; warning
+    @(100.1000 mm, 108.0000 mm): Footprint R21
+[footprint_symbol_field_mismatch]: 封装中缺少符号字段 'ki_keywords'
+    Local override; warning
+    @(106.9000 mm, 105.6000 mm): Footprint R22
+[footprint_symbol_field_mismatch]: 封装中缺少符号字段 'ki_keywords'
+    Local override; warning
+    @(107.3000 mm, 111.4000 mm): Footprint R23
+[footprint_symbol_field_mismatch]: 封装中缺少符号字段 'ki_keywords'
+    Local override; warning
+    @(109.3000 mm, 111.4000 mm): Footprint R24
+[footprint_symbol_field_mismatch]: 封装中缺少符号字段 'ki_keywords'
+    Local override; warning
+    @(98.5000 mm, 113.3000 mm): Footprint R26
+[footprint_symbol_field_mismatch]: 封装中缺少符号字段 'ki_keywords'
+    Local override; warning
+    @(97.3000 mm, 110.4000 mm): Footprint R27
+[footprint_symbol_field_mismatch]: 封装中缺少符号字段 'ki_keywords'
+    Local override; warning
+    @(98.5000 mm, 110.4000 mm): Footprint R28
+[footprint_symbol_field_mismatch]: 封装中缺少符号字段 'ki_keywords'
+    Local override; warning
+    @(92.4000 mm, 107.6000 mm): Footprint R29
+[footprint_symbol_field_mismatch]: 封装中缺少符号字段 'ki_keywords'
+    Local override; warning
+    @(95.3000 mm, 108.1000 mm): Footprint R30
+[footprint_symbol_field_mismatch]: 封装中缺少符号字段 'ki_keywords'
+    Local override; warning
+    @(107.3000 mm, 108.5000 mm): Footprint S1
+[footprint_symbol_field_mismatch]: 封装中缺少符号字段 'ki_keywords'
+    Local override; warning
+    @(101.7000 mm, 111.4500 mm): Footprint TP1
+[footprint_symbol_field_mismatch]: 封装中缺少符号字段 'ki_keywords'
+    Local override; warning
+    @(103.9000 mm, 111.4500 mm): Footprint TP2
+[footprint_symbol_field_mismatch]: 封装中缺少符号字段 'ki_keywords'
+    Local override; warning
+    @(114.6000 mm, 107.3000 mm): Footprint TP3
+[footprint_symbol_field_mismatch]: 封装中缺少符号字段 'ki_keywords'
+    Local override; warning
+    @(100.6500 mm, 88.9000 mm): Footprint U1
+[footprint_symbol_field_mismatch]: 封装中缺少符号字段 'ki_keywords'
+    Local override; warning
+    @(102.4000 mm, 100.5000 mm): Footprint U2
+[footprint_symbol_field_mismatch]: 封装中缺少符号字段 'ki_keywords'
+    Local override; warning
+    @(95.2200 mm, 113.2000 mm): Footprint U3
+[footprint_symbol_field_mismatch]: 封装中缺少符号字段 'ki_keywords'
+    Local override; warning
+    @(92.1000 mm, 110.3000 mm): Footprint U4
+[footprint_symbol_field_mismatch]: 封装中缺少符号字段 'ki_keywords'
+    Local override; warning
+    @(88.2000 mm, 103.0000 mm): Footprint U6
+[footprint_symbol_field_mismatch]: 封装中缺少符号字段 'ki_keywords'
+    Local override; warning
+    @(92.9000 mm, 95.0000 mm): Footprint U7
+[footprint_symbol_field_mismatch]: 封装中缺少符号字段 'ki_keywords'
+    Local override; warning
+    @(92.9000 mm, 99.5000 mm): Footprint U8
+[footprint_symbol_field_mismatch]: 封装中缺少符号字段 'private'
+    Local override; warning
+    @(110.6000 mm, 101.8500 mm): Footprint Y1
+
+** Ignored checks **
+    - Track endpoint not centered on via
+    - Tuning profile track geometries
+    - Footprint doesn't match symbol's footprint filters
+    - NPTH inside courtyard
+
+** End of Report **

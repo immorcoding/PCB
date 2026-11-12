@@ -61,6 +61,24 @@ ReturnPath 由 kicad-happy 的回流路径分析覆盖。
 在测试板上放置故意违规的走线/过孔，确认触发：90° 拐角、PWR 线 0.13 mm 过细、信号线 1.0 mm 过粗、过孔孔径 0.2 mm 过小；45° 拐弯和 0.13 mm 信号线不误报；`+3V3` 自动归入 PWR。
 铺铜后在焊盘外 0.15 mm 处 8 方向取样：插件焊盘为辐条（花焊盘），贴片焊盘四周全铜；去掉规则文件后贴片焊盘变回 KiCad 默认的花焊盘。
 
+## 工程级覆盖：嘉立创四层板
+
+首个例子：`steval_fcu001v2/`（JLC04161H-3313，1.6 mm，2026-11-12）。在双层板的覆盖值上再改下面几项。
+
+| 项目 | 双层板的值 | 四层板的值 | 原因 | 改哪里 |
+|---|---|---|---|---|
+| 过孔下限 | 0.3 / 0.6 mm | 0.2 / 0.45 mm（默认仍用 0.3 / 0.6） | 0.5 mm 间距 QFN 的引脚要换层时，相邻两根 0.15 mm 走线之间放不下 0.6 mm 过孔（需要中心距 0.502 mm，只有 0.5 mm）；0.45 mm 的可以排成交错的两三排 | `.kicad_pro` 的 `min_via_diameter` / `min_through_hole_diameter` / `min_via_annular_width` + `.kicad_dru` 的 `via_size`、`hole_range` |
+| 孔径上限 | 3.048 mm | 3.3 mm | M3 安装孔是 3.2 mm | `.kicad_dru` 的 `hole_range` |
+| USB2 线宽/间距 | 0.2 / 0.15 mm，不控阻抗 | 0.15 / 0.15 mm | 按 IPC-2141 公式，L1 对 L2（0.0994 mm 半固化片，Er 4.1）约 88 Ω。叠层数据没在嘉立创计算器上核对 | `.kicad_pro` 的 USB2 网络类 + `usb2_width` |
+| USB2 对内等长 | `(constraint skew (max 0.5mm))` | 加 `(within_diff_pairs)` | 不加的话，同一网络类里的两对差分线（保护器件两侧各一对）会互相比较长度 | `.kicad_dru` 的 `usb2_skew` |
+
+已知陷阱（四层板上新踩的）：
+
+- **网络类通配符只认 `*`**：`*MOTOR?_N`、`*USB_D[+-]` 这类写法不报错也不匹配，网络留在 Default 类。表现是 1 mm 的电机线被 `signal_width` 报过宽、USB 的等长规则不触发。逐个网络名写。
+- **`VBAT*` 会把 `VBAT_SENSE` 归进 PWR**：采样线也按 PWR 的 0.1524 mm 下限检查。
+- **0.5 mm 间距 LGA 的阻焊桥**：阻焊扩展 0.05 mm 时焊盘间只剩 0.05 mm，低于 0.08 mm 下限，每个焊盘对报一条 `solder_mask_bridge`。给这些封装打开"允许阻焊桥"（`fp.SetAllowSolderMaskBridges(True)`），代价是每个封装多一条 `lib_footprint_mismatch`。
+- **封装自带的禁布区**：`RF_Module:ST_SPBTLE` 带一个 12 × 12 mm 的四层禁布区，比外框大，布局时外框不重叠也会报 `items_not_allowed`。`scripts/via_spots.py` 不看封装里的禁布区。
+
 ## 工程级覆盖：嘉立创双层板
 
 模板保留 AD 原值；用嘉立创双层板的工程在自己的三个文件里覆盖下面几项（首个例子：`stm32f411_minsys/`，2026-11-12）。

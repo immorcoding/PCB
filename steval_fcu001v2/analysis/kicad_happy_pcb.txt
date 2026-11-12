@@ -1,0 +1,117 @@
+Warning: cannot load schematic analysis: Expecting value: line 1 column 1 (char 0)
+=== Design Analysis [stage: pre_fab] ===
+
+--- assembly ---
+  [1] INFO FD-001: No fiducials on B.Cu (8 SMD components) (finest pad dim 1.50mm — coarse pitch only)
+      Detail: B.Cu has 0 fiducial(s) but 8 SMD components. Assembly machines need >= 3 fiducials for accurate placement.
+      Fix:    Add fiducial markers for pick-and-place alignment (3 per side with SMD).
+      Stages: pre_fab
+  [2] ERROR FD-001: No fiducials on F.Cu (86 SMD components) (finest pad dim 0.25mm — BGA/fine-pitch QFN present)
+      Detail: F.Cu has 0 fiducial(s) but 86 SMD components. Assembly machines need >= 3 fiducials for accurate placement.
+      Fix:    Add fiducial markers for pick-and-place alignment (3 per side with SMD).
+      Stages: pre_fab
+
+--- current_capacity ---
+  [3] WARNING CC-002: Narrow signal: /BLE_CS min 0.15mm
+      Detail: Signal net /BLE_CS has narrow traces: min 0.15mm across 5 segments.
+      Fix:    Widen trace or verify signal integrity requirements.
+      Stages: layout, pre_fab
+  [4] WARNING CC-002: Narrow signal: /BLE_IRQ min 0.15mm
+      Detail: Signal net /BLE_IRQ has narrow traces: min 0.15mm across 11 segments.
+      Fix:    Widen trace or verify signal integrity requirements.
+      Stages: layout, pre_fab
+  [5] WARNING CC-002: Narrow signal: /BLE_RSTN min 0.15mm
+      Detail: Signal net /BLE_RSTN has narrow traces: min 0.15mm across 5 segments.
+      Fix:    Widen trace or verify signal integrity requirements.
+      Stages: layout, pre_fab
+  [6] WARNING CC-002: Narrow signal: /I2C2_SCL min 0.15mm
+      Detail: Signal net /I2C2_SCL has narrow traces: min 0.15mm across 12 segments.
+      Fix:    Widen trace or verify signal integrity requirements.
+      Stages: layout, pre_fab
+  [7] WARNING CC-002: Narrow signal: /I2C2_SDA min 0.15mm
+      Detail: Signal net /I2C2_SDA has narrow traces: min 0.15mm across 13 segments.
+      Fix:    Widen trace or verify signal integrity requirements.
+      Stages: layout, pre_fab
+  [8] WARNING CC-002: Narrow signal: /LED1 min 0.15mm
+      Detail: Signal net /LED1 has narrow traces: min 0.15mm across 9 segments.
+      Fix:    Widen trace or verify signal integrity requirements.
+      Stages: layout, pre_fab
+  [9] WARNING CC-002: Narrow signal: /LPS22HH_CS min 0.15mm
+      Detail: Signal net /LPS22HH_CS has narrow traces: min 0.15mm across 12 segments.
+      Fix:    Widen trace or verify signal integrity requirements.
+      Stages: layout, pre_fab
+  [10] WARNING CC-002: Narrow signal: /MOTOR1 min 0.15mm
+      Detail: Signal net /MOTOR1 has narrow traces: min 0.15mm across 64 segments.
+      Fix:    Widen trace or verify signal integrity requirements.
+      Stages: layout, pre_fab
+  [11] WARNING CC-002: Narrow signal: /MOTOR2 min 0.15mm
+      Detail: Signal net /MOTOR2 has narrow traces: min 0.15mm across 43 segments.
+      Fix:    Widen trace or verify signal integrity requirements.
+      Stages: layout, pre_fab
+  [12] WARNING CC-002: Narrow signal: /MOTOR3 min 0.15mm
+      Detail: Signal net /MOTOR3 has narrow traces: min 0.15mm across 40 segments.
+      Fix:    Widen trace or verify signal integrity requirements.
+      Stages: layout, pre_fab
+  [13] WARNING CC-002: Narrow signal: /S1_CLK min 0.15mm
+      Detail: Signal net /S1_CLK has narrow traces: min 0.15mm across 5 segments.
+      Fix:    Widen trace or verify signal integrity requirements.
+      Stages: layout, pre_fab
+  [14] WARNING CC-002: Narrow signal: /S1_MISO min 0.15mm
+      Detail: Signal net /S1_MISO has narrow traces: min 0.15mm across 5 segments.
+      Fix:    Widen trace or verify signal integrity requirements.
+      Stages: layout, pre_fab
+  [15] WARNING CC-002: Narrow signal: /S1_MOSI min 0.15mm
+      Detail: Signal net /S1_MOSI has narrow traces: min 0.15mm across 5 segments.
+      Fix:    Widen trace or verify signal integrity requirements.
+      Stages: layout, pre_fab
+  [16] WARNING CC-002: Narrow signal: /SWCLK min 0.15mm
+      Detail: Signal net /SWCLK has narrow traces: min 0.15mm across 26 segments.
+      Fix:    Widen trace or verify signal integrity requirements.
+      Stages: layout, pre_fab
+  [17] WARNING CC-002: Narrow signal: /SWDIO min 0.15mm
+      Detail: Signal net /SWDIO has narrow traces: min 0.15mm across 18 segments.
+      Fix:    Widen trace or verify signal integrity requirements.
+      Stages: layout, pre_fab
+  [18] WARNING CC-002: Narrow signal: /TIM2_CH4 min 0.15mm
+      Detail: Signal net /TIM2_CH4 has narrow traces: min 0.15mm across 15 segments.
+      Fix:    Widen trace or verify signal integrity requirements.
+      Stages: layout, pre_fab
+  [19] WARNING CC-002: Narrow signal: /USART1_RX min 0.15mm
+      Detail: Signal net /USART1_RX has narrow traces: min 0.15mm across 15 segments.
+      Fix:    Widen trace or verify signal integrity requirements.
+      Stages: layout, pre_fab
+  [20] WARNING CC-002: Narrow signal: /USB_D+ min 0.15mm
+      Detail: Signal net /USB_D+ has narrow traces: min 0.15mm across 19 segments.
+      Fix:    Widen trace or verify signal integrity requirements.
+      Stages: layout, pre_fab
+  [21] WARNING CC-002: Narrow signal: /USB_D- min 0.15mm
+      Detail: Signal net /USB_D- has narrow traces: min 0.15mm across 7 segments.
+      Fix:    Widen trace or verify signal integrity requirements.
+      Stages: layout, pre_fab
+  [22] WARNING CC-002: Narrow signal: /USB_MONITOR min 0.15mm
+      Detail: Signal net /USB_MONITOR has narrow traces: min 0.15mm across 21 segments.
+      Fix:    Widen trace or verify signal integrity requirements.
+      Stages: layout, pre_fab
+  [23] INFO CC-DET: Power net +BATT: 0.3mm min trace
+      Detail: Power/ground net +BATT: min trace 0.3mm, max 0.5mm, 16 segments.
+      Stages: layout, pre_fab
+  [24] INFO CC-DET: Power net /USBLC_VBUS: 0.15mm min trace
+      Detail: Power/ground net /USBLC_VBUS: min trace 0.15mm, max 0.2mm, 4 segments.
+      Stages: layout, pre_fab
+  [25] INFO CC-DET: Power net GND: 0.2mm min trace
+      Detail: Power/ground net GND: min trace 0.2mm, max 0.5mm, 36 segments.
+      Stages: layout, pre_fab
+  [26] INFO CC-DET: Power net VBUS: 0.3mm min trace
+      Detail: Power/ground net VBUS: min trace 0.3mm, max 0.4mm, 17 segments.
+      Stages: layout, pre_fab
+  [27] INFO CC-DET: Power net VDD: 0.2mm min trace
+      Detail: Power/ground net VDD: min trace 0.2mm, max 0.4mm, 52 segments.
+      Stages: layout, pre_fab
+
+--- testability ---
+  [28] WARNING TE-001: Test point coverage: 3/72 nets (4%)
+      Detail: 3 of 72 signal nets have test points (4% coverage).
+      Fix:    Add test points to improve ICT/flying probe coverage.
+      Stages: pre_fab
+
+Total: 28 (1 error, 21 warnings, 6 info)

@@ -175,6 +175,14 @@ def main():
         if (fp.GetLayer() == pcbnew.B_Cu) != bool(side):
             fp.Flip(fp.GetPosition(), pcbnew.FLIP_DIRECTION_TOP_BOTTOM)
         fp.SetOrientationDegrees(rot)
+        if ref in ("R14", "R15", "R18", "R19"):      # not fitted, as on the schematic
+            fp.SetDNP(True)
+        if ref in ("U7", "U8", "Q1", "Q2", "Q3", "Q4"):
+            # 0.5 mm-pitch LGA pads and the FETs' 0.65 mm-pitch source / gate pads: at 0.05 mm
+            # mask expansion the web between pads is 0.05 mm, below the 0.08 mm minimum, so the
+            # fab opens the pads as a group anyway. Say so here instead of carrying 24
+            # solder_mask_bridge errors.
+            fp.SetAllowSolderMaskBridges(True)
 
     # Do this BEFORE removing anything: after a board.Remove(), pcbnew hands back
     # untyped objects from its collections and touching them fails or crashes.
