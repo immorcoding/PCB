@@ -5,7 +5,7 @@
 - 来源：`ref/steval-fcu001v2-schematic.pdf`（ST schematic pack Rev 2，2024-06），同目录有 BOM、data brief、UM2958。
 - 生成：`sh scripts/sch_build.sh steval_fcu001v2 <输出目录>`。位号沿用 ST 的（CN1、P1–P8、LD1–LD3、S1、BT1），方便对照。
 - 画法：每个引脚一段短线加网络标号或电源符号，没有长连线。连接关系以导出的网表为准。
-- 板子：嘉立创四层 JLC04161H-3313，1.6 mm，44 × 40 mm，器件在顶层，只有第二组电机焊盘在底层。规则覆盖写在 `steval_fcu001v2.kicad_dru` 开头。
+- 板子：嘉立创四层 JLC04161H-3313，1.6 mm，40 × 40 mm，器件在顶层，只有第二组电机焊盘在底层。规则覆盖写在 `steval_fcu001v2.kicad_dru` 开头。
 - 布局：`place.py`（坐标表），示意图 `placement.png`。还没有走线。
 - 各层用途（2026-11-12 和用户定）：L1 信号和器件，L2 整层地，L3 电源层（`+BATT` 和 `VDD` 分割），L4 信号加铺地。
 
