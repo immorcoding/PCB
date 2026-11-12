@@ -165,7 +165,8 @@ def mcu_core():
 def usb_charger():
     # ---- USB pair, top layer only, 0.15 / 0.15 over the In1 ground plane.
     # Heading west out of pins 32/33 D- is the northern trace, so after the turn south it is
-    # the western one and reaches U3.3 by passing north of U3.1/U3.2. No crossing anywhere.
+    # the western one. Below the charger caps the pair steps west and splits round U3.2 (GND),
+    # D+ dropping into U3.1 and D- into U3.3; the ground via for U3.2 sits between them.
     W = 0.15
     p32, p33 = pad("U2", 32), pad("U2", 33)
     XP, XM = -4.15, -4.45            # first southward run, west of C4 and its vias
@@ -178,11 +179,13 @@ def usb_charger():
     bumps = []
     for y0 in (5.9, 7.1, 8.3):
         bumps += [(LP, y0), (LP + 0.5, y0 + 0.5), (LP + 0.5, y0 + 0.6), (LP, y0 + 1.1)]
-    T("/USB_D+", W, [p33, a, b, c, d] + bumps + [(LP, 11.95), to_x((LP, 11.95), SW, u1[0])])
+    T("/USB_D+", W, [p33, a, b, c, d] + bumps + [(LP, 11.6), to_x((LP, 11.6), SW, u1[0]), u1])
     a = (XM + 0.3, p32[1]); b = (XM, p32[1] + 0.3)
     c = (XM, 5.12); d = to_x(c, SE, LM)
-    e = (LM, 11.82); f = to_y(e, SW, 12.3)
-    T("/USB_D-", W, [p32, a, b, c, d, e, f, (u3[0] + 0.15, 12.3), (u3[0], 12.45), u3])
+    e = (LM, 10.6)
+    T("/USB_D-", W, [p32, a, b, c, d, e, to_x(e, SW, u3[0]), u3])
+    u2 = pad("U3", 2); v = (u2[0], 12.42)
+    T("GND", 0.2, [u2, v]); V("GND", v, *SMALL)
     # connector side: the two traces step outward to let the U3.5 via sit between them
     u4, u6, c2, c3 = pad("U3", 4), pad("U3", 6), pad("CN1", 2), pad("CN1", 3)
     T("/USB_CONN_D-", W, [u4, (u4[0] - 0.15, u4[1] + 0.15), (u4[0] - 0.15, 14.5),
@@ -204,10 +207,11 @@ def usb_charger():
     # branches leave from pad centres (a T on a bare track trips the corner rule)
     T("VBUS", 0.3, [(d51[0], y), to_x((d51[0], y), NW, -7.85), (-7.85, 12.2), to_y((-7.85, 12.2), NE, 11.55), (-7.2, u44[1])])
     c141, c151 = pad("C14", 1), pad("C15", 1)
-    T("VBUS", 0.4, [u44, c141])
+    v1 = (-5.78, u44[1]); V("VBUS", v1)
+    T("VBUS", 0.4, [u44, v1])
+    T("VBUS", 0.4, [v1, to_x(v1, NE, c141[0]), c141])
     T("VBUS", 0.4, [c141, c151])
     # R29 (charge LED) and R27 (USB monitor divider) take VBUS on the bottom layer
-    v1 = (-5.78, u44[1]); V("VBUS", v1)
     r291, r271 = pad("R29", 1), pad("R27", 1)
     v2 = (r291[0] + 0.8, r291[1]); T("VBUS", 0.3, [r291, v2]); V("VBUS", v2)
     T("VBUS", 0.3, [v1, (v1[0], v2[1] + 0.51), v2], B)
@@ -216,7 +220,7 @@ def usb_charger():
 
     # ---- charger
     u45, r301 = pad("U4", 5), pad("R30", 1)
-    T("/CHG_PROG", 0.2, [u45, (-5.9, u45[1]), to_y((-5.9, u45[1]), NE, r301[1]), r301])
+    T("/CHG_PROG", 0.2, [u45, (r301[0] - (u45[1] - r301[1]), u45[1]), r301])
     u41, l31 = pad("U4", 1), pad("LD3", 1)
     a = (-9.9, u41[1])
     T("/CHG_STAT", 0.2, [u41, a, to_x(a, NW, l31[0]), l31])
@@ -462,7 +466,37 @@ def ble_misc():
     cap_vias("R23", (0.0, 0.8), None, "VDD")
 
 
-REGIONS = [mcu_core, mcu_fanout, usb_charger, leds, power_in, motors, sensors, ble_misc]
+# ====================================================================== fixes to autorouted nets
+# The autorouter branches off the middle of a track, which the corner rule reports as a
+# 90-degree T. The NRST branch is dropped (AUTO_DROP) and redone from a pad. One more is
+# left as it is: MOTOR4 on B.Cu at (9.2, 11.7), the tap to the DNP link R19 - both ways
+# of moving it to a via run into the NRST track next to it.
+AUTO_DROP = {
+    ("/NRST", (9.35, 5.85), (9.4, 5.8)), ("/NRST", (9.4, 5.8), (10.2, 5.8)),
+    ("/MOTOR3", (-12.5, 8.7), (-12.5, 10.0)),
+}
+
+
+def auto_fixes():
+    # NRST to TP3: leaves from the switch pad and joins the autorouted run at (10.2, 5.8)
+    T("/NRST", 0.2, [(9.35, 7.7), (10.2, 6.85), (10.2, 5.8)])
+    # MOTOR3 turned 90 degrees at its via: leave the via at 45 degrees instead
+    T("/MOTOR3", 0.2, [(-12.5, 8.7), (-12.8, 9.0), (-12.8, 9.7), (-12.5, 10.0)], B)
+
+
+# ====================================================================== ground for stranded pads
+def gnd_stitch():
+    # F.Cu pour pieces that hung on surface-mount pads only (scripts/pour_islands.py),
+    # spots from scripts/via_spots.py: P8 / USB area, top right, R24, the switch.
+    for v in ((1.0, 16.3), (15.8, -7.1), (9.21, 12.5), (8.55, 9.3)):
+        V("GND", v)
+    # The switch's left ground pad is boxed in by NRST, MOTOR3 and the LED vias (a track to the
+    # right pad crosses MOTOR3, and MOTOR3 does not route with that track in place): one small
+    # via in the pad. It is a 0.9 x 1.0 mm hand-solder pad.
+    V("GND", (5.0, 9.6), *SMALL)                     # clear of I2C2_SDA passing under the pad on B.Cu
+
+
+REGIONS = [mcu_core, mcu_fanout, usb_charger, leds, power_in, motors, sensors, ble_misc, auto_fixes, gnd_stitch]
 AUTO_SKIP = set()        # nets whose autorouted copper is not replayed
 
 # ====================================================================== pours
@@ -537,6 +571,9 @@ def main():
         import json
         for o in json.load(open(auto, encoding="utf-8")):
             if o["net"] in skip:
+                continue
+            ident = (o["net"], tuple(o["at"])) if o["k"] == "via" else (o["net"], tuple(o["a"]), tuple(o["b"]))
+            if ident in AUTO_DROP or (o["k"] == "seg" and (ident[0], ident[2], ident[1]) in AUTO_DROP):
                 continue
             n_auto += 1
             if o["k"] == "seg":
