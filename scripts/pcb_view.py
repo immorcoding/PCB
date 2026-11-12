@@ -71,6 +71,14 @@ def main(path, out, rats=True, scale=36):
                 d.rectangle([c[0] - w, c[1] - h, c[0] + w, c[1] + h], fill=col + (200,))
             if p.GetNetname() and p.GetNetname() != "GND":
                 nets.setdefault(p.GetNetname(), []).append(c)
+    for layer, col in ((pcbnew.B_Cu, (40, 90, 220, 170)), (pcbnew.F_Cu, (210, 40, 40, 200))):
+        for t in b.GetTracks():
+            if t.Type() == pcbnew.PCB_TRACE_T and t.GetLayer() == layer:
+                d.line([X(t.GetStart()), X(t.GetEnd())], fill=col, width=max(1, int(mm(t.GetWidth()) * scale)))
+    for t in b.GetTracks():
+        if t.Type() == pcbnew.PCB_VIA_T:
+            c = X(t.GetPosition()); r = 0.3 * scale
+            d.ellipse([c[0] - r, c[1] - r, c[0] + r, c[1] + r], fill=(30, 30, 30, 255), outline=(240, 200, 0))
     if rats:
         for name, pts in nets.items():
             pts = list(dict.fromkeys(pts))

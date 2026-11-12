@@ -38,11 +38,8 @@ PLACE = {
     "U2": (11.7, -4.95, 0),
     "C2": (14.7, -4.95, 270),
     "C3": (16.4, -4.95, 270),
-    # bottom-left row: power LED, bulk cap, VDD36 cap
-    "D2": (8.0, 6.4, 0),
-    "R3": (11.2, 6.4, 180),
-    "C4": (14.4, 6.4, 0),
-    "C7": (21.3, 6.4, 180),           # VDD pin 36 (bottom corner)
+    # VDD36 cap at the bottom corner (clear of the USB tap to J4 pin 12)
+    "C7": (22.4, 6.5, 180),
     # left corner of the MCU
     "R5": (13.3, -0.9, 0),            # PB2 pull-down
     "C6": (16.8, -0.9, 180),          # VDD pin 24
@@ -56,15 +53,19 @@ PLACE = {
     # row 2
     "D3": (34.9, 2.7, 0),             # +3V3 -> VBAT
     "R6": (38.2, 2.7, 0),
-    # row 3: VDDA filter (FB1 + 1uF), feeds C9 through a bottom-layer hop
-    "FB1": (34.9, 4.6, 0),
-    "C8": (38.2, 4.6, 0),
+    # row 3: bulk cap and power LED (3V3 is on hand here)
+    "C4": (34.9, 4.6, 180),
+    "R3": (38.2, 4.6, 0),
+    "D2": (38.2, 6.3, 0),
+    # VDDA filter, upper right; +3.3VA runs back to C9 on F.Cu above the crystal
+    "FB1": (36.6, -5.5, 180),
+    "C8": (36.6, -7.2, 0),
     # HSE, hugging pins 5/6. Y1's 1-3 diagonal runs parallel to the MCU edge, so
     # both crystal pads are the same distance out; each load cap sits on its trace.
-    "C12": (27.0, -5.5, 180),         # OSC_OUT: pin 6 -> C12 -> Y1.3
-    "Y1": (30.3, -4.4, 90),
-    "C11": (33.7, -3.3, 0),           # OSC_IN: pin 5 -> Y1.1 -> C11
-    "C9": (27.0, -7.1, 0),            # VDDA 100nF, pin 9
+    "C12": (28.1, -5.9, 90),          # OSC_OUT: pin 6 -> C12 -> Y1.3
+    "Y1": (30.8, -4.4, 90),
+    "C11": (34.2, -3.3, 0),           # OSC_IN: pin 5 -> Y1.1 -> C11
+    "C9": (26.5, -6.5, 90),           # VDDA 100nF, pin 9; leaves lanes for PA0..2 on its left
     "C13": (39.0, -5.4, 270),         # NRST cap, at the button / header pin
     # reset / boot
     "SW1": (SWX, -3.3, 90),
@@ -82,14 +83,14 @@ MODELS = {
     "J1": "${KICAD10_3DMODEL_DIR}/Connector_USB.3dshapes/USB_C_Receptacle_GCT_USB4105-xx-A_16P_TopMnt_Horizontal.step",
 }
 
-XK = (28.5, -6.6, 32.1, -2.2)         # crystal keep-out on B.Cu: x1, y1, x2, y2
+XK = (29.0, -6.6, 32.6, -2.2)         # crystal keep-out on B.Cu: x1, y1, x2, y2
 
 # (label, x1, y1, x2, y2) in the local frame
 ZONES = [
     ("USB-C IN", X0 + 0.3, -5.6, 5.8, 5.6),
     ("5V -> 3V3", 5.6, -6.9, 17.4, -3.3),
     ("MCU + DECOUPLING", 15.0, -8.4, 33.0, 8.4),
-    ("HSE 8MHz", 25.3, -8.1, 35.4, -2.3),
+    ("HSE 8MHz", 25.6, -8.2, 35.9, -2.2),
     ("RST/BOOT", 41.3, -6.6, 45.1, 6.6),
     ("SWD", 45.2, -5.8, X1 - 0.2, 5.8),
 ]
@@ -126,6 +127,21 @@ def main():
             fp.Models().clear()
             fp.Add3DModel(m)
 
+    # Do this BEFORE removing anything: after a board.Remove(), pcbnew hands back
+    # untyped objects from its collections and touching them fails or crashes.
+    # B.Cu under the crystal: GND pour only, no tracks or vias
+    z = next((k for k in b.Zones() if k.GetZoneName() == "XTAL_KEEPOUT"), None)
+    if z is None:
+        z = pcbnew.ZONE(b)
+        b.Add(z)
+    else:
+        z.Outline().RemoveAllContours()
+    z.SetIsRuleArea(True); z.SetZoneName("XTAL_KEEPOUT"); z.SetLayer(pcbnew.B_Cu)
+    z.SetDoNotAllowTracks(True); z.SetDoNotAllowVias(True); z.SetDoNotAllowPads(False)
+    z.SetDoNotAllowFootprints(False); z.SetDoNotAllowZoneFills(False)
+    for x, y in ((XK[0], XK[1]), (XK[2], XK[1]), (XK[2], XK[3]), (XK[0], XK[3])):
+        z.AppendCorner(P(x, y), -1)
+
     for d in list(b.GetDrawings()):
         if d.GetLayer() in (pcbnew.Edge_Cuts, pcbnew.Cmts_User):
             b.Remove(d)
@@ -157,18 +173,6 @@ def main():
         t.SetTextThickness(pcbnew.FromMM(0.1))
         t.SetHorizJustify(pcbnew.GR_TEXT_H_ALIGN_LEFT)
         t.SetPosition(P(x1 + 0.2, y1 - 0.6)); b.Add(t)
-
-    # B.Cu under the crystal: GND pour only, no tracks or vias
-    for z in list(b.Zones()):
-        if z.GetZoneName() == "XTAL_KEEPOUT":
-            b.Remove(z)
-    z = pcbnew.ZONE(b)
-    z.SetIsRuleArea(True); z.SetZoneName("XTAL_KEEPOUT"); z.SetLayer(pcbnew.B_Cu)
-    z.SetDoNotAllowTracks(True); z.SetDoNotAllowVias(True); z.SetDoNotAllowPads(False)
-    z.SetDoNotAllowFootprints(False); z.SetDoNotAllowZoneFills(False)
-    for x, y in ((XK[0], XK[1]), (XK[2], XK[1]), (XK[2], XK[3]), (XK[0], XK[3])):
-        z.AppendCorner(P(x, y), -1)
-    b.Add(z)
 
     pcbnew.SaveBoard(PCB, b)
     print(f"placed {len(PLACE)} parts, board {X1 - X0:.1f} x {2 * YE:.1f} mm")
