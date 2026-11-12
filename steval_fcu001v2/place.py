@@ -41,7 +41,7 @@ PLACE = {
 
     # ---- MCU and its supply caps
     "U2": (MX, MY, 180),
-    "C11": (MX - 2.1, MY - 5.3, 180), # VCAP1, pin 22
+    "C11": (MX - 2.4, MY - 5.3, 180), # VCAP1, pin 22; clear of the lane above pin 21
     "C3": (MX - 4.3, MY - 4.9, 180),  # VDD pin 24
     "C4": (MX - 5.4, MY + 2.75, 180), # VDD pin 36
     "C5": (MX + 3.0, MY + 5.2, 180),  # VDD pin 48; clear of the lane under pins 45/46
@@ -101,12 +101,12 @@ PLACE = {
     "LD3": (-10.4, 7.6, 0),
 
     # ---- status LEDs, lower left of the MCU (PB4 / PB5)
-    # straight below pins 40 / 41, cathode up. (Left of the MCU they sat in the only
+    # below the MCU's via fan-out, cathode to the right. (Left of the MCU they sat in the only
     # top-layer lane the USB pair can take from pins 32/33 down to U3.)
-    "LD2": (0.9, 6.9, 270),
-    "R21": (0.9, 9.4, 90),
-    "LD1": (2.5, 6.9, 270),
-    "R20": (2.5, 9.4, 90),
+    "R21": (0.1, 8.0, 0),
+    "LD2": (2.6, 8.0, 180),
+    "R20": (0.1, 9.6, 0),
+    "LD1": (2.6, 9.6, 180),
 
     # ---- SWD (bottom edge) and test points
     "P8": (4.8, YE - 3.73, 0),
@@ -177,6 +177,20 @@ def main():
 
     # Do this BEFORE removing anything: after a board.Remove(), pcbnew hands back
     # untyped objects from its collections and touching them fails or crashes.
+    # B.Cu under the crystal: GND pour only, no tracks or vias (In1/In2 there are planes anyway)
+    yx, yy = PLACE["Y1"][0], PLACE["Y1"][1]
+    z = next((k for k in b.Zones() if k.GetZoneName() == "XTAL_KEEPOUT"), None)
+    if z is None:
+        z = pcbnew.ZONE(b)
+        b.Add(z)
+    else:
+        z.Outline().RemoveAllContours()
+    z.SetIsRuleArea(True); z.SetZoneName("XTAL_KEEPOUT"); z.SetLayer(pcbnew.B_Cu)
+    z.SetDoNotAllowTracks(True); z.SetDoNotAllowVias(True); z.SetDoNotAllowPads(False)
+    z.SetDoNotAllowFootprints(False); z.SetDoNotAllowZoneFills(False)
+    for x, y in ((yx - 1.6, yy - 2.0), (yx + 1.6, yy - 2.0), (yx + 1.6, yy + 2.0), (yx - 1.6, yy + 2.0)):
+        z.AppendCorner(P(x, y), -1)
+
     for d in list(b.GetDrawings()):
         if d.GetLayer() in (pcbnew.Edge_Cuts, pcbnew.Cmts_User):
             b.Remove(d)

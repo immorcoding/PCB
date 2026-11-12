@@ -9,7 +9,9 @@
 #
 # PROJECT OVERRIDES for JLCPCB 4-layer, JLC04161H-3313, 1.6 mm (differs from templates/common):
 #   signal_width min 0.1016 -> 0.127 (kept at the 2-layer value; JLC multilayer allows less)
-#   via_size     hole min 0.3048 -> 0.3, diameter min 0.4064 -> 0.6
+#   via_size     hole min 0.3048 -> 0.2, diameter min 0.4064 -> 0.45. Vias are 0.6 / 0.3
+#     everywhere except the MCU pin fan-out, where 0.45 / 0.2 is the largest that fits
+#     between 0.5 mm-pitch pins (JLC multilayer limit; confirm the price tier when ordering).
 #   USB2 net class (USB_D+/-, USB_CONN_D+/-): 0.15 mm, pair gap 0.15 mm, skew <= 0.5 mm
 #     -> rules usb2_width / usb2_gap / usb2_skew. About 88 ohm differential on F.Cu over
 #     In1.Cu by the IPC-2141 formula, assuming 0.0994 mm prepreg with Er 4.1 (stackup
@@ -38,12 +40,12 @@
 
 # --- Holes and vias (AD HoleSize 10-120 mil; RoutingVias hole 12-30, dia 16-50 mil) ---
 (rule "hole_range"
-  (constraint hole_size (min 0.254mm) (max 3.3mm)))
+  (constraint hole_size (min 0.2mm) (max 3.3mm)))
 
 (rule "via_size"
   (condition "A.Type == 'Via'")
-  (constraint hole_size (min 0.3mm) (max 0.762mm))
-  (constraint via_diameter (min 0.6mm) (max 1.27mm)))
+  (constraint hole_size (min 0.2mm) (max 0.762mm))
+  (constraint via_diameter (min 0.45mm) (max 1.27mm)))
 
 # --- Corners: no 90-degree or acute bends (interior angle >= 135) ---
 # Also reports 90-degree T-junctions; triage those case by case.

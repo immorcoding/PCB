@@ -1,6 +1,6 @@
 """Hand routing of steval_fcu001v2, region by region, plus the copper pours.
 
-    D:\\KiCad\\bin\\python.exe steval_fcu001v2\\route.py [--keep] [--no-pour OUT.kicad_pcb]
+    D:\\KiCad\\bin\\python.exe steval_fcu001v2\\route.py [--no-pour OUT.kicad_pcb [--skip NET ...]]
 
 Coordinates are in the same local frame as place.py (mm, origin at the board
 centre, y down). Every polyline is checked before it is written: segments run
@@ -43,8 +43,8 @@ def T(name, width, pts, layer=F):
     OPS.append(("T", name, width, pts, layer))
 
 
-def V(name, pt):
-    OPS.append(("V", name, (round(pt[0], 4), round(pt[1], 4))))
+def V(name, pt, dia=0.6, drill=0.3):
+    OPS.append(("V", name, (round(pt[0], 4), round(pt[1], 4)), dia, drill))
 
 
 def to_y(p, d, y):
@@ -114,7 +114,7 @@ def mcu_core():
     T("/OSC_IN", 0.254, [y1, (y1[0], c8[1] - (y1[0] - c8[0])), c8])
     # crystal can and load-cap grounds
     c62, y4 = pad("C6", 2), pad("Y1", 4)
-    g = (c62[0] + 0.57, c62[1] + 0.57)
+    g = (c62[0], c62[1] + 0.8)                       # straight down: clear of the crystal keep-out
     T("GND", 0.3, [c62, g]); V("GND", g)
     c82 = pad("C8", 2)
     T("GND", 0.3, [c82, (c82[0], y4[1] + 0.5)])                      # C8.2 - Y1.4
@@ -133,7 +133,7 @@ def mcu_core():
 
     p1, c61 = pad("U2", 1), pad("C6", 1)                             # VBAT
     T("VDD", 0.25, [p1, (6.6, p1[1]), (6.85, c61[1]), c61])
-    cap_vias("C6", (0.0, 0.78), None, "VDD")
+    cap_vias("C6", (-0.55, 0.55), None, "VDD")       # down-left: x = 7.45 is the NRST lane on B.Cu
 
     p48, c51 = pad("U2", 48), pad("C5", 1)                           # VDD pin 48
     T("VDD", 0.25, [p48, (p48[0], 4.8), to_y((p48[0], 4.8), SE, 5.3), (c51[0] - 0.23, c51[1] - 0.1)])
@@ -152,7 +152,7 @@ def mcu_core():
     cap_vias("C3", (0.0, -0.8), (0.0, -0.8), "VDD")
 
     p22, c111 = pad("U2", 22), pad("C11", 1)                         # VCAP1
-    T("/VCAP1", 0.25, [p22, (p22[0], -4.3), (c111[0], -4.3 - (c111[0] - p22[0])), c111])
+    T("/VCAP1", 0.25, [p22, (p22[0], -4.3), (c111[0], -4.3 - abs(c111[0] - p22[0])), c111])
     cap_vias("C11", None, (0.0, -0.8), "/VCAP1")
 
     # ---- NRST: straight to a via (the crystal lanes block the top layer), bottom layer from there
@@ -248,17 +248,55 @@ def usb_charger():
 
 # ====================================================================== status LEDs
 def leds():
-    p40, p41 = pad("U2", 40), pad("U2", 41)
-    k2, k1 = pad("LD2", 1), pad("LD1", 1)
-    a = (p40[0], 5.6)
-    T("/LED2", 0.2, [p40, a, to_x(a, SW, k2[0]), k2])
-    a = (p41[0], 4.9)
-    T("/LED1", 0.2, [p41, a, to_x(a, SE, k1[0]), k1])
-    T("/LD2_A", 0.2, [pad("LD2", 2), pad("R21", 2)])
-    T("/LD1_A", 0.2, [pad("LD1", 2), pad("R20", 2)])
+    # the cathodes are reached from the MCU fan-out vias on the bottom layer
+    for led, r, name in (("LD2", "R21", "/LED2"), ("LD1", "R20", "/LED1")):
+        k = pad(led, 1); v = (4.15, k[1])
+        T(name, 0.2, [k, v]); V(name, v, *SMALL)
+        T(name.replace("LED", "LD") + "_A", 0.2, [pad(led, 2), pad(r, 2)])
     r211, r201 = pad("R21", 1), pad("R20", 1)
-    v = (r201[0] + 0.85, r201[1])                    # inside the In2 VDD island
+    T("VDD", 0.3, [r201, r211])
+    v = (r211[0] - 0.8, r211[1])                     # inside the In2 VDD island
     T("VDD", 0.3, [r211, v]); V("VDD", v)
+
+
+# ====================================================================== MCU pin fan-out, BLE bus
+SMALL = (0.45, 0.2)      # via size used only where a 0.6 mm via cannot sit between 0.5 mm-pitch pins
+
+
+def mcu_fanout():
+    W = 0.15
+    names = {37: "/SWCLK", 39: "/I2C2_SDA", 40: "/LED2", 41: "/LED1", 42: "/MOTOR1", 43: "/MOTOR2",
+             45: "/MOTOR3", 46: "/MOTOR4", 14: "/BLE_IRQ", 13: "/TIM2_CH4", 19: "/VBAT_SENSE", 21: "/I2C2_SCL"}
+    # bottom side: three staggered rows, so a via never has a neighbour's via beside it
+    rows = {37: 4.95, 39: 5.65, 40: 6.35, 41: 4.95, 42: 5.65, 43: 6.35, 45: 4.95, 46: 5.65}
+    # top side: the four pins that are not BLE lines
+    rows.update({14: -3.95, 13: -4.65, 19: -3.95, 21: -4.65})
+    for pin, y in rows.items():
+        p = pad("U2", pin); v = (p[0], y)
+        T(names[pin], 0.2 if pin == 19 else W, [p, v])                               # VBAT* is in the PWR class
+        if pin not in (37, 45):          # the autorouter took these two on from the stub on the top layer
+            V(names[pin], v, *SMALL)
+    # left side: USART and SWDIO drop to the bottom layer before the USB pair turns south
+    for pin, name, x in ((30, "/USART1_TX", -1.9), (31, "/USART1_RX", -2.6), (34, "/SWDIO", -1.9)):
+        p = pad("U2", pin); v = (x, p[1])
+        T(name, W, [p, v]); V(name, v, *SMALL)
+    # right side: pins 2 and 3, either side of the NRST lane (see ble_misc)
+    p3 = pad("U2", 3); v = (6.95, p3[1])
+    T("/USB_MONITOR", W, [p3, v]); V("/USB_MONITOR", v, *SMALL)
+    p2 = pad("U2", 2); v = (8.15, p2[1] - 0.15)
+    T("/LPS22HH_CS", W, [p2, (7.3, p2[1]), (7.45, v[1]), v]); V("/LPS22HH_CS", v, *SMALL)
+
+    # BLE SPI: top layer only, under the module (outside its antenna keep-out), no vias.
+    # Each line runs north from its pin, steps over to its own lane and turns east into its pad;
+    # the easternmost pin takes the southernmost pad, so nothing crosses.
+    bus = [(15, "/S1_CLK", 5.9, 7), (16, "/S1_MISO", 5.5, 8), (17, "/S1_MOSI", 5.1, 9),
+           (18, "/BLE_CS", 4.7, 10), (20, "/BLE_RSTN", 4.3, 11)]
+    for pin, name, lane, upad in bus:
+        p, u = pad("U2", pin), pad("U1", upad)
+        a = (p[0], -5.3)
+        b = to_x(a, NE, lane)
+        k = (u[0] - 0.4) - lane - 0.8                 # diagonal that ends 0.8 mm short of the pad end point
+        T(name, W, [p, a, b, (lane, u[1] + k), (lane + k, u[1]), (u[0] - 0.4, u[1])])
 
 
 # ====================================================================== battery in, LDO, divider
@@ -407,14 +445,15 @@ def ble_misc():
     T("GND", 0.4, [u16, v]); V("GND", v)
 
     # NRST: bottom layer from the via at pin 7 to the RC, then to the switch
+    # It runs down x = 7.45, between the USB_MONITOR via (west of it) and the LPS22HH_CS via
+    # (east of it), to a small via that just fits between the R22.2 and C10.1 pads.
     N1 = (6.95, pad("U2", 7)[1] - 0.1)
     r222, c101 = pad("R22", 2), pad("C10", 1)
-    N2 = (8.9, 5.1)
-    T("/NRST", 0.2, [(r222[0], 5.1), N2]); V("/NRST", N2)
-    T("/NRST", 0.2, [N1, (N1[0], N2[1] - (N2[0] - N1[0])), N2], B)
-    s = (9.35, 7.7); N3 = (10.25, 7.7)
-    T("/NRST", 0.2, [s, N3]); V("/NRST", N3)
-    T("/NRST", 0.2, [N2, (N2[0], N3[1] - (N3[0] - N2[0])), N3], B)
+    N2 = (7.45, 5.1)
+    T("/NRST", 0.2, [(r222[0], 5.1), (c101[0], 5.1)]); V("/NRST", N2, *SMALL)
+    T("/NRST", 0.2, [N1, to_x(N1, SE, N2[0]), N2], B)
+    a = (8.6, 5.1)
+    T("/NRST", 0.2, [(c101[0], 5.1), a, to_x(a, SE, 9.35), (9.35, 7.3)])          # C10.1 round to the switch
     T("/NRST", 0.2, [(5.25, 8.0), (5.75, 8.5), (8.85, 8.5), (9.35, 8.0)])   # the switch's two NRST pads
 
     # header / pull-up supplies inside the VDD island
@@ -423,7 +462,8 @@ def ble_misc():
     cap_vias("R23", (0.0, 0.8), None, "VDD")
 
 
-REGIONS = [mcu_core, usb_charger, leds, power_in, motors, sensors, ble_misc]
+REGIONS = [mcu_core, mcu_fanout, usb_charger, leds, power_in, motors, sensors, ble_misc]
+AUTO_SKIP = set()        # nets whose autorouted copper is not replayed
 
 # ====================================================================== pours
 # In2: +BATT everywhere, VDD island on top of it. (x, y) corners in the local frame.
@@ -471,19 +511,44 @@ def main():
             raise SystemExit(f"no net {name}")
         return n
 
+    lock = "--no-pour" in sys.argv       # the autorouter leaves KiCad-locked copper alone
     for op in OPS:
         if op[0] == "T":
             _, name, width, pts, layer = op
             for a, c in zip(pts, pts[1:]):
                 s = pcbnew.PCB_TRACK(board)
                 s.SetStart(P(a)); s.SetEnd(P(c)); s.SetWidth(pcbnew.FromMM(width))
-                s.SetLayer(layer); s.SetNet(net(name)); board.Add(s)
+                s.SetLayer(layer); s.SetNet(net(name)); s.SetLocked(lock); board.Add(s)
         else:
-            _, name, pt = op
+            _, name, pt, dia, drill = op
             v = pcbnew.PCB_VIA(board)
             v.SetPosition(P(pt)); v.SetViaType(pcbnew.VIATYPE_THROUGH)
-            v.SetWidth(pcbnew.F_Cu, pcbnew.FromMM(0.6)); v.SetDrill(pcbnew.FromMM(0.3))
-            v.SetLayerPair(F, B); v.SetNet(net(name)); board.Add(v)
+            v.SetWidth(pcbnew.F_Cu, pcbnew.FromMM(dia)); v.SetDrill(pcbnew.FromMM(drill))
+            v.SetLayerPair(F, B); v.SetNet(net(name)); v.SetLocked(lock); board.Add(v)
+
+    # the autorouter's nets, replayed from auto_tracks.json (see scripts/auto_tracks.py);
+    # nets listed in AUTO_SKIP have since been re-done by hand above
+    auto = os.path.join(HERE, "auto_tracks.json")
+    n_auto = 0
+    skip = set(AUTO_SKIP)
+    if "--skip" in sys.argv:               # nets about to be re-run through the autorouter
+        skip |= set(sys.argv[sys.argv.index("--skip") + 1:])
+    if os.path.isfile(auto):
+        import json
+        for o in json.load(open(auto, encoding="utf-8")):
+            if o["net"] in skip:
+                continue
+            n_auto += 1
+            if o["k"] == "seg":
+                s = pcbnew.PCB_TRACK(board)
+                s.SetStart(P(o["a"])); s.SetEnd(P(o["b"])); s.SetWidth(pcbnew.FromMM(o["w"]))
+                s.SetLayer(board.GetLayerID(o["layer"])); s.SetNet(net(o["net"])); s.SetLocked(lock); board.Add(s)
+            else:
+                v = pcbnew.PCB_VIA(board)
+                v.SetPosition(P(o["at"])); v.SetViaType(pcbnew.VIATYPE_THROUGH)
+                v.SetWidth(pcbnew.F_Cu, pcbnew.FromMM(o["d"])); v.SetDrill(pcbnew.FromMM(o["drill"]))
+                v.SetLayerPair(F, B); v.SetNet(net(o["net"])); v.SetLocked(lock); board.Add(v)
+    print("autorouter items replayed:", n_auto)
 
     out = PCB
     if "--no-pour" in sys.argv:            # copy for the autorouter: hand copper only, no pours
