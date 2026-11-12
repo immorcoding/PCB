@@ -31,9 +31,17 @@ if stale:
     for t in stale:
         board.Remove(t)
     # after a Remove(), pcbnew hands back untyped objects from its collections,
-    # so save and start again from a fresh load
-    pcbnew.SaveBoard(PCB, board)
-    board = pcbnew.LoadBoard(PCB)
+    # so save and start again from a fresh load. The stripped board goes to a
+    # side file (same stem, so the project rules are still found next to it),
+    # never over the project board.
+    import shutil, tempfile
+    tmpdir = tempfile.mkdtemp(prefix="route_")
+    for ext in (".kicad_pro", ".kicad_dru"):
+        shutil.copy(PCB[:-len(".kicad_pcb")] + ext, tmpdir)
+    stripped = os.path.join(tmpdir, os.path.basename(PCB))
+    pcbnew.SaveBoard(stripped, board)
+    board = pcbnew.LoadBoard(stripped)
+    shutil.rmtree(tmpdir, ignore_errors=True)
 
 PADS = {}
 for fp in board.GetFootprints():
