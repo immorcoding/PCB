@@ -44,17 +44,18 @@ PLACE = {
     "C11": (MX - 2.1, MY - 5.3, 180), # VCAP1, pin 22
     "C3": (MX - 4.3, MY - 4.9, 180),  # VDD pin 24
     "C4": (MX - 5.4, MY + 2.75, 180), # VDD pin 36
-    "C5": (MX + 2.5, MY + 5.2, 180),  # VDD pin 48
+    "C5": (MX + 3.0, MY + 5.2, 180),  # VDD pin 48; clear of the lane under pins 45/46
     "C6": (MX + 5.3, MY + 3.0, 0),    # VBAT pin 1
-    "C7": (MX + 5.1, MY - 1.15, 0),   # VDDA pin 9
+    "C7": (MX + 5.85, MY - 1.35, 0),  # VDDA pin 9; its VDD via sits between the pin and the cap
     # ---- HSE: OSC_IN (pin 5) runs between the two left pads to Y1.1, OSC_OUT (pin 6) to Y1.3
-    "Y1": (MX + 8.2, MY + 0.5, 90),
-    "C9": (MX + 7.35, MY - 2.7, 90),  # OSC_OUT load cap, above Y1.3
-    "C8": (MX + 9.05, MY + 3.7, 270), # OSC_IN load cap, below Y1.1
+    # Y1.3 is level with pin 6 so OSC_OUT runs straight and pins 7..12 stay free to leave
+    "Y1": (MX + 8.2, MY + 1.35, 90),
+    "C9": (MX + 7.35, MY - 1.8, 90),  # OSC_OUT load cap, above Y1.3
+    "C8": (MX + 7.9, MY + 4.05, 180), # OSC_IN load cap, below Y1.1
     # ---- reset
     "S1": (7.3, 8.5, 0),
-    "R22": (9.0, 5.6, 90),
-    "C10": (7.8, 5.6, 90),
+    "R22": (6.9, 5.6, 90),
+    "C10": (8.0, 5.6, 90),
 
     # ---- BLE module, antenna end at the top edge
     "U1": (BX, -YE + 8.9, 0),
@@ -100,10 +101,12 @@ PLACE = {
     "LD3": (-10.4, 7.6, 0),
 
     # ---- status LEDs, lower left of the MCU (PB4 / PB5)
-    "R20": (-6.5, 5.3, 0),
-    "LD1": (-3.9, 5.3, 180),
-    "R21": (-5.5, 7.0, 0),
-    "LD2": (-2.9, 7.0, 180),
+    # straight below pins 40 / 41, cathode up. (Left of the MCU they sat in the only
+    # top-layer lane the USB pair can take from pins 32/33 down to U3.)
+    "LD2": (0.9, 6.9, 270),
+    "R21": (0.9, 9.4, 90),
+    "LD1": (2.5, 6.9, 270),
+    "R20": (2.5, 9.4, 90),
 
     # ---- SWD (bottom edge) and test points
     "P8": (4.8, YE - 3.73, 0),
