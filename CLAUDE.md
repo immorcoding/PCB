@@ -24,6 +24,14 @@ KiCad 10 硬件设计。分工：Claude 完成原理图、布局、布线；用�
 坐标文件（`.kicad_pcb` / `.kicad_sch`）是 source of truth。每轮：重新读文件 → 修改 → `kicad-cli pcb drc` + kicad-happy 分析 → 渲染图片。图片只做定性判断（拥挤、环路、地平面被割），坐标和尺寸一律从文件读、用脚本算。
 分析器的发现先甄别真伪再报给用户（例：金手指被报"离板边太近"属误报）。
 
+## 走线
+
+自动布线器（KiCadRoutingTools）不认识拐角规则，也不会少用底层：全板交给它得不到合规结果（2026-11-12 实测）。做法是混合：关键网络（晶振、USB、电源、去耦、GND、必须换层的控制线）写成工程里的 `route.py` 手工走，其余 GPIO 再交给布线器，最后清理拐角。参考 `stm32f411_minsys/route.py`。
+
+- **pcbnew 的坑**：`board.Remove()` 之后，同一进程里 `board.Zones()`、`GetFootprints()` 等集合会返回无类型对象，访问即报错或崩溃。先读完需要的数据再删；删完要继续用就另存、重新 `LoadBoard`（另存到临时目录，别覆盖工程文件）。
+- **铺铜以 KiCad 自己的填充为准**：`kicad-cli pcb drc --refill-zones` 的未连接数才算数。
+- **泪滴**：Python API 不暴露泪滴参数，用 `scripts/teardrops.py <板>`（写入文件后由 `kicad-cli` 生成），放在走线和铺铜定稿之后。
+
 ## 工具位置
 
 - KiCad 10.0.8：`D:\KiCad\bin\`（`kicad-cli.exe`，带 pcbnew 的 `python.exe`），不在 PATH 上。
