@@ -1,0 +1,15 @@
+# Third-party tools (own git repos, own venvs)
+Tools/KiCadRoutingTools/
+
+# KiCad backups, autosave, locks, caches
+*-backups/
+_autosave-*
+*.lck
+~*.lck
+fp-info-cache
+*.kicad_prl
+\#auto_saved_files\#
+
+# Fabrication outputs are regenerated from the design
+*.zip
+gerbers/
