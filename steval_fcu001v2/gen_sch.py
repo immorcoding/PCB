@@ -224,6 +224,9 @@ for n in range(4):
         i = 22 + 12 * n + 6 * k
         ic("Connector_Generic:Conn_01x01", f"MP{2 * n + k + 1}", f"M{n + 1}{sign}", i, 69, FP_MPAD, {"1": net},
            ref_at=(i * U, 67 * U), val_at=(i * U, 71 * U))
+        # same pad again for the bottom side of the board (MP9..MP16)
+        ic("Connector_Generic:Conn_01x01", f"MP{2 * n + k + 9}", f"M{n + 1}{sign} bot", i, 75, FP_MPAD, {"1": net},
+           ref_at=(i * U, 73 * U), val_at=(i * U, 77 * U))
 conn("P3", "I2C", 4, 72, FP_V4, ["VDD", "I2C2_SDA", "I2C2_SCL", "GND"])
 conn("P7", "USART", 4, 84, FP_V4, ["VDD", "GND", "USART1_RX", "USART1_TX"])
 conn("P6", "FC_Signal", 6, 96, FP_V6, ["+BATT", "TIM2_CH1", "TIM2_CH2", "TIM2_CH3", "TIM2_CH4", "GND"])
