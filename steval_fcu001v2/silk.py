@@ -6,7 +6,8 @@ The board is too dense for reference designators at a legal size (text height >=
 only 55 of 102 found a free spot), so none are printed: every reference is hidden from the
 silkscreen and stays on the Fab layer for assembly drawings. What is printed is what someone
 holding the board needs: header pin functions (both sides: the pins are through-hole),
-motor pad polarity, battery polarity, test point and button names, the board name.
+motor pad polarity, battery polarity, test point and button names, the board name, and
+on the bottom a small logo with the designer's signature.
 
 The silkscreen outlines of the three 1xN pin headers (NO_OUTLINE) are deleted: the space
 between the pads and their neighbours is needed for the pin labels. Pin 1 is the square pad.
@@ -68,6 +69,11 @@ BOTTOM = [
 ]
 # motor pads: "Mn+" beside the + pad on both sides of the board (the other pad is -)
 MOTOR = [("M1+", -14.2, -18.0), ("M2+", 14.2, -18.0), ("M3+", -14.2, 18.0), ("M4+", 14.2, 18.0)]
+# signature on the bottom: a quadcopter seen from above (four rotors, arms, a chevron for
+# the nose) and three lines of text. (text, x, y, height, width, stroke)
+LOGO = (14.6, -12.6)                   # centre; the mark is 4.5 mm square
+SIGN = [("designed by", 8.0, -14.2, 0.8, 0.6, 0.15), ("Claude", 8.0, -12.7, 1.4, 1.1, 0.2),
+        ("Fable 5.2 2026", 8.0, -11.1, 0.8, 0.6, 0.15)]
 SILK = (pcbnew.F_SilkS, pcbnew.B_SilkS)
 
 
@@ -133,7 +139,7 @@ def main():
 
     moved, stuck = [], []
 
-    def spot(s, x, y, rot, layer):
+    def spot(s, x, y, rot, layer, H=H, W=W, T=T):
         w, h = len(s) * W + 0.05, H + T
         if rot in (90, 270):
             w, h = h, w
@@ -153,8 +159,8 @@ def main():
         obst[layer].append((best[1] - w / 2, best[2] - h / 2, best[1] + w / 2, best[2] + h / 2, f"label {s}"))
         return best[1], best[2]
 
-    def text(s, x, y, rot, layer):
-        x, y = spot(s, x, y, rot, layer)
+    def text(s, x, y, rot, layer, H=H, W=W, T=T):
+        x, y = spot(s, x, y, rot, layer, H, W, T)
         t = pcbnew.PCB_TEXT(b)
         t.SetText(s); t.SetLayer(layer)
         t.SetTextSize(pcbnew.VECTOR2I(pcbnew.FromMM(W), pcbnew.FromMM(H)))
@@ -173,8 +179,35 @@ def main():
     for s, x, y in MOTOR:
         text(s, x, y, 90, pcbnew.F_SilkS)
         text(s, x, y, 90, pcbnew.B_SilkS)
+
+    def shape(kind, a, c, width=0.15, fill=False):
+        s = pcbnew.PCB_SHAPE(b)
+        s.SetShape(kind); s.SetLayer(pcbnew.B_SilkS); s.SetWidth(pcbnew.FromMM(width))
+        if kind == pcbnew.SHAPE_T_CIRCLE:
+            s.SetCenter(P(*a))
+        else:
+            s.SetStart(P(*a))
+        s.SetEnd(P(*c))
+        s.SetFilled(fill)
+        b.Add(s)
+
+    cx, cy = LOGO
+    in_way = blockers(cx, cy, 4.5, 4.5, pcbnew.B_SilkS)
+    if in_way:
+        stuck.append(f"B logo at {LOGO}: {sorted(set(in_way))}")
+    obst[pcbnew.B_SilkS].append((cx - 2.25, cy - 2.25, cx + 2.25, cy + 2.25, "logo"))
+    k = 0.7071
+    for sx in (-1, 1):
+        for sy in (-1, 1):
+            shape(pcbnew.SHAPE_T_CIRCLE, (cx + sx * 1.35, cy + sy * 1.35), (cx + sx * 1.35 + 0.8, cy + sy * 1.35))
+            shape(pcbnew.SHAPE_T_SEGMENT, (cx + sx * 0.4 * k, cy + sy * 0.4 * k), (cx + sx * 1.1 * k, cy + sy * 1.1 * k), 0.2)
+    shape(pcbnew.SHAPE_T_CIRCLE, (cx, cy), (cx + 0.2, cy), 0.2, True)
+    shape(pcbnew.SHAPE_T_SEGMENT, (cx - 0.4, cy - 0.85), (cx, cy - 1.25))
+    shape(pcbnew.SHAPE_T_SEGMENT, (cx, cy - 1.25), (cx + 0.4, cy - 0.85))
+    for s, x, y, h, w, th in SIGN:
+        text(s, x, y, 0, pcbnew.B_SilkS, h, w, th)
     pcbnew.SaveBoard(PCB, b)
-    print(f"silkscreen: {len(TOP) + len(BOTTOM) + 2 * len(MOTOR)} labels placed")
+    print(f"silkscreen: {len(TOP) + len(BOTTOM) + 2 * len(MOTOR)} labels placed, logo and signature on the bottom")
     print("  slid (mm):", ", ".join(moved) or "none")
     for s in stuck:
         print("  NO FREE SPOT:", s)
