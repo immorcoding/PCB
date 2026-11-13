@@ -64,11 +64,11 @@ PLACE = {
 
     # ---- sensors, left of the MCU (SPI2 pins 26..29)
     "U8": (-7.1, MY - 1.0, 270),      # IMU
-    "C21": (-9.9, MY - 1.6, 180),
+    "C21": (-9.9, MY - 1.6, 180),     # VDD pad overlaps U8.5 in y: a straight track reaches it
     "C22": (-9.9, MY - 0.4, 180),
     "U7": (-7.1, -5.0, 0),
-    "C19": (-9.6, -5.6, 180),
-    "C20": (-9.6, -4.4, 180),
+    "C19": (-9.6, -5.25, 180),        # VDD pad level with U7.1
+    "C20": (-9.6, -4.05, 180),
 
     # ---- battery in, USART, LDO, battery divider (left edge)
     "BT1": (-15.5, -4.53, 180),       # right-angle header, pins overhang the left edge
@@ -92,7 +92,7 @@ PLACE = {
     "R26": (-1.5, 13.3, 90),          # shell RC, right of the connector's signal pins
     "C13": (-0.3, 13.3, 90),
     "R27": (-2.7, 10.4, 90),
-    "R28": (-1.5, 10.4, 90),
+    "R28": (-1.5, 10.4, 270),         # pad 1 up, level with R27.2: the divider node is one straight track
     "U4": (-7.9, 10.3, 0),
     # this column stops 2.4 mm short of U3 so the USB pair can step west above it
     "C14": (-4.7, 10.2, 0),

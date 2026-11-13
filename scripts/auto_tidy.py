@@ -1,6 +1,6 @@
 """Straighten the autorouter's tracks (the JSON written by auto_tracks.py), in place.
 
-    D:\\KiCad\\bin\\python.exe scripts\\auto_tidy.py <board.kicad_pcb> <auto_tracks.json> [--clearance 0.16] [--dry]
+    D:\\KiCad\\bin\\python.exe scripts\\auto_tidy.py <board.kicad_pcb> <auto_tracks.json> [--clearance 0.16] [--dry] [--explain NET]
 
 <board> is a board that holds the hand-routed copper and the autorouted copper, with the
 hand-routed copper KiCad-locked (what `route.py --no-pour` writes). Pads, vias, locked
@@ -8,7 +8,7 @@ tracks, rule areas and the board edge are taken from it as obstacles.
 
 For each autorouted net and layer the tracks are split into runs between fixed points: a
 pad, a via, a junction of three or more tracks, or the end of a hand-routed track. Fixed
-points do not move. Each run is rebuilt greedily from as few pieces as possible, where a
+points do not move. Each run is rebuilt as the cheapest chain of pieces (fewest segments, short ones cost extra), where a
 piece is a straight segment or a straight-diagonal-straight dog-leg on the 45-degree grid,
 and is accepted only if it keeps the clearance to every obstacle and to the other nets'
 autorouted tracks (as they stand at that moment), and turns by at most 45 degrees where it
@@ -23,7 +23,9 @@ import pcbnew
 args = sys.argv[1:]
 CLR = float(args[args.index("--clearance") + 1]) if "--clearance" in args else 0.16
 board_path, json_path = args[0], args[1]
+EXPLAIN = args[args.index("--explain") + 1] if "--explain" in args else None
 EDGE = 0.35
+SHORT = 0.4          # a segment shorter than this counts double when comparing routes
 mm = pcbnew.ToMM
 b = pcbnew.LoadBoard(board_path)
 L = lambda v: (round(mm(v.x) - 100, 4), round(mm(v.y) - 100, 4))
@@ -44,7 +46,23 @@ pad_pts = {"F.Cu": {}, "B.Cu": {}}      # pad centre -> net
 for fp in b.GetFootprints():
     for p in fp.Pads():
         bb = p.GetBoundingBox()
-        r = (mm(bb.GetLeft()) - 100, mm(bb.GetTop()) - 100, mm(bb.GetRight()) - 100, mm(bb.GetBottom()) - 100, p.GetNetname())
+        w, h = mm(bb.GetWidth()), mm(bb.GetHeight())
+        lid0 = pcbnew.F_Cu if p.IsOnLayer(pcbnew.F_Cu) else pcbnew.B_Cu
+        try:
+            shape = p.GetShape(lid0)
+        except TypeError:
+            shape = p.GetShape()
+        if shape in (pcbnew.PAD_SHAPE_CIRCLE, pcbnew.PAD_SHAPE_OVAL):
+            rr = min(w, h) / 2
+        elif shape == pcbnew.PAD_SHAPE_ROUNDRECT:
+            try:
+                rr = mm(p.GetRoundRectCornerRadius(lid0))
+            except TypeError:
+                rr = mm(p.GetRoundRectCornerRadius())
+        else:
+            rr = 0.0                    # rectangles, custom shapes: the bounding box as it is
+        rr = max(0.0, min(rr, min(w, h) / 2) - 0.005)
+        r = (mm(bb.GetLeft()) - 100, mm(bb.GetTop()) - 100, mm(bb.GetRight()) - 100, mm(bb.GetBottom()) - 100, p.GetNetname(), rr)
         for name, lid in (("F.Cu", pcbnew.F_Cu), ("B.Cu", pcbnew.B_Cu)):
             if p.IsOnLayer(lid) or p.HasHole():
                 rects[name].append(r)
@@ -108,24 +126,35 @@ def d_seg_rect(a, c, r):
     return min(d_seg_seg(a, c, cs[i], cs[(i + 1) % 4]) for i in range(4))
 
 
-def clear(a, c, hw, net, layer, others):
-    """True if segment a-c (half width hw) of `net` keeps CLR to everything else on `layer`."""
+def clear(a, c, hw, net, layer, others, why=None):
+    """True if segment a-c (half width hw) of `net` keeps CLR to everything else on `layer`.
+    With `why` (a list), the first thing in the way is appended to it."""
+    def no(what):
+        if why is not None:
+            why.append(what)
+        return False
     for p in (a, c):
         if not (EX0 <= p[0] <= EX1 and EY0 <= p[1] <= EY1):
-            return False
+            return no("board edge")
     lo = (min(a[0], c[0]) - 1.2, min(a[1], c[1]) - 1.2); hi = (max(a[0], c[0]) + 1.2, max(a[1], c[1]) + 1.2)
     for r in rects[layer]:
         if r[4] == net or r[2] < lo[0] - 2.5 or r[0] > hi[0] + 2.5 or r[3] < lo[1] - 2.5 or r[1] > hi[1] + 2.5:
             continue
-        if d_seg_rect(a, c, r) < hw + (CLR if r[4] is not None else 0.0):
-            return False
+        if r[4] is None:
+            if d_seg_rect(a, c, r) < hw:
+                return no(f"keep-out {tuple(round(v, 2) for v in r[:4])}")
+            continue
+        # rounded pads: measure to the rectangle shrunk by the corner radius, then take it off
+        rr = r[5]
+        if d_seg_rect(a, c, (r[0] + rr, r[1] + rr, r[2] - rr, r[3] - rr)) - rr < hw + CLR:
+            return no(f"pad/keep-out {tuple(round(v, 2) for v in r[:4])} {r[4]}")
     for x, y, rad, n in circles:
         if n != net and lo[0] - rad <= x <= hi[0] + rad and lo[1] - rad <= y <= hi[1] + rad:
             if d_pt_seg((x, y), a, c) < hw + rad + CLR:
-                return False
+                return no(f"via ({x}, {y}) {n}")
     for e, f, w2, n in hand[layer] + others:
         if n != net and d_seg_seg(a, c, e, f) < hw + w2 + CLR:
-            return False
+            return no(f"track {e} -> {f} {n}")
     return True
 
 
@@ -152,7 +181,7 @@ def pieces(a, c):
         for p in (p1, p2, c):
             if math.hypot(p[0] - pts[-1][0], p[1] - pts[-1][1]) > 1e-3:
                 pts.append((round(p[0], 4), round(p[1], 4)))
-        if all(math.hypot(q[0] - p[0], q[1] - p[1]) >= 0.2 for p, q in zip(pts, pts[1:])) or len(pts) == 2:
+        if all(math.hypot(q[0] - p[0], q[1] - p[1]) >= 0.1 for p, q in zip(pts, pts[1:])) or len(pts) == 2:
             out.append(pts)
     return out
 
@@ -219,38 +248,62 @@ for net in sorted({s["net"] for s in auto_segs}):
                 hw = max(x["w"] for x in run) / 2
                 ids = {id(x) for x in run}
                 obst = others_for(net, layer)
-                new = [pts[0]]
-                prev_dirs = same_net_dirs(net, layer, pts[0], ids)        # tracks to respect at the start
+                start_dirs = same_net_dirs(net, layer, pts[0], ids)       # tracks to respect at the start
                 end_dirs = same_net_dirs(net, layer, pts[-1], ids)
-                i, ok = 0, True
-                while i < len(pts) - 1:
-                    for j in range(len(pts) - 1, i, -1):
-                        done = False
-                        for cand in pieces(pts[i], pts[j]):
-                            d_first = (cand[1][0] - cand[0][0], cand[1][1] - cand[0][1])
-                            d_last = (cand[-2][0] - cand[-1][0], cand[-2][1] - cand[-1][1])
-                            if any(turn(d_first, d) < 134.5 for d in prev_dirs):
-                                continue
-                            if j == len(pts) - 1 and any(turn(d_last, d) < 134.5 for d in end_dirs):
-                                continue
-                            if all(clear(p, q, hw, net, layer, obst) for p, q in zip(cand, cand[1:])):
-                                new += cand[1:]
-                                prev_dirs = [d_last]
-                                i = j; done = True
-                                break
-                        if done:
-                            break
-                    else:
-                        # nothing fits from here: keep the original segment and carry on after it,
-                        # unless that would put a sharp corner where the rebuilt part meets it
-                        d0 = (pts[i + 1][0] - pts[i][0], pts[i + 1][1] - pts[i][1])
-                        if i > 0 and any(turn(d0, d) < 134.5 for d in prev_dirs):
-                            ok = False
-                            break
-                        new.append(pts[i + 1])
-                        prev_dirs = [(-d0[0], -d0[1])]
-                        i += 1
-                if not ok or len(new) - 1 >= len(run):
+                n = len(pts) - 1
+
+                def cost_of(poly):
+                    # one per segment; short segments cost more (they are what makes a run of
+                    # bends look crowded), very short ones a lot more
+                    c = 0
+                    for p, q in zip(poly, poly[1:]):
+                        d = math.hypot(q[0] - p[0], q[1] - p[1])
+                        c += 1 + (d < 2 * SHORT) + 2 * (d < SHORT)
+                    return c
+
+                # every way of joining point i to point j: clear rebuilt pieces, plus the original segment
+                options = {}
+                for i in range(n):
+                    for j in range(i + 1, n + 1):
+                        opts = [(c, False) for c in pieces(pts[i], pts[j])
+                                if all(clear(p, q, hw, net, layer, obst) for p, q in zip(c, c[1:]))]
+                        if j == i + 1:
+                            opts.append(([pts[i], pts[j]], True))
+                        if opts:
+                            options[(i, j)] = opts
+                # cheapest chain of pieces from the first point to the last; a state is (node, direction
+                # of the last segment, whether that segment is an original one)
+                best = {0: {None: (0, 0.0, [pts[0]], None, True)}}
+                for i in range(n):
+                    for _key, (cost, length, path, last, last_orig) in list(best.get(i, {}).items()):
+                        back = start_dirs if last is None else [last]
+                        for j in range(i + 1, n + 1):
+                            for cand, orig in options.get((i, j), []):
+                                d_first = (cand[1][0] - cand[0][0], cand[1][1] - cand[0][1])
+                                d_last = (cand[-2][0] - cand[-1][0], cand[-2][1] - cand[-1][1])
+                                if not (orig and last_orig) and any(turn(d_first, d) < 134.5 for d in back):
+                                    continue
+                                if j == n and not orig and any(turn(d_last, d) < 134.5 for d in end_dirs):
+                                    continue
+                                c2 = cost + cost_of(cand)
+                                l2 = length + sum(math.hypot(q[0] - p[0], q[1] - p[1]) for p, q in zip(cand, cand[1:]))
+                                key2 = (round(math.degrees(math.atan2(d_last[1], d_last[0]))), orig)
+                                cur = best.setdefault(j, {}).get(key2)
+                                if cur is None or (c2, l2) < (cur[0], cur[1]):
+                                    best[j][key2] = (c2, l2, path + cand[1:], d_last, orig)
+                ok = n in best
+                if ok:
+                    cost, _len, new, _d, _o = min(best[n].values(), key=lambda s: (s[0], s[1]))
+                    ok = cost < cost_of(pts)
+                if EXPLAIN == net:
+                    print(f"{net} {layer} run {pts[0]} -> {pts[-1]}: {n} segments, cost {cost_of(pts)}"
+                          + (f" -> {cost}" if n in best else " (no chain)") + ("" if ok else "  kept"))
+                    if not ok:
+                        for cand in pieces(pts[0], pts[-1]):
+                            why = []
+                            all(clear(p, q, hw, net, layer, obst, why) for p, q in zip(cand, cand[1:]))
+                            print("     direct", [tuple(round(v, 2) for v in q) for q in cand], "blocked by", why or "turn at an end")
+                if not ok:
                     kept_runs += 1
                     continue
                 w = max(x["w"] for x in run)

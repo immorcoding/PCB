@@ -43,6 +43,12 @@ def T(name, width, pts, layer=F):
     OPS.append(("T", name, width, pts, layer))
 
 
+def ARC(name, width, start, mid, end, layer=F):
+    """Queue an arc track through three points (used for the rounded length-tuning humps)."""
+    OPS.append(("A", name, width, tuple(round(v, 4) for v in start), tuple(round(v, 4) for v in mid),
+                tuple(round(v, 4) for v in end), layer))
+
+
 def V(name, pt, dia=0.6, drill=0.3):
     OPS.append(("V", name, (round(pt[0], 4), round(pt[1], 4)), dia, drill))
 
@@ -132,7 +138,7 @@ def mcu_core():
     T("GND", 0.3, [c72, (c72[0], -0.13), g]); V("GND", g)
 
     p1, c61 = pad("U2", 1), pad("C6", 1)                             # VBAT
-    T("VDD", 0.25, [p1, (6.6, p1[1]), (6.85, c61[1]), c61])
+    T("VDD", 0.25, [p1, (c61[0] - (c61[1] - p1[1]), p1[1]), c61])
     cap_vias("C6", (-0.55, 0.55), None, "VDD")       # down-left: x = 7.45 is the NRST lane on B.Cu
 
     p48, c51 = pad("U2", 48), pad("C5", 1)                           # VDD pin 48
@@ -174,27 +180,34 @@ def usb_charger():
     u1, u3 = pad("U3", 1), pad("U3", 3)
     a = (XP + 0.3, p33[1]); b = (XP, p33[1] + 0.3)
     c = (XP, 5.0); d = to_x(c, SE, LP)
-    # D+ is the inside trace on both turns and ends 1.7 mm short of D-; three 0.5 mm bumps in
-    # the free area left of the MCU make up 1.24 mm of that (skew rule 0.5 mm, pair gap <= 0.7).
-    bumps = []
-    for y0 in (5.9, 7.1, 8.3):
-        bumps += [(LP, y0), (LP + 0.5, y0 + 0.5), (LP + 0.5, y0 + 0.6), (LP, y0 + 1.1)]
-    T("/USB_D+", W, [p33, a, b, c, d] + bumps + [(LP, 11.6), to_x((LP, 11.6), SW, u1[0]), u1])
+    # D+ is the inside trace on both turns and ends about 1.1 mm short of D-. Two rounded humps
+    # (arcs of radius HR, 2*HR out and back, 4*HR long) in the free area left of the MCU make
+    # that up: each adds (2*pi - 4) * HR.
+    HR, HUMPS = 0.25, (6.0, 7.5)
+    k = HR * math.sqrt(0.5)
+    T("/USB_D+", W, [p33, a, b, c, d, (LP, HUMPS[0])])
+    for n, y0 in enumerate(HUMPS):
+        cx = LP + HR
+        ARC("/USB_D+", W, (LP, y0), (cx - k, y0 + k), (cx, y0 + HR))                       # south -> east
+        ARC("/USB_D+", W, (cx, y0 + HR), (cx + HR, y0 + 2 * HR), (cx, y0 + 3 * HR))        # round the far side
+        ARC("/USB_D+", W, (cx, y0 + 3 * HR), (cx - k, y0 + 4 * HR - k), (LP, y0 + 4 * HR)) # west -> south
+        nxt = HUMPS[n + 1] if n + 1 < len(HUMPS) else 11.6
+        tail = [to_x((LP, 11.6), SW, u1[0]), u1] if n + 1 == len(HUMPS) else []
+        T("/USB_D+", W, [(LP, y0 + 4 * HR), (LP, nxt)] + tail)
     a = (XM + 0.3, p32[1]); b = (XM, p32[1] + 0.3)
     c = (XM, 5.12); d = to_x(c, SE, LM)
     e = (LM, 10.6)
     T("/USB_D-", W, [p32, a, b, c, d, e, to_x(e, SW, u3[0]), u3])
     u2 = pad("U3", 2); v = (u2[0], 12.42)
     T("GND", 0.2, [u2, v]); V("GND", v, *SMALL)
-    # connector side: the two traces step outward to let the U3.5 via sit between them
+    # connector side: straight down from U3, one step each to close up from the 1.0 mm pad
+    # spacing to the connector's 0.65 mm. A small via for U3.5 fits between them.
     u4, u6, c2, c3 = pad("U3", 4), pad("U3", 6), pad("CN1", 2), pad("CN1", 3)
-    T("/USB_CONN_D-", W, [u4, (u4[0] - 0.15, u4[1] + 0.15), (u4[0] - 0.15, 14.5),
-                          to_x((u4[0] - 0.15, 14.5), SE, c2[0]), (c2[0], 15.4)])
-    T("/USB_CONN_D+", W, [u6, (u6[0] + 0.15, u6[1] + 0.15), (u6[0] + 0.15, 14.3),
-                          to_x((u6[0] + 0.15, 14.3), SW, c3[0]), (c3[0], 15.4)])
+    T("/USB_CONN_D-", W, [u4, (u4[0], 14.65), to_x((u4[0], 14.65), SE, c2[0]), (c2[0], 15.4)])
+    T("/USB_CONN_D+", W, [u6, (u6[0], 14.45), to_x((u6[0], 14.45), SW, c3[0]), (c3[0], 15.4)])
     u5, c231 = pad("U3", 5), pad("C23", 1)
-    v = (u5[0], 14.15); w = (c231[0], 14.55)
-    T("/USBLC_VBUS", W, [u5, v]); V("/USBLC_VBUS", v)
+    v = (u5[0], 14.1); w = (c231[0], 14.55)
+    T("/USBLC_VBUS", W, [u5, v]); V("/USBLC_VBUS", v, *SMALL)
     T("/USBLC_VBUS", 0.2, [v, to_y(v, SE, w[1]), w], B); V("/USBLC_VBUS", w)
     T("/USBLC_VBUS", 0.2, [w, c231])
 
@@ -205,7 +218,7 @@ def usb_charger():
     y = d51[1]
     T("VBUS", 0.4, [(d51[0], y), (c121[0], y)])
     # branches leave from pad centres (a T on a bare track trips the corner rule)
-    T("VBUS", 0.3, [(d51[0], y), to_x((d51[0], y), NW, -7.85), (-7.85, 12.2), to_y((-7.85, 12.2), NE, 11.55), (-7.2, u44[1])])
+    T("VBUS", 0.3, [(d51[0], y), to_x((d51[0], y), NW, -7.85), (-7.85, 12.2), to_y((-7.85, 12.2), NE, 11.35)])
     c141, c151 = pad("C14", 1), pad("C15", 1)
     v1 = (-5.78, u44[1]); V("VBUS", v1)
     T("VBUS", 0.4, [u44, v1])
@@ -236,8 +249,7 @@ def usb_charger():
 
     # ---- USB monitor divider
     r272, r281 = pad("R27", 2), pad("R28", 1)
-    a = (-2.4, r272[1]); b = to_x(a, SE, -2.1); c = (-2.1, r281[1] - 0.3)
-    T("/USB_MONITOR", 0.2, [r272, a, b, c, to_y(c, SE, r281[1]), r281])
+    T("/USB_MONITOR", 0.2, [r272, (r281[0], r272[1])])
 
     # ---- connector shell: the six shell pads joined on copper, RC to ground above
     y = 18.5
@@ -308,9 +320,9 @@ def power_in():
     # BT1 is through-hole: its pins land on the In2 +BATT pour and the In1 ground directly.
     c181, c161, u61, u63, r101 = pad("C18", 1), pad("C16", 1), pad("U6", 1), pad("U6", 3), pad("R10", 1)
     T("+BATT", 0.4, [c181, c161])
-    a = (-13.75, u61[1])
-    T("+BATT", 0.3, [u61, a, (-13.9, u61[1] + 0.15), (-13.9, 3.2), to_y((-13.9, 3.2), SW, c161[1]), c161])
-    T("+BATT", 0.3, [c161, to_y(c161, SE, u63[1]), u63])
+    T("+BATT", 0.3, [c161, to_y(c161, SE, u63[1]), u63])          # EN and the input caps
+    v = (u61[0], 1.25)                                            # IN: its own via to the In2 pour
+    T("+BATT", 0.4, [u61, v]); V("+BATT", v)
     v = (c181[0], 4.3)
     T("+BATT", 0.4, [c181, v]); V("+BATT", v)
     T("+BATT", 0.3, [v, (v[0], r101[1] - (r101[0] - v[0])), r101])
@@ -384,12 +396,12 @@ def sensors():
     # ---- IMU supply. Nothing runs under the package on the top layer.
     c211, c221 = pad("C21", 1), pad("C22", 1)
     u85, u83, u82, u88 = pad("U8", 5), pad("U8", 3), pad("U8", 2), pad("U8", 8)
-    T("VDD", 0.25, [c211, (-8.6, c211[1]), (-8.5, u85[1]), u85])
+    T("VDD", 0.25, [c211, (u85[0], c211[1])])       # straight: C21.1 and U8.5 overlap in y
     v = (c211[0], -1.85)
     T("VDD", 0.25, [c211, v]); V("VDD", v)
-    a = to_y(v, NE, -2.3); b = (-7.6, -2.3)
-    T("VDD", 0.25, [v, a, b, to_x(b, SE, u83[0]), u83])
-    T("VDD", 0.2, [u83, u82])
+    T("VDD", 0.2, [u83, u82])                       # pins 2 / 3 (SDx, SCx tied high): own small via,
+    v = (u83[0] + 0.25, -2.35)                      # placed between the two SPI2 tracks on B.Cu
+    T("VDD", 0.2, [u83, (v[0], u83[1] - 0.25), v]); V("VDD", v, *SMALL)
     a = (-9.0, c221[1])
     T("VDD", 0.25, [c221, a, to_y(a, SE, 0.9), (u88[0], 0.9)])
     v = (c221[0], 0.9)
@@ -401,10 +413,10 @@ def sensors():
 
     # ---- barometer supply
     c191, c201, u71, u710 = pad("C19", 1), pad("C20", 1), pad("U7", 1), pad("U7", 10)
-    T("VDD", 0.25, [c191, (-8.6, c191[1]), to_y((-8.6, c191[1]), SE, u71[1]), u71])
-    T("VDD", 0.25, [c191, (c191[0], -6.1), to_y((c191[0], -6.1), NE, -6.6), (u710[0] - 0.15, -6.6),
-                    (u710[0], -6.45), u710])
-    T("VDD", 0.25, [c191, c201]); V("VDD", (c191[0], -5.0))
+    T("VDD", 0.25, [c191, (u71[0], c191[1])])
+    v = (u710[0], -6.7)                             # pin 10: straight up to its own via
+    T("VDD", 0.25, [u710, v]); V("VDD", v)
+    T("VDD", 0.25, [c191, c201]); V("VDD", ((c191[0] + c201[0]) / 2, (c191[1] + c201[1]) / 2))
     u78, u79, u73 = pad("U7", 8), pad("U7", 9), pad("U7", 3)
     T("GND", 0.2, [u79, u78])
     v = (u78[0], -6.6); T("GND", 0.25, [u78, v]); V("GND", v)
@@ -417,12 +429,13 @@ def sensors():
     a = (-3.4, p27[1])
     T("/S2_SDO", 0.2, [p27, a, to_y(a, NW, u81[1]), u81])
     T("/S2_SDO", 0.2, [u81, (u81[0], -3.5), to_x((u81[0], -3.5), NW, u75[0]), u75])
-    u814, D = pad("U8", 14), (-5.45, -1.1)
-    a = (-4.9, p28[1])
-    T("/S2_SDI", 0.2, [p28, a, to_y(a, NW, D[1]), D]); V("/S2_SDI", D)
-    T("/S2_SDI", 0.2, [D, (-6.0, D[1]), (-6.1, u814[1]), u814])
+    u814 = pad("U8", 14)
+    D = (-5.2, u814[1])                             # small via, level with the pad
+    a = (D[0] + (p28[1] - D[1]), p28[1])
+    T("/S2_SDI", 0.2, [p28, a, D]); V("/S2_SDI", D, *SMALL)
+    T("/S2_SDI", 0.2, [D, (u814[0], D[1])])
     u74, E = pad("U7", 4), (-6.95, -3.0)
-    T("/S2_SDI", 0.2, [D, (D[0], -1.5), to_x((D[0], -1.5), NW, E[0])], B); V("/S2_SDI", E)
+    T("/S2_SDI", 0.2, [D, (D[0], E[1] + (D[0] - E[0])), E], B); V("/S2_SDI", E)
     T("/S2_SDI", 0.2, [E, (E[0], -3.6), to_x((E[0], -3.6), NW, u74[0]), u74])
     u812 = pad("U8", 12)
     a = (-3.2, p29[1]); b = to_y(a, SW, 0.45); c = (-5.45, 0.45)
@@ -488,7 +501,7 @@ def auto_fixes():
 def gnd_stitch():
     # F.Cu pour pieces that hung on surface-mount pads only (scripts/pour_islands.py),
     # spots from scripts/via_spots.py: P8 / USB area, top right, R24, the switch.
-    for v in ((1.0, 16.3), (15.8, -7.1), (9.21, 12.5), (8.55, 9.3)):
+    for v in ((1.0, 16.3), (15.8, -7.1), (9.21, 12.5), (8.55, 9.3), (8.5, 6.7)):
         V("GND", v)
     # The switch's left ground pad is boxed in by NRST, MOTOR3 and the LED vias (a track to the
     # right pad crosses MOTOR3, and MOTOR3 does not route with that track in place): one small
@@ -565,6 +578,11 @@ def main():
                 s = pcbnew.PCB_TRACK(board)
                 s.SetStart(P(a)); s.SetEnd(P(c)); s.SetWidth(pcbnew.FromMM(width))
                 s.SetLayer(layer); s.SetNet(net(name)); s.SetLocked(lock); board.Add(s)
+        elif op[0] == "A":
+            _, name, width, p0, p1, p2, layer = op
+            s = pcbnew.PCB_ARC(board)
+            s.SetStart(P(p0)); s.SetMid(P(p1)); s.SetEnd(P(p2)); s.SetWidth(pcbnew.FromMM(width))
+            s.SetLayer(layer); s.SetNet(net(name)); s.SetLocked(lock); board.Add(s)
         else:
             _, name, pt, dia, drill = op
             v = pcbnew.PCB_VIA(board)
