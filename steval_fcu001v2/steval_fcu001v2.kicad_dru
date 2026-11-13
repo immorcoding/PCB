@@ -63,6 +63,14 @@
 (rule "corner_angle"
   (constraint track_angle (min 134)))
 
+# --- Shortest segment. track_angle only compares neighbouring segments, so two 45-degree
+# turns joined by a 0.05 mm link pass it and look like a right angle. Small chamfers
+# (0.1 - 0.5 mm) are left to scripts/track_shape.py ("sharp"): a higher limit here would
+# flag ordinary pad exits.
+(rule "min_segment"
+  (condition "A.Type == 'Track'")
+  (constraint track_segment_length (min 0.1mm)))
+
 # --- Pour connection: thermal relief for through-hole, solid for SMD ---
 (rule "tht_thermal"
   (condition "A.Type == 'Pad' && A.Pad_Type == 'Through-hole'")

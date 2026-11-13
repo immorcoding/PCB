@@ -1,16 +1,16 @@
 ** Drc report for steval_fcu001v2.kicad_pcb **
-** Created on 2026-11-12T22:44:59 **
+** Created on 2026-11-12T23:24:06 **
 ** Report includes: Errors, Warnings, Exclusions **
 
 ** Found 22 DRC violations **
 [track_angle]: 走线角度 (规则 'corner_angle' 最小角度 134.000°; 实际 90.000°)
     Rule: corner_angle; error
-    @(107.2000 mm, 113.7000 mm): Track [/MOTOR4] on B.Cu, length 4.3841 mm
     @(109.2000 mm, 111.7000 mm): Track [/MOTOR4] on B.Cu, length 1.6971 mm
+    @(107.2000 mm, 113.7000 mm): Track [/MOTOR4] on B.Cu, length 4.3841 mm
 [track_angle]: 走线角度 (规则 'corner_angle' 最小角度 134.000°; 实际 90.000°)
     Rule: corner_angle; error
-    @(109.2000 mm, 111.7000 mm): Track [/MOTOR4] on B.Cu, length 1.6971 mm
     @(107.2000 mm, 113.7000 mm): Track [/MOTOR4] on B.Cu, length 4.3841 mm
+    @(109.2000 mm, 111.7000 mm): Track [/MOTOR4] on B.Cu, length 1.6971 mm
 [starved_thermal]: 缓释热焊盘 (花焊盘) 与填充区的连接不完整 (层 F.Cu; 规则 'tht_thermal' 最小引线数量 2; 实际 1)
     Rule: tht_thermal; error
     @(79.5000 mm, 79.5000 mm): Zone 'GND_F' [GND] on F.Cu, priority 0

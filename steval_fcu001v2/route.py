@@ -131,8 +131,8 @@ def mcu_core():
 
     # ---- supply pins and their caps
     p9, c71, c72 = pad("U2", 9), pad("C7", 1), pad("C7", 2)          # VDDA
-    v = (7.05, p9[1] + 0.05)
-    T("VDD", 0.25, [p9, (6.6, p9[1]), (6.65, v[1]), v]); V("VDD", v)
+    v = (7.05, p9[1] + 0.1)                                         # level with the pin it is 0.115 mm from TIM2_CH1
+    T("VDD", 0.25, [p9, (6.55, p9[1]), (6.65, v[1]), v]); V("VDD", v)
     T("VDD", 0.25, [v, (c71[0] - 0.1, v[1])])
     g = (8.6, 0.0)
     T("GND", 0.3, [c72, (c72[0], -0.13), g]); V("GND", g)
@@ -449,7 +449,7 @@ def sensors():
     T("/S2_CLK", 0.2, [Bv, a, to_y(a, NW, u813[1]), u813])
     a = (C[0] + (Bv[1] - C[1]), Bv[1])
     T("/S2_CLK", 0.2, [Bv, a, C], B); V("/S2_CLK", C)
-    T("/S2_CLK", 0.2, [u72, (-8.2, u72[1]), (C[0], u72[1] + 0.15), C])
+    T("/S2_CLK", 0.2, [u72, (C[0], u72[1] + (u72[0] - C[0])), C])
 
 
 # ====================================================================== BLE module, reset, header supplies
@@ -487,6 +487,18 @@ def ble_misc():
 AUTO_DROP = {
     ("/NRST", (9.35, 5.85), (9.4, 5.8)), ("/NRST", (9.4, 5.8), (10.2, 5.8)),
     ("/MOTOR3", (-12.5, 8.7), (-12.5, 10.0)),
+    # MOTOR1: right angle with a 0.035 mm chamfer
+    ("/MOTOR1", (-9.85, 1.475), (-7.5, 1.475)), ("/MOTOR1", (-7.5, 1.475), (-7.475, 1.5)),
+    ("/MOTOR1", (-7.475, 1.5), (-7.475, 2.975)),
+    # MOTOR3 from U2.45 to the via at (3.9, 10.475): hook round the MOTOR2 via, detour on B.Cu,
+    # tracks ending beside their vias instead of on them
+    ("/MOTOR3", (3.65, 6.05), (3.65, 4.95)), ("/MOTOR3", (2.675, 7.025), (3.65, 6.05)),
+    ("/MOTOR3", (2.625, 7.025), (2.675, 7.025)), ("/MOTOR3", (1.975, 6.375), (2.625, 7.025)),
+    ("/MOTOR3", (1.975, 6.375)),
+    ("/MOTOR3", (1.975, 6.375), (3.1, 7.5)), ("/MOTOR3", (3.1, 7.5), (4.4, 7.5)), ("/MOTOR3", (4.4, 7.5), (5.95, 9.05)),
+    ("/MOTOR3", (6.15, 9.05)),
+    ("/MOTOR3", (5.975, 9.875), (5.975, 9.225)), ("/MOTOR3", (5.775, 10.075), (5.975, 9.875)),
+    ("/MOTOR3", (4.25, 10.075), (5.775, 10.075)), ("/MOTOR3", (4.0, 10.325), (4.25, 10.075)),
 }
 
 
@@ -495,6 +507,15 @@ def auto_fixes():
     T("/NRST", 0.2, [(9.35, 7.7), (10.2, 6.85), (10.2, 5.8)])
     # MOTOR3 turned 90 degrees at its via: leave the via at 45 degrees instead
     T("/MOTOR3", 0.2, [(-12.5, 8.7), (-12.8, 9.0), (-12.8, 9.7), (-12.5, 10.0)], B)
+    # MOTOR1: the same corner with a 0.53 mm chamfer (as large as C17.2 allows)
+    T("/MOTOR1", 0.2, [(-9.85, 1.475), (-7.85, 1.475), (-7.475, 1.85), (-7.475, 2.975)])
+    # MOTOR3: straight down from the pin to its own via (as low as LD2.1 allows, clear of the
+    # MOTOR2 track on B.Cu), one diagonal on B.Cu between the MOTOR2 track and the LED2 via,
+    # then back to F.Cu round the switch pad
+    a, c = (3.65, 7.05), (6.15, 9.25)
+    T("/MOTOR3", 0.2, [(3.65, 4.95), a]); V("/MOTOR3", a)
+    T("/MOTOR3", 0.2, [a, (3.95, 7.05), c], B); V("/MOTOR3", c)
+    T("/MOTOR3", 0.2, [c, (6.15, 9.725), (5.8, 10.075), (4.3, 10.075), (3.9, 10.475)])   # midway between S1.2 and USB_MONITOR
 
 
 # ====================================================================== ground for stranded pads
