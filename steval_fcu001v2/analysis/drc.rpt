@@ -1,16 +1,16 @@
 ** Drc report for steval_fcu001v2.kicad_pcb **
-** Created on 2026-11-12T22:19:39 **
+** Created on 2026-11-12T22:40:01 **
 ** Report includes: Errors, Warnings, Exclusions **
 
-** Found 19 DRC violations **
-[track_angle]: 走线角度 (规则 'corner_angle' 最小角度 134.000°; 实际 90.000°)
-    Rule: corner_angle; error
-    @(109.2000 mm, 111.7000 mm): Track [/MOTOR4] on B.Cu, length 1.6971 mm
-    @(107.2000 mm, 113.7000 mm): Track [/MOTOR4] on B.Cu, length 4.3841 mm
+** Found 22 DRC violations **
 [track_angle]: 走线角度 (规则 'corner_angle' 最小角度 134.000°; 实际 90.000°)
     Rule: corner_angle; error
     @(107.2000 mm, 113.7000 mm): Track [/MOTOR4] on B.Cu, length 4.3841 mm
     @(109.2000 mm, 111.7000 mm): Track [/MOTOR4] on B.Cu, length 1.6971 mm
+[track_angle]: 走线角度 (规则 'corner_angle' 最小角度 134.000°; 实际 90.000°)
+    Rule: corner_angle; error
+    @(109.2000 mm, 111.7000 mm): Track [/MOTOR4] on B.Cu, length 1.6971 mm
+    @(107.2000 mm, 113.7000 mm): Track [/MOTOR4] on B.Cu, length 4.3841 mm
 [starved_thermal]: 缓释热焊盘 (花焊盘) 与填充区的连接不完整 (层 F.Cu; 规则 'tht_thermal' 最小引线数量 2; 实际 1)
     Rule: tht_thermal; error
     @(79.5000 mm, 79.5000 mm): Zone 'GND_F' [GND] on F.Cu, priority 0
@@ -35,12 +35,18 @@
     Rule: <电路板配置> 中的 "丝印" 约束; warning
     @(118.0000 mm, 120.0000 mm): Segment on Edge.Cuts
     @(99.3600 mm, 119.6400 mm): Segment of CN1 on F.Silkscreen
+[lib_footprint_mismatch]: 封装 'PinHeader_1x04_P2.54mm_Vertical' 与库 'Connector_PinHeader_2.54mm' 中的副本不匹配
+    Local override; warning
+    @(114.4000 mm, 96.2000 mm): Footprint P3
 [lib_footprint_mismatch]: 封装 'LGA-14_3x2.5mm_P0.5mm_LayoutBorder3x4y' 与库 'Package_LGA' 中的副本不匹配
     Local override; warning
     @(92.9000 mm, 99.5000 mm): Footprint U8
 [lib_footprint_mismatch]: 封装 'ST_HLGA-10_2x2mm_P0.5mm_LayoutBorder3x2y' 与库 'Package_LGA' 中的副本不匹配
     Local override; warning
     @(92.9000 mm, 95.0000 mm): Footprint U7
+[lib_footprint_mismatch]: 封装 'PinHeader_1x06_P2.54mm_Vertical' 与库 'Connector_PinHeader_2.54mm' 中的副本不匹配
+    Local override; warning
+    @(118.1000 mm, 93.6500 mm): Footprint P6
 [lib_footprint_mismatch]: 封装 'VSON-8_3.3x3.3mm_P0.65mm_NexFET' 与库 'Package_SON' 中的副本不匹配
     Local override; warning
     @(87.4000 mm, 89.0000 mm): Footprint Q1
@@ -50,6 +56,9 @@
 [lib_footprint_mismatch]: 封装 'VSON-8_3.3x3.3mm_P0.65mm_NexFET' 与库 'Package_SON' 中的副本不匹配
     Local override; warning
     @(87.4000 mm, 111.0000 mm): Footprint Q3
+[lib_footprint_mismatch]: 封装 'PinHeader_1x04_P2.54mm_Vertical' 与库 'Connector_PinHeader_2.54mm' 中的副本不匹配
+    Local override; warning
+    @(81.9000 mm, 99.2100 mm): Footprint P7
 [lib_footprint_mismatch]: 封装 'VSON-8_3.3x3.3mm_P0.65mm_NexFET' 与库 'Package_SON' 中的副本不匹配
     Local override; warning
     @(112.6000 mm, 111.0000 mm): Footprint Q4
