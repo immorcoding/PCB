@@ -7,7 +7,7 @@ KiCad 10 硬件设计。分工：Claude 完成原理图、布局、布线；用�
 ## 去哪里找什么
 
 - **该怎么做**（流程、验收标准、约定）：`docs/shape/`，见下面的 Project shape。
-- **规则的数值**（和 AD 的对照、板厂覆盖值、规则文件的坑）：[docs/design-rules.md](docs/design-rules.md)。
+- **规则的数值**（和 AD 的对照、规则文件的坑）：[docs/design-rules.md](docs/design-rules.md)；按板型分的三套规格档（A 通用、B 0.8 mm BGA、C 0.65 mm 及以下 BGA）在 `docs/rule-profiles/`。
 - **工具的命令、用法和坑**：[docs/tools.md](docs/tools.md)。
 
 KiCad 10.0.8 在 `D:\KiCad\bin\`（`kicad-cli.exe`，带 pcbnew 的 `python.exe`），不在 PATH 上。

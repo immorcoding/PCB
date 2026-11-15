@@ -2,7 +2,7 @@
 
 工程怎么起、设计规则怎么确认生效、原理图怎样算做完。规则的数值、和 AD 的对照、板厂覆盖值在 [design-rules.md](../design-rules.md)；命令和工具的坑在 [tools.md](../tools.md)。
 
-Next id: RUL-11
+Next id: RUL-13
 
 ## Pillars
 
@@ -15,7 +15,9 @@ Next id: RUL-11
 
 ### Rules
 
-- **RUL-1** · provisional · 新工程从 `templates/common/` 的三个文件起，按板厂和层数加工程级覆盖；规则值只写在 `docs/design-rules.md` 和工程的规则文件里，别处不重复。 _Why:_ 模板保留 AD `common.RUL` 的原值，板厂和层数的差异放在工程里才看得出改了什么。
+- **RUL-1** · provisional · 新工程从所选规格档的模板起（A 档是 `templates/common/` 加板厂覆盖）；规则值只写在 `docs/design-rules.md`、`docs/rule-profiles/` 和工程的规则文件里，别处不重复。 _Why:_ 模板保留 AD `common.RUL` 的原值，板厂和层数的差异放在工程里才看得出改了什么。
+- **RUL-11** · exploring · 方案阶段选定规格档（`docs/rule-profiles/`）；没有合适的就先新建一档交用户批准，不从低一档的数值改起。 _Why:_ 给四层板加的过孔下限 0.45 mm 被带到下一块板上，把用户原本够用的 0.8 mm BGA 规则挤过了临界点；六层废弃板的规则是边做边叠出来的。
+- **RUL-12** · exploring · 用到 BGA 或更密封装的板子，规则阶段先按球距列计算表（焊盘间过线、球间过孔、孔到焊盘、过孔间过线、孔到线），和板厂下限对照得出需要的例外；例外在布局开始前定完。 _Why:_ 六层废弃板上规则区、小过孔、区内线宽都是走线中途加的。
 - **RUL-2** · provisional · 新建工程或改动 `.kicad_dru` 之后跑金丝雀（`scripts/dru_canary.py`），输出 `OK` 才算完成。 _Why:_ `.kicad_dru` 有任何语法错误，KiCad 会静默跳过整个文件，DRC 照常输出。
 - **RUL-3** · provisional · 布局前按板厂的叠层数据算差分阻抗，为每种接口建网络类并填线宽和间距。 _Why:_ 模板里故意没填；阻抗取决于叠层。
 - **RUL-4** · provisional · 改了 `.kicad_pro`（网络类、规则）之后，在用户下次关闭 KiCad 之后重新读回核对。 _Why:_ KiCad 关闭工程时用内存里的旧设置覆盖文件，丢过一次 USB2 网络类。
