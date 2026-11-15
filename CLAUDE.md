@@ -25,3 +25,17 @@ Area files change only on `main` (the writer branch); on any other branch, write
 - [电源与铜皮](docs/shape/power-copper.md): 铜皮类网络先规划，外形只用 45°/90°
 - [走线](docs/shape/routing.md): 约定、线序、等长、线形、手工和自动的分工
 - [收尾](docs/shape/finishing.md): 丝印、泪滴、最后的检查
+
+## Agent skills
+
+### Issue tracker
+
+Issues and specs live as markdown files under `.scratch/<feature>/`, tracked in git. See `docs/agents/issue-tracker.md`.
+
+### Triage labels
+
+The five default roles, each label equal to its name, written on the `Status:` line of the issue file. See `docs/agents/triage-labels.md`.
+
+### Domain docs
+
+Single-context: `GLOSSARY.md` and `docs/adr/` at the repo root, created only when needed. See `docs/agents/domain.md`.

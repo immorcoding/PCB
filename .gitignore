@@ -19,6 +19,3 @@ __pycache__/
 
 # kicad-happy analyzer runs (regenerable); the manifest stays tracked
 analysis/*/
-
-# local scratch output
-.scratch/
