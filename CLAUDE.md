@@ -30,11 +30,11 @@ Area files change only on `main` (the writer branch); on any other branch, write
 
 ### Issue tracker
 
-Issues and specs live as markdown files under `.scratch/<feature>/`, tracked in git. See `docs/agents/issue-tracker.md`.
+Issues and specs live as GitHub issues in `immorcoding/PCB` (remote `origin`, private), through the `gh` CLI. See `docs/agents/issue-tracker.md`.
 
 ### Triage labels
 
-The five default roles, each label equal to its name, written on the `Status:` line of the issue file. See `docs/agents/triage-labels.md`.
+The five default roles, each a GitHub label equal to its name. See `docs/agents/triage-labels.md`.
 
 ### Domain docs
 
