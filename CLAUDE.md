@@ -2,75 +2,26 @@
 
 KiCad 10 硬件设计。分工：Claude 完成原理图、布局、布线；用户（Altium 背景，KiCad 新手）负责审查。交付时附上审查清单，概念用 AD 的对应说法解释。
 
-## 流程
+已做完的板子：`stm32f411_minsys/`（双层）、`steval_fcu001v2/`（四层，40 × 40 mm）。
 
-下面是一块双层测试板（`stm32f411_minsys/`）和一块四层测试板（`steval_fcu001v2/`，40 × 40 mm，都是 2026-11-12）走通的顺序，当作起点。层数、板厂、密度不同的板子，先和用户确认哪些步骤和约定要调整；六层及以上、BGA 还没有实测经验，遇到和这里不符的情况以实际为准，做完后回来更新这一节。
+## 去哪里找什么
 
-阶段之间交给用户审查；分支和提交按用户当时的要求来。
+- **该怎么做**（流程、验收标准、约定）：`docs/shape/`，见下面的 Project shape。
+- **规则的数值**（和 AD 的对照、板厂覆盖值、规则文件的坑）：[docs/design-rules.md](docs/design-rules.md)。
+- **工具的命令、用法和坑**：[docs/tools.md](docs/tools.md)。
 
-1. **方案**：器件选型、接口、板型、叠层列成选项给用户定。板子尺寸按器件占地面积估出两三档给用户选，定了再布局（四层测试板布局后缩了两次，每次整板重摆）。没有规格书可核对的引脚和参数记入"未核对项"，一直带到交付。
-2. **规则**：从 `templates/common/` 起工程，按板厂和层数加工程级覆盖。完成标准：金丝雀输出 `OK`。
-3. **原理图**：完成标准是 ERC 干净、导出的网表逐网络核对过。排针和连接器的引脚分配对照布局草图定（测试板的两排电源脚放在了对角，结果 +5V 绕板一圈）。
-4. **布局**：坐标写在工程的 `place.py`。交审查前先试走关键网络（晶振、高速差分、电源主干、去耦），把试走暴露的问题在这一阶段改掉（双层测试板走线中途改了 5 处布局；四层测试板没试走就交了布局，走线中途改了十几个器件的位置，LED 挪了两次）。焊盘坐标从板文件里打出来再算，别按封装方向心算（四层板上 MCU 引脚行号心算错了一格）。封装自带的禁布区和板边开槽在这一步查。排针、测试点旁边给丝印留位置，位号留不留也在这一步问用户（见"走线"一节的丝印条目）。
-5. **走线**：动手前和用户定各层的用途和约定，能量化的给出数字（例：双层板底层允许走哪些网络、总长多少）。走线中发现约定守不住、或需要改规则和布局时，当场告诉用户原因和数字。走完第一个区域就把局部图给用户看一眼走线风格，用户说了"最后一起看"也给（四层测试板全部走完才交，DRC 干净但被判不整齐，返工三轮）。完成标准有两条：`kicad-cli pcb drc --refill-zones --severity-all` 未连接为 0、剩余项逐条有解释；`scripts/track_shape.py` 按 `docs/design-rules.md` 的"走线形状"一节达标，没达标的逐处列给用户。
-6. **收尾**：地过孔、丝印（位号或功能标注，按布局阶段和用户定的做）、泪滴、渲染图，然后带 `--schematic-parity` 重跑 DRC、重跑金丝雀、甄别 kicad-happy 的发现。
-7. **交付**：审查清单写明 DRC 剩余项、没守住的约定及数字、过程中改过的规则和布局、未核对项、图片路径；提醒用户在 KiCad 里"文件 → 还原"重新载入。
+KiCad 10.0.8 在 `D:\KiCad\bin\`（`kicad-cli.exe`，带 pcbnew 的 `python.exe`），不在 PATH 上。
 
-提交前核对板文件里的走线数和未连接数与刚报告的一致（提交过一次没有走线的板子）。
+## Project shape
 
-## 设计规则
+Current standards, one file per area, rules grouped under titles. Before planning, specifying or changing anything that touches an area, read its file (once split, its index and the title files involved), hand those files to any subagent you start, and raise any Proposed items with the user.
+Levels: **exploring** is a bet (follow it, note friction); **provisional** is likely to hold (ask before breaking it); **settled** is proven (enforced).
+Add a dated line to the area's Signals when a rule decides part of your change, gets in your way or is broken by code, and when the user corrects you; subagents report these, and you write them. Decisions that should bind the project go through the `shape-your-project` skill: at the end of a grill, wayfinder session or retro, gather them, with repeated corrections, and take them through together.
+Area files change only on `main` (the writer branch); on any other branch, write those lines and any drafts to `docs/shape/inbox/<branch>.md` instead. Right after a merge brings an inbox to `main`, drain it through the skill.
 
-规则的唯一来源是 `docs/design-rules.md`（AD `common.RUL` 的迁移对照、取舍原因、已知陷阱、板厂覆盖）。新建工程、修改规则、布局前定差分参数时先读它。
-
-- **新工程**：复制 `templates/common/` 下的 `common.kicad_pro` / `.kicad_pcb` / `.kicad_dru`，三个改成同一工程名。
-- **规则是否生效**：每次新建工程或改动 `.kicad_dru` 后跑金丝雀，输出 `OK` 才算完成：
-  `D:\KiCad\bin\python.exe scripts\dru_canary.py <工程>.kicad_pcb`
-  KiCad 遇到 `.kicad_dru` 语法错误会静默跳过整个文件，DRC 报告干净不代表规则在工作。
-- **用户开着 KiCad 时改 `.kicad_pro` 会丢**：KiCad 关闭工程时用内存里的旧设置覆盖文件（2026-11-12 丢过一次 USB2 网络类）。改完网络类/规则后，在用户下次关闭 KiCad 之后重新读回核对；工程目录下有 `~*.lck` 说明 KiCad 正开着。
-
-## 原理图
-
-没有现成的原理图生成工具，用 `scripts/kisch.py`（从官方符号库取符号、按引脚坐标连线）。每个工程一个 `gen_sch.py`，参考 `stm32f411_minsys/gen_sch.py`。
-构建并检查：`sh scripts/sch_build.sh <工程目录> <输出目录>`（生成 → 升级到 KiCad 10 格式 → ERC → 网表 → PDF）。
-连接关系以导出的网表为准；版面用 `pdftoppm -r 200 -png -x -y -W -H` 裁剪放大看文字重叠。
-用户在 KiCad 里手工改过原理图之后，`.kicad_sch` 是 source of truth，不要再跑 `gen_sch.py` 覆盖。
-
-## 改板循环
-
-坐标文件（`.kicad_pcb` / `.kicad_sch`）是 source of truth。每轮：重新读文件 → 修改 → `kicad-cli pcb drc` + kicad-happy 分析 → 渲染图片。图片只做定性判断（拥挤、环路、地平面被割），坐标和尺寸一律从文件读、用脚本算。
-分析器的发现先甄别真伪再报给用户（例：金手指被报"离板边太近"属误报）。
-
-两块测试板的 `.kicad_pcb` 是脚本生成的：`place.py` → `route.py` → `silk.py` → 泪滴，四层板用 `sh steval_fcu001v2/build_pcb.sh <报告目录>` 一次跑完（顺序不能换：`route.py` 会清掉泪滴）。改板改脚本，不要直接改板文件。反过来，用户在 KiCad 里手工改过板子之后，板文件才是 source of truth，再跑这些脚本会把用户的改动冲掉，先问用户。
-
-## 走线
-
-`scripts/` 下的工具：`net2pcb.py`（网表进板）、`pcb_view.py`（带走线和飞线的示意图）、`via_spots.py`（找合法过孔位置）、`silk_refs.py`（自动摆位号，稀的板子用；密板见下面的丝印条目）、`teardrops.py`（泪滴）。用法见各文件开头。
-
-`scripts/` 下配合自动布线的工具：`auto_tracks.py`（把布线结果抽成 JSON，由工程的 `route.py` 回放）、`auto_clean.py`（清理布线器留下的锯齿和直角）、`auto_tidy.py`（在固定点之间把布线器的折线拉直，自带间距检查，跑完仍要 DRC）、`track_shape.py`（报告 DRC 不查的走线形状：非 45° 线段、阶梯线、小倒角直角、短距离连续折弯、碎线段）、`layer_view.py`（带坐标网格的单层视图，规划手工走线用）、`pour_islands.py`（找没接到网络上的铺铜碎片）。
-
-双层板上的做法（参考 `stm32f411_minsys/route.py`）：关键网络写进工程的 `route.py` 手工走，其余 GPIO 交给 KiCadRoutingTools，最后清理拐角。原因是布线器不认识拐角规则，也不会少用底层，全板交给它得不到合规结果；密的地方它还会走不通（测试板 30 根 GPIO 只走通 13 根），剩下的用坐标脚本补。
-
-四层板上的做法（参考 `steval_fcu001v2/route.py`，57 个网络手工、21 个自动）：分工不变，按区域做，手工走完一个区域就跑 DRC。和双层板不同的地方：
-
-- **内层只做平面**：给布线器 `--layers F.Cu B.Cu`。地和电源的焊盘就近打孔下平面，F/B 铺铜接不到的贴片地焊盘用 `pour_islands.py` 找出来补孔。
-- **手工走线要锁住再交给布线器**：`route.py --no-pour <副本>` 写出的副本里手工铜皮是锁定的；另外设 `KICAD_RIP_PREEXISTING=0 KICAD_FINALIZE_RIP=0`、加 `--keep-input-copper`。不这样它会拆掉手工走的 USB 差分对重走。
-- **不让它缩尺寸**：默认它会把过孔缩到 0.25 mm、线宽缩到 0.089 mm 来走通。用 `--escalation off --fab-tier standard`（精确尺寸），确实走不通的再单独放宽；`--same-net-pad-clearance 0.1` 禁止盘中孔。
-- **0.5 mm 间距 IC 的引脚扇出手工做**：布线器在精确尺寸下过不了这一关（四层板第一次只走通 17/24）。把要换层的引脚用 0.45/0.2 过孔交错排成两三排，总线类的（这块板的蓝牙 SPI）整组手工走，布线器只接过孔之后的长线，这样 21 个网络都按 0.2 mm / 0.6 mm 走通。
-- **分批跑，先走最受限的**：一次全给它，后走的网络会被挤成 0.127 mm 的碎线。一批失败的网络和它的邻居一起重跑（`--skip` 把它们从回放里去掉），比单独重跑容易通。
-- **手工改动之后，受影响的自动网络要重跑**：`auto_tracks.json` 是按当时的布局和手工铜皮走的，挪器件或加手工线之后 DRC 会报短路或交叉。
-- **走通之后要拉直，并用 `track_shape.py` 自查**：布线器的线满是小折弯，还会用一串 0.2 mm 竖线加 0.035 mm 斜线拼出非 45° 的斜线（每段单独量都合规，逐段的角度检查查不出来）。DRC 过了也不能直接交。每次导入结果后跑 `auto_clean.py`，全部走通后跑 `auto_tidy.py --clearance 0.13`，再 DRC，再跑 `track_shape.py`，阶梯线、非 45° 线段和小倒角直角（`sharp`）必须为 0，剩下的连续折弯逐处看图再下结论。布线器的线头常常停在过孔中心旁边 0.05–0.25 mm 处（靠铜皮重叠连通，DRC 不报），重走时顺手接到中心。它只拉直、不改拓扑，绕远的线和过孔挤出来的连续折弯要手工重走。
-- **手工走短线别硬凑 45°**：电容到引脚、引脚到过孔这类 1–2 mm 的线，把器件摆到和引脚对齐（或让焊盘在一个方向上重叠），走一段直线；不要为了每个端点都 45° 进出而在 1 mm 里折三四次。等长用圆弧蛇形（`route.py` 的 `ARC`），不要用 45° 梯形小弯；不需要等长的接口（USB 全速）先问用户要不要补。
-- **shell**：Git Bash 会把 `/` 开头的网络名改写成路径，传网络名的命令前 `export MSYS2_ARG_CONV_EXCL='*'`。
-
-`corner_angle` 对线上的三向分叉一律报错（T 型报 90°，Y 型报 45°），分叉只能放在焊盘中心；过孔处的 90° 转弯也报。布线器的中途抽头要么改成从焊盘出线，要么逐条解释。
-
-- **pcbnew 的坑**：`board.Remove()` 之后，同一进程里 `board.Zones()`、`GetFootprints()` 等集合会返回无类型对象，访问即报错或崩溃。先读完需要的数据再删；删完还要继续读就另起一个进程（同一进程里重新 `LoadBoard` 也不行，参考 `steval_fcu001v2/silk.py` 的 `--strip`）。
-- **铺铜以 KiCad 自己的填充为准**：`kicad-cli pcb drc --refill-zones` 的未连接数才算数。
-- **丝印**：0402 密度的板子按 0.8 mm 字高放不下全部位号（四层测试板 102 个只放下 55 个）。先问用户是全留还是只留功能标注；只留功能标注时位号留在 Fab 层，标注坐标写在工程的 `silk.py`（参考 `steval_fcu001v2/silk.py`，放不下会报出挡路的东西）。排针的引脚名在布局阶段就要留位置：排针之间、排针到板边至少留一列字的宽度，3D 渲染里要看字有没有被器件本体盖住。
-- **泪滴**：Python API 不暴露泪滴参数，用 `scripts/teardrops.py <板>`（写入文件后由 `kicad-cli` 生成），放在走线和铺铜定稿之后。
-
-## 工具位置
-
-- KiCad 10.0.8：`D:\KiCad\bin\`（`kicad-cli.exe`，带 pcbnew 的 `python.exe`），不在 PATH 上。
-- KiCadRoutingTools（布局/自动布线）：`Tools/KiCadRoutingTools/`，独立 git 仓库，已 gitignore。它的脚本和 skill 假定 cwd 是该目录，用 `.venv/Scripts/python.exe -X utf8` 运行。
-- kicad-happy（审查/EMC/BOM/JLC）：项目级插件，见 `.claude/settings.json`。SPICE 暂不可用（未装独立 ngspice）。
+- [推进流程](docs/shape/process.md): 阶段顺序、完成标准、回退、审查交接、指标和工具
+- [规则与原理图](docs/shape/rules-and-schematic.md): 起工程、确认规则生效、原理图完成标准
+- [布局](docs/shape/layout.md): 围着铜皮摆器件，按走线和供电验收
+- [电源与铜皮](docs/shape/power-copper.md): 铜皮类网络先规划，外形只用 45°/90°
+- [走线](docs/shape/routing.md): 约定、线序、等长、线形、手工和自动的分工
+- [收尾](docs/shape/finishing.md): 丝印、泪滴、最后的检查
