@@ -2,7 +2,7 @@
 
 工程怎么起、设计规则怎么确认生效、原理图怎样算做完。规则的数值、和 AD 的对照、板厂覆盖值在 [design-rules.md](../design-rules.md)；命令和工具的坑在 [tools.md](../tools.md)。
 
-Next id: RUL-9
+Next id: RUL-11
 
 ## Pillars
 
@@ -29,4 +29,6 @@ Next id: RUL-9
 
 - **RUL-6** · provisional · 原理图的完成标准：ERC 干净，导出的网表逐网络核对过；大芯片的引脚对照官方引脚表用脚本比。 _Why:_ 图上看着连了不等于网表里连了。
 - **RUL-7** · provisional · 排针和连接器的引脚分配对照布局草图定。 _Why:_ 双层板的两排电源脚放在了对角，+5V 绕板一圈。
+- **RUL-9** · exploring · 原理图的完成标准里还包括：跑 kicad-happy 的 `kicad` skill 做原理图审查（电源树、稳压电路、网络追踪），发现逐条甄别真伪后再报给用户。 _Why:_ 六层废弃板上一次都没用过它，引脚核对是自己写脚本做的；它原来只排在收尾阶段。
+- **RUL-10** · exploring · 方案和原理图阶段，有规格书 PDF 的器件用 kicad-happy 的 `datasheets` skill 提取引脚和电气参数来核对，核对不了的才记入"未核对项"。 _Why:_ 手工读规格书慢，也容易漏；未核对项越少，交付时用户要查的越少。
 - **RUL-8** · provisional · 写进原理图的文字不带没转义的换行；符号坐标落在 1.27 mm 网格上。 _Why:_ 带换行的文字会让同一页后面的标签全部连不上；不在网格上每个端点报一条 `endpoint_off_grid`。
