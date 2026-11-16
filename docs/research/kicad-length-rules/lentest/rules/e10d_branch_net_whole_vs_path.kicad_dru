@@ -1,0 +1,4 @@
+(version 1)
+(rule "whole_net"
+  (condition "A.NetName == '/TBR'")
+  (constraint length (max 1mm)))

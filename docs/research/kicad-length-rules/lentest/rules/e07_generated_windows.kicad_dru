@@ -1,0 +1,22 @@
+(version 1)
+(rule "win_SDRAM_D0"
+  (condition "A.NetName == '/SDRAM_D0'")
+  (constraint length (min 48.3284mm) (opt 50.8284mm) (max 53.3284mm)))
+(rule "win_SDRAM_D1"
+  (condition "A.NetName == '/SDRAM_D1'")
+  (constraint length (min 48.3284mm) (opt 50.8284mm) (max 53.3284mm)))
+(rule "win_SDRAM_D2"
+  (condition "A.NetName == '/SDRAM_D2'")
+  (constraint length (min 48.3284mm) (opt 50.8284mm) (max 53.3284mm)))
+(rule "win_SDRAM_D3"
+  (condition "A.NetName == '/SDRAM_D3'")
+  (constraint length (min 48.3284mm) (opt 50.8284mm) (max 53.3284mm)))
+(rule "win_SDRAM_D8"
+  (condition "A.NetName == '/SDRAM_D8'")
+  (constraint length (min 48.3284mm) (opt 50.8284mm) (max 53.3284mm)))
+(rule "win_SDRAM_D9"
+  (condition "A.NetName == '/SDRAM_D9'")
+  (constraint length (min 48.3284mm) (opt 50.8284mm) (max 53.3284mm)))
+(rule "win_SDRAM_D10"
+  (condition "A.NetName == '/SDRAM_D10'")
+  (constraint length (min 48.3284mm) (opt 50.8284mm) (max 53.3284mm)))

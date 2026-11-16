@@ -1,0 +1,30 @@
+﻿[length] rule 'sdram_len': 13 nets, longest 70.0000, shortest 3.2000, spread 66.8000
+    /CLK2_A                      3.2000
+    /CLK2_B                     45.2000
+    /SDRAM_D0                   50.0000
+    /SDRAM_D1                   51.6569
+    /SDRAM_D10                  57.7124
+    /SDRAM_D2                   53.4248
+    /SDRAM_D3                   52.8616
+    /SDRAM_D4                   51.1156
+    /SDRAM_D5                   52.5764
+    /SDRAM_D6                   50.2852
+    /SDRAM_D7                   70.0000
+    /SDRAM_D8                   54.5000
+    /SDRAM_D9                   52.8540
+[length] rule 'typo_class': EMPTY -- matched no routed net (typo in the condition? net not routed?)
+[length] rule 'clk_path': 1 nets, longest 50.8284, shortest 50.8284, spread 0.0000
+    /SDCLK                      50.8284
+[skew]   rule 'sdram_skew': 13 members; reference (longest) length 57.7124; others:
+    /CLK2_A                      3.2000   skew -54.5124
+    /CLK2_B                     45.2000   skew -12.5124
+    /SDCLK                      50.8284   skew -6.8840
+    /SDRAM_D0                   50.0000   skew -7.7124
+    /SDRAM_D1                   51.6569   skew -6.0555
+    /SDRAM_D2                   53.4248   skew -4.2876
+    /SDRAM_D3                   52.8616   skew -4.8508
+    /SDRAM_D4                   51.1156   skew -6.5968
+    /SDRAM_D5                   52.5764   skew -5.1360
+    /SDRAM_D6                   50.2852   skew -7.4272
+    /SDRAM_D8                   54.5000   skew -3.2124
+    /SDRAM_D9                   52.8540   skew -4.8584

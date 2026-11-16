@@ -1,0 +1,4 @@
+(version 1)
+(rule "skew_clk_d0_d2"
+  (condition "A.NetName == '/SDCLK' || A.NetName == '/SDRAM_D0' || A.NetName == '/SDRAM_D2'")
+  (constraint skew (max 2.5mm)))

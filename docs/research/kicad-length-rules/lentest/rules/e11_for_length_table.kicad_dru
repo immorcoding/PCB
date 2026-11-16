@@ -1,0 +1,19 @@
+(version 1)
+# E11: a realistic rule file for length_table.py (probe-rule trick).
+# "sdram_len" and "sdram_skew" match; "typo_class" matches nothing (class misspelt);
+# "clk_path" uses fromTo; the clearance rule has no length/skew constraint and is ignored.
+(rule "sdram_len"
+  (condition "A.NetClass == 'SDRAM'")
+  (constraint length (max 60mm)))
+(rule "sdram_skew"
+  (condition "A.NetClass == 'SDRAM' && A.NetName != '/SDRAM_D7'")
+  (constraint skew (max 2.5mm)))
+(rule "typo_class"
+  (condition "A.NetClass == 'SDRAMM'")
+  (constraint length (max 60mm)))
+(rule "clk_path"
+  (condition "A.fromTo('J1-10', 'J2-10')")
+  (constraint length (min 40mm) (max 55mm)))
+(rule "some_clearance"
+  (condition "A.NetClass == 'QSPI'")
+  (constraint clearance (min 0.2mm)))

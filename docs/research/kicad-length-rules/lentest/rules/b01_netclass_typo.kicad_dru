@@ -1,0 +1,9 @@
+(version 1)
+# netclass name misspelt (valid syntax)
+(rule "canary_D7"
+  (condition "A.NetName == '/SDRAM_D7'")
+  (constraint length (max 60mm)))
+
+(rule "target"
+  (condition "A.NetClass == 'SDRAMM'")
+  (constraint length (max 52mm)))

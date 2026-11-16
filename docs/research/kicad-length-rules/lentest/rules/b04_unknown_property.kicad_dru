@@ -1,0 +1,9 @@
+(version 1)
+# property name misspelt: NetClas
+(rule "canary_D7"
+  (condition "A.NetName == '/SDRAM_D7'")
+  (constraint length (max 60mm)))
+
+(rule "target"
+  (condition "A.NetClas == 'SDRAM'")
+  (constraint length (max 52mm)))

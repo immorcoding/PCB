@@ -1,0 +1,190 @@
+{
+ "/SDRAM_D0": {
+  "track": 50.0,
+  "vias": [],
+  "pad_to_die": 0.0,
+  "routes": []
+ },
+ "/SDRAM_D1": {
+  "track": 51.656854,
+  "vias": [],
+  "pad_to_die": 0.0,
+  "routes": []
+ },
+ "/SDRAM_D2": {
+  "track": 53.424778,
+  "vias": [],
+  "pad_to_die": 0.0,
+  "routes": []
+ },
+ "/SDRAM_D3": {
+  "track": 50.0,
+  "vias": [
+   [
+    10,
+    12
+   ],
+   [
+    40,
+    12
+   ]
+  ],
+  "pad_to_die": 0.0,
+  "routes": [
+   [
+    "F",
+    "B"
+   ]
+  ]
+ },
+ "/SDRAM_D4": {
+  "track": 50.0,
+  "vias": [
+   [
+    10,
+    16
+   ],
+   [
+    40,
+    16
+   ]
+  ],
+  "pad_to_die": 0.0,
+  "routes": [
+   [
+    "F",
+    "In2"
+   ]
+  ]
+ },
+ "/SDRAM_D5": {
+  "track": 50.0,
+  "vias": [
+   [
+    10,
+    20
+   ],
+   [
+    40,
+    20
+   ]
+  ],
+  "pad_to_die": 0.0,
+  "routes": [
+   [
+    "F",
+    "In4"
+   ]
+  ]
+ },
+ "/SDRAM_D6": {
+  "track": 50.0,
+  "vias": [
+   [
+    10,
+    24
+   ],
+   [
+    40,
+    24
+   ]
+  ],
+  "pad_to_die": 0.0,
+  "routes": [
+   [
+    "F",
+    "In1"
+   ]
+  ]
+ },
+ "/SDRAM_D7": {
+  "track": 70.0,
+  "vias": [],
+  "pad_to_die": 0.0,
+  "routes": []
+ },
+ "/SDRAM_D8": {
+  "track": 50.0,
+  "vias": [],
+  "pad_to_die": 4.5,
+  "routes": []
+ },
+ "/SDCLK": {
+  "track": 50.828427,
+  "vias": [],
+  "pad_to_die": 0.0,
+  "routes": []
+ },
+ "/SDRAM_D9": {
+  "track": 52.853982,
+  "vias": [],
+  "pad_to_die": 0.0,
+  "routes": []
+ },
+ "/SDRAM_D10": {
+  "track": 57.712389,
+  "vias": [],
+  "pad_to_die": 0.0,
+  "routes": []
+ },
+ "/CLK2_A": {
+  "track": 3.2,
+  "vias": [],
+  "pad_to_die": 0.0,
+  "routes": []
+ },
+ "/CLK2_B": {
+  "track": 45.2,
+  "vias": [],
+  "pad_to_die": 0.0,
+  "routes": []
+ },
+ "/QSPI_CLK": {
+  "track": 50.0,
+  "vias": [],
+  "pad_to_die": 0.0,
+  "routes": []
+ },
+ "/QSPI_IO0": {
+  "track": 51.656854,
+  "vias": [],
+  "pad_to_die": 0.0,
+  "routes": []
+ },
+ "/TBR": {
+  "track": 55.0,
+  "vias": [],
+  "pad_to_die": 0.0,
+  "routes": []
+ },
+ "/ARC_30deg_r0.25": {
+  "track": 2.1309,
+  "vias": [],
+  "pad_to_die": 0.0,
+  "routes": []
+ },
+ "/ARC_90deg_r0.25": {
+  "track": 2.392699,
+  "vias": [],
+  "pad_to_die": 0.0,
+  "routes": []
+ },
+ "/ARC_225deg_r2": {
+  "track": 9.853982,
+  "vias": [],
+  "pad_to_die": 0.0,
+  "routes": []
+ },
+ "/ARC_340deg_r1": {
+  "track": 7.934119,
+  "vias": [],
+  "pad_to_die": 0.0,
+  "routes": []
+ },
+ "/ARC_5deg_r100": {
+  "track": 10.726646,
+  "vias": [],
+  "pad_to_die": 0.0,
+  "routes": []
+ }
+}

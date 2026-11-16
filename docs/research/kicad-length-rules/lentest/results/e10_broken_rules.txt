@@ -1,0 +1,14 @@
+﻿case                       loaded  canary  target  blocks  
+b00_control_ok             True    False   7       150     rc=0
+b01_netclass_typo          True    True    0       144     rc=0
+b02_netname_no_slash       True    True    0       144     rc=0
+b03_unknown_function       True    True    0       144     rc=0
+b04_unknown_property       True    True    0       144     rc=0
+b05_missing_paren          False   False   0       143     rc=0
+b06_unknown_constraint     False   False   0       143     rc=0
+b07_space_in_unit          True    False   7       150     rc=0
+b08_no_unit                False   False   0       143     rc=0
+b09_single_equals          False   False   0       143     rc=0
+b10_lowercase_property     True    False   7       150     rc=0
+b11_trailing_comment       False   False   0       143     rc=0
+b12_degree_unit_on_skew    True    True    13      157     rc=0

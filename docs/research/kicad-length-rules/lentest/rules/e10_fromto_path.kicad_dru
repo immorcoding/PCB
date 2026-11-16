@@ -1,0 +1,7 @@
+(version 1)
+(rule "path_J1_J2_row1"
+  (condition "A.fromTo('J1-1', 'J2-1')")
+  (constraint length (max 49mm)))
+(rule "path_J1_J2_row4_with_vias"
+  (condition "A.fromTo('J1-4', 'J2-4')")
+  (constraint length (max 52mm)))

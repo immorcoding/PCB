@@ -1,0 +1,9 @@
+(version 1)
+# unit separated by a space: 52 mm
+(rule "canary_D7"
+  (condition "A.NetName == '/SDRAM_D7'")
+  (constraint length (max 60mm)))
+
+(rule "target"
+  (condition "A.NetClass == 'SDRAM'")
+  (constraint length (max 52 mm)))

@@ -1,0 +1,6 @@
+(version 1)
+# E02: per-net length limit, rule written with A.NetClass == '...'
+# Expected: only /SDRAM_D7 (70 mm) exceeds 60 mm.
+(rule "sdram_len_max_netclass"
+  (condition "A.NetClass == 'SDRAM'")
+  (constraint length (max 60mm)))

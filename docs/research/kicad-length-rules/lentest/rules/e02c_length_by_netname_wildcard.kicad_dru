@@ -1,0 +1,6 @@
+(version 1)
+# E02c: same with a net-name wildcard.
+# /SDRAM_D* matches D0..D10 (incl. D7); /SDCLK and /CLK2_* are not matched.
+(rule "sdram_len_max_netname"
+  (condition "A.NetName == '/SDRAM_D*'")
+  (constraint length (max 60mm)))

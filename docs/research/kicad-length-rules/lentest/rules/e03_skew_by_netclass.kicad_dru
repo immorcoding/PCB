@@ -1,0 +1,5 @@
+(version 1)
+# E03: group skew over a net class; the deliberately-too-long D7 is left out of the group.
+(rule "sdram_skew_class"
+  (condition "A.NetClass == 'SDRAM' && A.NetName != '/SDRAM_D7'")
+  (constraint skew (max 2.5mm)))

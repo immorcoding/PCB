@@ -1,0 +1,5 @@
+(version 1)
+# E01: print the length KiCad computes for every net.
+# max 1mm is exceeded by every real net, so every net is reported with "actual <length>".
+(rule "probe_all_lengths"
+  (constraint length (max 1mm)))

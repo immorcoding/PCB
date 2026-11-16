@@ -1,0 +1,7 @@
+(version 1)
+(rule "class_len"
+  (condition "A.NetClass == 'SDRAM'")
+  (constraint length (max 60mm)))
+(rule "exception_D7"
+  (condition "A.NetName == '/SDRAM_D7'")
+  (constraint length (max 75mm)))

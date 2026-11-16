@@ -1,0 +1,5 @@
+(version 1)
+# E02b: same as E02 with A.hasNetclass('SDRAM')
+(rule "sdram_len_max_hasnetclass"
+  (condition "A.hasNetclass('SDRAM')")
+  (constraint length (max 60mm)))

@@ -1,0 +1,4 @@
+(version 1)
+(rule "path_skew_all_rows"
+  (condition "A.fromTo('J1-*', 'J2-*') && A.NetName != '/SDRAM_D7'")
+  (constraint skew (max 4mm)))

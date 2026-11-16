@@ -1,0 +1,9 @@
+﻿net               trk | A: total  via | B: total  via | C: total  via
+/SDRAM_D0     50.0000 |  50.0000  0.0000 |  50.0000  0.0000 |  50.0000  0.0000
+/SDRAM_D3     50.0000 |  52.8616  2.8616 |  53.1600  3.1600 |  50.0000  0.0000
+/SDRAM_D4     50.0000 |  51.1156  1.1156 |  51.2710  1.2710 |  50.0000  0.0000
+/SDRAM_D5     50.0000 |  52.5764  2.5764 |  52.5070  2.5070 |  50.0000  0.0000
+/SDRAM_D6     50.0000 |  50.2852  0.2852 |  50.6530  0.6530 |  50.0000  0.0000
+/SDRAM_D8     50.0000 |  54.5000  4.5000 |  54.5000  4.5000 |  54.5000  4.5000
+via_count max 1, variant A: nets flagged = ['/SDRAM_D3', '/SDRAM_D4', '/SDRAM_D5', '/SDRAM_D6']; via-related codes: ['too_many_vias']
+via_count max 1, variant C: nets flagged = []; via-related codes: []

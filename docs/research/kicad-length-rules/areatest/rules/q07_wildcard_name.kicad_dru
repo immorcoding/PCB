@@ -1,0 +1,7 @@
+(version 1)
+(rule "signal_min"
+  (condition "A.Type == 'Track'")
+  (constraint track_width (min 0.1016mm)))
+(rule "bga_exact"
+  (condition "A.Type == 'Track' && A.intersectsArea('bg*')")
+  (constraint track_width (min 0.09mm) (max 0.09mm)))

@@ -1,0 +1,4 @@
+(version 1)
+(rule "sdram_data_window"
+  (condition "A.NetName == '/SDRAM_D*'")
+  (constraint length (min 48.3284mm) (opt 50.8284mm) (max 53.3284mm)))

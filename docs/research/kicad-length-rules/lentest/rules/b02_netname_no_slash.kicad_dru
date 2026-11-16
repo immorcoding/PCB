@@ -1,0 +1,9 @@
+(version 1)
+# net name without the leading '/'
+(rule "canary_D7"
+  (condition "A.NetName == '/SDRAM_D7'")
+  (constraint length (max 60mm)))
+
+(rule "target"
+  (condition "A.NetName == 'SDRAM_D*'")
+  (constraint length (max 52mm)))

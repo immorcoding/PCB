@@ -1,0 +1,10 @@
+(version 1)
+(rule "span_the_resistor"
+  (condition "A.fromTo('J1-13', 'J2-13')")
+  (constraint length (max 1mm)))
+(rule "seg_a"
+  (condition "A.fromTo('J1-13', 'R1-1')")
+  (constraint length (max 1mm)))
+(rule "seg_b"
+  (condition "A.fromTo('R1-2', 'J2-13')")
+  (constraint length (max 1mm)))

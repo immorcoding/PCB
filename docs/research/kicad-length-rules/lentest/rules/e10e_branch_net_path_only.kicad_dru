@@ -1,0 +1,4 @@
+(version 1)
+(rule "path_only"
+  (condition "A.fromTo('J1-16', 'J2-16')")
+  (constraint length (max 1mm)))

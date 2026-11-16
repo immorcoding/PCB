@@ -1,0 +1,4 @@
+(version 1)
+(rule "not_shorter_than_clock"
+  (condition "A.NetName == '/SDRAM_D*'")
+  (constraint length (min 50.8284mm)))

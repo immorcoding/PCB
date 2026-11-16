@@ -1,0 +1,53 @@
+﻿--- e06_skew_group_clock_d0_d2: group SDCLK 50.828 / D0 50.000 / D2 53.425; true +-2.5 about SDCLK would flag only D2 (+2.597)
+   skew_out_of_range    rule=skew_clk_d0_d2         net=/SDCLK       skew=-2.5963 (limit 2.5), reference length 53.4248, own 50.8284
+   skew_out_of_range    rule=skew_clk_d0_d2         net=/SDRAM_D0    skew=-3.4248 (limit 2.5), reference length 53.4248, own 50.0000
+--- e07_generated_windows: window 48.328..53.328 around SDCLK 50.828; D0 (50.0) is -0.83 -> fine, D10 (57.7) +6.9 -> flag, D2 +2.597 -> flag
+   length_out_of_range  rule=win_SDRAM_D8           net=/SDRAM_D8    nums=[53.3284, 54.5]
+   length_out_of_range  rule=win_SDRAM_D10          net=/SDRAM_D10   nums=[53.3284, 57.7124]
+   length_out_of_range  rule=win_SDRAM_D2           net=/SDRAM_D2    nums=[53.3284, 53.4248]
+--- e07c_one_window_rule_for_group: one rule for D0..D10 (incl. the 70 mm D7): window 48.328..53.328; expect D2, D7, D8, D10 flagged, nothing under 48.328
+   length_out_of_range  rule=sdram_data_window      net=/SDRAM_D10   nums=[53.3284, 57.7124]
+   length_out_of_range  rule=sdram_data_window      net=/SDRAM_D2    nums=[53.3284, 53.4248]
+   length_out_of_range  rule=sdram_data_window      net=/SDRAM_D7    nums=[53.3284, 70.0]
+   length_out_of_range  rule=sdram_data_window      net=/SDRAM_D8    nums=[53.3284, 54.5]
+--- e07b_min_clock: every D* net must be >= SDCLK 50.828: D0 (50.000) and D6 (50.285) are shorter, D4 (51.116) is not
+   length_out_of_range  rule=not_shorter_than_clock net=/SDRAM_D0    nums=[50.8284, 50.0]
+   length_out_of_range  rule=not_shorter_than_clock net=/SDRAM_D6    nums=[50.8284, 50.2852]
+--- e08_length_and_skew_together: length max 52 and skew max 7 on overlapping sets: both must report
+   skew_out_of_range    rule=grp_skew               net=/CLK2_A      skew=-54.5124 (limit 7.0), reference length 57.7124, own 3.2000
+   skew_out_of_range    rule=grp_skew               net=/CLK2_B      skew=-12.5124 (limit 7.0), reference length 57.7124, own 45.2000
+   skew_out_of_range    rule=grp_skew               net=/SDRAM_D0    skew=-7.7124 (limit 7.0), reference length 57.7124, own 50.0000
+   skew_out_of_range    rule=grp_skew               net=/SDRAM_D6    skew=-7.4272 (limit 7.0), reference length 57.7124, own 50.2852
+   length_out_of_range  rule=grp_len                net=/SDRAM_D10   nums=[52.0, 57.7124]
+   length_out_of_range  rule=grp_len                net=/SDRAM_D2    nums=[52.0, 53.4248]
+   length_out_of_range  rule=grp_len                net=/SDRAM_D3    nums=[52.0, 52.8616]
+   length_out_of_range  rule=grp_len                net=/SDRAM_D5    nums=[52.0, 52.5764]
+   length_out_of_range  rule=grp_len                net=/SDRAM_D7    nums=[52.0, 70.0]
+   length_out_of_range  rule=grp_len                net=/SDRAM_D8    nums=[52.0, 54.5]
+   length_out_of_range  rule=grp_len                net=/SDRAM_D9    nums=[52.0, 52.854]
+--- e09_order_later_wins: class max 60 first, D7 exception 75 later: D7 (70) must NOT be reported
+--- e09b_order_earlier_loses: reverse order: the class rule is later, so it wins for D7: D7 (70) reported
+   length_out_of_range  rule=class_len              net=/SDRAM_D7    nums=[60.0, 70.0]
+--- e10_fromto_path: path rules: D0 (50.0 > 49) and D3 (52.86 > 52) must be reported
+   length_out_of_range  rule=path_J1_J2_row4_with_vias net=/SDRAM_D3    nums=[52.0, 52.8616]
+   length_out_of_range  rule=path_J1_J2_row1        net=/SDRAM_D0    nums=[49.0, 50.0]
+--- e10b_fromto_across_resistor: J1-13 -> R1.1 is /CLK2_A (3.2 mm), R1.2 -> J2-13 is /CLK2_B (45.2 mm); can one rule span both?
+   length_out_of_range  rule=seg_a                  net=/CLK2_A      nums=[1.0, 3.2]
+   length_out_of_range  rule=seg_b                  net=/CLK2_B      nums=[1.0, 45.2]
+--- e10d_branch_net_whole_vs_path: /TBR has a 5 mm stub: whole-net rule sums all copper (expect 55.0)
+   length_out_of_range  rule=whole_net              net=/TBR         nums=[1.0, 55.0]
+--- e10e_branch_net_path_only: same net, fromTo J1-16 -> J2-16: stub excluded? (expect 50.0 if path only)
+   length_out_of_range  rule=path_only              net=/TBR         nums=[1.0, 50.0]
+--- e10c_fromto_group_skew: skew over all J1-*/J2-* paths (D7 excluded); reference = longest
+   skew_out_of_range    rule=path_skew_all_rows     net=/QSPI_CLK    skew=-7.7124 (limit 4.0), reference length 57.7124, own 50.0000
+   skew_out_of_range    rule=path_skew_all_rows     net=/QSPI_IO0    skew=-6.0555 (limit 4.0), reference length 57.7124, own 51.6569
+   skew_out_of_range    rule=path_skew_all_rows     net=/SDCLK       skew=-6.8840 (limit 4.0), reference length 57.7124, own 50.8284
+   skew_out_of_range    rule=path_skew_all_rows     net=/SDRAM_D0    skew=-7.7124 (limit 4.0), reference length 57.7124, own 50.0000
+   skew_out_of_range    rule=path_skew_all_rows     net=/SDRAM_D1    skew=-6.0555 (limit 4.0), reference length 57.7124, own 51.6569
+   skew_out_of_range    rule=path_skew_all_rows     net=/SDRAM_D2    skew=-4.2876 (limit 4.0), reference length 57.7124, own 53.4248
+   skew_out_of_range    rule=path_skew_all_rows     net=/SDRAM_D3    skew=-4.8508 (limit 4.0), reference length 57.7124, own 52.8616
+   skew_out_of_range    rule=path_skew_all_rows     net=/SDRAM_D4    skew=-6.5968 (limit 4.0), reference length 57.7124, own 51.1156
+   skew_out_of_range    rule=path_skew_all_rows     net=/SDRAM_D5    skew=-5.1360 (limit 4.0), reference length 57.7124, own 52.5764
+   skew_out_of_range    rule=path_skew_all_rows     net=/SDRAM_D6    skew=-7.4272 (limit 4.0), reference length 57.7124, own 50.2852
+   skew_out_of_range    rule=path_skew_all_rows     net=/SDRAM_D9    skew=-4.8584 (limit 4.0), reference length 57.7124, own 52.8540
+   skew_out_of_range    rule=path_skew_all_rows     net=/TBR         skew=-7.7124 (limit 4.0), reference length 57.7124, own 50.0000

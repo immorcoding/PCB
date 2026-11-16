@@ -1,0 +1,26 @@
+﻿== make_generated.py
+members chosen: 29
+written, generated blocks / members: (1, 29)
+1. pcbnew.LoadBoard -> Generators(): 1
+2. after pcbnew.SaveBoard: generated blocks / members: (1, 29)
+3. after kicad-cli pcb upgrade (rc 0): generated blocks / members: (1, 29)
+== check_generated_drc.py
+lentest_gen -> /SDRAM_D9 DRC length: [52.854] | violation blocks: 160
+lentest_gen_up -> /SDRAM_D9 DRC length: [52.854] | violation blocks: 160
+== check_unknown_type.py
+tuning_pattern (as written)    -> loaded; Generators(): 1; tracks: 121
+   saved copy contains '(generated': True | type line: ['(type tuning_pattern)']
+bogus type                     -> LoadBoard raised: 'NoneType' object has no attribute 'Generators'
+== probe_generators.py (KiCad QA board, kept outside the repo)
+Generators() -> tuple of length 1
+element type: SwigPyObject
+  public attributes: ['acquire', 'append', 'disown', 'next', 'own']
+  has GetClass: False
+  has GetItems: False
+  has Update: False
+  has GetGeneratorType: False
+  has m_Uuid: False
+classes in pcbnew whose name contains GENERATOR / TUNING / MEANDER: ['DEFAULT_DP_MEANDER_SPACING', 'DEFAULT_MEANDER_SPACING', 'GENERATORS']
+BOARD methods mentioning Generator: ['Generators', 'GetGenerator', 'SetGenerator']
+board design settings exposing meander defaults: ['m_DiffPairMeanderSettings', 'm_SingleTrackMeanderSettings', 'm_SkewMeanderSettings']
+m_SingleTrackMeanderSettings attributes: []

@@ -1,0 +1,35 @@
+﻿== e02_length_by_netclass.rpt
+  length_out_of_range  rule='sdram_len_max_netclass'     net=/SDRAM_D7        nums=[60.0, 70.0]
+  -> 1 length/skew blocks; other violations: {'drill_out_of_range': 8, 'invalid_outline': 1, 'track_width': 116, 'track_dangling': 11, 'missing_courtyard': 3, 'silk_over_copper': 4}
+== e02b_length_by_hasnetclass.rpt
+  length_out_of_range  rule='sdram_len_max_hasnetclass'  net=/SDRAM_D7        nums=[60.0, 70.0]
+  -> 1 length/skew blocks; other violations: {'drill_out_of_range': 8, 'invalid_outline': 1, 'track_width': 116, 'track_dangling': 11, 'missing_courtyard': 3, 'silk_over_copper': 4}
+== e02c_length_by_netname_wildcard.rpt
+  length_out_of_range  rule='sdram_len_max_netname'      net=/SDRAM_D7        nums=[60.0, 70.0]
+  -> 1 length/skew blocks; other violations: {'drill_out_of_range': 8, 'invalid_outline': 1, 'track_width': 116, 'track_dangling': 11, 'missing_courtyard': 3, 'silk_over_copper': 4}
+== e03_skew_by_netclass.rpt
+  skew_out_of_range    rule='sdram_skew_class'           net=/CLK2_A          nums=[2.5, -54.5124, 57.7124, 3.2]
+       走线之间的 skew 超出范围 (约束条件 规则 'sdram_skew_class' 中, 最大 skew 2.5000 mm; 实际 skew -54.5124 mm; 网络目标长度 57.7124 mm (网络名 /SDRAM_D10); 实际长度 3.2000 mm)
+  skew_out_of_range    rule='sdram_skew_class'           net=/CLK2_B          nums=[2.5, -12.5124, 57.7124, 45.2]
+       走线之间的 skew 超出范围 (约束条件 规则 'sdram_skew_class' 中, 最大 skew 2.5000 mm; 实际 skew -12.5124 mm; 网络目标长度 57.7124 mm (网络名 /SDRAM_D10); 实际长度 45.2000 mm)
+  skew_out_of_range    rule='sdram_skew_class'           net=/SDCLK           nums=[2.5, -6.884, 57.7124, 50.8284]
+       走线之间的 skew 超出范围 (约束条件 规则 'sdram_skew_class' 中, 最大 skew 2.5000 mm; 实际 skew -6.8840 mm; 网络目标长度 57.7124 mm (网络名 /SDRAM_D10); 实际长度 50.8284 mm)
+  skew_out_of_range    rule='sdram_skew_class'           net=/SDRAM_D0        nums=[2.5, -7.7124, 57.7124, 50.0]
+       走线之间的 skew 超出范围 (约束条件 规则 'sdram_skew_class' 中, 最大 skew 2.5000 mm; 实际 skew -7.7124 mm; 网络目标长度 57.7124 mm (网络名 /SDRAM_D10); 实际长度 50.0000 mm)
+  skew_out_of_range    rule='sdram_skew_class'           net=/SDRAM_D1        nums=[2.5, -6.0555, 57.7124, 51.6569]
+       走线之间的 skew 超出范围 (约束条件 规则 'sdram_skew_class' 中, 最大 skew 2.5000 mm; 实际 skew -6.0555 mm; 网络目标长度 57.7124 mm (网络名 /SDRAM_D10); 实际长度 51.6569 mm)
+  skew_out_of_range    rule='sdram_skew_class'           net=/SDRAM_D2        nums=[2.5, -4.2876, 57.7124, 53.4248]
+       走线之间的 skew 超出范围 (约束条件 规则 'sdram_skew_class' 中, 最大 skew 2.5000 mm; 实际 skew -4.2876 mm; 网络目标长度 57.7124 mm (网络名 /SDRAM_D10); 实际长度 53.4248 mm)
+  skew_out_of_range    rule='sdram_skew_class'           net=/SDRAM_D3        nums=[2.5, -4.8508, 57.7124, 52.8616]
+       走线之间的 skew 超出范围 (约束条件 规则 'sdram_skew_class' 中, 最大 skew 2.5000 mm; 实际 skew -4.8508 mm; 网络目标长度 57.7124 mm (网络名 /SDRAM_D10); 实际长度 52.8616 mm)
+  skew_out_of_range    rule='sdram_skew_class'           net=/SDRAM_D4        nums=[2.5, -6.5968, 57.7124, 51.1156]
+       走线之间的 skew 超出范围 (约束条件 规则 'sdram_skew_class' 中, 最大 skew 2.5000 mm; 实际 skew -6.5968 mm; 网络目标长度 57.7124 mm (网络名 /SDRAM_D10); 实际长度 51.1156 mm)
+  skew_out_of_range    rule='sdram_skew_class'           net=/SDRAM_D5        nums=[2.5, -5.136, 57.7124, 52.5764]
+       走线之间的 skew 超出范围 (约束条件 规则 'sdram_skew_class' 中, 最大 skew 2.5000 mm; 实际 skew -5.1360 mm; 网络目标长度 57.7124 mm (网络名 /SDRAM_D10); 实际长度 52.5764 mm)
+  skew_out_of_range    rule='sdram_skew_class'           net=/SDRAM_D6        nums=[2.5, -7.4272, 57.7124, 50.2852]
+       走线之间的 skew 超出范围 (约束条件 规则 'sdram_skew_class' 中, 最大 skew 2.5000 mm; 实际 skew -7.4272 mm; 网络目标长度 57.7124 mm (网络名 /SDRAM_D10); 实际长度 50.2852 mm)
+  skew_out_of_range    rule='sdram_skew_class'           net=/SDRAM_D8        nums=[2.5, -3.2124, 57.7124, 54.5]
+       走线之间的 skew 超出范围 (约束条件 规则 'sdram_skew_class' 中, 最大 skew 2.5000 mm; 实际 skew -3.2124 mm; 网络目标长度 57.7124 mm (网络名 /SDRAM_D10); 实际长度 54.5000 mm)
+  skew_out_of_range    rule='sdram_skew_class'           net=/SDRAM_D9        nums=[2.5, -4.8584, 57.7124, 52.854]
+       走线之间的 skew 超出范围 (约束条件 规则 'sdram_skew_class' 中, 最大 skew 2.5000 mm; 实际 skew -4.8584 mm; 网络目标长度 57.7124 mm (网络名 /SDRAM_D10); 实际长度 52.8540 mm)
+  -> 12 length/skew blocks; other violations: {'drill_out_of_range': 8, 'invalid_outline': 1, 'track_width': 116, 'track_dangling': 11, 'missing_courtyard': 3, 'silk_over_copper': 4}

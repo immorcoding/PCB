@@ -1,0 +1,9 @@
+(version 1)
+# no defect; control (nets > 52 mm fire)
+(rule "canary_D7"
+  (condition "A.NetName == '/SDRAM_D7'")
+  (constraint length (max 60mm)))
+
+(rule "target"
+  (condition "A.NetClass == 'SDRAM'")
+  (constraint length (max 52mm)))

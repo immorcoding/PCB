@@ -1,0 +1,7 @@
+(version 1)
+(rule "grp_len"
+  (condition "A.NetClass == 'SDRAM'")
+  (constraint length (max 52mm)))
+(rule "grp_skew"
+  (condition "A.NetClass == 'SDRAM' && A.NetName != '/SDRAM_D7'")
+  (constraint skew (max 7mm)))

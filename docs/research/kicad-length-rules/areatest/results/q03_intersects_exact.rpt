@@ -1,0 +1,92 @@
+** Drc report for areatest.kicad_pcb **
+** Created on 2026-11-16T10:08:00 **
+** Report includes: Errors, Warnings, Exclusions **
+
+** Found 25 DRC violations **
+[invalid_outline]: 电路板的外框形状有问题 (在 Edge.Cuts 层上找不到边框)
+    Local override; error
+    @(0.0000 mm, 0.0000 mm): PCB
+[track_width]: 走线宽度 (规则 'bga_exact' 最大宽度 0.0900 mm; 实际 0.1016 mm)
+    Rule: bga_exact; error
+    @(5.0000 mm, 7.0000 mm): Track [/a2_in_0.1016] on F.Cu, length 10.0000 mm
+[track_width]: 走线宽度 (规则 'signal_min' 最小宽度 0.1016 mm; 实际 0.0900 mm)
+    Rule: signal_min; error
+    @(25.0000 mm, 5.0000 mm): Track [/a3_out_0.09] on F.Cu, length 10.0000 mm
+[track_width]: 走线宽度 (规则 'bga_exact' 最大宽度 0.0900 mm; 实际 0.1016 mm)
+    Rule: bga_exact; error
+    @(15.0000 mm, 12.0000 mm): Track [/a6_cross_0.1016] on F.Cu, length 10.0000 mm
+[track_width]: 走线宽度 (规则 'bga_exact' 最大宽度 0.0900 mm; 实际 0.1016 mm)
+    Rule: bga_exact; error
+    @(20.0000 mm, 15.0000 mm): Track [/a7_split_at_edge] on F.Cu, length 10.0000 mm
+[track_width]: 走线宽度 (规则 'bga_exact' 最小宽度 0.0900 mm; 实际 0.0500 mm)
+    Rule: bga_exact; error
+    @(4.0000 mm, 2.4167 mm): Track (arc) [/b1_arc_in_0.05] on F.Cu, length 5.3625 mm
+[track_width]: 走线宽度 (规则 'signal_min' 最小宽度 0.1016 mm; 实际 0.0500 mm)
+    Rule: signal_min; error
+    @(27.0000 mm, 25.0000 mm): Track (arc) [/b2_arc_out_0.05] on F.Cu, length 6.2832 mm
+[track_width]: 走线宽度 (规则 'bga_exact' 最小宽度 0.0900 mm; 实际 0.0500 mm)
+    Rule: bga_exact; error
+    @(2.0000 mm, 1.0000 mm): Track [/b4_seg_in_0.05] on F.Cu, length 10.0000 mm
+[track_dangling]: Track has unconnected end
+    Local override; warning
+    @(5.0000 mm, 5.0000 mm): Track [/a1_in_0.09] on F.Cu, length 10.0000 mm
+[track_dangling]: Track has unconnected end
+    Local override; warning
+    @(5.0000 mm, 7.0000 mm): Track [/a2_in_0.1016] on F.Cu, length 10.0000 mm
+[track_dangling]: Track has unconnected end
+    Local override; warning
+    @(25.0000 mm, 5.0000 mm): Track [/a3_out_0.09] on F.Cu, length 10.0000 mm
+[track_dangling]: Track has unconnected end
+    Local override; warning
+    @(25.0000 mm, 7.0000 mm): Track [/a4_out_0.1016] on F.Cu, length 10.0000 mm
+[track_dangling]: Track has unconnected end
+    Local override; warning
+    @(15.0000 mm, 10.0000 mm): Track [/a5_cross_0.09] on F.Cu, length 10.0000 mm
+[track_dangling]: Track has unconnected end
+    Local override; warning
+    @(15.0000 mm, 12.0000 mm): Track [/a6_cross_0.1016] on F.Cu, length 10.0000 mm
+[track_dangling]: Track has unconnected end
+    Local override; warning
+    @(10.0000 mm, 15.0000 mm): Track [/a7_split_at_edge] on F.Cu, length 10.0000 mm
+[track_dangling]: Track has unconnected end
+    Local override; warning
+    @(20.0000 mm, 15.0000 mm): Track [/a7_split_at_edge] on F.Cu, length 10.0000 mm
+[track_dangling]: Track has unconnected end
+    Local override; warning
+    @(21.0000 mm, 17.0000 mm): Track [/a8_split_1mm_out] on F.Cu, length 9.0000 mm
+[track_dangling]: Track has unconnected end
+    Local override; warning
+    @(10.0000 mm, 17.0000 mm): Track [/a8_split_1mm_out] on F.Cu, length 11.0000 mm
+[track_dangling]: Track has unconnected end
+    Local override; warning
+    @(10.0000 mm, 19.0000 mm): Track [/a9_split_0.06_out] on F.Cu, length 10.0600 mm
+[track_dangling]: Track has unconnected end
+    Local override; warning
+    @(20.0600 mm, 19.0000 mm): Track [/a9_split_0.06_out] on F.Cu, length 9.9400 mm
+[track_dangling]: Track has unconnected end
+    Local override; warning
+    @(4.0000 mm, 2.4167 mm): Track (arc) [/b1_arc_in_0.05] on F.Cu, length 5.3625 mm
+[track_dangling]: Track has unconnected end
+    Local override; warning
+    @(27.0000 mm, 25.0000 mm): Track (arc) [/b2_arc_out_0.05] on F.Cu, length 6.2832 mm
+[track_dangling]: Track has unconnected end
+    Local override; warning
+    @(10.0000 mm, 2.4167 mm): Track (arc) [/b3_arc_in_0.09] on F.Cu, length 5.3625 mm
+[track_dangling]: Track has unconnected end
+    Local override; warning
+    @(20.0000 mm, 0.7500 mm): Track (arc) [/b5_arc_cross_0.09] on F.Cu, length 6.9547 mm
+[track_dangling]: Track has unconnected end
+    Local override; warning
+    @(2.0000 mm, 1.0000 mm): Track [/b4_seg_in_0.05] on F.Cu, length 10.0000 mm
+
+** Found 0 unconnected pads **
+
+** Found 0 Footprint errors **
+
+** Ignored checks **
+    - Track endpoint not centered on via
+    - Tuning profile track geometries
+    - Footprint doesn't match symbol's footprint filters
+    - NPTH inside courtyard
+
+** End of Report **
