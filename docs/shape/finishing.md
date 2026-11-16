@@ -25,3 +25,6 @@ Next id: FIN-5
 ### Rules
 
 - **FIN-4** · provisional · 收尾顺序：地过孔 → 丝印 → 泪滴（走线和铺铜定稿之后）→ 渲染图；然后带 `--schematic-parity` 重跑 DRC、重跑金丝雀、甄别 kicad-happy 的发现。 _Why:_ 泪滴会被重新走线清掉；原理图一致性只有带这个选项才查。
+
+## Signals
+- 2026-11-15 · FIN-3 · 有了答案：嘉立创两个站点都写丝印字高最小 1.0 mm，项目现在用的 0.8 mm 低于它（[调研票](https://github.com/immorcoding/PCB/issues/5)）。

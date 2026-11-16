@@ -34,3 +34,17 @@ Next id: RUL-13
 - **RUL-9** · exploring · 原理图的完成标准里还包括：跑 kicad-happy 的 `kicad` skill 做原理图审查（电源树、稳压电路、网络追踪），发现逐条甄别真伪后再报给用户。 _Why:_ 六层废弃板上一次都没用过它，引脚核对是自己写脚本做的；它原来只排在收尾阶段。
 - **RUL-10** · exploring · 方案和原理图阶段，有规格书 PDF 的器件用 kicad-happy 的 `datasheets` skill 提取引脚和电气参数来核对，核对不了的才记入"未核对项"。 _Why:_ 手工读规格书慢，也容易漏；未核对项越少，交付时用户要查的越少。
 - **RUL-8** · provisional · 写进原理图的文字不带没转义的换行；符号坐标落在 1.27 mm 网格上。 _Why:_ 带换行的文字会让同一页后面的标签全部连不上；不在网格上每个端点报一条 `endpoint_off_grid`。
+
+## Signals
+
+- 2026-11-15 · RUL-5、RUL-11、RUL-12 · H7 测试板的地图里单独设了"定 BGA 区的规则例外"一张票，排在方案定稿之前（[地图](https://github.com/immorcoding/PCB/issues/1)）。
+- 2026-11-15 · RUL-6 · 起作用：没有 ST 官方板用 UFBGA176+25 的 H743，MCU 符号的引脚表只能对照规格书 DS12110 的球表，不能照抄官方板的球号（[调研票](https://github.com/immorcoding/PCB/issues/4)）。
+- 2026-11-15 · RUL-12 · 起作用：规格档里假设的焊盘直径和规格书对不上。UFBGA176+25 规格书推荐 0.30 mm（规格档 C 按 0.35 mm），90 球 SDRAM 只有 Micron 给了推荐值 0.33 mm（规格档 B 按 0.4 mm）；计算表要按规格书的焊盘重算（[调研票](https://github.com/immorcoding/PCB/issues/4)、[调研票](https://github.com/immorcoding/PCB/issues/3)）。
+- 2026-11-15 · RUL-10 · 没用上：调研 agent 读 ST 原理图和球图时没用 `datasheets` skill，用的是 pdftotext 加渲染图；引脚级的核对留在了未核对项里（[调研票](https://github.com/immorcoding/PCB/issues/4)）。
+- 2026-11-15 · RUL-3 · 碍事：嘉立创阻抗计算器是浏览器渲染、结果走后台接口，agent 驱动不了；调研里的 50 Ω / 90 Ω 线宽是按叠层数据自己算的，走线前还要人工在计算器上过一遍（[调研票](https://github.com/immorcoding/PCB/issues/5)）。
+- 2026-11-15 · RUL-5、RUL-12 · 起作用：嘉立创对低于 3.5 mil 的线和 0.15 mm 的孔加价，元件孔到铜（0.28 / 0.3 mm）和过孔（0.2 mm）不是一个值，BGA 区阻焊扩展要为 0；这些都是规格档 C 没写、要在布局前定的例外或计算表输入（[调研票](https://github.com/immorcoding/PCB/issues/5)）。
+- 2026-11-15 · RUL-10 · 又没用上：MCU 和 SDRAM 两张调研票也没用 `datasheets` skill，理由是跨规格书比球图时还没有 KiCad 工程可挂缓存，都是用脚本读 PDF（[调研票](https://github.com/immorcoding/PCB/issues/2)、[调研票](https://github.com/immorcoding/PCB/issues/3)）。方案阶段还没有工程时这条规则怎么执行，没有写明。
+- 2026-11-16 · RUL-10 · 第三次没用上：QSPI Flash 的调研也没用 `datasheets` skill，用的是 pdftotext 加渲染图；这次我给调研 agent 的指示里写了"读 PDF 用现成的命令"，等于把它引开了，同样没有工程可挂缓存（[决定票](https://github.com/immorcoding/PCB/issues/7)）。
+- 2026-11-15 · RUL-11、RUL-5 · 待定：规格档 C 的计算表按 0.30 mm 焊盘重算后余量变了，还多出阻焊开窗 0.38 mm、0.15 mm 孔加价、背面去耦过孔位置三项要用户批准的例外；是改规格档 C 还是新建一档，留给"定 BGA 区的规则例外"那张票（[调研票](https://github.com/immorcoding/PCB/issues/6)）。
+- 2026-11-16 · RUL-12、RUL-5、RUL-11 · 起作用：H7 测试板的两张球距计算表在方案阶段列完，七项例外逐项经用户批准；沿用规格档 C 并按规格书焊盘改写，没有新建一档。计算表还暴露出 0.8 mm 的 SDRAM 按区外值过孔间过不了线（差 0.006 mm），也要画规则区（[决定票](https://github.com/immorcoding/PCB/issues/10)）。
+- 2026-11-16 · RUL-10 · 第四次没用上：外设调研也没用 `datasheets` skill，调研 agent 的技能列表里没有它，也没有工程可挂缓存；Microchip、Nexperia 官网对自动下载返回 403，四份规格书没拿到，记入未核对项（[调研票](https://github.com/immorcoding/PCB/issues/8)）。这条规则在方案阶段的调研票上至今一次没执行成。

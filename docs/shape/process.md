@@ -47,3 +47,20 @@ Next id: PROC-15
 - **PROC-4** · exploring · 每次构建输出同一张指标表（DRC 未连接数、铜皮类 DRC 各项、`track_shape.py` 四项、开路清单、电源面块数）；任何一项比上次差，先解释或回退。 _Why:_ 六层废弃板上放宽走线规则让开路从 35 段降到 20 段，夹角项却从 98 条涨到 182 条，没有东西拦住这种交换。
 - **PROC-5** · exploring · 写新工具前先调研现成的，并记下为什么不用。 _Why:_ 六层废弃板上自研的协商布线、盘中孔、电源面补桥，和已公开的 Claude Code KiCad skill 的做法高度重合。 _Source:_ <https://github.com/Novin3dp/claude-KiCad-pcb-designer-skill>
 - **PROC-6** · exploring · 全量重建超过 10 分钟，先解决构建速度再继续。 _Why:_ 六层废弃板的重建从 6 分钟涨到 70 分钟，后期每试一个想法要等一小时。
+
+## Signals
+
+- 2026-11-15 · PROC-7、PROC-8 · 定了 H7 测试板的范围和地图终点：比 RK3568 小一档，地图只走到方案定稿（[地图](https://github.com/immorcoding/PCB/issues/1)）。
+- 2026-11-15 · PROC-8 · 用户纠正：器件优先选大厂、资料齐全的，不按立创库存选；目前只做设计验证，真打板时用户自己采购。
+- 2026-11-15 · PROC-8 · 用户纠正：测试板上的器件不能太少，MCU 引脚占用要在六成以上，否则测不到线序的影响。
+- 2026-11-15 · PROC-8 · 用户纠正：测试板的电源也不能太简单，否则验证不了电源那部分流程（铜皮类网络、电源面分块、降压环路）。
+- 2026-11-15 · PROC-14 · 碍事：ST 原理图 PDF 是 Altium 导出的，文字层里网络名和位号是乱的，调研 agent 只能看渲染图读数值，再用文字层核对器件型号和阻容值（[调研票](https://github.com/immorcoding/PCB/issues/4)）。从 PDF 取值的情况这条规则没覆盖。
+- 2026-11-16 · PROC-8 · 起作用：MCU、SDRAM、QSPI Flash 的型号、封装尺寸和替换料逐题列给用户定；在产状态没能在官网核实的三颗料记入未核对项（[决定票](https://github.com/immorcoding/PCB/issues/7)）。
+- 2026-11-16 · PROC-8 · 起作用："大厂优先"和"资料齐全优先"冲突时用户选了后者：Flash 没按 Micron 优先，定了规格书新、KiCad 有现成符号的 Winbond（[决定票](https://github.com/immorcoding/PCB/issues/7)）。
+- 2026-11-16 · PROC-5 · 缺口：调研笔记放哪里没有写明，几次都按惯例放在 `research/<名字>` 分支的 `docs/research/`；`tools.md` 也没记厂商网站对自动下载的限制（ST 的 PDF 用 curl 拿不到、WebFetch 能拿到，ISSI 有反爬，Micron 零件页是 JS 渲染）。
+- 2026-11-15 · PROC-5 · 被违反：调研 agent 为了算阻抗临时写了一个二维场求解脚本（没提交），事先没查 KiCad 自带的 PCB Calculator 这类现成工具（[调研票](https://github.com/immorcoding/PCB/issues/5)）。
+- 2026-11-16 · PROC-5 · 起作用：外设引脚复用的调研先找到 ST 的开放引脚库（STM32_open_pin_data）批量查备选功能，没从 PDF 解析；多外设联合分配没有现成工具，才写了一个约 100 行的回溯求解脚本（[调研票](https://github.com/immorcoding/PCB/issues/8)）。
+- 2026-11-16 · PROC-8 · 缺口："引脚占用六成"没说口径。按 IO 数三套组合是 74–77%，按信号球只有 53–55%；前面票里的 SDRAM 脚数也数错了一个（57 写成 58），占用数要用脚本从引脚表数（[调研票](https://github.com/immorcoding/PCB/issues/8)）。
+- 2026-11-16 · PROC-8 · 起作用："电源不能太简单"落实为 12 V 输入、串联两颗降压加一颗背光升压、两颗 LDO，稳压器型号和网络分类逐题列给用户定；TVS 和防反接 MOS 的型号、几项估算电流记入未核对项（[决定票](https://github.com/immorcoding/PCB/issues/11)）。
+- 2026-11-16 · PROC-8 · 起作用：板子尺寸按 KiCad 库封装的 courtyard 加块内余量估出三档（75 × 65、85 × 75、100 × 80 mm，器件块占 88% / 67% / 54%），用户选了中档；尺寸按面积估、不按分区，块换位置估算仍成立（[决定票](https://github.com/immorcoding/PCB/issues/13)）。
+- 2026-11-16 · PROC-9 · 用户纠正：布局里的"大动"从集成分支另开 `try/<改什么>` 分支，两边各跑同一张指标表（PROC-4），连同对比图给用户选，选中的合回，没选中的留档；大动指碰到分区要守住的三条、一次挪两个及以上的块或改板框尺寸、改层用途或背面规则；小改直接在集成分支上改并报告。打算作为跨板的约定走 shape 流程（[决定票](https://github.com/immorcoding/PCB/issues/13)）。
