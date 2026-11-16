@@ -1,0 +1,263 @@
+{
+ "zones": [
+  {
+   "zone": "",
+   "net": "GND",
+   "layer": "L1",
+   "prio": 0,
+   "outline_edges": 4,
+   "off_angle_edges": 0,
+   "shortest_edge": 74.492,
+   "clearance": 0.2,
+   "min_width": 0.3,
+   "area": 5652.4,
+   "pieces": 6,
+   "unfed_pieces": 0,
+   "anchors_on_main": 0,
+   "anchors_on_other_pieces": 174,
+   "neck": null,
+   "neck_outside_bga": null,
+   "neck_at": []
+  },
+  {
+   "zone": "",
+   "net": "GND",
+   "layer": "L6",
+   "prio": 0,
+   "outline_edges": 4,
+   "off_angle_edges": 0,
+   "shortest_edge": 74.492,
+   "clearance": 0.2,
+   "min_width": 0.3,
+   "area": 6090.7,
+   "pieces": 1,
+   "unfed_pieces": 0,
+   "anchors_on_main": 0,
+   "anchors_on_other_pieces": 79,
+   "neck": null,
+   "neck_outside_bga": null,
+   "neck_at": []
+  },
+  {
+   "zone": "",
+   "net": "GND",
+   "layer": "L2",
+   "prio": 0,
+   "outline_edges": 4,
+   "off_angle_edges": 0,
+   "shortest_edge": 74.492,
+   "clearance": 0.127,
+   "min_width": 0.15,
+   "area": 6116.2,
+   "pieces": 1,
+   "unfed_pieces": 0,
+   "anchors_on_main": 0,
+   "anchors_on_other_pieces": 79,
+   "neck": null,
+   "neck_outside_bga": null,
+   "neck_at": []
+  },
+  {
+   "zone": "",
+   "net": "+5V",
+   "layer": "L3",
+   "prio": 3,
+   "outline_edges": 5,
+   "off_angle_edges": 4,
+   "shortest_edge": 0.3,
+   "clearance": 0.127,
+   "min_width": 0.15,
+   "area": 0.3,
+   "pieces": 1,
+   "unfed_pieces": 0,
+   "anchors_on_main": 1,
+   "anchors_on_other_pieces": 0,
+   "neck": null,
+   "neck_outside_bga": null,
+   "neck_at": []
+  },
+  {
+   "zone": "",
+   "net": "+3V3",
+   "layer": "L3",
+   "prio": 0,
+   "outline_edges": 4,
+   "off_angle_edges": 0,
+   "shortest_edge": 74.492,
+   "clearance": 0.127,
+   "min_width": 0.15,
+   "area": 5616.9,
+   "pieces": 1,
+   "unfed_pieces": 0,
+   "anchors_on_main": 42,
+   "anchors_on_other_pieces": 0,
+   "neck": 0.7,
+   "neck_outside_bga": 5.69,
+   "neck_at": [
+    "via(16.21,25.75)",
+    "via(27.25,44.24)",
+    "via(31.15,54.09)",
+    "via(9.58,23.20)",
+    "via(33.75,66.45)",
+    "via(8.85,61.96)"
+   ]
+  },
+  {
+   "zone": "",
+   "net": "+5V",
+   "layer": "L3",
+   "prio": 1,
+   "outline_edges": 68,
+   "off_angle_edges": 0,
+   "shortest_edge": 0.037,
+   "clearance": 0.127,
+   "min_width": 0.15,
+   "area": 282.6,
+   "pieces": 1,
+   "unfed_pieces": 0,
+   "anchors_on_main": 5,
+   "anchors_on_other_pieces": 0,
+   "neck": 2.97,
+   "neck_outside_bga": 2.97,
+   "neck_at": [
+    "via(57.03,66.60)",
+    "via(73.07,20.01)",
+    "via(71.60,43.00)"
+   ]
+  },
+  {
+   "zone": "",
+   "net": "+3V3A",
+   "layer": "L3",
+   "prio": 2,
+   "outline_edges": 15,
+   "off_angle_edges": 0,
+   "shortest_edge": 0.212,
+   "clearance": 0.127,
+   "min_width": 0.15,
+   "area": 45.7,
+   "pieces": 1,
+   "unfed_pieces": 0,
+   "anchors_on_main": 6,
+   "anchors_on_other_pieces": 0,
+   "neck": 1.48,
+   "neck_outside_bga": 1.48,
+   "neck_at": [
+    "via(23.74,26.25)"
+   ]
+  },
+  {
+   "zone": "",
+   "net": "GND",
+   "layer": "L5",
+   "prio": 0,
+   "outline_edges": 4,
+   "off_angle_edges": 0,
+   "shortest_edge": 74.492,
+   "clearance": 0.127,
+   "min_width": 0.15,
+   "area": 6116.2,
+   "pieces": 1,
+   "unfed_pieces": 0,
+   "anchors_on_main": 0,
+   "anchors_on_other_pieces": 79,
+   "neck": null,
+   "neck_outside_bga": null,
+   "neck_at": []
+  }
+ ],
+ "not_reached": [
+  {
+   "layer": "L1",
+   "net": "GND",
+   "copper": 174,
+   "not_reached": 0,
+   "which": []
+  },
+  {
+   "layer": "L6",
+   "net": "GND",
+   "copper": 79,
+   "not_reached": 0,
+   "which": []
+  },
+  {
+   "layer": "L2",
+   "net": "GND",
+   "copper": 79,
+   "not_reached": 0,
+   "which": []
+  },
+  {
+   "layer": "L3",
+   "net": "+3V3",
+   "copper": 42,
+   "not_reached": 0,
+   "which": []
+  },
+  {
+   "layer": "L3",
+   "net": "+3V3A",
+   "copper": 6,
+   "not_reached": 0,
+   "which": []
+  },
+  {
+   "layer": "L3",
+   "net": "+5V",
+   "copper": 6,
+   "not_reached": 0,
+   "which": []
+  },
+  {
+   "layer": "L5",
+   "net": "GND",
+   "copper": 79,
+   "not_reached": 0,
+   "which": []
+  }
+ ],
+ "gaps": [
+  {
+   "layer": "L3",
+   "a": "+5V",
+   "b": "+3V3",
+   "gap": 0.128
+  },
+  {
+   "layer": "L3",
+   "a": "+5V",
+   "b": "+3V3A",
+   "gap": 2.26
+  },
+  {
+   "layer": "L3",
+   "a": "+3V3",
+   "b": "+5V",
+   "gap": 0.128
+  },
+  {
+   "layer": "L3",
+   "a": "+3V3",
+   "b": "+3V3A",
+   "gap": 0.128
+  }
+ ],
+ "drc": {
+  "violations": {
+   "track_angle": 122,
+   "via_dangling": 47,
+   "silk_edge_clearance": 8,
+   "silk_over_copper": 9,
+   "silk_overlap": 19
+  },
+  "unconnected_total": 21,
+  "unconnected_copper_nets": {
+   "+5V": 4,
+   "+12V_IN": 1,
+   "+12V": 5,
+   "+1V8": 3,
+   "SW_5V": 1
+  }
+ }
+}

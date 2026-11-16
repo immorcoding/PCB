@@ -1,0 +1,107 @@
+(version 1)
+# Custom DRC rules migrated from E:\AD25workspace\pcb_rules\common.RUL
+# Later rules override earlier ones.
+# ANY syntax error silently disables this WHOLE file (kicad-cli reports
+# nothing). Known traps: angles are unitless ("135", not "135deg");
+# min_resolved_spokes takes a bare number ("2", not "(min 2)").
+# After editing, run DRC and confirm a corner_angle hit appears.
+# Full rationale and AD mapping: docs/design-rules.md
+#
+# PROJECT OVERRIDES for JLCPCB 6-layer, JLC06161H-3313E, 1.6 mm (differs from templates/common):
+#   Outside the BGA rule areas the 4-layer values apply: via 0.45 / 0.2 minimum (0.6 / 0.3 on PWR),
+#   clearance 0.127 (net class), signal width >= 0.1016.
+#   Inside the rule areas named BGA_SOC, BGA_DDR, BGA_EMMC (drawn round each BGA at layout):
+#     track >= 0.09, clearance >= 0.09, via >= 0.3 / 0.15, annular ring >= 0.075.
+#     Reason: 0.65 mm ball pitch. A 0.09 mm track between two 0.3 / 0.15 vias leaves 0.205 mm
+#     hole-to-track (JLC limit 0.2) and 0.13 mm via-pad-to-track; Rockchip's own 0.4 / 0.2 vias
+#     would leave 0.18 mm hole-to-track.
+#   hole_clearance 0.2 (board setup, template 0.127): JLC via hole to track.
+#   corner_angle 135 -> 134 (KiCad measures some exact 45-degree turns as 134.9999).
+#
+# ROUTING CONVENTIONS agreed 2026-11-13 (not all machine-checkable):
+#   - F.Cu: escapes of the two outer ball rings, DDR. In1.Cu, In4.Cu: solid ground, no tracks.
+#     In2.Cu: power planes only, split by rail. In3.Cu, B.Cu: signals that change layer inside a BGA.
+#   - via-in-pad only on the pads of the decoupling capacitors on the back of a BGA
+#   - 0603 and larger capacitors stay outside the BGA shadow
+#   - BGA fan-out is the regular pattern of fanout.py: one 45-degree bend per track, tracks centred
+#     between two rows of vias
+#   Impedance widths are in the net classes of the .kicad_pro (50 ohm single-ended, 100 ohm
+#   DDR pairs, 90 ohm USB2); figures by formula, not yet checked on JLC's calculator.
+
+# --- Track width (AD Width rules, min / preferred / max) ---
+(rule "signal_width"
+  (condition "A.Type == 'Track'")
+  (constraint track_width (min 0.1016mm) (opt 0.2032mm) (max 0.8128mm)))
+
+(rule "pwr_width"
+  (condition "A.Type == 'Track' && A.NetClass == 'PWR'")
+  (constraint track_width (min 0.1524mm) (opt 0.3048mm) (max 2.54mm)))
+
+(rule "xtal_width"
+  (condition "A.Type == 'Track' && A.NetClass == 'XTAL'")
+  (constraint track_width (min 0.254mm) (opt 0.254mm) (max 0.254mm)))
+
+# --- Holes and vias (AD HoleSize 10-120 mil; RoutingVias hole 12-30, dia 16-50 mil) ---
+(rule "hole_range"
+  (constraint hole_size (min 0.15mm) (max 3.3mm)))
+
+(rule "via_size"
+  (condition "A.Type == 'Via'")
+  (constraint hole_size (min 0.2mm) (max 0.762mm))
+  (constraint via_diameter (min 0.45mm) (max 1.27mm))
+  (constraint annular_width (min 0.125mm)))
+
+# Power and ground taps beside decoupling capacitors may use the BGA via where 0.45 / 0.2 has no room
+# (user, 2026-11-13). The board already uses this via size inside the BGA areas.
+(rule "tap_via"
+  (condition "A.Type == 'Via' && (A.NetClass == 'PWR' || A.NetName == 'GND')")
+  (constraint hole_size (min 0.15mm) (max 0.762mm))
+  (constraint via_diameter (min 0.3mm) (max 1.27mm))
+  (constraint annular_width (min 0.075mm)))
+
+# --- BGA fan-out areas: finer tracks, clearance and vias (see header) ---
+(rule "bga_via"
+  (condition "A.Type == 'Via' && (A.intersectsArea('BGA_MCU') || A.intersectsArea('BGA_SDRAM'))")
+  (constraint hole_size (min 0.15mm) (max 0.762mm))
+  (constraint via_diameter (min 0.3mm) (max 1.27mm))
+  (constraint annular_width (min 0.075mm)))
+
+(rule "bga_width"
+  (condition "A.Type == 'Track' && (A.intersectsArea('BGA_MCU') || A.intersectsArea('BGA_SDRAM'))")
+  (constraint track_width (min 0.09mm) (opt 0.1016mm) (max 2.54mm)))
+
+# PROTOTYPE FINDING (issue 16): without the two Type tests a pour that merely overlaps a rule area
+# (every whole-board ground or power zone) is filled at 0.09 mm clearance everywhere on the board.
+(rule "bga_clearance"
+  (condition "A.Type != 'Zone' && B.Type != 'Zone' && (A.intersectsArea('BGA_MCU') || A.intersectsArea('BGA_SDRAM'))")
+  (constraint clearance (min 0.09mm)))
+
+# --- Corners: no 90-degree or acute bends (interior angle >= 135) ---
+# Also reports 90-degree T-junctions; triage those case by case.
+# 134 rather than 135: KiCad measures some exact 45-degree turns as 134.9999 and flags them.
+(rule "corner_angle"
+  (constraint track_angle (min 134)))
+
+# --- Shortest segment. track_angle only compares neighbouring segments, so two 45-degree
+# turns joined by a 0.05 mm link pass it and look like a right angle. Small chamfers
+# (0.1 - 0.5 mm) are left to scripts/track_shape.py ("sharp"): a higher limit here would
+# flag ordinary pad exits.
+(rule "min_segment"
+  (condition "A.Type == 'Track'")
+  (constraint track_segment_length (min 0.1mm)))
+
+# --- Pour connection: thermal relief for through-hole, solid for SMD ---
+(rule "tht_solid"
+  (condition "A.Type == 'Pad' && A.Pad_Type == 'Through-hole'")
+  (constraint zone_connection solid))
+
+(rule "smd_solid"
+  (condition "A.Type == 'Pad' && A.Pad_Type == 'SMD'")
+  (constraint zone_connection solid))
+
+# --- Matched length (AD MatchedLengths USB3.0, tolerance 5 mil) ---
+# Width/gap of diff pairs are NOT set here: compute them from the fab's
+# stackup before layout, then add a net class per interface.
+(rule "usb3_skew"
+  (condition "A.NetClass == 'USB3'")
+  (constraint skew (max 0.127mm)))

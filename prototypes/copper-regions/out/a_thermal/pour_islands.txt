@@ -1,0 +1,12 @@
+L1_SW5V piece 0: x[59.60,60.40] y[46.10,50.86] area 2.85 mm2  pads: L1.1(60.0, 46.1) U8.2(60.0, 50.86)
+L1_SW5V: 1 pieces, 1 without a via or through-hole pad
+L1_12V piece 0: x[56.10,62.10] y[47.20,62.55] area 30.10 mm2  pads: C10.2(57.18, 56.2) Q1.2(61.26, 58.95) D1.2(59.5, 61.5) TP_12V.1(56.9, 53.0) C11.1(58.53, 48.3) U8.3(59.05, 50.86)
+L1_12V: 1 pieces, 1 without a via or through-hole pad
+L1_12VIN piece 0: x[67.20,74.20] y[55.50,60.50] area 16.61 mm2  pads: F1.2(68.0, 58.0)
+L1_12VIN: 1 pieces, 1 without a via or through-hole pad
+L1_GND: 4 pieces, 0 without a via or through-hole pad
+L1_5V: 1 pieces, 0 without a via or through-hole pad
+L1_1V8 piece 0: x[12.40,14.00] y[22.96,24.90] area 2.10 mm2  pads: U5.5(13.64, 24.55)
+L1_1V8 piece 1: x[16.10,17.56] y[24.60,24.90] area 0.39 mm2  pads: U6.4(17.56, 24.75)
+L1_1V8: 2 pieces, 2 without a via or through-hole pad
+L6_GND: 1 pieces, 0 without a via or through-hole pad

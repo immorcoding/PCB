@@ -1,0 +1,191 @@
+CMD: python.exe -X utf8 py_router/route_planes.py E:/Projects/claude_workspace/PCB/.claude/worktrees/copper-regions/prototypes/copper-regions/out/b_krt/tmp.kicad_pcb E:/Projects/claude_workspace/PCB/.claude/worktrees/copper-regions/prototypes/copper-regions/out/b_krt/h7cu.kicad_pcb --nets GND "+3V3|+5V|+3V3A" GND --plane-layers In1.Cu In2.Cu In4.Cu --min-thickness 0.15 --escalation off --fab-tier standard --no-thermal-vias
+ENV KNOBS: none
+--track-width not given; using the board Default net-class 0.2032mm.
+--via-size not given; using the board Default net-class 0.45mm.
+--via-drill not given; using the board Default net-class 0.2mm.
+--clearance not given; honoring net classes with base = the board Default net-class clearance 0.127mm.
+--hole-to-hole-clearance not given; using 0.254mm [board constraint].
+--board-edge-clearance not given; using 0.254mm [board constraint].
+Layer In2.Cu has multiple nets: +3V3, +5V, +3V3A
+Loading PCB from E:/Projects/claude_workspace/PCB/.claude/worktrees/copper-regions/prototypes/copper-regions/out/b_krt/tmp.kicad_pcb...
+Zone clearance: following routed clearance 0.127mm (--zone-clearance to override)
+  NOTE: U1 (0.65mm pitch, 0.3mm vias): no pour clearance at or above the fab floor 0.1 passes between its vias (needs 0.095) -- its plane balls under it are islands unless their own copper joins them
+Found net 'GND' with ID 3
+Found net '+3V3' with ID 2
+Found net '+5V' with ID 4
+Found net '+3V3A' with ID 1
+Found net 'GND' with ID 3
+Board bounds: (100.00, 100.00) to (185.00, 175.00)
+  Full-stack: appended 1 unrequested copper layer(s) as FORBIDDEN obstacles: In3.Cu
+  Layer costs: F.Cu=1.0x, In1.Cu=1.0x, In2.Cu=1.0x, In4.Cu=1.0x, B.Cu=1.0x, In3.Cu=-1x
+  .kicad_dru rule 'bga_via': NOT honoured (condition: predicate intersectsArea() not modelled); KiCad will still enforce it
+  .kicad_dru rule 'bga_width': NOT honoured (condition: predicate intersectsArea() not modelled); KiCad will still enforce it
+  .kicad_dru rule 'bga_clearance': NOT honoured (condition: predicate intersectsArea() not modelled); KiCad will still enforce it
+  .kicad_dru rule 'via_size': NOT honoured (annular_width: a via a step sizes itself holds it, an explicit via size and a last-resort descent need not, so this line is printed whatever the vias are; route.py and route_diff.py grade their own vias against it when they end, check_drc the board); KiCad will still enforce it
+  .kicad_dru rule 'tap_via': NOT honoured (annular_width: a via a step sizes itself holds it, an explicit via size and a last-resort descent need not, so this line is printed whatever the vias are; route.py and route_diff.py grade their own vias against it when they end, check_drc the board); KiCad will still enforce it
+  .kicad_dru rule 'corner_angle': parsed, but track_angle has no consumer in this tool yet
+  .kicad_dru rule 'min_segment': parsed, but track_segment_length has no consumer in this tool yet
+  .kicad_dru rule 'tht_thermal': parsed, but min_resolved_spokes, thermal_relief_gap, thermal_spoke_width, zone_connection has no consumer in this tool yet
+  .kicad_dru rule 'smd_solid': parsed, but zone_connection has no consumer in this tool yet
+  .kicad_dru rule 'usb3_skew': skew is not routed to (a --length-match-group aims its target into a length window); check_drc grades it
+  .kicad_dru: rule 'bga_clearance': clearance 0.09mm has a non-layer scope (netclass/area/... condition) -- skipped, KiCad will still enforce it
+  Auto-read netclass clearances for 16 net(s) (cross-class max(A,B) respected for plane taps).
+
+============================================================
+Processing net 'GND' on layer In1.Cu
+============================================================
+  43 pad(s) on 'GND' deferred to the route step, each kept as a virtual via for the split
+
+Pad analysis for net 'GND':
+  Through-hole pads (no via needed): 10
+  SMD pads on In1.Cu (no via needed): 0
+  SMD pads already routed to plane (no via needed): 69
+  SMD pads kept for thermal via arrays (via needed): 0
+
+  Plane Resistance Analysis (1 oz copper, 10°C rise):
+    Path length: 112.6 mm (diagonal)
+    Avg width:   56.2 mm
+    Resistance:  0.962 mΩ
+    Max current: not rated -- 3049 mils² cross-section is past the IPC-2221 chart range (700 mils²); the fit would say 22.19 A by extrapolation
+
+Results for 'GND':
+  Zone created on In1.Cu
+  New vias placed: 0
+  Traces added: 0
+
+============================================================
+Processing net '+3V3' on layer In2.Cu
+============================================================
+
+Pad analysis for net '+3V3':
+  Through-hole pads (no via needed): 0
+  SMD pads on In2.Cu (no via needed): 0
+  SMD pads already routed to plane (no via needed): 43
+  SMD pads kept for thermal via arrays (via needed): 0
+
+Results for '+3V3':
+  Zone on In2.Cu deferred (multi-net layer)
+  New vias placed: 0
+  Traces added: 0
+
+============================================================
+Processing net '+5V' on layer In2.Cu
+============================================================
+  3 pad(s) on '+5V' deferred to the route step, each kept as a virtual via for the split
+
+Pad analysis for net '+5V':
+  Through-hole pads (no via needed): 0
+  SMD pads on In2.Cu (no via needed): 0
+  SMD pads already routed to plane (no via needed): 9
+  SMD pads kept for thermal via arrays (via needed): 0
+
+Results for '+5V':
+  Zone on In2.Cu deferred (multi-net layer)
+  New vias placed: 0
+  Traces added: 0
+
+============================================================
+Processing net '+3V3A' on layer In2.Cu
+============================================================
+
+Pad analysis for net '+3V3A':
+  Through-hole pads (no via needed): 0
+  SMD pads on In2.Cu (no via needed): 0
+  SMD pads already routed to plane (no via needed): 7
+  SMD pads kept for thermal via arrays (via needed): 0
+
+Results for '+3V3A':
+  Zone on In2.Cu deferred (multi-net layer)
+  New vias placed: 0
+  Traces added: 0
+
+============================================================
+Processing net 'GND' on layer In4.Cu
+============================================================
+  43 pad(s) on 'GND' deferred to the route step, each kept as a virtual via for the split
+
+Pad analysis for net 'GND':
+  Through-hole pads (no via needed): 10
+  SMD pads on In4.Cu (no via needed): 0
+  SMD pads already routed to plane (no via needed): 69
+  SMD pads kept for thermal via arrays (via needed): 0
+
+  Plane Resistance Analysis (1 oz copper, 10°C rise):
+    Path length: 112.6 mm (diagonal)
+    Avg width:   56.2 mm
+    Resistance:  0.962 mΩ
+    Max current: not rated -- 3049 mils² cross-section is past the IPC-2221 chart range (700 mils²); the fit would say 22.19 A by extrapolation
+
+Results for 'GND':
+  Zone created on In4.Cu
+  New vias placed: 0
+  Traces added: 0
+
+============================================================
+Computing zone boundaries for multi-net layer In2.Cu
+Nets: +3V3, +5V, +3V3A
+============================================================
+  Net '+3V3': 42 vias
+  Net '+5V': 6 vias
+  Net '+3V3A': 6 vias
+  Net '+5V': 3 virtual via(s) and 0 pad(s) on In2.Cu join its spines
+  Spines keep 0.427 mm from another net's via (via radius + zone clearance + half the minimum width), no proximity cost
+  Net '+3V3': MST with 41 edges between 42 vias
+  Net '+5V': MST with 8 edges between 9 vias
+  Net '+3V3A': MST with 5 edges between 6 vias
+    +5V: all 8 MST edges routed
+    +3V3A: all 5 MST edges routed
+    +3V3: all 41 MST edges routed
+  Computing final Voronoi zones with 598 seed points
+  Spine split: '+3V3' = background; the other 2 net(s) keep 332 of their 2323 mm^2 Voronoi share inside their islands and spines; finished on a 0.075 mm grid: 67 piece(s) nothing feeds, 2.8 mm^2 no neighbour can feed left to the background sheet (its fill's island removal drops what stays unfed)
+  Overlapping zones on In2.Cu: assigned fill priorities +5V[0]=3, +3V3A[0]=2, +5V[1]=1
+  Creating zone for '+3V3A' with 15 vertices
+  Creating zone 1/2 for '+5V' with 5 vertices
+  Creating zone 2/2 for '+5V' with 70 vertices
+  Creating zone for '+3V3' with 4 vertices
+
+  Plane Resistance Analysis (1 oz copper, 10°C rise):
+  --------------------------------------------------------------------------
+  Net                       Path(mm)   AvgW(mm)   R(mΩ)      Imax(A)     
+  --------------------------------------------------------------------------
+  +3V3A                     10.0       5.0        0.956      3.84        
+  +5V                       65.4       4.1        7.637      3.33        
+  +3V3                      208.5      83.6       1.198      29.59*      
+  --------------------------------------------------------------------------
+  Path = longest MST route, AvgW = avg polygon width along path
+  Imax = IPC-2221 chart fit; inner layers carry 2221's 2x derating, which IPC-2152 overturned
+  * extrapolated past the IPC-2221 chart range (700 mils²) -- not a rating
+
+============================================================
+OVERALL TOTALS
+============================================================
+  Nets processed: 5
+  Total new vias placed: 0
+  Total traces added: 0
+
+Writing output to E:/Projects/claude_workspace/PCB/.claude/worktrees/copper-regions/prototypes/copper-regions/out/b_krt/h7cu.kicad_pcb...
+  WARNING: E:/Projects/claude_workspace/PCB/.claude/worktrees/copper-regions/prototypes/copper-regions/out/b_krt/h7cu.kicad_pro is left from an earlier run and is kept (an existing output sibling is never overwritten). Its design rules differ from the input's, and this step's floor writeback lowers from them, not from tmp.kicad_pro. Route to a fresh output path, or delete it first, to start from the input's rules.
+Output written to E:/Projects/claude_workspace/PCB/.claude/worktrees/copper-regions/prototypes/copper-regions/out/b_krt/h7cu.kicad_pcb
+Note: Open in KiCad and press 'B' to refill zones
+
+============================================================
+GEOMETRIC VERIFICATION (re-parsed output)
+============================================================
+  GND: 122/122 pads connected to plane on In1.Cu
+  +3V3: 43/43 pads connected to plane on In2.Cu
+  +5V: 7/12 pads connected to plane on In2.Cu
+      unconnected pad U4 on '+5V' at (130.14, 123.95) [F.Cu]
+      unconnected pad C21 on '+5V' at (165.25, 139.70) [F.Cu]
+      unconnected pad U9 on '+5V' at (165.05, 137.64) [F.Cu]
+      unconnected pad C12 on '+5V' at (158.90, 141.55) [F.Cu]
+      unconnected pad C41 on '+5V' at (131.92, 123.95) [F.Cu]
+  +3V3A: 7/7 pads connected to plane on In2.Cu
+
+  5 pad(s) are not connected to their plane by the pour alone -- EXPECTED (#562): the plane step places no taps. They are welded during the route step's normal routing (pour-launch); its in-run finalize then verifies against KiCad's exact fill and repairs any residue. Grade the board AFTER the route step, not here (see per-net breakdown above).
+  Bare pour (no track or via drawn): writing the copper clearance only -- no size or copper-to-hole floor (#1319)
+  DRC settings: wrote 2 value(s) to E:/Projects/claude_workspace/PCB/.claude/worktrees/copper-regions/prototypes/copper-regions/out/b_krt/h7cu.kicad_pro to match the routed floors (close+reopen in KiCad if it is open). WRITES, not changes: a key the project never declared counts here, and one logical value is written once per net class:
+      rules.min_via_drill: None -> 0.15 mm
+      kicad_routing_tools.fab_floor_origin: recorded
+PROJECT_WRITES_JSON: {"project": "E:/Projects/claude_workspace/PCB/.claude/worktrees/copper-regions/prototypes/copper-regions/out/b_krt/h7cu.kicad_pro", "writes": ["rules.min_via_drill: None -> 0.15 mm", "kicad_routing_tools.fab_floor_origin: recorded"]}
+JSON_SUMMARY: {"complete": true, "env_knobs": {}, "min_clearance_used": 0.127, "pads": {"failed_pads": 0, "geometric_failed": 5, "pads_needing_vias": 0}, "pads_scope": "all zones in this run, summed -- not per zone; see plane_zones for what was poured", "plane_nets": ["+3V3", "+3V3A", "+5V", "GND"], "plane_resistance": [{"avg_width_mm": 83.56, "copper_oz": 1.0, "max_current_a": 29.59, "max_current_ipc2152_a": 59.17, "net": "+3V3", "path_basis": "route", "path_length_mm": 208.48, "resistance_ohms": 0.001198, "temp_rise_c": 10.0}, {"avg_width_mm": 5.001, "copper_oz": 1.0, "max_current_a": 3.84, "max_current_ipc2152_a": 7.68, "net": "+3V3A", "path_basis": "route", "path_length_mm": 9.96, "resistance_ohms": 0.000956, "temp_rise_c": 10.0}, {"avg_width_mm": 4.109, "copper_oz": 1.0, "max_current_a": 3.33, "max_current_ipc2152_a": 6.66, "net": "+5V", "path_basis": "route", "path_length_mm": 65.37, "resistance_ohms": 0.007637, "temp_rise_c": 10.0}, {"avg_width_mm": 56.194, "copper_oz": 1.0, "max_current_a": 22.19, "max_current_ipc2152_a": 44.38, "net": "GND", "path_basis": "route", "path_length_mm": 112.64, "resistance_ohms": 0.000962, "temp_rise_c": 10.0}], "plane_zones": [{"layer": "In1.Cu", "net": "GND"}, {"layer": "In2.Cu", "net": "+3V3|+5V|+3V3A"}, {"layer": "In4.Cu", "net": "GND"}], "status": "ok"}
+EXIT=0

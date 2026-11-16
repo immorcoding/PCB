@@ -1,0 +1,19 @@
+lay  net      zone         prio edges  off     area pieces unfed onmain   neck  neckX  neckX is at
+L1   GND                      0     4    0   5652.4      6     0      0   None   None  
+L2   GND                      0     4    0   6116.2      1     0      0   None   None  
+L3   +3V3                     0     4    0   5616.9      1     0     42    0.7   5.69  via(16.21,25.75) via(27.25,44.24) via(31.15,54.09) via(9.58,23.20) via(33.75,66.45) via(8.85,61.96)
+L3   +5V                      1    68    0    282.6      1     0      5   2.97   2.97  via(57.03,66.60) via(73.07,20.01) via(71.60,43.00)
+L3   +3V3A                    2    15    0     45.7      1     0      6   1.48   1.48  via(23.74,26.25)
+L3   +5V                      3     5    4      0.3      1     0      1   None   None  
+L5   GND                      0     4    0   6116.2      1     0      0   None   None  
+L6   GND                      0     4    0   6090.7      1     0      0   None   None  
+copper not reached by its own net's fill:
+  L1  GND        0 of 174  
+  L6  GND        0 of  79  
+  L2  GND        0 of  79  
+  L3  +3V3       0 of  42  
+  L3  +3V3A      0 of   6  
+  L3  +5V        0 of   6  
+  L5  GND        0 of  79  
+gaps: L3 +5V|+3V3 0.128  L3 +5V|+3V3A 2.260  L3 +3V3|+5V 0.128  L3 +3V3|+3V3A 0.128
+drc: {'violations': {'track_angle': 122, 'via_dangling': 47, 'silk_edge_clearance': 8, 'silk_over_copper': 9, 'silk_overlap': 19}, 'unconnected_total': 21, 'unconnected_copper_nets': {'+5V': 4, '+12V_IN': 1, '+12V': 5, '+1V8': 3, 'SW_5V': 1}}

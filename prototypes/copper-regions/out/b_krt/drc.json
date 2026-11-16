@@ -1,0 +1,4785 @@
+{
+    "$schema": "https://schemas.kicad.org/drc.v1.json",
+    "coordinate_units": "mm",
+    "date": "2026-11-16T10:31:55",
+    "ignored_checks": [
+        {
+            "description": "Track endpoint not centered on via",
+            "key": "track_not_centered_on_via"
+        },
+        {
+            "description": "Tuning profile track geometries",
+            "key": "tuning_profile_track_geometries"
+        },
+        {
+            "description": "Footprint doesn't match symbol's footprint filters",
+            "key": "footprint_filters_mismatch"
+        },
+        {
+            "description": "NPTH inside courtyard",
+            "key": "npth_inside_courtyard"
+        }
+    ],
+    "included_severities": [
+        "error",
+        "warning",
+        "exclusion"
+    ],
+    "kicad_version": "10.0.8",
+    "schematic_parity": [],
+    "source": "h7cu.kicad_pcb",
+    "unconnected_items": [
+        {
+            "description": "Missing connection between items",
+            "items": [
+                {
+                    "description": "F.Cu 上 C12 的焊盘 1 [+5V]",
+                    "pos": {
+                        "x": 158.9,
+                        "y": 141.55
+                    },
+                    "uuid": "8b55225e-68f2-46a5-a98e-636266aaa130"
+                },
+                {
+                    "description": "过孔 [+5V] (F.Cu - B.Cu)",
+                    "pos": {
+                        "x": 131.924999,
+                        "y": 125.3
+                    },
+                    "uuid": "63b9150e-b5e3-47a6-bfcb-777e0151814c"
+                }
+            ],
+            "severity": "error",
+            "type": "unconnected_items"
+        },
+        {
+            "description": "Missing connection between items",
+            "items": [
+                {
+                    "description": "走线 [+5V] (F.Cu), 长度: 2.9000 mm",
+                    "pos": {
+                        "x": 160.0,
+                        "y": 143.1
+                    },
+                    "uuid": "b9b1dedf-a564-41fe-a53f-0b08df0b1c5b"
+                },
+                {
+                    "description": "F.Cu 上 C12 的焊盘 1 [+5V]",
+                    "pos": {
+                        "x": 158.9,
+                        "y": 141.55
+                    },
+                    "uuid": "8b55225e-68f2-46a5-a98e-636266aaa130"
+                }
+            ],
+            "severity": "error",
+            "type": "unconnected_items"
+        },
+        {
+            "description": "Missing connection between items",
+            "items": [
+                {
+                    "description": "F.Cu 上 C21 的焊盘 2 [+5V]",
+                    "pos": {
+                        "x": 165.25,
+                        "y": 139.7
+                    },
+                    "uuid": "359dcb9d-95a8-4bf7-b634-990d4d8c4a7c"
+                },
+                {
+                    "description": "F.Cu 上 U9 的焊盘 4 [+5V]",
+                    "pos": {
+                        "x": 165.05,
+                        "y": 137.6375
+                    },
+                    "uuid": "4bbd5716-6236-41a7-aa9d-0a11db7ceb1c"
+                }
+            ],
+            "severity": "error",
+            "type": "unconnected_items"
+        },
+        {
+            "description": "Missing connection between items",
+            "items": [
+                {
+                    "description": "F.Cu 上 C21 的焊盘 2 [+5V]",
+                    "pos": {
+                        "x": 165.25,
+                        "y": 139.7
+                    },
+                    "uuid": "359dcb9d-95a8-4bf7-b634-990d4d8c4a7c"
+                },
+                {
+                    "description": "过孔 [+5V] (F.Cu - B.Cu)",
+                    "pos": {
+                        "x": 162.899999,
+                        "y": 141.55
+                    },
+                    "uuid": "32afddae-b5e3-49b5-a668-c79c577ed66f"
+                }
+            ],
+            "severity": "error",
+            "type": "unconnected_items"
+        },
+        {
+            "description": "Missing connection between items",
+            "items": [
+                {
+                    "description": "F.Cu 上 F1 的焊盘 2 [+12V_IN]",
+                    "pos": {
+                        "x": 168.0,
+                        "y": 158.0
+                    },
+                    "uuid": "fa1064ac-828d-4def-8880-77b1aa2ef4c5"
+                },
+                {
+                    "description": "J1 的PTH 焊盘 1 [+12V_IN]",
+                    "pos": {
+                        "x": 171.3,
+                        "y": 158.0
+                    },
+                    "uuid": "ea964365-1a76-4c12-be2a-be1d876c283e"
+                }
+            ],
+            "severity": "error",
+            "type": "unconnected_items"
+        },
+        {
+            "description": "Missing connection between items",
+            "items": [
+                {
+                    "description": "F.Cu 上 U11 的焊盘 7 [CANH]",
+                    "pos": {
+                        "x": 166.025,
+                        "y": 122.635
+                    },
+                    "uuid": "0caccb2a-0d3c-45a0-8ddb-a59fffca83dc"
+                },
+                {
+                    "description": "J8 的PTH 焊盘 1 [CANH]",
+                    "pos": {
+                        "x": 180.5,
+                        "y": 115.5
+                    },
+                    "uuid": "b761b09a-b2b3-42b9-bf7b-564106f0e445"
+                }
+            ],
+            "severity": "error",
+            "type": "unconnected_items"
+        },
+        {
+            "description": "Missing connection between items",
+            "items": [
+                {
+                    "description": "F.Cu 上 U11 的焊盘 6 [CANL]",
+                    "pos": {
+                        "x": 166.025,
+                        "y": 121.365
+                    },
+                    "uuid": "981c0d25-dc3b-416d-aada-a02b13472f61"
+                },
+                {
+                    "description": "J8 的PTH 焊盘 2 [CANL]",
+                    "pos": {
+                        "x": 180.5,
+                        "y": 119.0
+                    },
+                    "uuid": "2db98ef1-ff54-46ce-a690-fa410130c683"
+                }
+            ],
+            "severity": "error",
+            "type": "unconnected_items"
+        },
+        {
+            "description": "Missing connection between items",
+            "items": [
+                {
+                    "description": "J5 的PTH 焊盘 4 [VDDA_PHY]",
+                    "pos": {
+                        "x": 119.84,
+                        "y": 139.81
+                    },
+                    "uuid": "f75742f4-6535-4e5e-9921-8712c2126a5c"
+                },
+                {
+                    "description": "J5 的PTH 焊盘 5 [VDDA_PHY]",
+                    "pos": {
+                        "x": 117.3,
+                        "y": 141.08
+                    },
+                    "uuid": "7ca5ca73-c064-47d8-8c54-23b1df5146e5"
+                }
+            ],
+            "severity": "error",
+            "type": "unconnected_items"
+        },
+        {
+            "description": "Missing connection between items",
+            "items": [
+                {
+                    "description": "J5 的PTH 焊盘 4 [VDDA_PHY]",
+                    "pos": {
+                        "x": 119.84,
+                        "y": 139.81
+                    },
+                    "uuid": "f75742f4-6535-4e5e-9921-8712c2126a5c"
+                },
+                {
+                    "description": "F.Cu 上 U7 的焊盘 1 [VDDA_PHY]",
+                    "pos": {
+                        "x": 125.5625,
+                        "y": 139.75
+                    },
+                    "uuid": "40908187-c623-44f7-a176-49ac3148e473"
+                }
+            ],
+            "severity": "error",
+            "type": "unconnected_items"
+        },
+        {
+            "description": "Missing connection between items",
+            "items": [
+                {
+                    "description": "F.Cu 上 U7 的焊盘 1 [VDDA_PHY]",
+                    "pos": {
+                        "x": 125.5625,
+                        "y": 139.75
+                    },
+                    "uuid": "40908187-c623-44f7-a176-49ac3148e473"
+                },
+                {
+                    "description": "F.Cu 上 U7 的焊盘 19 [VDDA_PHY]",
+                    "pos": {
+                        "x": 128.75,
+                        "y": 139.0625
+                    },
+                    "uuid": "4b7e3e7a-701a-4361-bc7a-22775cfdb158"
+                }
+            ],
+            "severity": "error",
+            "type": "unconnected_items"
+        },
+        {
+            "description": "Missing connection between items",
+            "items": [
+                {
+                    "description": "F.Cu 上 TP_12V 的焊盘 1 [+12V]",
+                    "pos": {
+                        "x": 156.9,
+                        "y": 153.0
+                    },
+                    "uuid": "60ed17e9-9865-4ccc-b14c-7127d4cf870c"
+                },
+                {
+                    "description": "F.Cu 上 C10 的焊盘 2 [+12V]",
+                    "pos": {
+                        "x": 157.175,
+                        "y": 156.2
+                    },
+                    "uuid": "53c896b0-de07-4ba5-8f10-6a16f63f3df3"
+                }
+            ],
+            "severity": "error",
+            "type": "unconnected_items"
+        },
+        {
+            "description": "Missing connection between items",
+            "items": [
+                {
+                    "description": "F.Cu 上 C10 的焊盘 2 [+12V]",
+                    "pos": {
+                        "x": 157.175,
+                        "y": 156.2
+                    },
+                    "uuid": "53c896b0-de07-4ba5-8f10-6a16f63f3df3"
+                },
+                {
+                    "description": "F.Cu 上 Q1 的焊盘 2 [+12V]",
+                    "pos": {
+                        "x": 161.2625,
+                        "y": 158.95
+                    },
+                    "uuid": "9bc0f86b-30cf-4f46-8846-827b45d56f36"
+                }
+            ],
+            "severity": "error",
+            "type": "unconnected_items"
+        },
+        {
+            "description": "Missing connection between items",
+            "items": [
+                {
+                    "description": "F.Cu 上 U8 的焊盘 3 [+12V]",
+                    "pos": {
+                        "x": 159.05,
+                        "y": 150.8625
+                    },
+                    "uuid": "97be1632-8f4d-4ad8-aad1-48c071b99b14"
+                },
+                {
+                    "description": "F.Cu 上 C11 的焊盘 1 [+12V]",
+                    "pos": {
+                        "x": 158.525,
+                        "y": 148.3
+                    },
+                    "uuid": "cf007d27-f40d-4ef4-ae97-8cfc2e678517"
+                }
+            ],
+            "severity": "error",
+            "type": "unconnected_items"
+        },
+        {
+            "description": "Missing connection between items",
+            "items": [
+                {
+                    "description": "F.Cu 上 U8 的焊盘 3 [+12V]",
+                    "pos": {
+                        "x": 159.05,
+                        "y": 150.8625
+                    },
+                    "uuid": "97be1632-8f4d-4ad8-aad1-48c071b99b14"
+                },
+                {
+                    "description": "F.Cu 上 TP_12V 的焊盘 1 [+12V]",
+                    "pos": {
+                        "x": 156.9,
+                        "y": 153.0
+                    },
+                    "uuid": "60ed17e9-9865-4ccc-b14c-7127d4cf870c"
+                }
+            ],
+            "severity": "error",
+            "type": "unconnected_items"
+        },
+        {
+            "description": "Missing connection between items",
+            "items": [
+                {
+                    "description": "F.Cu 上 D1 的焊盘 2 [+12V]",
+                    "pos": {
+                        "x": 159.5,
+                        "y": 161.5
+                    },
+                    "uuid": "96b72af7-8241-4efd-b896-2f3b2e522828"
+                },
+                {
+                    "description": "F.Cu 上 Q1 的焊盘 2 [+12V]",
+                    "pos": {
+                        "x": 161.2625,
+                        "y": 158.95
+                    },
+                    "uuid": "9bc0f86b-30cf-4f46-8846-827b45d56f36"
+                }
+            ],
+            "severity": "error",
+            "type": "unconnected_items"
+        },
+        {
+            "description": "Missing connection between items",
+            "items": [
+                {
+                    "description": "F.Cu 上 TP_1V8 的焊盘 1 [+1V8]",
+                    "pos": {
+                        "x": 113.2,
+                        "y": 122.2
+                    },
+                    "uuid": "67303eb1-5ffc-4660-9d3b-3d1388866e59"
+                },
+                {
+                    "description": "F.Cu 上 U5 的焊盘 5 [+1V8]",
+                    "pos": {
+                        "x": 113.6375,
+                        "y": 124.55
+                    },
+                    "uuid": "b138878a-0609-431a-9170-b437109fb5d3"
+                }
+            ],
+            "severity": "error",
+            "type": "unconnected_items"
+        },
+        {
+            "description": "Missing connection between items",
+            "items": [
+                {
+                    "description": "F.Cu 上 U5 的焊盘 5 [+1V8]",
+                    "pos": {
+                        "x": 113.6375,
+                        "y": 124.55
+                    },
+                    "uuid": "b138878a-0609-431a-9170-b437109fb5d3"
+                },
+                {
+                    "description": "F.Cu 上 C51 的焊盘 1 [+1V8]",
+                    "pos": {
+                        "x": 115.4,
+                        "y": 124.375
+                    },
+                    "uuid": "66378901-4b6f-48aa-9909-9940ac681289"
+                }
+            ],
+            "severity": "error",
+            "type": "unconnected_items"
+        },
+        {
+            "description": "Missing connection between items",
+            "items": [
+                {
+                    "description": "F.Cu 上 U6 的焊盘 4 [+1V8]",
+                    "pos": {
+                        "x": 117.5625,
+                        "y": 124.75
+                    },
+                    "uuid": "eec1db50-7d09-4b2b-a776-45a599db8482"
+                },
+                {
+                    "description": "F.Cu 上 C51 的焊盘 1 [+1V8]",
+                    "pos": {
+                        "x": 115.4,
+                        "y": 124.375
+                    },
+                    "uuid": "66378901-4b6f-48aa-9909-9940ac681289"
+                }
+            ],
+            "severity": "error",
+            "type": "unconnected_items"
+        },
+        {
+            "description": "Missing connection between items",
+            "items": [
+                {
+                    "description": "F.Cu 上 U1 的焊盘 P1 [VDDA_MCU]",
+                    "pos": {
+                        "x": 133.45,
+                        "y": 140.9
+                    },
+                    "uuid": "820cc2c2-922a-4b82-b9b6-2cdb023c70d6"
+                },
+                {
+                    "description": "F.Cu 上 U1 的焊盘 R1 [VDDA_MCU]",
+                    "pos": {
+                        "x": 133.45,
+                        "y": 141.55
+                    },
+                    "uuid": "b50e83f2-78bc-459d-a671-735ce989d59b"
+                }
+            ],
+            "severity": "error",
+            "type": "unconnected_items"
+        },
+        {
+            "description": "Missing connection between items",
+            "items": [
+                {
+                    "description": "F.Cu 上 L1 的焊盘 1 [SW_5V]",
+                    "pos": {
+                        "x": 160.0,
+                        "y": 146.1
+                    },
+                    "uuid": "b575b654-3058-4a3f-82a7-512bbec07abe"
+                },
+                {
+                    "description": "F.Cu 上 U8 的焊盘 2 [SW_5V]",
+                    "pos": {
+                        "x": 160.0,
+                        "y": 150.8625
+                    },
+                    "uuid": "c55d2239-b0ed-40ab-84bd-e8a0621434fa"
+                }
+            ],
+            "severity": "error",
+            "type": "unconnected_items"
+        },
+        {
+            "description": "Missing connection between items",
+            "items": [
+                {
+                    "description": "F.Cu 上 L2 的焊盘 1 [SW_3V3]",
+                    "pos": {
+                        "x": 162.8,
+                        "y": 134.575
+                    },
+                    "uuid": "201b582f-5c7c-4396-ad05-34bf896dfa4b"
+                },
+                {
+                    "description": "F.Cu 上 U9 的焊盘 3 [SW_3V3]",
+                    "pos": {
+                        "x": 165.05,
+                        "y": 135.3625
+                    },
+                    "uuid": "73110c0c-ed19-4d30-8b1c-b2b77f45453e"
+                }
+            ],
+            "severity": "error",
+            "type": "unconnected_items"
+        }
+    ],
+    "violations": [
+        {
+            "description": "走线角度 (规则 'corner_angle' 最小角度 134.000°; 实际 90.000°)",
+            "items": [
+                {
+                    "description": "走线 [+3V3] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 138.0,
+                        "y": 140.25
+                    },
+                    "uuid": "65cfd3d7-8e25-4749-a2bf-fc7646e7659c"
+                },
+                {
+                    "description": "走线 [+3V3] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 138.325,
+                        "y": 140.575
+                    },
+                    "uuid": "537f67c6-fd03-493f-ac1e-6235530412df"
+                }
+            ],
+            "severity": "error",
+            "type": "track_angle"
+        },
+        {
+            "description": "走线角度 (规则 'corner_angle' 最小角度 134.000°; 实际 90.000°)",
+            "items": [
+                {
+                    "description": "走线 [+3V3] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 140.6,
+                        "y": 137.65
+                    },
+                    "uuid": "1f609e37-f097-43e3-81af-3c402f911b42"
+                },
+                {
+                    "description": "走线 [+3V3] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 140.925,
+                        "y": 137.975
+                    },
+                    "uuid": "97bc2caa-5b27-41a0-b359-b9f717bd9830"
+                }
+            ],
+            "severity": "error",
+            "type": "track_angle"
+        },
+        {
+            "description": "走线角度 (规则 'corner_angle' 最小角度 134.000°; 实际 90.000°)",
+            "items": [
+                {
+                    "description": "走线 [GND] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 136.375,
+                        "y": 137.975
+                    },
+                    "uuid": "4f73197b-d181-4665-803c-d7914f47d473"
+                },
+                {
+                    "description": "走线 [GND] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 136.7,
+                        "y": 137.65
+                    },
+                    "uuid": "d1c50b0e-f436-4d85-9a87-5c2ef24c8e3b"
+                }
+            ],
+            "severity": "error",
+            "type": "track_angle"
+        },
+        {
+            "description": "走线角度 (规则 'corner_angle' 最小角度 134.000°; 实际 90.000°)",
+            "items": [
+                {
+                    "description": "走线 [GND] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 138.0,
+                        "y": 134.4
+                    },
+                    "uuid": "4df76f8d-3214-4e47-9690-084e442e45f6"
+                },
+                {
+                    "description": "走线 [GND] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 138.325,
+                        "y": 134.074999
+                    },
+                    "uuid": "e33f5326-3966-4874-8653-f4032dedff5b"
+                }
+            ],
+            "severity": "error",
+            "type": "track_angle"
+        },
+        {
+            "description": "走线角度 (规则 'corner_angle' 最小角度 134.000°; 实际 90.000°)",
+            "items": [
+                {
+                    "description": "走线 [+3V3] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 137.35,
+                        "y": 133.75
+                    },
+                    "uuid": "7854df56-8924-407c-9de5-e3cdee55b04b"
+                },
+                {
+                    "description": "走线 [+3V3] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 137.025,
+                        "y": 133.425
+                    },
+                    "uuid": "970869ac-f901-4f0a-bfa9-22ecdf08ca47"
+                }
+            ],
+            "severity": "error",
+            "type": "track_angle"
+        },
+        {
+            "description": "走线角度 (规则 'corner_angle' 最小角度 134.000°; 实际 90.000°)",
+            "items": [
+                {
+                    "description": "走线 [GND] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 138.0,
+                        "y": 135.7
+                    },
+                    "uuid": "bf8a6b96-38a0-4cc6-8556-7836cdbe61df"
+                },
+                {
+                    "description": "走线 [GND] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 138.325,
+                        "y": 135.375
+                    },
+                    "uuid": "2349d8df-b279-45d5-b888-aedec70a4295"
+                }
+            ],
+            "severity": "error",
+            "type": "track_angle"
+        },
+        {
+            "description": "走线角度 (规则 'corner_angle' 最小角度 134.000°; 实际 90.000°)",
+            "items": [
+                {
+                    "description": "走线 [GND] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 138.0,
+                        "y": 139.6
+                    },
+                    "uuid": "10cefb5e-9dd9-4c5d-8b9f-43a9b2c5016d"
+                },
+                {
+                    "description": "走线 [GND] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 138.325,
+                        "y": 139.925
+                    },
+                    "uuid": "d071f4bf-7cec-4207-8ae4-a0edc3fe6594"
+                }
+            ],
+            "severity": "error",
+            "type": "track_angle"
+        },
+        {
+            "description": "走线角度 (规则 'corner_angle' 最小角度 134.000°; 实际 90.000°)",
+            "items": [
+                {
+                    "description": "走线 [GND] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 133.775,
+                        "y": 139.925
+                    },
+                    "uuid": "b9148d92-c62b-4f01-98a5-4c4d44d6d40e"
+                },
+                {
+                    "description": "走线 [GND] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 133.449999,
+                        "y": 140.25
+                    },
+                    "uuid": "45d81897-6ec7-418f-b276-cc07fc7738fa"
+                }
+            ],
+            "severity": "error",
+            "type": "track_angle"
+        },
+        {
+            "description": "走线角度 (规则 'corner_angle' 最小角度 134.000°; 实际 90.000°)",
+            "items": [
+                {
+                    "description": "走线 [+3V3] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 136.7,
+                        "y": 133.75
+                    },
+                    "uuid": "423f23ad-4a04-4cc0-95f7-62909d437d78"
+                },
+                {
+                    "description": "走线 [+3V3] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 136.375,
+                        "y": 133.425
+                    },
+                    "uuid": "a3fa5439-a307-42f5-a680-4685e66e0ce5"
+                }
+            ],
+            "severity": "error",
+            "type": "track_angle"
+        },
+        {
+            "description": "走线角度 (规则 'corner_angle' 最小角度 134.000°; 实际 90.000°)",
+            "items": [
+                {
+                    "description": "走线 [+3V3] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 138.65,
+                        "y": 140.25
+                    },
+                    "uuid": "f89597f5-87da-4120-a998-1e2956cce4fa"
+                },
+                {
+                    "description": "走线 [+3V3] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 138.975,
+                        "y": 140.575
+                    },
+                    "uuid": "a12e2182-b14a-4fa5-b684-97ced2c4dcb8"
+                }
+            ],
+            "severity": "error",
+            "type": "track_angle"
+        },
+        {
+            "description": "走线角度 (规则 'corner_angle' 最小角度 134.000°; 实际 90.000°)",
+            "items": [
+                {
+                    "description": "走线 [GND] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 138.325,
+                        "y": 139.925
+                    },
+                    "uuid": "d071f4bf-7cec-4207-8ae4-a0edc3fe6594"
+                },
+                {
+                    "description": "走线 [GND] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 138.0,
+                        "y": 139.6
+                    },
+                    "uuid": "10cefb5e-9dd9-4c5d-8b9f-43a9b2c5016d"
+                }
+            ],
+            "severity": "error",
+            "type": "track_angle"
+        },
+        {
+            "description": "走线角度 (规则 'corner_angle' 最小角度 134.000°; 实际 90.000°)",
+            "items": [
+                {
+                    "description": "走线 [GND] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 140.6,
+                        "y": 136.35
+                    },
+                    "uuid": "25e64c90-4fe0-4f11-a8a5-3f3d5ad31d53"
+                },
+                {
+                    "description": "走线 [GND] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 140.925,
+                        "y": 136.025
+                    },
+                    "uuid": "dbe6e649-1189-4cf3-8130-2f3a7cb3466d"
+                }
+            ],
+            "severity": "error",
+            "type": "track_angle"
+        },
+        {
+            "description": "走线角度 (规则 'corner_angle' 最小角度 134.000°; 实际 90.000°)",
+            "items": [
+                {
+                    "description": "走线 [+3V3] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 138.0,
+                        "y": 133.75
+                    },
+                    "uuid": "5a90f4f8-9c67-4b14-a585-bbfeab4b2086"
+                },
+                {
+                    "description": "走线 [+3V3] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 138.325,
+                        "y": 133.425
+                    },
+                    "uuid": "aad642f5-9f41-448d-b574-1703400eceb7"
+                }
+            ],
+            "severity": "error",
+            "type": "track_angle"
+        },
+        {
+            "description": "走线角度 (规则 'corner_angle' 最小角度 134.000°; 实际 90.000°)",
+            "items": [
+                {
+                    "description": "走线 [GND] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 138.0,
+                        "y": 137.0
+                    },
+                    "uuid": "26d9910e-4934-485c-a1f4-50b1cb0e0cbe"
+                },
+                {
+                    "description": "走线 [GND] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 138.325,
+                        "y": 137.325
+                    },
+                    "uuid": "c44a7e00-9d69-4e0e-9464-20e64ed0e92a"
+                }
+            ],
+            "severity": "error",
+            "type": "track_angle"
+        },
+        {
+            "description": "走线角度 (规则 'corner_angle' 最小角度 134.000°; 实际 90.000°)",
+            "items": [
+                {
+                    "description": "走线 [GND] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 137.025,
+                        "y": 135.375
+                    },
+                    "uuid": "7e6740ff-c1e1-4238-a241-4aea1e2c0962"
+                },
+                {
+                    "description": "走线 [GND] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 137.35,
+                        "y": 135.7
+                    },
+                    "uuid": "406a519f-2534-4151-9ed9-399f15a2dc02"
+                }
+            ],
+            "severity": "error",
+            "type": "track_angle"
+        },
+        {
+            "description": "走线角度 (规则 'corner_angle' 最小角度 134.000°; 实际 90.000°)",
+            "items": [
+                {
+                    "description": "走线 [+3V3] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 134.75,
+                        "y": 136.35
+                    },
+                    "uuid": "a59ea7b1-3b9b-4442-9c6c-5ccf8edd64f9"
+                },
+                {
+                    "description": "走线 [+3V3] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 135.075,
+                        "y": 136.025
+                    },
+                    "uuid": "eb1a6920-2881-4858-bd1c-ad83c4a395d0"
+                }
+            ],
+            "severity": "error",
+            "type": "track_angle"
+        },
+        {
+            "description": "走线角度 (规则 'corner_angle' 最小角度 134.000°; 实际 90.000°)",
+            "items": [
+                {
+                    "description": "走线 [GND] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 138.0,
+                        "y": 137.0
+                    },
+                    "uuid": "26d9910e-4934-485c-a1f4-50b1cb0e0cbe"
+                },
+                {
+                    "description": "走线 [GND] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 138.325,
+                        "y": 137.325
+                    },
+                    "uuid": "2e0a38ea-6b91-4e83-abe7-b8f8267495a0"
+                }
+            ],
+            "severity": "error",
+            "type": "track_angle"
+        },
+        {
+            "description": "走线角度 (规则 'corner_angle' 最小角度 134.000°; 实际 90.000°)",
+            "items": [
+                {
+                    "description": "走线 [GND] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 138.975,
+                        "y": 135.375
+                    },
+                    "uuid": "3fb6762d-ba1f-49a6-b435-49aaf6b1449a"
+                },
+                {
+                    "description": "走线 [GND] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 138.65,
+                        "y": 135.7
+                    },
+                    "uuid": "44a2b74e-f120-4c1f-8ee3-9a6db89173f3"
+                }
+            ],
+            "severity": "error",
+            "type": "track_angle"
+        },
+        {
+            "description": "走线角度 (规则 'corner_angle' 最小角度 134.000°; 实际 90.000°)",
+            "items": [
+                {
+                    "description": "走线 [GND] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 137.35,
+                        "y": 137.65
+                    },
+                    "uuid": "5259fb25-b5e1-41f8-a12a-d59d128fa8ff"
+                },
+                {
+                    "description": "走线 [GND] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 137.025,
+                        "y": 137.975
+                    },
+                    "uuid": "b6f34c4f-ba63-4d12-9b87-f8d416dc78bf"
+                }
+            ],
+            "severity": "error",
+            "type": "track_angle"
+        },
+        {
+            "description": "走线角度 (规则 'corner_angle' 最小角度 134.000°; 实际 90.000°)",
+            "items": [
+                {
+                    "description": "走线 [+3V3] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 141.25,
+                        "y": 137.0
+                    },
+                    "uuid": "cbdcebbf-d691-4173-adee-045d038ebd57"
+                },
+                {
+                    "description": "走线 [+3V3] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 141.575,
+                        "y": 137.325
+                    },
+                    "uuid": "10f95b72-e06c-4a6b-b2e7-d31647e462de"
+                }
+            ],
+            "severity": "error",
+            "type": "track_angle"
+        },
+        {
+            "description": "走线角度 (规则 'corner_angle' 最小角度 134.000°; 实际 90.000°)",
+            "items": [
+                {
+                    "description": "走线 [GND] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 137.35,
+                        "y": 137.0
+                    },
+                    "uuid": "28fc3ddd-8357-459d-92f1-0bdc59457487"
+                },
+                {
+                    "description": "走线 [GND] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 137.025,
+                        "y": 137.325
+                    },
+                    "uuid": "754d4837-f00f-43eb-b842-732e22ab9139"
+                }
+            ],
+            "severity": "error",
+            "type": "track_angle"
+        },
+        {
+            "description": "走线角度 (规则 'corner_angle' 最小角度 134.000°; 实际 90.000°)",
+            "items": [
+                {
+                    "description": "走线 [GND] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 134.425,
+                        "y": 136.025
+                    },
+                    "uuid": "047985ad-07b9-49ae-9f88-9829b83589dc"
+                },
+                {
+                    "description": "走线 [GND] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 134.1,
+                        "y": 135.7
+                    },
+                    "uuid": "32200c12-dd06-4078-9be3-9e1122364e7d"
+                }
+            ],
+            "severity": "error",
+            "type": "track_angle"
+        },
+        {
+            "description": "走线角度 (规则 'corner_angle' 最小角度 134.000°; 实际 90.000°)",
+            "items": [
+                {
+                    "description": "走线 [GND] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 137.35,
+                        "y": 137.0
+                    },
+                    "uuid": "28fc3ddd-8357-459d-92f1-0bdc59457487"
+                },
+                {
+                    "description": "走线 [GND] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 137.025,
+                        "y": 137.325
+                    },
+                    "uuid": "9e86b07e-716f-4f98-b212-024621ed30d7"
+                }
+            ],
+            "severity": "error",
+            "type": "track_angle"
+        },
+        {
+            "description": "走线角度 (规则 'corner_angle' 最小角度 134.000°; 实际 90.000°)",
+            "items": [
+                {
+                    "description": "走线 [GND] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 137.35,
+                        "y": 137.65
+                    },
+                    "uuid": "5259fb25-b5e1-41f8-a12a-d59d128fa8ff"
+                },
+                {
+                    "description": "走线 [GND] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 137.025,
+                        "y": 137.975
+                    },
+                    "uuid": "c40ae10b-5aa6-4c1b-bd42-9e7c6170b6ab"
+                }
+            ],
+            "severity": "error",
+            "type": "track_angle"
+        },
+        {
+            "description": "走线角度 (规则 'corner_angle' 最小角度 134.000°; 实际 90.000°)",
+            "items": [
+                {
+                    "description": "走线 [GND] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 136.7,
+                        "y": 137.0
+                    },
+                    "uuid": "2d28720c-dea1-4a81-9537-f7c3f60ef721"
+                },
+                {
+                    "description": "走线 [GND] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 136.375,
+                        "y": 137.325
+                    },
+                    "uuid": "0489bc96-d069-4602-bcaa-8e84f1854474"
+                }
+            ],
+            "severity": "error",
+            "type": "track_angle"
+        },
+        {
+            "description": "走线角度 (规则 'corner_angle' 最小角度 134.000°; 实际 90.000°)",
+            "items": [
+                {
+                    "description": "走线 [GND] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 138.975,
+                        "y": 136.025
+                    },
+                    "uuid": "db92198a-9b06-436f-b913-8bd3f255ab30"
+                },
+                {
+                    "description": "走线 [GND] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 138.65,
+                        "y": 136.35
+                    },
+                    "uuid": "56a1d4ea-cb7a-43b2-93ed-dc2f1ca2abdb"
+                }
+            ],
+            "severity": "error",
+            "type": "track_angle"
+        },
+        {
+            "description": "走线角度 (规则 'corner_angle' 最小角度 134.000°; 实际 90.000°)",
+            "items": [
+                {
+                    "description": "走线 [GND] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 136.375,
+                        "y": 136.025
+                    },
+                    "uuid": "176a5de1-e28f-47f6-909b-5382d67fef3f"
+                },
+                {
+                    "description": "走线 [GND] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 136.7,
+                        "y": 136.35
+                    },
+                    "uuid": "81473710-890d-4956-8783-da52202d5cba"
+                }
+            ],
+            "severity": "error",
+            "type": "track_angle"
+        },
+        {
+            "description": "走线角度 (规则 'corner_angle' 最小角度 134.000°; 实际 90.000°)",
+            "items": [
+                {
+                    "description": "走线 [GND] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 134.1,
+                        "y": 135.7
+                    },
+                    "uuid": "32200c12-dd06-4078-9be3-9e1122364e7d"
+                },
+                {
+                    "description": "走线 [GND] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 134.425,
+                        "y": 136.025
+                    },
+                    "uuid": "047985ad-07b9-49ae-9f88-9829b83589dc"
+                }
+            ],
+            "severity": "error",
+            "type": "track_angle"
+        },
+        {
+            "description": "走线角度 (规则 'corner_angle' 最小角度 134.000°; 实际 90.000°)",
+            "items": [
+                {
+                    "description": "走线 [GND] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 138.975,
+                        "y": 136.025
+                    },
+                    "uuid": "db92198a-9b06-436f-b913-8bd3f255ab30"
+                },
+                {
+                    "description": "走线 [GND] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 138.975,
+                        "y": 136.025
+                    },
+                    "uuid": "2d22ad77-69b9-4786-aed7-d0d9e05af038"
+                }
+            ],
+            "severity": "error",
+            "type": "track_angle"
+        },
+        {
+            "description": "走线角度 (规则 'corner_angle' 最小角度 134.000°; 实际 90.000°)",
+            "items": [
+                {
+                    "description": "走线 [GND] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 137.025,
+                        "y": 136.025
+                    },
+                    "uuid": "fda72eb4-a37a-4ead-88b2-735e424ffd9d"
+                },
+                {
+                    "description": "走线 [GND] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 137.025,
+                        "y": 136.025
+                    },
+                    "uuid": "c2706ad0-2d4b-4db1-97b1-f19f57b511bf"
+                }
+            ],
+            "severity": "error",
+            "type": "track_angle"
+        },
+        {
+            "description": "走线角度 (规则 'corner_angle' 最小角度 134.000°; 实际 90.000°)",
+            "items": [
+                {
+                    "description": "走线 [GND] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 138.65,
+                        "y": 138.3
+                    },
+                    "uuid": "3394030b-5ed7-41da-ba10-6c169dc5350f"
+                },
+                {
+                    "description": "走线 [GND] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 138.975,
+                        "y": 138.625
+                    },
+                    "uuid": "74e1596c-eeb2-435d-a6f2-a7a4d4cc421f"
+                }
+            ],
+            "severity": "error",
+            "type": "track_angle"
+        },
+        {
+            "description": "走线角度 (规则 'corner_angle' 最小角度 134.000°; 实际 90.000°)",
+            "items": [
+                {
+                    "description": "走线 [GND] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 139.3,
+                        "y": 137.65
+                    },
+                    "uuid": "cf888269-d011-43b4-b1e8-7aea9ea964d8"
+                },
+                {
+                    "description": "走线 [GND] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 139.625,
+                        "y": 137.975
+                    },
+                    "uuid": "f8b84711-5ddc-4051-9c38-1e2c6514cf5e"
+                }
+            ],
+            "severity": "error",
+            "type": "track_angle"
+        },
+        {
+            "description": "走线角度 (规则 'corner_angle' 最小角度 134.000°; 实际 90.000°)",
+            "items": [
+                {
+                    "description": "走线 [GND] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 138.65,
+                        "y": 136.35
+                    },
+                    "uuid": "56a1d4ea-cb7a-43b2-93ed-dc2f1ca2abdb"
+                },
+                {
+                    "description": "走线 [GND] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 138.975,
+                        "y": 136.025
+                    },
+                    "uuid": "73307bed-d8b9-4fd7-8d52-c6c6bbf456e8"
+                }
+            ],
+            "severity": "error",
+            "type": "track_angle"
+        },
+        {
+            "description": "走线角度 (规则 'corner_angle' 最小角度 134.000°; 实际 90.000°)",
+            "items": [
+                {
+                    "description": "走线 [GND] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 137.35,
+                        "y": 135.7
+                    },
+                    "uuid": "406a519f-2534-4151-9ed9-399f15a2dc02"
+                },
+                {
+                    "description": "走线 [GND] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 137.025,
+                        "y": 135.375
+                    },
+                    "uuid": "7e6740ff-c1e1-4238-a241-4aea1e2c0962"
+                }
+            ],
+            "severity": "error",
+            "type": "track_angle"
+        },
+        {
+            "description": "走线角度 (规则 'corner_angle' 最小角度 134.000°; 实际 90.000°)",
+            "items": [
+                {
+                    "description": "走线 [GND] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 136.375,
+                        "y": 137.325
+                    },
+                    "uuid": "0489bc96-d069-4602-bcaa-8e84f1854474"
+                },
+                {
+                    "description": "走线 [GND] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 136.7,
+                        "y": 137.0
+                    },
+                    "uuid": "2d28720c-dea1-4a81-9537-f7c3f60ef721"
+                }
+            ],
+            "severity": "error",
+            "type": "track_angle"
+        },
+        {
+            "description": "走线角度 (规则 'corner_angle' 最小角度 134.000°; 实际 90.000°)",
+            "items": [
+                {
+                    "description": "走线 [GND] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 137.025,
+                        "y": 136.025
+                    },
+                    "uuid": "fda72eb4-a37a-4ead-88b2-735e424ffd9d"
+                },
+                {
+                    "description": "走线 [GND] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 137.025,
+                        "y": 136.025
+                    },
+                    "uuid": "94f9f7b3-22db-4509-8aa0-4d5c1556ce09"
+                }
+            ],
+            "severity": "error",
+            "type": "track_angle"
+        },
+        {
+            "description": "走线角度 (规则 'corner_angle' 最小角度 134.000°; 实际 90.000°)",
+            "items": [
+                {
+                    "description": "走线 [GND] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 138.975,
+                        "y": 136.025
+                    },
+                    "uuid": "2d22ad77-69b9-4786-aed7-d0d9e05af038"
+                },
+                {
+                    "description": "走线 [GND] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 138.975,
+                        "y": 136.025
+                    },
+                    "uuid": "73307bed-d8b9-4fd7-8d52-c6c6bbf456e8"
+                }
+            ],
+            "severity": "error",
+            "type": "track_angle"
+        },
+        {
+            "description": "走线角度 (规则 'corner_angle' 最小角度 134.000°; 实际 90.000°)",
+            "items": [
+                {
+                    "description": "走线 [GND] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 138.65,
+                        "y": 135.7
+                    },
+                    "uuid": "44a2b74e-f120-4c1f-8ee3-9a6db89173f3"
+                },
+                {
+                    "description": "走线 [GND] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 138.975,
+                        "y": 135.375
+                    },
+                    "uuid": "3fb6762d-ba1f-49a6-b435-49aaf6b1449a"
+                }
+            ],
+            "severity": "error",
+            "type": "track_angle"
+        },
+        {
+            "description": "走线角度 (规则 'corner_angle' 最小角度 134.000°; 实际 90.000°)",
+            "items": [
+                {
+                    "description": "走线 [GND] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 138.65,
+                        "y": 136.35
+                    },
+                    "uuid": "56a1d4ea-cb7a-43b2-93ed-dc2f1ca2abdb"
+                },
+                {
+                    "description": "走线 [GND] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 138.975,
+                        "y": 136.025
+                    },
+                    "uuid": "db92198a-9b06-436f-b913-8bd3f255ab30"
+                }
+            ],
+            "severity": "error",
+            "type": "track_angle"
+        },
+        {
+            "description": "走线角度 (规则 'corner_angle' 最小角度 134.000°; 实际 90.000°)",
+            "items": [
+                {
+                    "description": "走线 [GND] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 133.449999,
+                        "y": 140.25
+                    },
+                    "uuid": "45d81897-6ec7-418f-b276-cc07fc7738fa"
+                },
+                {
+                    "description": "走线 [GND] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 133.775,
+                        "y": 139.925
+                    },
+                    "uuid": "b9148d92-c62b-4f01-98a5-4c4d44d6d40e"
+                }
+            ],
+            "severity": "error",
+            "type": "track_angle"
+        },
+        {
+            "description": "走线角度 (规则 'corner_angle' 最小角度 134.000°; 实际 90.000°)",
+            "items": [
+                {
+                    "description": "走线 [GND] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 138.975,
+                        "y": 136.025
+                    },
+                    "uuid": "2d22ad77-69b9-4786-aed7-d0d9e05af038"
+                },
+                {
+                    "description": "走线 [GND] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 138.975,
+                        "y": 136.025
+                    },
+                    "uuid": "db92198a-9b06-436f-b913-8bd3f255ab30"
+                }
+            ],
+            "severity": "error",
+            "type": "track_angle"
+        },
+        {
+            "description": "走线角度 (规则 'corner_angle' 最小角度 134.000°; 实际 90.000°)",
+            "items": [
+                {
+                    "description": "走线 [GND] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 137.025,
+                        "y": 136.025
+                    },
+                    "uuid": "94f9f7b3-22db-4509-8aa0-4d5c1556ce09"
+                },
+                {
+                    "description": "走线 [GND] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 137.35,
+                        "y": 136.35
+                    },
+                    "uuid": "e828aeae-061a-4d43-bd9b-292ebf85e2ce"
+                }
+            ],
+            "severity": "error",
+            "type": "track_angle"
+        },
+        {
+            "description": "走线角度 (规则 'corner_angle' 最小角度 134.000°; 实际 90.000°)",
+            "items": [
+                {
+                    "description": "走线 [GND] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 136.7,
+                        "y": 137.65
+                    },
+                    "uuid": "d1c50b0e-f436-4d85-9a87-5c2ef24c8e3b"
+                },
+                {
+                    "description": "走线 [GND] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 136.375,
+                        "y": 137.975
+                    },
+                    "uuid": "4f73197b-d181-4665-803c-d7914f47d473"
+                }
+            ],
+            "severity": "error",
+            "type": "track_angle"
+        },
+        {
+            "description": "走线角度 (规则 'corner_angle' 最小角度 134.000°; 实际 90.000°)",
+            "items": [
+                {
+                    "description": "走线 [GND] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 138.975,
+                        "y": 136.025
+                    },
+                    "uuid": "73307bed-d8b9-4fd7-8d52-c6c6bbf456e8"
+                },
+                {
+                    "description": "走线 [GND] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 138.65,
+                        "y": 136.35
+                    },
+                    "uuid": "56a1d4ea-cb7a-43b2-93ed-dc2f1ca2abdb"
+                }
+            ],
+            "severity": "error",
+            "type": "track_angle"
+        },
+        {
+            "description": "走线角度 (规则 'corner_angle' 最小角度 134.000°; 实际 90.000°)",
+            "items": [
+                {
+                    "description": "走线 [GND] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 137.35,
+                        "y": 138.3
+                    },
+                    "uuid": "5761fb68-bc7d-497e-81d9-cd2eb06f088b"
+                },
+                {
+                    "description": "走线 [GND] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 137.025,
+                        "y": 138.625
+                    },
+                    "uuid": "932a8e9e-5fa0-4659-a5a6-270ed664ab0a"
+                }
+            ],
+            "severity": "error",
+            "type": "track_angle"
+        },
+        {
+            "description": "走线角度 (规则 'corner_angle' 最小角度 134.000°; 实际 90.000°)",
+            "items": [
+                {
+                    "description": "走线 [GND] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 137.025,
+                        "y": 136.025
+                    },
+                    "uuid": "94f9f7b3-22db-4509-8aa0-4d5c1556ce09"
+                },
+                {
+                    "description": "走线 [GND] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 137.025,
+                        "y": 136.025
+                    },
+                    "uuid": "fda72eb4-a37a-4ead-88b2-735e424ffd9d"
+                }
+            ],
+            "severity": "error",
+            "type": "track_angle"
+        },
+        {
+            "description": "走线角度 (规则 'corner_angle' 最小角度 134.000°; 实际 90.000°)",
+            "items": [
+                {
+                    "description": "走线 [GND] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 138.975,
+                        "y": 136.025
+                    },
+                    "uuid": "73307bed-d8b9-4fd7-8d52-c6c6bbf456e8"
+                },
+                {
+                    "description": "走线 [GND] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 138.975,
+                        "y": 136.025
+                    },
+                    "uuid": "2d22ad77-69b9-4786-aed7-d0d9e05af038"
+                }
+            ],
+            "severity": "error",
+            "type": "track_angle"
+        },
+        {
+            "description": "走线角度 (规则 'corner_angle' 最小角度 134.000°; 实际 90.000°)",
+            "items": [
+                {
+                    "description": "走线 [GND] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 138.0,
+                        "y": 137.65
+                    },
+                    "uuid": "d6a5d6d2-72d3-4ca1-8077-33eb298ddf87"
+                },
+                {
+                    "description": "走线 [GND] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 138.325,
+                        "y": 137.975
+                    },
+                    "uuid": "80b5a71f-9ec4-4ded-ae22-cde6c98832d2"
+                }
+            ],
+            "severity": "error",
+            "type": "track_angle"
+        },
+        {
+            "description": "走线角度 (规则 'corner_angle' 最小角度 134.000°; 实际 90.000°)",
+            "items": [
+                {
+                    "description": "走线 [GND] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 137.025,
+                        "y": 136.025
+                    },
+                    "uuid": "c2706ad0-2d4b-4db1-97b1-f19f57b511bf"
+                },
+                {
+                    "description": "走线 [GND] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 137.35,
+                        "y": 136.35
+                    },
+                    "uuid": "e828aeae-061a-4d43-bd9b-292ebf85e2ce"
+                }
+            ],
+            "severity": "error",
+            "type": "track_angle"
+        },
+        {
+            "description": "走线角度 (规则 'corner_angle' 最小角度 134.000°; 实际 90.000°)",
+            "items": [
+                {
+                    "description": "走线 [GND] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 139.3,
+                        "y": 137.0
+                    },
+                    "uuid": "6bd401cd-ebac-430d-ae2d-45f843d0299c"
+                },
+                {
+                    "description": "走线 [GND] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 139.625,
+                        "y": 137.325
+                    },
+                    "uuid": "6f74a900-3c99-4b2b-88a1-01c0ce49d39a"
+                }
+            ],
+            "severity": "error",
+            "type": "track_angle"
+        },
+        {
+            "description": "走线角度 (规则 'corner_angle' 最小角度 134.000°; 实际 90.000°)",
+            "items": [
+                {
+                    "description": "走线 [GND] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 137.025,
+                        "y": 136.025
+                    },
+                    "uuid": "c2706ad0-2d4b-4db1-97b1-f19f57b511bf"
+                },
+                {
+                    "description": "走线 [GND] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 137.025,
+                        "y": 136.025
+                    },
+                    "uuid": "fda72eb4-a37a-4ead-88b2-735e424ffd9d"
+                }
+            ],
+            "severity": "error",
+            "type": "track_angle"
+        },
+        {
+            "description": "走线角度 (规则 'corner_angle' 最小角度 134.000°; 实际 90.000°)",
+            "items": [
+                {
+                    "description": "走线 [GND] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 138.975,
+                        "y": 137.325
+                    },
+                    "uuid": "b6c68e1c-67cb-49b7-a0a5-27187969e4d5"
+                },
+                {
+                    "description": "走线 [GND] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 138.65,
+                        "y": 137.0
+                    },
+                    "uuid": "e8d1527d-b203-4770-bfdc-6dcd39366f15"
+                }
+            ],
+            "severity": "error",
+            "type": "track_angle"
+        },
+        {
+            "description": "走线角度 (规则 'corner_angle' 最小角度 134.000°; 实际 90.000°)",
+            "items": [
+                {
+                    "description": "走线 [GND] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 137.025,
+                        "y": 137.325
+                    },
+                    "uuid": "9e86b07e-716f-4f98-b212-024621ed30d7"
+                },
+                {
+                    "description": "走线 [GND] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 137.35,
+                        "y": 137.0
+                    },
+                    "uuid": "28fc3ddd-8357-459d-92f1-0bdc59457487"
+                }
+            ],
+            "severity": "error",
+            "type": "track_angle"
+        },
+        {
+            "description": "走线角度 (规则 'corner_angle' 最小角度 134.000°; 实际 90.000°)",
+            "items": [
+                {
+                    "description": "走线 [GND] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 138.975,
+                        "y": 137.325
+                    },
+                    "uuid": "b6c68e1c-67cb-49b7-a0a5-27187969e4d5"
+                },
+                {
+                    "description": "走线 [GND] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 138.975,
+                        "y": 137.325
+                    },
+                    "uuid": "f019bee5-3a36-49cd-bc0e-a04b200ac902"
+                }
+            ],
+            "severity": "error",
+            "type": "track_angle"
+        },
+        {
+            "description": "走线角度 (规则 'corner_angle' 最小角度 134.000°; 实际 90.000°)",
+            "items": [
+                {
+                    "description": "走线 [GND] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 138.0,
+                        "y": 137.65
+                    },
+                    "uuid": "d6a5d6d2-72d3-4ca1-8077-33eb298ddf87"
+                },
+                {
+                    "description": "走线 [GND] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 138.325,
+                        "y": 137.975
+                    },
+                    "uuid": "efb34263-f002-421d-b76e-a063708481ba"
+                }
+            ],
+            "severity": "error",
+            "type": "track_angle"
+        },
+        {
+            "description": "走线角度 (规则 'corner_angle' 最小角度 134.000°; 实际 90.000°)",
+            "items": [
+                {
+                    "description": "走线 [GND] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 136.7,
+                        "y": 136.35
+                    },
+                    "uuid": "81473710-890d-4956-8783-da52202d5cba"
+                },
+                {
+                    "description": "走线 [GND] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 136.375,
+                        "y": 136.025
+                    },
+                    "uuid": "176a5de1-e28f-47f6-909b-5382d67fef3f"
+                }
+            ],
+            "severity": "error",
+            "type": "track_angle"
+        },
+        {
+            "description": "走线角度 (规则 'corner_angle' 最小角度 134.000°; 实际 90.000°)",
+            "items": [
+                {
+                    "description": "走线 [GND] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 138.975,
+                        "y": 137.325
+                    },
+                    "uuid": "7981f19e-39f2-4e10-a4a9-d9298af812e3"
+                },
+                {
+                    "description": "走线 [GND] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 138.65,
+                        "y": 137.0
+                    },
+                    "uuid": "e8d1527d-b203-4770-bfdc-6dcd39366f15"
+                }
+            ],
+            "severity": "error",
+            "type": "track_angle"
+        },
+        {
+            "description": "走线角度 (规则 'corner_angle' 最小角度 134.000°; 实际 90.000°)",
+            "items": [
+                {
+                    "description": "走线 [GND] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 137.025,
+                        "y": 137.325
+                    },
+                    "uuid": "9e86b07e-716f-4f98-b212-024621ed30d7"
+                },
+                {
+                    "description": "走线 [GND] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 137.025,
+                        "y": 137.325
+                    },
+                    "uuid": "855f3b78-b3e9-4e2c-bd4a-0efea3e23c55"
+                }
+            ],
+            "severity": "error",
+            "type": "track_angle"
+        },
+        {
+            "description": "走线角度 (规则 'corner_angle' 最小角度 134.000°; 实际 90.000°)",
+            "items": [
+                {
+                    "description": "走线 [GND] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 137.35,
+                        "y": 136.35
+                    },
+                    "uuid": "e828aeae-061a-4d43-bd9b-292ebf85e2ce"
+                },
+                {
+                    "description": "走线 [GND] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 137.025,
+                        "y": 136.025
+                    },
+                    "uuid": "c2706ad0-2d4b-4db1-97b1-f19f57b511bf"
+                }
+            ],
+            "severity": "error",
+            "type": "track_angle"
+        },
+        {
+            "description": "走线角度 (规则 'corner_angle' 最小角度 134.000°; 实际 90.000°)",
+            "items": [
+                {
+                    "description": "走线 [GND] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 138.0,
+                        "y": 138.3
+                    },
+                    "uuid": "86beec5b-9806-4cf1-8716-a2c173acee4f"
+                },
+                {
+                    "description": "走线 [GND] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 138.325,
+                        "y": 138.625
+                    },
+                    "uuid": "d4c6c08b-68e0-44a2-94e6-69e4579f4ee8"
+                }
+            ],
+            "severity": "error",
+            "type": "track_angle"
+        },
+        {
+            "description": "走线角度 (规则 'corner_angle' 最小角度 134.000°; 实际 90.000°)",
+            "items": [
+                {
+                    "description": "走线 [GND] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 137.025,
+                        "y": 137.325
+                    },
+                    "uuid": "855f3b78-b3e9-4e2c-bd4a-0efea3e23c55"
+                },
+                {
+                    "description": "走线 [GND] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 137.025,
+                        "y": 137.325
+                    },
+                    "uuid": "754d4837-f00f-43eb-b842-732e22ab9139"
+                }
+            ],
+            "severity": "error",
+            "type": "track_angle"
+        },
+        {
+            "description": "走线角度 (规则 'corner_angle' 最小角度 134.000°; 实际 90.000°)",
+            "items": [
+                {
+                    "description": "走线 [GND] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 138.975,
+                        "y": 137.325
+                    },
+                    "uuid": "7981f19e-39f2-4e10-a4a9-d9298af812e3"
+                },
+                {
+                    "description": "走线 [GND] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 138.975,
+                        "y": 137.325
+                    },
+                    "uuid": "f019bee5-3a36-49cd-bc0e-a04b200ac902"
+                }
+            ],
+            "severity": "error",
+            "type": "track_angle"
+        },
+        {
+            "description": "走线角度 (规则 'corner_angle' 最小角度 134.000°; 实际 90.000°)",
+            "items": [
+                {
+                    "description": "走线 [GND] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 137.025,
+                        "y": 137.325
+                    },
+                    "uuid": "855f3b78-b3e9-4e2c-bd4a-0efea3e23c55"
+                },
+                {
+                    "description": "走线 [GND] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 137.025,
+                        "y": 137.325
+                    },
+                    "uuid": "9e86b07e-716f-4f98-b212-024621ed30d7"
+                }
+            ],
+            "severity": "error",
+            "type": "track_angle"
+        },
+        {
+            "description": "走线角度 (规则 'corner_angle' 最小角度 134.000°; 实际 90.000°)",
+            "items": [
+                {
+                    "description": "走线 [GND] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 137.35,
+                        "y": 136.35
+                    },
+                    "uuid": "e828aeae-061a-4d43-bd9b-292ebf85e2ce"
+                },
+                {
+                    "description": "走线 [GND] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 137.025,
+                        "y": 136.025
+                    },
+                    "uuid": "94f9f7b3-22db-4509-8aa0-4d5c1556ce09"
+                }
+            ],
+            "severity": "error",
+            "type": "track_angle"
+        },
+        {
+            "description": "走线角度 (规则 'corner_angle' 最小角度 134.000°; 实际 90.000°)",
+            "items": [
+                {
+                    "description": "走线 [GND] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 138.975,
+                        "y": 137.325
+                    },
+                    "uuid": "f019bee5-3a36-49cd-bc0e-a04b200ac902"
+                },
+                {
+                    "description": "走线 [GND] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 138.975,
+                        "y": 137.325
+                    },
+                    "uuid": "7981f19e-39f2-4e10-a4a9-d9298af812e3"
+                }
+            ],
+            "severity": "error",
+            "type": "track_angle"
+        },
+        {
+            "description": "走线角度 (规则 'corner_angle' 最小角度 134.000°; 实际 90.000°)",
+            "items": [
+                {
+                    "description": "走线 [GND] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 137.025,
+                        "y": 137.325
+                    },
+                    "uuid": "754d4837-f00f-43eb-b842-732e22ab9139"
+                },
+                {
+                    "description": "走线 [GND] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 137.35,
+                        "y": 137.0
+                    },
+                    "uuid": "28fc3ddd-8357-459d-92f1-0bdc59457487"
+                }
+            ],
+            "severity": "error",
+            "type": "track_angle"
+        },
+        {
+            "description": "走线角度 (规则 'corner_angle' 最小角度 134.000°; 实际 90.000°)",
+            "items": [
+                {
+                    "description": "走线 [GND] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 138.65,
+                        "y": 137.0
+                    },
+                    "uuid": "e8d1527d-b203-4770-bfdc-6dcd39366f15"
+                },
+                {
+                    "description": "走线 [GND] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 138.975,
+                        "y": 137.325
+                    },
+                    "uuid": "7981f19e-39f2-4e10-a4a9-d9298af812e3"
+                }
+            ],
+            "severity": "error",
+            "type": "track_angle"
+        },
+        {
+            "description": "走线角度 (规则 'corner_angle' 最小角度 134.000°; 实际 90.000°)",
+            "items": [
+                {
+                    "description": "走线 [GND] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 139.3,
+                        "y": 136.35
+                    },
+                    "uuid": "b44f9612-35e1-42fa-8bb0-6a62c4f7ea8e"
+                },
+                {
+                    "description": "走线 [GND] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 139.625,
+                        "y": 136.025
+                    },
+                    "uuid": "92971b3f-55e1-473a-beb7-18860d1525b1"
+                }
+            ],
+            "severity": "error",
+            "type": "track_angle"
+        },
+        {
+            "description": "走线角度 (规则 'corner_angle' 最小角度 134.000°; 实际 90.000°)",
+            "items": [
+                {
+                    "description": "走线 [GND] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 137.025,
+                        "y": 137.325
+                    },
+                    "uuid": "754d4837-f00f-43eb-b842-732e22ab9139"
+                },
+                {
+                    "description": "走线 [GND] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 137.025,
+                        "y": 137.325
+                    },
+                    "uuid": "855f3b78-b3e9-4e2c-bd4a-0efea3e23c55"
+                }
+            ],
+            "severity": "error",
+            "type": "track_angle"
+        },
+        {
+            "description": "走线角度 (规则 'corner_angle' 最小角度 134.000°; 实际 90.000°)",
+            "items": [
+                {
+                    "description": "走线 [GND] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 138.975,
+                        "y": 137.325
+                    },
+                    "uuid": "f019bee5-3a36-49cd-bc0e-a04b200ac902"
+                },
+                {
+                    "description": "走线 [GND] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 138.975,
+                        "y": 137.325
+                    },
+                    "uuid": "b6c68e1c-67cb-49b7-a0a5-27187969e4d5"
+                }
+            ],
+            "severity": "error",
+            "type": "track_angle"
+        },
+        {
+            "description": "走线角度 (规则 'corner_angle' 最小角度 134.000°; 实际 90.000°)",
+            "items": [
+                {
+                    "description": "走线 [GND] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 138.65,
+                        "y": 137.0
+                    },
+                    "uuid": "e8d1527d-b203-4770-bfdc-6dcd39366f15"
+                },
+                {
+                    "description": "走线 [GND] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 138.975,
+                        "y": 137.325
+                    },
+                    "uuid": "b6c68e1c-67cb-49b7-a0a5-27187969e4d5"
+                }
+            ],
+            "severity": "error",
+            "type": "track_angle"
+        },
+        {
+            "description": "走线角度 (规则 'corner_angle' 最小角度 134.000°; 实际 90.000°)",
+            "items": [
+                {
+                    "description": "走线 [GND] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 137.025,
+                        "y": 137.975
+                    },
+                    "uuid": "c40ae10b-5aa6-4c1b-bd42-9e7c6170b6ab"
+                },
+                {
+                    "description": "走线 [GND] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 137.35,
+                        "y": 137.65
+                    },
+                    "uuid": "5259fb25-b5e1-41f8-a12a-d59d128fa8ff"
+                }
+            ],
+            "severity": "error",
+            "type": "track_angle"
+        },
+        {
+            "description": "走线角度 (规则 'corner_angle' 最小角度 134.000°; 实际 90.000°)",
+            "items": [
+                {
+                    "description": "走线 [GND] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 138.975,
+                        "y": 137.975
+                    },
+                    "uuid": "25216768-6c4a-4094-be63-2c46f959b932"
+                },
+                {
+                    "description": "走线 [GND] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 138.65,
+                        "y": 137.65
+                    },
+                    "uuid": "f66efe3c-e79f-44b6-bfc2-ad80cb10fdfa"
+                }
+            ],
+            "severity": "error",
+            "type": "track_angle"
+        },
+        {
+            "description": "走线角度 (规则 'corner_angle' 最小角度 134.000°; 实际 90.000°)",
+            "items": [
+                {
+                    "description": "走线 [GND] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 137.025,
+                        "y": 137.975
+                    },
+                    "uuid": "c40ae10b-5aa6-4c1b-bd42-9e7c6170b6ab"
+                },
+                {
+                    "description": "走线 [GND] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 137.025,
+                        "y": 137.975
+                    },
+                    "uuid": "aa79014b-b6ca-4c06-90a2-be8641952284"
+                }
+            ],
+            "severity": "error",
+            "type": "track_angle"
+        },
+        {
+            "description": "走线角度 (规则 'corner_angle' 最小角度 134.000°; 实际 90.000°)",
+            "items": [
+                {
+                    "description": "走线 [GND] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 138.0,
+                        "y": 136.35
+                    },
+                    "uuid": "eb30d3aa-f60d-4602-84a6-5f1d1d2fde85"
+                },
+                {
+                    "description": "走线 [GND] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 138.325,
+                        "y": 136.025
+                    },
+                    "uuid": "966a66a4-77b6-47c4-89a3-84e804aef648"
+                }
+            ],
+            "severity": "error",
+            "type": "track_angle"
+        },
+        {
+            "description": "走线角度 (规则 'corner_angle' 最小角度 134.000°; 实际 90.000°)",
+            "items": [
+                {
+                    "description": "走线 [GND] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 137.025,
+                        "y": 137.975
+                    },
+                    "uuid": "aa79014b-b6ca-4c06-90a2-be8641952284"
+                },
+                {
+                    "description": "走线 [GND] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 137.025,
+                        "y": 137.975
+                    },
+                    "uuid": "b6f34c4f-ba63-4d12-9b87-f8d416dc78bf"
+                }
+            ],
+            "severity": "error",
+            "type": "track_angle"
+        },
+        {
+            "description": "走线角度 (规则 'corner_angle' 最小角度 134.000°; 实际 90.000°)",
+            "items": [
+                {
+                    "description": "走线 [GND] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 138.975,
+                        "y": 137.975
+                    },
+                    "uuid": "25216768-6c4a-4094-be63-2c46f959b932"
+                },
+                {
+                    "description": "走线 [GND] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 138.975,
+                        "y": 137.975
+                    },
+                    "uuid": "c1190729-b4fc-46ce-8879-3fa58a33f0c6"
+                }
+            ],
+            "severity": "error",
+            "type": "track_angle"
+        },
+        {
+            "description": "走线角度 (规则 'corner_angle' 最小角度 134.000°; 实际 90.000°)",
+            "items": [
+                {
+                    "description": "走线 [GND] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 138.0,
+                        "y": 136.35
+                    },
+                    "uuid": "eb30d3aa-f60d-4602-84a6-5f1d1d2fde85"
+                },
+                {
+                    "description": "走线 [GND] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 138.325,
+                        "y": 136.025
+                    },
+                    "uuid": "8ad92d0f-dcf4-4d24-b680-245b0a509690"
+                }
+            ],
+            "severity": "error",
+            "type": "track_angle"
+        },
+        {
+            "description": "走线角度 (规则 'corner_angle' 最小角度 134.000°; 实际 90.000°)",
+            "items": [
+                {
+                    "description": "走线 [GND] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 137.025,
+                        "y": 137.975
+                    },
+                    "uuid": "aa79014b-b6ca-4c06-90a2-be8641952284"
+                },
+                {
+                    "description": "走线 [GND] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 137.025,
+                        "y": 137.975
+                    },
+                    "uuid": "c40ae10b-5aa6-4c1b-bd42-9e7c6170b6ab"
+                }
+            ],
+            "severity": "error",
+            "type": "track_angle"
+        },
+        {
+            "description": "走线角度 (规则 'corner_angle' 最小角度 134.000°; 实际 90.000°)",
+            "items": [
+                {
+                    "description": "走线 [GND] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 137.025,
+                        "y": 137.975
+                    },
+                    "uuid": "b6f34c4f-ba63-4d12-9b87-f8d416dc78bf"
+                },
+                {
+                    "description": "走线 [GND] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 137.35,
+                        "y": 137.65
+                    },
+                    "uuid": "5259fb25-b5e1-41f8-a12a-d59d128fa8ff"
+                }
+            ],
+            "severity": "error",
+            "type": "track_angle"
+        },
+        {
+            "description": "走线角度 (规则 'corner_angle' 最小角度 134.000°; 实际 90.000°)",
+            "items": [
+                {
+                    "description": "走线 [GND] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 138.65,
+                        "y": 137.65
+                    },
+                    "uuid": "f66efe3c-e79f-44b6-bfc2-ad80cb10fdfa"
+                },
+                {
+                    "description": "走线 [GND] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 138.975,
+                        "y": 137.975
+                    },
+                    "uuid": "25216768-6c4a-4094-be63-2c46f959b932"
+                }
+            ],
+            "severity": "error",
+            "type": "track_angle"
+        },
+        {
+            "description": "走线角度 (规则 'corner_angle' 最小角度 134.000°; 实际 90.000°)",
+            "items": [
+                {
+                    "description": "走线 [GND] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 138.975,
+                        "y": 137.975
+                    },
+                    "uuid": "47073a79-a224-4eed-a962-f90223f7bf7d"
+                },
+                {
+                    "description": "走线 [GND] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 138.65,
+                        "y": 137.65
+                    },
+                    "uuid": "f66efe3c-e79f-44b6-bfc2-ad80cb10fdfa"
+                }
+            ],
+            "severity": "error",
+            "type": "track_angle"
+        },
+        {
+            "description": "走线角度 (规则 'corner_angle' 最小角度 134.000°; 实际 90.000°)",
+            "items": [
+                {
+                    "description": "走线 [GND] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 137.025,
+                        "y": 137.975
+                    },
+                    "uuid": "b6f34c4f-ba63-4d12-9b87-f8d416dc78bf"
+                },
+                {
+                    "description": "走线 [GND] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 137.025,
+                        "y": 137.975
+                    },
+                    "uuid": "aa79014b-b6ca-4c06-90a2-be8641952284"
+                }
+            ],
+            "severity": "error",
+            "type": "track_angle"
+        },
+        {
+            "description": "走线角度 (规则 'corner_angle' 最小角度 134.000°; 实际 90.000°)",
+            "items": [
+                {
+                    "description": "走线 [GND] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 138.65,
+                        "y": 137.65
+                    },
+                    "uuid": "f66efe3c-e79f-44b6-bfc2-ad80cb10fdfa"
+                },
+                {
+                    "description": "走线 [GND] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 138.975,
+                        "y": 137.975
+                    },
+                    "uuid": "47073a79-a224-4eed-a962-f90223f7bf7d"
+                }
+            ],
+            "severity": "error",
+            "type": "track_angle"
+        },
+        {
+            "description": "走线角度 (规则 'corner_angle' 最小角度 134.000°; 实际 90.000°)",
+            "items": [
+                {
+                    "description": "走线 [GND] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 137.025,
+                        "y": 138.625
+                    },
+                    "uuid": "932a8e9e-5fa0-4659-a5a6-270ed664ab0a"
+                },
+                {
+                    "description": "走线 [GND] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 137.35,
+                        "y": 138.3
+                    },
+                    "uuid": "5761fb68-bc7d-497e-81d9-cd2eb06f088b"
+                }
+            ],
+            "severity": "error",
+            "type": "track_angle"
+        },
+        {
+            "description": "走线角度 (规则 'corner_angle' 最小角度 134.000°; 实际 90.000°)",
+            "items": [
+                {
+                    "description": "走线 [GND] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 138.975,
+                        "y": 137.975
+                    },
+                    "uuid": "47073a79-a224-4eed-a962-f90223f7bf7d"
+                },
+                {
+                    "description": "走线 [GND] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 138.975,
+                        "y": 137.975
+                    },
+                    "uuid": "c1190729-b4fc-46ce-8879-3fa58a33f0c6"
+                }
+            ],
+            "severity": "error",
+            "type": "track_angle"
+        },
+        {
+            "description": "走线角度 (规则 'corner_angle' 最小角度 134.000°; 实际 90.000°)",
+            "items": [
+                {
+                    "description": "走线 [GND] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 138.325,
+                        "y": 134.074999
+                    },
+                    "uuid": "e33f5326-3966-4874-8653-f4032dedff5b"
+                },
+                {
+                    "description": "走线 [GND] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 138.0,
+                        "y": 134.4
+                    },
+                    "uuid": "4df76f8d-3214-4e47-9690-084e442e45f6"
+                }
+            ],
+            "severity": "error",
+            "type": "track_angle"
+        },
+        {
+            "description": "走线角度 (规则 'corner_angle' 最小角度 134.000°; 实际 90.000°)",
+            "items": [
+                {
+                    "description": "走线 [GND] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 138.325,
+                        "y": 135.375
+                    },
+                    "uuid": "2349d8df-b279-45d5-b888-aedec70a4295"
+                },
+                {
+                    "description": "走线 [GND] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 138.0,
+                        "y": 135.7
+                    },
+                    "uuid": "bf8a6b96-38a0-4cc6-8556-7836cdbe61df"
+                }
+            ],
+            "severity": "error",
+            "type": "track_angle"
+        },
+        {
+            "description": "走线角度 (规则 'corner_angle' 最小角度 134.000°; 实际 90.000°)",
+            "items": [
+                {
+                    "description": "走线 [GND] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 138.975,
+                        "y": 137.975
+                    },
+                    "uuid": "c1190729-b4fc-46ce-8879-3fa58a33f0c6"
+                },
+                {
+                    "description": "走线 [GND] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 138.975,
+                        "y": 137.975
+                    },
+                    "uuid": "25216768-6c4a-4094-be63-2c46f959b932"
+                }
+            ],
+            "severity": "error",
+            "type": "track_angle"
+        },
+        {
+            "description": "走线角度 (规则 'corner_angle' 最小角度 134.000°; 实际 90.000°)",
+            "items": [
+                {
+                    "description": "走线 [GND] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 138.975,
+                        "y": 137.975
+                    },
+                    "uuid": "c1190729-b4fc-46ce-8879-3fa58a33f0c6"
+                },
+                {
+                    "description": "走线 [GND] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 138.975,
+                        "y": 137.975
+                    },
+                    "uuid": "47073a79-a224-4eed-a962-f90223f7bf7d"
+                }
+            ],
+            "severity": "error",
+            "type": "track_angle"
+        },
+        {
+            "description": "走线角度 (规则 'corner_angle' 最小角度 134.000°; 实际 90.000°)",
+            "items": [
+                {
+                    "description": "走线 [GND] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 138.325,
+                        "y": 136.025
+                    },
+                    "uuid": "966a66a4-77b6-47c4-89a3-84e804aef648"
+                },
+                {
+                    "description": "走线 [GND] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 138.0,
+                        "y": 136.35
+                    },
+                    "uuid": "eb30d3aa-f60d-4602-84a6-5f1d1d2fde85"
+                }
+            ],
+            "severity": "error",
+            "type": "track_angle"
+        },
+        {
+            "description": "走线角度 (规则 'corner_angle' 最小角度 134.000°; 实际 90.000°)",
+            "items": [
+                {
+                    "description": "走线 [GND] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 138.325,
+                        "y": 136.025
+                    },
+                    "uuid": "966a66a4-77b6-47c4-89a3-84e804aef648"
+                },
+                {
+                    "description": "走线 [GND] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 138.325,
+                        "y": 136.025
+                    },
+                    "uuid": "55fb9374-5117-4017-8a4f-a642a5d96f4d"
+                }
+            ],
+            "severity": "error",
+            "type": "track_angle"
+        },
+        {
+            "description": "走线角度 (规则 'corner_angle' 最小角度 134.000°; 实际 90.000°)",
+            "items": [
+                {
+                    "description": "走线 [GND] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 138.975,
+                        "y": 138.625
+                    },
+                    "uuid": "74e1596c-eeb2-435d-a6f2-a7a4d4cc421f"
+                },
+                {
+                    "description": "走线 [GND] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 138.65,
+                        "y": 138.3
+                    },
+                    "uuid": "3394030b-5ed7-41da-ba10-6c169dc5350f"
+                }
+            ],
+            "severity": "error",
+            "type": "track_angle"
+        },
+        {
+            "description": "走线角度 (规则 'corner_angle' 最小角度 134.000°; 实际 90.000°)",
+            "items": [
+                {
+                    "description": "走线 [GND] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 139.625,
+                        "y": 136.025
+                    },
+                    "uuid": "92971b3f-55e1-473a-beb7-18860d1525b1"
+                },
+                {
+                    "description": "走线 [GND] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 139.3,
+                        "y": 136.35
+                    },
+                    "uuid": "b44f9612-35e1-42fa-8bb0-6a62c4f7ea8e"
+                }
+            ],
+            "severity": "error",
+            "type": "track_angle"
+        },
+        {
+            "description": "走线角度 (规则 'corner_angle' 最小角度 134.000°; 实际 90.000°)",
+            "items": [
+                {
+                    "description": "走线 [GND] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 138.325,
+                        "y": 136.025
+                    },
+                    "uuid": "55fb9374-5117-4017-8a4f-a642a5d96f4d"
+                },
+                {
+                    "description": "走线 [GND] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 138.325,
+                        "y": 136.025
+                    },
+                    "uuid": "966a66a4-77b6-47c4-89a3-84e804aef648"
+                }
+            ],
+            "severity": "error",
+            "type": "track_angle"
+        },
+        {
+            "description": "走线角度 (规则 'corner_angle' 最小角度 134.000°; 实际 90.000°)",
+            "items": [
+                {
+                    "description": "走线 [GND] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 138.325,
+                        "y": 136.025
+                    },
+                    "uuid": "55fb9374-5117-4017-8a4f-a642a5d96f4d"
+                },
+                {
+                    "description": "走线 [GND] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 138.325,
+                        "y": 136.025
+                    },
+                    "uuid": "8ad92d0f-dcf4-4d24-b680-245b0a509690"
+                }
+            ],
+            "severity": "error",
+            "type": "track_angle"
+        },
+        {
+            "description": "走线角度 (规则 'corner_angle' 最小角度 134.000°; 实际 90.000°)",
+            "items": [
+                {
+                    "description": "走线 [GND] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 139.625,
+                        "y": 137.325
+                    },
+                    "uuid": "6f74a900-3c99-4b2b-88a1-01c0ce49d39a"
+                },
+                {
+                    "description": "走线 [GND] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 139.3,
+                        "y": 137.0
+                    },
+                    "uuid": "6bd401cd-ebac-430d-ae2d-45f843d0299c"
+                }
+            ],
+            "severity": "error",
+            "type": "track_angle"
+        },
+        {
+            "description": "走线角度 (规则 'corner_angle' 最小角度 134.000°; 实际 90.000°)",
+            "items": [
+                {
+                    "description": "走线 [GND] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 138.325,
+                        "y": 136.025
+                    },
+                    "uuid": "8ad92d0f-dcf4-4d24-b680-245b0a509690"
+                },
+                {
+                    "description": "走线 [GND] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 138.0,
+                        "y": 136.35
+                    },
+                    "uuid": "eb30d3aa-f60d-4602-84a6-5f1d1d2fde85"
+                }
+            ],
+            "severity": "error",
+            "type": "track_angle"
+        },
+        {
+            "description": "走线角度 (规则 'corner_angle' 最小角度 134.000°; 实际 90.000°)",
+            "items": [
+                {
+                    "description": "走线 [GND] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 138.325,
+                        "y": 136.025
+                    },
+                    "uuid": "8ad92d0f-dcf4-4d24-b680-245b0a509690"
+                },
+                {
+                    "description": "走线 [GND] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 138.325,
+                        "y": 136.025
+                    },
+                    "uuid": "55fb9374-5117-4017-8a4f-a642a5d96f4d"
+                }
+            ],
+            "severity": "error",
+            "type": "track_angle"
+        },
+        {
+            "description": "走线角度 (规则 'corner_angle' 最小角度 134.000°; 实际 90.000°)",
+            "items": [
+                {
+                    "description": "走线 [GND] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 139.625,
+                        "y": 137.975
+                    },
+                    "uuid": "f8b84711-5ddc-4051-9c38-1e2c6514cf5e"
+                },
+                {
+                    "description": "走线 [GND] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 139.3,
+                        "y": 137.65
+                    },
+                    "uuid": "cf888269-d011-43b4-b1e8-7aea9ea964d8"
+                }
+            ],
+            "severity": "error",
+            "type": "track_angle"
+        },
+        {
+            "description": "走线角度 (规则 'corner_angle' 最小角度 134.000°; 实际 90.000°)",
+            "items": [
+                {
+                    "description": "走线 [GND] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 138.325,
+                        "y": 137.325
+                    },
+                    "uuid": "c44a7e00-9d69-4e0e-9464-20e64ed0e92a"
+                },
+                {
+                    "description": "走线 [GND] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 138.0,
+                        "y": 137.0
+                    },
+                    "uuid": "26d9910e-4934-485c-a1f4-50b1cb0e0cbe"
+                }
+            ],
+            "severity": "error",
+            "type": "track_angle"
+        },
+        {
+            "description": "走线角度 (规则 'corner_angle' 最小角度 134.000°; 实际 90.000°)",
+            "items": [
+                {
+                    "description": "走线 [GND] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 138.325,
+                        "y": 137.325
+                    },
+                    "uuid": "c44a7e00-9d69-4e0e-9464-20e64ed0e92a"
+                },
+                {
+                    "description": "走线 [GND] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 138.325,
+                        "y": 137.325
+                    },
+                    "uuid": "492bde99-5ed5-4d23-8f80-70e0d49f929e"
+                }
+            ],
+            "severity": "error",
+            "type": "track_angle"
+        },
+        {
+            "description": "走线角度 (规则 'corner_angle' 最小角度 134.000°; 实际 90.000°)",
+            "items": [
+                {
+                    "description": "走线 [GND] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 140.925,
+                        "y": 136.025
+                    },
+                    "uuid": "dbe6e649-1189-4cf3-8130-2f3a7cb3466d"
+                },
+                {
+                    "description": "走线 [GND] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 140.6,
+                        "y": 136.35
+                    },
+                    "uuid": "25e64c90-4fe0-4f11-a8a5-3f3d5ad31d53"
+                }
+            ],
+            "severity": "error",
+            "type": "track_angle"
+        },
+        {
+            "description": "走线角度 (规则 'corner_angle' 最小角度 134.000°; 实际 90.000°)",
+            "items": [
+                {
+                    "description": "走线 [+3V3] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 135.075,
+                        "y": 136.025
+                    },
+                    "uuid": "eb1a6920-2881-4858-bd1c-ad83c4a395d0"
+                },
+                {
+                    "description": "走线 [+3V3] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 134.75,
+                        "y": 136.35
+                    },
+                    "uuid": "a59ea7b1-3b9b-4442-9c6c-5ccf8edd64f9"
+                }
+            ],
+            "severity": "error",
+            "type": "track_angle"
+        },
+        {
+            "description": "走线角度 (规则 'corner_angle' 最小角度 134.000°; 实际 90.000°)",
+            "items": [
+                {
+                    "description": "走线 [GND] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 138.325,
+                        "y": 137.325
+                    },
+                    "uuid": "2e0a38ea-6b91-4e83-abe7-b8f8267495a0"
+                },
+                {
+                    "description": "走线 [GND] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 138.0,
+                        "y": 137.0
+                    },
+                    "uuid": "26d9910e-4934-485c-a1f4-50b1cb0e0cbe"
+                }
+            ],
+            "severity": "error",
+            "type": "track_angle"
+        },
+        {
+            "description": "走线角度 (规则 'corner_angle' 最小角度 134.000°; 实际 90.000°)",
+            "items": [
+                {
+                    "description": "走线 [+3V3] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 136.375,
+                        "y": 133.425
+                    },
+                    "uuid": "a3fa5439-a307-42f5-a680-4685e66e0ce5"
+                },
+                {
+                    "description": "走线 [+3V3] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 136.7,
+                        "y": 133.75
+                    },
+                    "uuid": "423f23ad-4a04-4cc0-95f7-62909d437d78"
+                }
+            ],
+            "severity": "error",
+            "type": "track_angle"
+        },
+        {
+            "description": "走线角度 (规则 'corner_angle' 最小角度 134.000°; 实际 90.000°)",
+            "items": [
+                {
+                    "description": "走线 [+3V3] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 137.025,
+                        "y": 133.425
+                    },
+                    "uuid": "970869ac-f901-4f0a-bfa9-22ecdf08ca47"
+                },
+                {
+                    "description": "走线 [+3V3] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 137.35,
+                        "y": 133.75
+                    },
+                    "uuid": "7854df56-8924-407c-9de5-e3cdee55b04b"
+                }
+            ],
+            "severity": "error",
+            "type": "track_angle"
+        },
+        {
+            "description": "走线角度 (规则 'corner_angle' 最小角度 134.000°; 实际 90.000°)",
+            "items": [
+                {
+                    "description": "走线 [GND] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 138.325,
+                        "y": 137.325
+                    },
+                    "uuid": "2e0a38ea-6b91-4e83-abe7-b8f8267495a0"
+                },
+                {
+                    "description": "走线 [GND] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 138.325,
+                        "y": 137.325
+                    },
+                    "uuid": "492bde99-5ed5-4d23-8f80-70e0d49f929e"
+                }
+            ],
+            "severity": "error",
+            "type": "track_angle"
+        },
+        {
+            "description": "走线角度 (规则 'corner_angle' 最小角度 134.000°; 实际 90.000°)",
+            "items": [
+                {
+                    "description": "走线 [+3V3] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 138.325,
+                        "y": 133.425
+                    },
+                    "uuid": "aad642f5-9f41-448d-b574-1703400eceb7"
+                },
+                {
+                    "description": "走线 [+3V3] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 138.0,
+                        "y": 133.75
+                    },
+                    "uuid": "5a90f4f8-9c67-4b14-a585-bbfeab4b2086"
+                }
+            ],
+            "severity": "error",
+            "type": "track_angle"
+        },
+        {
+            "description": "走线角度 (规则 'corner_angle' 最小角度 134.000°; 实际 90.000°)",
+            "items": [
+                {
+                    "description": "走线 [+3V3] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 138.325,
+                        "y": 140.575
+                    },
+                    "uuid": "537f67c6-fd03-493f-ac1e-6235530412df"
+                },
+                {
+                    "description": "走线 [+3V3] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 138.0,
+                        "y": 140.25
+                    },
+                    "uuid": "65cfd3d7-8e25-4749-a2bf-fc7646e7659c"
+                }
+            ],
+            "severity": "error",
+            "type": "track_angle"
+        },
+        {
+            "description": "走线角度 (规则 'corner_angle' 最小角度 134.000°; 实际 90.000°)",
+            "items": [
+                {
+                    "description": "走线 [GND] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 138.325,
+                        "y": 137.325
+                    },
+                    "uuid": "492bde99-5ed5-4d23-8f80-70e0d49f929e"
+                },
+                {
+                    "description": "走线 [GND] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 138.325,
+                        "y": 137.325
+                    },
+                    "uuid": "c44a7e00-9d69-4e0e-9464-20e64ed0e92a"
+                }
+            ],
+            "severity": "error",
+            "type": "track_angle"
+        },
+        {
+            "description": "走线角度 (规则 'corner_angle' 最小角度 134.000°; 实际 90.000°)",
+            "items": [
+                {
+                    "description": "走线 [+3V3] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 138.975,
+                        "y": 140.575
+                    },
+                    "uuid": "a12e2182-b14a-4fa5-b684-97ced2c4dcb8"
+                },
+                {
+                    "description": "走线 [+3V3] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 138.65,
+                        "y": 140.25
+                    },
+                    "uuid": "f89597f5-87da-4120-a998-1e2956cce4fa"
+                }
+            ],
+            "severity": "error",
+            "type": "track_angle"
+        },
+        {
+            "description": "走线角度 (规则 'corner_angle' 最小角度 134.000°; 实际 90.000°)",
+            "items": [
+                {
+                    "description": "走线 [GND] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 138.325,
+                        "y": 137.325
+                    },
+                    "uuid": "492bde99-5ed5-4d23-8f80-70e0d49f929e"
+                },
+                {
+                    "description": "走线 [GND] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 138.325,
+                        "y": 137.325
+                    },
+                    "uuid": "2e0a38ea-6b91-4e83-abe7-b8f8267495a0"
+                }
+            ],
+            "severity": "error",
+            "type": "track_angle"
+        },
+        {
+            "description": "走线角度 (规则 'corner_angle' 最小角度 134.000°; 实际 90.000°)",
+            "items": [
+                {
+                    "description": "走线 [GND] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 138.325,
+                        "y": 137.975
+                    },
+                    "uuid": "80b5a71f-9ec4-4ded-ae22-cde6c98832d2"
+                },
+                {
+                    "description": "走线 [GND] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 138.0,
+                        "y": 137.65
+                    },
+                    "uuid": "d6a5d6d2-72d3-4ca1-8077-33eb298ddf87"
+                }
+            ],
+            "severity": "error",
+            "type": "track_angle"
+        },
+        {
+            "description": "走线角度 (规则 'corner_angle' 最小角度 134.000°; 实际 90.000°)",
+            "items": [
+                {
+                    "description": "走线 [+3V3] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 140.925,
+                        "y": 137.975
+                    },
+                    "uuid": "97bc2caa-5b27-41a0-b359-b9f717bd9830"
+                },
+                {
+                    "description": "走线 [+3V3] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 140.6,
+                        "y": 137.65
+                    },
+                    "uuid": "1f609e37-f097-43e3-81af-3c402f911b42"
+                }
+            ],
+            "severity": "error",
+            "type": "track_angle"
+        },
+        {
+            "description": "走线角度 (规则 'corner_angle' 最小角度 134.000°; 实际 90.000°)",
+            "items": [
+                {
+                    "description": "走线 [GND] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 138.325,
+                        "y": 137.975
+                    },
+                    "uuid": "80b5a71f-9ec4-4ded-ae22-cde6c98832d2"
+                },
+                {
+                    "description": "走线 [GND] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 138.325,
+                        "y": 137.975
+                    },
+                    "uuid": "0ea5d925-e60f-4fa0-a3d3-8c34189bc597"
+                }
+            ],
+            "severity": "error",
+            "type": "track_angle"
+        },
+        {
+            "description": "走线角度 (规则 'corner_angle' 最小角度 134.000°; 实际 90.000°)",
+            "items": [
+                {
+                    "description": "走线 [+3V3] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 141.575,
+                        "y": 137.325
+                    },
+                    "uuid": "10f95b72-e06c-4a6b-b2e7-d31647e462de"
+                },
+                {
+                    "description": "走线 [+3V3] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 141.25,
+                        "y": 137.0
+                    },
+                    "uuid": "cbdcebbf-d691-4173-adee-045d038ebd57"
+                }
+            ],
+            "severity": "error",
+            "type": "track_angle"
+        },
+        {
+            "description": "走线角度 (规则 'corner_angle' 最小角度 134.000°; 实际 90.000°)",
+            "items": [
+                {
+                    "description": "走线 [GND] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 138.325,
+                        "y": 137.975
+                    },
+                    "uuid": "efb34263-f002-421d-b76e-a063708481ba"
+                },
+                {
+                    "description": "走线 [GND] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 138.0,
+                        "y": 137.65
+                    },
+                    "uuid": "d6a5d6d2-72d3-4ca1-8077-33eb298ddf87"
+                }
+            ],
+            "severity": "error",
+            "type": "track_angle"
+        },
+        {
+            "description": "走线角度 (规则 'corner_angle' 最小角度 134.000°; 实际 90.000°)",
+            "items": [
+                {
+                    "description": "走线 [GND] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 138.325,
+                        "y": 137.975
+                    },
+                    "uuid": "efb34263-f002-421d-b76e-a063708481ba"
+                },
+                {
+                    "description": "走线 [GND] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 138.325,
+                        "y": 137.975
+                    },
+                    "uuid": "0ea5d925-e60f-4fa0-a3d3-8c34189bc597"
+                }
+            ],
+            "severity": "error",
+            "type": "track_angle"
+        },
+        {
+            "description": "走线角度 (规则 'corner_angle' 最小角度 134.000°; 实际 90.000°)",
+            "items": [
+                {
+                    "description": "走线 [GND] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 138.325,
+                        "y": 137.975
+                    },
+                    "uuid": "0ea5d925-e60f-4fa0-a3d3-8c34189bc597"
+                },
+                {
+                    "description": "走线 [GND] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 138.325,
+                        "y": 137.975
+                    },
+                    "uuid": "80b5a71f-9ec4-4ded-ae22-cde6c98832d2"
+                }
+            ],
+            "severity": "error",
+            "type": "track_angle"
+        },
+        {
+            "description": "走线角度 (规则 'corner_angle' 最小角度 134.000°; 实际 90.000°)",
+            "items": [
+                {
+                    "description": "走线 [GND] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 138.325,
+                        "y": 137.975
+                    },
+                    "uuid": "0ea5d925-e60f-4fa0-a3d3-8c34189bc597"
+                },
+                {
+                    "description": "走线 [GND] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 138.325,
+                        "y": 137.975
+                    },
+                    "uuid": "efb34263-f002-421d-b76e-a063708481ba"
+                }
+            ],
+            "severity": "error",
+            "type": "track_angle"
+        },
+        {
+            "description": "走线角度 (规则 'corner_angle' 最小角度 134.000°; 实际 90.000°)",
+            "items": [
+                {
+                    "description": "走线 [GND] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 138.325,
+                        "y": 138.625
+                    },
+                    "uuid": "d4c6c08b-68e0-44a2-94e6-69e4579f4ee8"
+                },
+                {
+                    "description": "走线 [GND] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 138.0,
+                        "y": 138.3
+                    },
+                    "uuid": "86beec5b-9806-4cf1-8716-a2c173acee4f"
+                }
+            ],
+            "severity": "error",
+            "type": "track_angle"
+        },
+        {
+            "description": "Via is not connected or connected on only one layer",
+            "items": [
+                {
+                    "description": "过孔 [PI6] (F.Cu - B.Cu)",
+                    "pos": {
+                        "x": 134.425,
+                        "y": 133.425
+                    },
+                    "uuid": "62e6d04f-2475-4cab-a266-738229132295"
+                }
+            ],
+            "severity": "warning",
+            "type": "via_dangling"
+        },
+        {
+            "description": "Via is not connected or connected on only one layer",
+            "items": [
+                {
+                    "description": "过孔 [PI5] (F.Cu - B.Cu)",
+                    "pos": {
+                        "x": 135.075,
+                        "y": 133.425
+                    },
+                    "uuid": "da5fb2ec-1b57-44ad-8090-615a97a059dd"
+                }
+            ],
+            "severity": "warning",
+            "type": "via_dangling"
+        },
+        {
+            "description": "Via is not connected or connected on only one layer",
+            "items": [
+                {
+                    "description": "过孔 [PG9] (F.Cu - B.Cu)",
+                    "pos": {
+                        "x": 139.625,
+                        "y": 133.425
+                    },
+                    "uuid": "4ff934be-aeba-453d-9f76-16754ef76105"
+                }
+            ],
+            "severity": "warning",
+            "type": "via_dangling"
+        },
+        {
+            "description": "Via is not connected or connected on only one layer",
+            "items": [
+                {
+                    "description": "过孔 [PD5] (F.Cu - B.Cu)",
+                    "pos": {
+                        "x": 140.275,
+                        "y": 133.425
+                    },
+                    "uuid": "4df2de70-75e3-4f7a-b2c4-3249d2e7d912"
+                }
+            ],
+            "severity": "warning",
+            "type": "via_dangling"
+        },
+        {
+            "description": "Via is not connected or connected on only one layer",
+            "items": [
+                {
+                    "description": "过孔 [PD1] (F.Cu - B.Cu)",
+                    "pos": {
+                        "x": 140.925,
+                        "y": 133.425
+                    },
+                    "uuid": "12adb2f5-b286-4f0e-9c60-a185ae3e8777"
+                }
+            ],
+            "severity": "warning",
+            "type": "via_dangling"
+        },
+        {
+            "description": "Via is not connected or connected on only one layer",
+            "items": [
+                {
+                    "description": "过孔 [PI3] (F.Cu - B.Cu)",
+                    "pos": {
+                        "x": 141.575,
+                        "y": 133.425
+                    },
+                    "uuid": "093f3953-34b6-4b74-8e61-da4cadf7c8dc"
+                }
+            ],
+            "severity": "warning",
+            "type": "via_dangling"
+        },
+        {
+            "description": "Via is not connected or connected on only one layer",
+            "items": [
+                {
+                    "description": "过孔 [PI9] (F.Cu - B.Cu)",
+                    "pos": {
+                        "x": 134.425,
+                        "y": 134.074999
+                    },
+                    "uuid": "6e8f2081-090a-4ca3-b5a1-5eb259666eea"
+                }
+            ],
+            "severity": "warning",
+            "type": "via_dangling"
+        },
+        {
+            "description": "Via is not connected or connected on only one layer",
+            "items": [
+                {
+                    "description": "过孔 [PI4] (F.Cu - B.Cu)",
+                    "pos": {
+                        "x": 135.075,
+                        "y": 134.074999
+                    },
+                    "uuid": "6fa91e91-72d8-4503-aeb3-3b5e05f3e580"
+                }
+            ],
+            "severity": "warning",
+            "type": "via_dangling"
+        },
+        {
+            "description": "Via is not connected or connected on only one layer",
+            "items": [
+                {
+                    "description": "过孔 [BOOT0] (F.Cu - B.Cu)",
+                    "pos": {
+                        "x": 136.375,
+                        "y": 134.074999
+                    },
+                    "uuid": "cfa8eff2-5d9b-40c0-a60d-2f62ab31739a"
+                }
+            ],
+            "severity": "warning",
+            "type": "via_dangling"
+        },
+        {
+            "description": "Via is not connected or connected on only one layer",
+            "items": [
+                {
+                    "description": "过孔 [PD4] (F.Cu - B.Cu)",
+                    "pos": {
+                        "x": 139.625,
+                        "y": 134.074999
+                    },
+                    "uuid": "6b701fd0-7203-4ec7-a38b-97b3ce4ec25c"
+                }
+            ],
+            "severity": "warning",
+            "type": "via_dangling"
+        },
+        {
+            "description": "Via is not connected or connected on only one layer",
+            "items": [
+                {
+                    "description": "过孔 [PD3] (F.Cu - B.Cu)",
+                    "pos": {
+                        "x": 140.275,
+                        "y": 134.074999
+                    },
+                    "uuid": "5a61b595-f984-4411-ab6c-b99803ab5af4"
+                }
+            ],
+            "severity": "warning",
+            "type": "via_dangling"
+        },
+        {
+            "description": "Via is not connected or connected on only one layer",
+            "items": [
+                {
+                    "description": "过孔 [PD2] (F.Cu - B.Cu)",
+                    "pos": {
+                        "x": 140.925,
+                        "y": 134.074999
+                    },
+                    "uuid": "3bbb84ad-0fa6-4b72-9e81-42d0f2490a10"
+                }
+            ],
+            "severity": "warning",
+            "type": "via_dangling"
+        },
+        {
+            "description": "Via is not connected or connected on only one layer",
+            "items": [
+                {
+                    "description": "过孔 [PH15] (F.Cu - B.Cu)",
+                    "pos": {
+                        "x": 141.575,
+                        "y": 134.074999
+                    },
+                    "uuid": "94076e32-fa90-4dc5-9f68-87e719928190"
+                }
+            ],
+            "severity": "warning",
+            "type": "via_dangling"
+        },
+        {
+            "description": "Via is not connected or connected on only one layer",
+            "items": [
+                {
+                    "description": "过孔 [PI10] (F.Cu - B.Cu)",
+                    "pos": {
+                        "x": 134.425,
+                        "y": 134.725
+                    },
+                    "uuid": "0bec7dab-4cec-4d3c-b554-38dc4c0ff1d8"
+                }
+            ],
+            "severity": "warning",
+            "type": "via_dangling"
+        },
+        {
+            "description": "Via is not connected or connected on only one layer",
+            "items": [
+                {
+                    "description": "过孔 [PI11] (F.Cu - B.Cu)",
+                    "pos": {
+                        "x": 135.075,
+                        "y": 134.725
+                    },
+                    "uuid": "f26263ae-e0a1-4601-81ab-13c7a6ad9d2b"
+                }
+            ],
+            "severity": "warning",
+            "type": "via_dangling"
+        },
+        {
+            "description": "Via is not connected or connected on only one layer",
+            "items": [
+                {
+                    "description": "过孔 [PH13] (F.Cu - B.Cu)",
+                    "pos": {
+                        "x": 140.925,
+                        "y": 134.725
+                    },
+                    "uuid": "16a11e6c-e2c5-4bdf-bdf1-4f885e40cbb6"
+                }
+            ],
+            "severity": "warning",
+            "type": "via_dangling"
+        },
+        {
+            "description": "Via is not connected or connected on only one layer",
+            "items": [
+                {
+                    "description": "过孔 [PH14] (F.Cu - B.Cu)",
+                    "pos": {
+                        "x": 141.575,
+                        "y": 134.725
+                    },
+                    "uuid": "9f6a5501-a889-4781-90a3-32b6c5146530"
+                }
+            ],
+            "severity": "warning",
+            "type": "via_dangling"
+        },
+        {
+            "description": "Via is not connected or connected on only one layer",
+            "items": [
+                {
+                    "description": "过孔 [PH2] (F.Cu - B.Cu)",
+                    "pos": {
+                        "x": 135.075,
+                        "y": 135.375
+                    },
+                    "uuid": "fca18584-dd18-4515-a2ce-f79cff034535"
+                }
+            ],
+            "severity": "warning",
+            "type": "via_dangling"
+        },
+        {
+            "description": "Via is not connected or connected on only one layer",
+            "items": [
+                {
+                    "description": "过孔 [VCAP_F13] (F.Cu - B.Cu)",
+                    "pos": {
+                        "x": 141.575,
+                        "y": 135.375
+                    },
+                    "uuid": "38ba7784-fb45-48c1-915e-0afa6afb0bbe"
+                }
+            ],
+            "severity": "warning",
+            "type": "via_dangling"
+        },
+        {
+            "description": "Via is not connected or connected on only one layer",
+            "items": [
+                {
+                    "description": "过孔 [PH3] (F.Cu - B.Cu)",
+                    "pos": {
+                        "x": 135.075,
+                        "y": 136.675
+                    },
+                    "uuid": "e06bd3dc-e100-41d9-bc7b-abaad6238b90"
+                }
+            ],
+            "severity": "warning",
+            "type": "via_dangling"
+        },
+        {
+            "description": "Via is not connected or connected on only one layer",
+            "items": [
+                {
+                    "description": "过孔 [PF1] (F.Cu - B.Cu)",
+                    "pos": {
+                        "x": 134.425,
+                        "y": 137.325
+                    },
+                    "uuid": "7725ad7c-ba6d-4ccc-ac42-aee0af4002fa"
+                }
+            ],
+            "severity": "warning",
+            "type": "via_dangling"
+        },
+        {
+            "description": "Via is not connected or connected on only one layer",
+            "items": [
+                {
+                    "description": "过孔 [PH4] (F.Cu - B.Cu)",
+                    "pos": {
+                        "x": 135.075,
+                        "y": 137.325
+                    },
+                    "uuid": "72382a5c-b1cc-4dbc-b1b7-464fb3648c8e"
+                }
+            ],
+            "severity": "warning",
+            "type": "via_dangling"
+        },
+        {
+            "description": "Via is not connected or connected on only one layer",
+            "items": [
+                {
+                    "description": "过孔 [PF4] (F.Cu - B.Cu)",
+                    "pos": {
+                        "x": 134.425,
+                        "y": 137.975
+                    },
+                    "uuid": "d4872390-6652-4f4c-b1e5-9ccc8ca51935"
+                }
+            ],
+            "severity": "warning",
+            "type": "via_dangling"
+        },
+        {
+            "description": "Via is not connected or connected on only one layer",
+            "items": [
+                {
+                    "description": "过孔 [PH5] (F.Cu - B.Cu)",
+                    "pos": {
+                        "x": 135.075,
+                        "y": 137.975
+                    },
+                    "uuid": "0e2328d9-d34e-4a1a-b453-6528df6d8a89"
+                }
+            ],
+            "severity": "warning",
+            "type": "via_dangling"
+        },
+        {
+            "description": "Via is not connected or connected on only one layer",
+            "items": [
+                {
+                    "description": "过孔 [PF5] (F.Cu - B.Cu)",
+                    "pos": {
+                        "x": 134.425,
+                        "y": 138.625
+                    },
+                    "uuid": "0ddbf1e9-8f36-444d-8cc5-b7de791e46db"
+                }
+            ],
+            "severity": "warning",
+            "type": "via_dangling"
+        },
+        {
+            "description": "Via is not connected or connected on only one layer",
+            "items": [
+                {
+                    "description": "过孔 [PH12] (F.Cu - B.Cu)",
+                    "pos": {
+                        "x": 140.925,
+                        "y": 138.625
+                    },
+                    "uuid": "d2e4e5fc-8779-4429-85ca-c9d3ae8720fe"
+                }
+            ],
+            "severity": "warning",
+            "type": "via_dangling"
+        },
+        {
+            "description": "Via is not connected or connected on only one layer",
+            "items": [
+                {
+                    "description": "过孔 [PG5] (F.Cu - B.Cu)",
+                    "pos": {
+                        "x": 141.575,
+                        "y": 138.625
+                    },
+                    "uuid": "6eafc729-1639-4ee4-8af8-2ea159ac3e56"
+                }
+            ],
+            "severity": "warning",
+            "type": "via_dangling"
+        },
+        {
+            "description": "Via is not connected or connected on only one layer",
+            "items": [
+                {
+                    "description": "过孔 [PF8] (F.Cu - B.Cu)",
+                    "pos": {
+                        "x": 134.425,
+                        "y": 139.275
+                    },
+                    "uuid": "328e01b0-24c9-40cd-a73b-3b3be6570f5c"
+                }
+            ],
+            "severity": "warning",
+            "type": "via_dangling"
+        },
+        {
+            "description": "Via is not connected or connected on only one layer",
+            "items": [
+                {
+                    "description": "过孔 [PH11] (F.Cu - B.Cu)",
+                    "pos": {
+                        "x": 140.925,
+                        "y": 139.275
+                    },
+                    "uuid": "15d36542-1657-4fb5-8058-7c0b273b8770"
+                }
+            ],
+            "severity": "warning",
+            "type": "via_dangling"
+        },
+        {
+            "description": "Via is not connected or connected on only one layer",
+            "items": [
+                {
+                    "description": "过孔 [PH10] (F.Cu - B.Cu)",
+                    "pos": {
+                        "x": 141.575,
+                        "y": 139.275
+                    },
+                    "uuid": "6fe52eae-f756-4485-8590-26f5a891d4d8"
+                }
+            ],
+            "severity": "warning",
+            "type": "via_dangling"
+        },
+        {
+            "description": "Via is not connected or connected on only one layer",
+            "items": [
+                {
+                    "description": "过孔 [PC1] (F.Cu - B.Cu)",
+                    "pos": {
+                        "x": 134.425,
+                        "y": 139.925
+                    },
+                    "uuid": "8c0ff435-f86b-4f8c-859e-e2336ae0aa52"
+                }
+            ],
+            "severity": "warning",
+            "type": "via_dangling"
+        },
+        {
+            "description": "Via is not connected or connected on only one layer",
+            "items": [
+                {
+                    "description": "过孔 [PC2_C] (F.Cu - B.Cu)",
+                    "pos": {
+                        "x": 135.075,
+                        "y": 139.925
+                    },
+                    "uuid": "902e888d-e4d4-4339-ac4e-37865b91ba58"
+                }
+            ],
+            "severity": "warning",
+            "type": "via_dangling"
+        },
+        {
+            "description": "Via is not connected or connected on only one layer",
+            "items": [
+                {
+                    "description": "过孔 [PC3_C] (F.Cu - B.Cu)",
+                    "pos": {
+                        "x": 135.725,
+                        "y": 139.925
+                    },
+                    "uuid": "baf1d8e3-024a-465e-9ced-8685538c6c80"
+                }
+            ],
+            "severity": "warning",
+            "type": "via_dangling"
+        },
+        {
+            "description": "Via is not connected or connected on only one layer",
+            "items": [
+                {
+                    "description": "过孔 [PB2] (F.Cu - B.Cu)",
+                    "pos": {
+                        "x": 136.375,
+                        "y": 139.925
+                    },
+                    "uuid": "92448392-84b7-4c2a-98a4-c403412aefd2"
+                }
+            ],
+            "severity": "warning",
+            "type": "via_dangling"
+        },
+        {
+            "description": "Via is not connected or connected on only one layer",
+            "items": [
+                {
+                    "description": "过孔 [PG1] (F.Cu - B.Cu)",
+                    "pos": {
+                        "x": 137.025,
+                        "y": 139.925
+                    },
+                    "uuid": "b09bbc0d-7d62-4623-8d62-1d0e663ed030"
+                }
+            ],
+            "severity": "warning",
+            "type": "via_dangling"
+        },
+        {
+            "description": "Via is not connected or connected on only one layer",
+            "items": [
+                {
+                    "description": "过孔 [VCAP_M10] (F.Cu - B.Cu)",
+                    "pos": {
+                        "x": 139.625,
+                        "y": 139.925
+                    },
+                    "uuid": "5e881e14-eed3-4a7f-a4b1-f754e53d6ba2"
+                }
+            ],
+            "severity": "warning",
+            "type": "via_dangling"
+        },
+        {
+            "description": "Via is not connected or connected on only one layer",
+            "items": [
+                {
+                    "description": "过孔 [PH6] (F.Cu - B.Cu)",
+                    "pos": {
+                        "x": 140.275,
+                        "y": 139.925
+                    },
+                    "uuid": "5061afb7-1ecd-409d-bb14-44acd8db2826"
+                }
+            ],
+            "severity": "warning",
+            "type": "via_dangling"
+        },
+        {
+            "description": "Via is not connected or connected on only one layer",
+            "items": [
+                {
+                    "description": "过孔 [PH8] (F.Cu - B.Cu)",
+                    "pos": {
+                        "x": 140.925,
+                        "y": 139.925
+                    },
+                    "uuid": "afbd5462-c837-4fc9-9db2-2dde7c412d35"
+                }
+            ],
+            "severity": "warning",
+            "type": "via_dangling"
+        },
+        {
+            "description": "Via is not connected or connected on only one layer",
+            "items": [
+                {
+                    "description": "过孔 [PH9] (F.Cu - B.Cu)",
+                    "pos": {
+                        "x": 141.575,
+                        "y": 139.925
+                    },
+                    "uuid": "7d9dd088-2e81-4df2-862d-79c68f9608a2"
+                }
+            ],
+            "severity": "warning",
+            "type": "via_dangling"
+        },
+        {
+            "description": "Via is not connected or connected on only one layer",
+            "items": [
+                {
+                    "description": "过孔 [PA0] (F.Cu - B.Cu)",
+                    "pos": {
+                        "x": 134.425,
+                        "y": 140.575
+                    },
+                    "uuid": "3fd16b25-6cc4-48e7-bdde-b4c0a74da8b4"
+                }
+            ],
+            "severity": "warning",
+            "type": "via_dangling"
+        },
+        {
+            "description": "Via is not connected or connected on only one layer",
+            "items": [
+                {
+                    "description": "过孔 [PA4] (F.Cu - B.Cu)",
+                    "pos": {
+                        "x": 135.075,
+                        "y": 140.575
+                    },
+                    "uuid": "21a304e3-8aa6-4dc7-9ea0-825ec41b1f1c"
+                }
+            ],
+            "severity": "warning",
+            "type": "via_dangling"
+        },
+        {
+            "description": "Via is not connected or connected on only one layer",
+            "items": [
+                {
+                    "description": "过孔 [PC4] (F.Cu - B.Cu)",
+                    "pos": {
+                        "x": 135.725,
+                        "y": 140.575
+                    },
+                    "uuid": "381b3489-5c5e-46b5-8be7-757926e9fe36"
+                }
+            ],
+            "severity": "warning",
+            "type": "via_dangling"
+        },
+        {
+            "description": "Via is not connected or connected on only one layer",
+            "items": [
+                {
+                    "description": "过孔 [PF13] (F.Cu - B.Cu)",
+                    "pos": {
+                        "x": 136.375,
+                        "y": 140.575
+                    },
+                    "uuid": "c7c67a8c-3f09-4a25-be66-045249fe65c2"
+                }
+            ],
+            "severity": "warning",
+            "type": "via_dangling"
+        },
+        {
+            "description": "Via is not connected or connected on only one layer",
+            "items": [
+                {
+                    "description": "过孔 [PG0] (F.Cu - B.Cu)",
+                    "pos": {
+                        "x": 137.025,
+                        "y": 140.575
+                    },
+                    "uuid": "a9aec3bb-7d26-4d2b-bfbe-64cf02c9062a"
+                }
+            ],
+            "severity": "warning",
+            "type": "via_dangling"
+        },
+        {
+            "description": "Via is not connected or connected on only one layer",
+            "items": [
+                {
+                    "description": "过孔 [PE13] (F.Cu - B.Cu)",
+                    "pos": {
+                        "x": 140.275,
+                        "y": 140.575
+                    },
+                    "uuid": "7a3a2b2e-810a-4c91-8d86-9668926f18f4"
+                }
+            ],
+            "severity": "warning",
+            "type": "via_dangling"
+        },
+        {
+            "description": "Via is not connected or connected on only one layer",
+            "items": [
+                {
+                    "description": "过孔 [PH7] (F.Cu - B.Cu)",
+                    "pos": {
+                        "x": 140.925,
+                        "y": 140.575
+                    },
+                    "uuid": "c359442c-826b-4d01-a107-e999af3360cf"
+                }
+            ],
+            "severity": "warning",
+            "type": "via_dangling"
+        },
+        {
+            "description": "Via is not connected or connected on only one layer",
+            "items": [
+                {
+                    "description": "过孔 [PD12] (F.Cu - B.Cu)",
+                    "pos": {
+                        "x": 141.575,
+                        "y": 140.575
+                    },
+                    "uuid": "0f4eb333-2a79-4ffe-be81-99dccece62a8"
+                }
+            ],
+            "severity": "warning",
+            "type": "via_dangling"
+        },
+        {
+            "description": "被板边截断的丝印 (<电路板配置> 中的 \"丝印\" 约束 间距 0.1000 mm; 实际 0.0000 mm)",
+            "items": [
+                {
+                    "description": "Edge.Cuts 上的 线段",
+                    "pos": {
+                        "x": 185.0,
+                        "y": 102.0
+                    },
+                    "uuid": "7b961f8b-c20c-4a73-8163-6515e27021aa"
+                },
+                {
+                    "description": "J1 的 线段, 位于 F.Silkscreen",
+                    "pos": {
+                        "x": 176.3,
+                        "y": 153.4
+                    },
+                    "uuid": "393c7dfe-71df-4cdb-9459-1acbaf6582cb"
+                }
+            ],
+            "severity": "warning",
+            "type": "silk_edge_clearance"
+        },
+        {
+            "description": "被板边截断的丝印 (<电路板配置> 中的 \"丝印\" 约束 间距 0.1000 mm; 实际 0.0400 mm)",
+            "items": [
+                {
+                    "description": "Edge.Cuts 上的 线段",
+                    "pos": {
+                        "x": 185.0,
+                        "y": 102.0
+                    },
+                    "uuid": "7b961f8b-c20c-4a73-8163-6515e27021aa"
+                },
+                {
+                    "description": "J1 的 线段, 位于 F.Silkscreen",
+                    "pos": {
+                        "x": 185.1,
+                        "y": 153.4
+                    },
+                    "uuid": "afa97f53-b5e2-420b-8a32-ca7c58db776c"
+                }
+            ],
+            "severity": "warning",
+            "type": "silk_edge_clearance"
+        },
+        {
+            "description": "被板边截断的丝印 (<电路板配置> 中的 \"丝印\" 约束 间距 0.1000 mm; 实际 0.0000 mm)",
+            "items": [
+                {
+                    "description": "Edge.Cuts 上的 线段",
+                    "pos": {
+                        "x": 185.0,
+                        "y": 102.0
+                    },
+                    "uuid": "7b961f8b-c20c-4a73-8163-6515e27021aa"
+                },
+                {
+                    "description": "J1 的 线段, 位于 F.Silkscreen",
+                    "pos": {
+                        "x": 185.1,
+                        "y": 162.6
+                    },
+                    "uuid": "3e68b509-0c28-45a2-bba3-4c19b7bf56fb"
+                }
+            ],
+            "severity": "warning",
+            "type": "silk_edge_clearance"
+        },
+        {
+            "description": "被板边截断的丝印 (<电路板配置> 中的 \"丝印\" 约束 间距 0.1000 mm; 实际 0.0000 mm)",
+            "items": [
+                {
+                    "description": "Edge.Cuts 上的 线段",
+                    "pos": {
+                        "x": 102.0,
+                        "y": 100.0
+                    },
+                    "uuid": "ace3d9d0-f33d-47b3-9540-fadb0ded03a5"
+                },
+                {
+                    "description": "J3 的参考字段",
+                    "pos": {
+                        "x": 126.0,
+                        "y": 99.6
+                    },
+                    "uuid": "64012d01-c5a9-4905-bb5a-69fba3b468b1"
+                }
+            ],
+            "severity": "warning",
+            "type": "silk_edge_clearance"
+        },
+        {
+            "description": "被板边截断的丝印 (<电路板配置> 中的 \"丝印\" 约束 间距 0.1000 mm; 实际 0.0000 mm)",
+            "items": [
+                {
+                    "description": "Edge.Cuts 上的 线段",
+                    "pos": {
+                        "x": 185.0,
+                        "y": 102.0
+                    },
+                    "uuid": "7b961f8b-c20c-4a73-8163-6515e27021aa"
+                },
+                {
+                    "description": "J8 的参考字段",
+                    "pos": {
+                        "x": 184.72,
+                        "y": 119.0
+                    },
+                    "uuid": "10ce660a-d52c-41ef-8b6a-ab9c44304ef7"
+                }
+            ],
+            "severity": "warning",
+            "type": "silk_edge_clearance"
+        },
+        {
+            "description": "被板边截断的丝印 (<电路板配置> 中的 \"丝印\" 约束 间距 0.1000 mm; 实际 0.0000 mm)",
+            "items": [
+                {
+                    "description": "Edge.Cuts 上的 线段",
+                    "pos": {
+                        "x": 102.0,
+                        "y": 100.0
+                    },
+                    "uuid": "ace3d9d0-f33d-47b3-9540-fadb0ded03a5"
+                },
+                {
+                    "description": "H1 的参考字段",
+                    "pos": {
+                        "x": 104.0,
+                        "y": 99.85
+                    },
+                    "uuid": "0891fa71-39ac-479d-8ae9-1dc04609c064"
+                }
+            ],
+            "severity": "warning",
+            "type": "silk_edge_clearance"
+        },
+        {
+            "description": "被板边截断的丝印 (<电路板配置> 中的 \"丝印\" 约束 间距 0.1000 mm; 实际 0.0000 mm)",
+            "items": [
+                {
+                    "description": "Edge.Cuts 上的 线段",
+                    "pos": {
+                        "x": 102.0,
+                        "y": 100.0
+                    },
+                    "uuid": "ace3d9d0-f33d-47b3-9540-fadb0ded03a5"
+                },
+                {
+                    "description": "H2 的参考字段",
+                    "pos": {
+                        "x": 181.0,
+                        "y": 99.85
+                    },
+                    "uuid": "83ac7007-da7e-4917-b423-f3e2f31111e9"
+                }
+            ],
+            "severity": "warning",
+            "type": "silk_edge_clearance"
+        },
+        {
+            "description": "被板边截断的丝印 (<电路板配置> 中的 \"丝印\" 约束 间距 0.1000 mm; 实际 0.0000 mm)",
+            "items": [
+                {
+                    "description": "Edge.Cuts 上的 线段",
+                    "pos": {
+                        "x": 102.0,
+                        "y": 100.0
+                    },
+                    "uuid": "ace3d9d0-f33d-47b3-9540-fadb0ded03a5"
+                },
+                {
+                    "description": "J2 的参考字段",
+                    "pos": {
+                        "x": 114.0,
+                        "y": 99.6
+                    },
+                    "uuid": "18e1c874-ab8f-4816-9968-46ebd52f745d"
+                }
+            ],
+            "severity": "warning",
+            "type": "silk_edge_clearance"
+        },
+        {
+            "description": "Silkscreen clipped by solder mask",
+            "items": [
+                {
+                    "description": "C23 的参考字段",
+                    "pos": {
+                        "x": 162.22,
+                        "y": 129.699999
+                    },
+                    "uuid": "44702ca2-c28a-4ead-80e4-3481905dc58e"
+                }
+            ],
+            "severity": "warning",
+            "type": "silk_over_copper"
+        },
+        {
+            "description": "Silkscreen clipped by solder mask",
+            "items": [
+                {
+                    "description": "C13 的参考字段",
+                    "pos": {
+                        "x": 159.42,
+                        "y": 140.6
+                    },
+                    "uuid": "3a0dccdd-5cbd-44d6-b24c-bec5f9e1e0b6"
+                }
+            ],
+            "severity": "warning",
+            "type": "silk_over_copper"
+        },
+        {
+            "description": "Silkscreen clipped by solder mask",
+            "items": [
+                {
+                    "description": "C10 的参考字段",
+                    "pos": {
+                        "x": 155.7,
+                        "y": 154.35
+                    },
+                    "uuid": "b34e5150-1336-480c-96ed-311a526f0d60"
+                }
+            ],
+            "severity": "warning",
+            "type": "silk_over_copper"
+        },
+        {
+            "description": "Silkscreen clipped by solder mask",
+            "items": [
+                {
+                    "description": "U5 的参考字段",
+                    "pos": {
+                        "x": 112.5,
+                        "y": 123.1
+                    },
+                    "uuid": "30ccf24d-c02d-4911-88d8-868b04aec3f9"
+                }
+            ],
+            "severity": "warning",
+            "type": "silk_over_copper"
+        },
+        {
+            "description": "Silkscreen clipped by solder mask",
+            "items": [
+                {
+                    "description": "C51 的参考字段",
+                    "pos": {
+                        "x": 113.97,
+                        "y": 123.6
+                    },
+                    "uuid": "63a1945c-464d-413b-bb5c-ea8e3f4e5c57"
+                }
+            ],
+            "severity": "warning",
+            "type": "silk_over_copper"
+        },
+        {
+            "description": "Silkscreen clipped by solder mask",
+            "items": [
+                {
+                    "description": "TP_12V 的参考字段",
+                    "pos": {
+                        "x": 156.9,
+                        "y": 151.352
+                    },
+                    "uuid": "0f3326b5-e3fb-429f-94f5-fc77447cbd88"
+                }
+            ],
+            "severity": "warning",
+            "type": "silk_over_copper"
+        },
+        {
+            "description": "Silkscreen clipped by solder mask",
+            "items": [
+                {
+                    "description": "C11 的参考字段",
+                    "pos": {
+                        "x": 160.0,
+                        "y": 146.45
+                    },
+                    "uuid": "c3c93bea-ba20-4cc5-9c93-5230bf111ccb"
+                }
+            ],
+            "severity": "warning",
+            "type": "silk_over_copper"
+        },
+        {
+            "description": "Silkscreen clipped by solder mask",
+            "items": [
+                {
+                    "description": "C21 的参考字段",
+                    "pos": {
+                        "x": 164.3,
+                        "y": 138.02
+                    },
+                    "uuid": "9d855e50-e376-459f-889f-38bc375f5a42"
+                }
+            ],
+            "severity": "warning",
+            "type": "silk_over_copper"
+        },
+        {
+            "description": "Silkscreen clipped by solder mask",
+            "items": [
+                {
+                    "description": "L3 的参考字段",
+                    "pos": {
+                        "x": 159.5,
+                        "y": 167.25
+                    },
+                    "uuid": "3bf8d3bc-8fc5-408e-bb73-7efdea90b19e"
+                }
+            ],
+            "severity": "warning",
+            "type": "silk_over_copper"
+        },
+        {
+            "description": "丝印间距 (<电路板配置> 中的 \"丝印\" 约束 间距 0.1000 mm; 实际 0.0000 mm)",
+            "items": [
+                {
+                    "description": "C23 的参考字段",
+                    "pos": {
+                        "x": 162.22,
+                        "y": 129.699999
+                    },
+                    "uuid": "44702ca2-c28a-4ead-80e4-3481905dc58e"
+                },
+                {
+                    "description": "C22 的 线段, 位于 F.Silkscreen",
+                    "pos": {
+                        "x": 162.435,
+                        "y": 129.961251
+                    },
+                    "uuid": "73c889f2-1fc0-4029-81f4-1feb9c87e1d5"
+                }
+            ],
+            "severity": "warning",
+            "type": "silk_overlap"
+        },
+        {
+            "description": "丝印间距 (<电路板配置> 中的 \"丝印\" 约束 间距 0.1000 mm; 实际 0.0794 mm)",
+            "items": [
+                {
+                    "description": "TP_3V3 的 圆形, 位于 F.Silkscreen",
+                    "pos": {
+                        "x": 158.5,
+                        "y": 126.0
+                    },
+                    "uuid": "160a5d26-5330-4be9-a2d2-e39fd2233cc9"
+                },
+                {
+                    "description": "TP_3V3 的参考字段",
+                    "pos": {
+                        "x": 158.5,
+                        "y": 124.352
+                    },
+                    "uuid": "c643830d-82ac-410d-a512-2fcfc2b1237d"
+                }
+            ],
+            "severity": "warning",
+            "type": "silk_overlap"
+        },
+        {
+            "description": "丝印间距 (<电路板配置> 中的 \"丝印\" 约束 间距 0.1000 mm; 实际 0.0000 mm)",
+            "items": [
+                {
+                    "description": "C21 的参考字段",
+                    "pos": {
+                        "x": 164.3,
+                        "y": 138.02
+                    },
+                    "uuid": "9d855e50-e376-459f-889f-38bc375f5a42"
+                },
+                {
+                    "description": "U9 的 线段, 位于 F.Silkscreen",
+                    "pos": {
+                        "x": 164.44,
+                        "y": 137.41
+                    },
+                    "uuid": "c0a3da20-3a1c-4620-aeac-ee60495e9015"
+                }
+            ],
+            "severity": "warning",
+            "type": "silk_overlap"
+        },
+        {
+            "description": "丝印间距 (<电路板配置> 中的 \"丝印\" 约束 间距 0.1000 mm; 实际 0.0000 mm)",
+            "items": [
+                {
+                    "description": "U9 的 线段, 位于 F.Silkscreen",
+                    "pos": {
+                        "x": 164.49,
+                        "y": 137.41
+                    },
+                    "uuid": "22d24210-315b-4feb-842f-59bbf811fd0c"
+                },
+                {
+                    "description": "C21 的参考字段",
+                    "pos": {
+                        "x": 164.3,
+                        "y": 138.02
+                    },
+                    "uuid": "9d855e50-e376-459f-889f-38bc375f5a42"
+                }
+            ],
+            "severity": "warning",
+            "type": "silk_overlap"
+        },
+        {
+            "description": "丝印间距 (<电路板配置> 中的 \"丝印\" 约束 间距 0.1000 mm; 实际 0.0000 mm)",
+            "items": [
+                {
+                    "description": "C13 的参考字段",
+                    "pos": {
+                        "x": 159.42,
+                        "y": 140.6
+                    },
+                    "uuid": "3a0dccdd-5cbd-44d6-b24c-bec5f9e1e0b6"
+                },
+                {
+                    "description": "C12 的 线段, 位于 F.Silkscreen",
+                    "pos": {
+                        "x": 159.635,
+                        "y": 140.861252
+                    },
+                    "uuid": "fb00eae5-117d-4652-8c0a-a984637d807a"
+                }
+            ],
+            "severity": "warning",
+            "type": "silk_overlap"
+        },
+        {
+            "description": "丝印间距 (<电路板配置> 中的 \"丝印\" 约束 间距 0.1000 mm; 实际 0.0093 mm)",
+            "items": [
+                {
+                    "description": "TP_3V3A 的参考字段",
+                    "pos": {
+                        "x": 127.5,
+                        "y": 126.551999
+                    },
+                    "uuid": "064dddaa-8b32-495c-b2aa-f9c7702c8ee6"
+                },
+                {
+                    "description": "U4 的参考字段",
+                    "pos": {
+                        "x": 129.0,
+                        "y": 125.4
+                    },
+                    "uuid": "9ff8e670-efb0-4426-995b-e8dbf7d97e26"
+                }
+            ],
+            "severity": "warning",
+            "type": "silk_overlap"
+        },
+        {
+            "description": "丝印间距 (<电路板配置> 中的 \"丝印\" 约束 间距 0.1000 mm; 实际 0.0794 mm)",
+            "items": [
+                {
+                    "description": "TP_1V8 的参考字段",
+                    "pos": {
+                        "x": 113.2,
+                        "y": 120.552
+                    },
+                    "uuid": "7cbbbfdd-5f29-4982-aa69-7e3167038b14"
+                },
+                {
+                    "description": "TP_1V8 的 圆形, 位于 F.Silkscreen",
+                    "pos": {
+                        "x": 113.2,
+                        "y": 122.2
+                    },
+                    "uuid": "b3f3cdaf-0444-4990-9c41-34bca3c934bb"
+                }
+            ],
+            "severity": "warning",
+            "type": "silk_overlap"
+        },
+        {
+            "description": "丝印间距 (<电路板配置> 中的 \"丝印\" 约束 间距 0.1000 mm; 实际 0.0000 mm)",
+            "items": [
+                {
+                    "description": "U5 的参考字段",
+                    "pos": {
+                        "x": 112.5,
+                        "y": 123.1
+                    },
+                    "uuid": "30ccf24d-c02d-4911-88d8-868b04aec3f9"
+                },
+                {
+                    "description": "TP_1V8 的 圆形, 位于 F.Silkscreen",
+                    "pos": {
+                        "x": 113.2,
+                        "y": 122.2
+                    },
+                    "uuid": "b3f3cdaf-0444-4990-9c41-34bca3c934bb"
+                }
+            ],
+            "severity": "warning",
+            "type": "silk_overlap"
+        },
+        {
+            "description": "丝印间距 (<电路板配置> 中的 \"丝印\" 约束 间距 0.1000 mm; 实际 0.0000 mm)",
+            "items": [
+                {
+                    "description": "C51 的参考字段",
+                    "pos": {
+                        "x": 113.97,
+                        "y": 123.6
+                    },
+                    "uuid": "63a1945c-464d-413b-bb5c-ea8e3f4e5c57"
+                },
+                {
+                    "description": "TP_1V8 的 圆形, 位于 F.Silkscreen",
+                    "pos": {
+                        "x": 113.2,
+                        "y": 122.2
+                    },
+                    "uuid": "b3f3cdaf-0444-4990-9c41-34bca3c934bb"
+                }
+            ],
+            "severity": "warning",
+            "type": "silk_overlap"
+        },
+        {
+            "description": "丝印间距 (<电路板配置> 中的 \"丝印\" 约束 间距 0.1000 mm; 实际 0.0998 mm)",
+            "items": [
+                {
+                    "description": "J5 的 线段, 位于 F.Silkscreen",
+                    "pos": {
+                        "x": 121.42,
+                        "y": 148.555
+                    },
+                    "uuid": "09feb0bc-93cc-4664-b327-4d410d05e90e"
+                },
+                {
+                    "description": "J5 的参考字段",
+                    "pos": {
+                        "x": 122.2,
+                        "y": 140.445
+                    },
+                    "uuid": "3f179aa8-c01d-42ca-9436-bd5e48c9fd95"
+                }
+            ],
+            "severity": "warning",
+            "type": "silk_overlap"
+        },
+        {
+            "description": "丝印间距 (<电路板配置> 中的 \"丝印\" 约束 间距 0.1000 mm; 实际 0.0729 mm)",
+            "items": [
+                {
+                    "description": "TP_5V 的参考字段",
+                    "pos": {
+                        "x": 170.0,
+                        "y": 141.352
+                    },
+                    "uuid": "5eb6c401-0341-4f07-8b58-47723dbc3893"
+                },
+                {
+                    "description": "TP_5V 的 圆形, 位于 F.Silkscreen",
+                    "pos": {
+                        "x": 170.0,
+                        "y": 143.0
+                    },
+                    "uuid": "dd77284a-66d2-4c20-8d5f-4a5a14de7f6d"
+                }
+            ],
+            "severity": "warning",
+            "type": "silk_overlap"
+        },
+        {
+            "description": "丝印间距 (<电路板配置> 中的 \"丝印\" 约束 间距 0.1000 mm; 实际 0.0794 mm)",
+            "items": [
+                {
+                    "description": "TP_12V 的 圆形, 位于 F.Silkscreen",
+                    "pos": {
+                        "x": 156.9,
+                        "y": 153.0
+                    },
+                    "uuid": "0281864f-1853-4ee1-aa3d-4a500e759cd3"
+                },
+                {
+                    "description": "TP_12V 的参考字段",
+                    "pos": {
+                        "x": 156.9,
+                        "y": 151.352
+                    },
+                    "uuid": "0f3326b5-e3fb-429f-94f5-fc77447cbd88"
+                }
+            ],
+            "severity": "warning",
+            "type": "silk_overlap"
+        },
+        {
+            "description": "丝印间距 (<电路板配置> 中的 \"丝印\" 约束 间距 0.1000 mm; 实际 0.0723 mm)",
+            "items": [
+                {
+                    "description": "TP_12V 的 圆形, 位于 F.Silkscreen",
+                    "pos": {
+                        "x": 156.9,
+                        "y": 153.0
+                    },
+                    "uuid": "0281864f-1853-4ee1-aa3d-4a500e759cd3"
+                },
+                {
+                    "description": "C10 的参考字段",
+                    "pos": {
+                        "x": 155.7,
+                        "y": 154.35
+                    },
+                    "uuid": "b34e5150-1336-480c-96ed-311a526f0d60"
+                }
+            ],
+            "severity": "warning",
+            "type": "silk_overlap"
+        },
+        {
+            "description": "丝印间距 (<电路板配置> 中的 \"丝印\" 约束 间距 0.1000 mm; 实际 0.0531 mm)",
+            "items": [
+                {
+                    "description": "TP_12V 的参考字段",
+                    "pos": {
+                        "x": 156.9,
+                        "y": 151.352
+                    },
+                    "uuid": "0f3326b5-e3fb-429f-94f5-fc77447cbd88"
+                },
+                {
+                    "description": "U8 的 线段, 位于 F.Silkscreen",
+                    "pos": {
+                        "x": 158.44,
+                        "y": 152.91
+                    },
+                    "uuid": "3d0af525-eb0a-4e95-bb75-e055b114da5e"
+                }
+            ],
+            "severity": "warning",
+            "type": "silk_overlap"
+        },
+        {
+            "description": "丝印间距 (<电路板配置> 中的 \"丝印\" 约束 间距 0.1000 mm; 实际 0.0529 mm)",
+            "items": [
+                {
+                    "description": "TP_12V 的参考字段",
+                    "pos": {
+                        "x": 156.9,
+                        "y": 151.352
+                    },
+                    "uuid": "0f3326b5-e3fb-429f-94f5-fc77447cbd88"
+                },
+                {
+                    "description": "U8 的 线段, 位于 F.Silkscreen",
+                    "pos": {
+                        "x": 158.44,
+                        "y": 151.09
+                    },
+                    "uuid": "3ae9ad6c-0fdf-41fe-a44a-9ec7c48e9219"
+                }
+            ],
+            "severity": "warning",
+            "type": "silk_overlap"
+        },
+        {
+            "description": "丝印间距 (<电路板配置> 中的 \"丝印\" 约束 间距 0.1000 mm; 实际 0.0673 mm)",
+            "items": [
+                {
+                    "description": "L3 的参考字段",
+                    "pos": {
+                        "x": 159.5,
+                        "y": 167.25
+                    },
+                    "uuid": "3bf8d3bc-8fc5-408e-bb73-7efdea90b19e"
+                },
+                {
+                    "description": "C31 的 线段, 位于 F.Silkscreen",
+                    "pos": {
+                        "x": 159.05942,
+                        "y": 167.11
+                    },
+                    "uuid": "9b409d58-3dc5-407b-a87b-adc27d51ce17"
+                }
+            ],
+            "severity": "warning",
+            "type": "silk_overlap"
+        },
+        {
+            "description": "丝印间距 (<电路板配置> 中的 \"丝印\" 约束 间距 0.1000 mm; 实际 0.0269 mm)",
+            "items": [
+                {
+                    "description": "U5 的参考字段",
+                    "pos": {
+                        "x": 112.5,
+                        "y": 123.1
+                    },
+                    "uuid": "30ccf24d-c02d-4911-88d8-868b04aec3f9"
+                },
+                {
+                    "description": "C51 的参考字段",
+                    "pos": {
+                        "x": 113.97,
+                        "y": 123.6
+                    },
+                    "uuid": "63a1945c-464d-413b-bb5c-ea8e3f4e5c57"
+                }
+            ],
+            "severity": "warning",
+            "type": "silk_overlap"
+        },
+        {
+            "description": "丝印间距 (<电路板配置> 中的 \"丝印\" 约束 间距 0.1000 mm; 实际 0.0000 mm)",
+            "items": [
+                {
+                    "description": "U5 的 线段, 位于 F.Silkscreen",
+                    "pos": {
+                        "x": 111.59,
+                        "y": 123.94
+                    },
+                    "uuid": "27d67200-d4bf-4469-83f6-710bde234275"
+                },
+                {
+                    "description": "C51 的参考字段",
+                    "pos": {
+                        "x": 113.97,
+                        "y": 123.6
+                    },
+                    "uuid": "63a1945c-464d-413b-bb5c-ea8e3f4e5c57"
+                }
+            ],
+            "severity": "warning",
+            "type": "silk_overlap"
+        },
+        {
+            "description": "丝印间距 (<电路板配置> 中的 \"丝印\" 约束 间距 0.1000 mm; 实际 0.0000 mm)",
+            "items": [
+                {
+                    "description": "U5 的 线段, 位于 F.Silkscreen",
+                    "pos": {
+                        "x": 113.41,
+                        "y": 123.94
+                    },
+                    "uuid": "3c0c0ead-3672-43bd-b235-fbd83f153823"
+                },
+                {
+                    "description": "C51 的参考字段",
+                    "pos": {
+                        "x": 113.97,
+                        "y": 123.6
+                    },
+                    "uuid": "63a1945c-464d-413b-bb5c-ea8e3f4e5c57"
+                }
+            ],
+            "severity": "warning",
+            "type": "silk_overlap"
+        }
+    ]
+}

@@ -1,0 +1,95 @@
+CMD: python.exe -X utf8 py_router/route_planes.py E:/Projects/claude_workspace/PCB/.claude/worktrees/copper-regions/prototypes/copper-regions/out/0_base/h7cu.kicad_pcb E:/Projects/claude_workspace/PCB/.claude/worktrees/copper-regions/prototypes/copper-regions/out/b_krt/tmp.kicad_pcb --nets GND GND --plane-layers F.Cu B.Cu --zone-clearance 0.2 --min-thickness 0.3 --escalation off --fab-tier standard --no-thermal-vias
+ENV KNOBS: none
+--track-width not given; using the board Default net-class 0.2032mm.
+--via-size not given; using the board Default net-class 0.45mm.
+--via-drill not given; using the board Default net-class 0.2mm.
+--clearance not given; honoring net classes with base = the board Default net-class clearance 0.127mm.
+--hole-to-hole-clearance not given; using 0.254mm [board constraint].
+--board-edge-clearance not given; using 0.254mm [board constraint].
+Loading PCB from E:/Projects/claude_workspace/PCB/.claude/worktrees/copper-regions/prototypes/copper-regions/out/0_base/h7cu.kicad_pcb...
+  NOTE: U2 (0.8mm pitch, 0.3mm vias): no pour clearance at or above the fab floor 0.1 passes between its vias (needs 0.095) -- its plane balls under it are islands unless their own copper joins them
+  NOTE: U1 (0.65mm pitch, 0.3mm vias): no pour clearance at or above the fab floor 0.1 passes between its vias (needs 0.020) -- its plane balls under it are islands unless their own copper joins them
+Found net 'GND' with ID 3
+Found net 'GND' with ID 3
+Board bounds: (100.00, 100.00) to (185.00, 175.00)
+  Full-stack: appended 4 unrequested copper layer(s) as FORBIDDEN obstacles: In1.Cu, In2.Cu, In3.Cu, In4.Cu
+  Layer costs: F.Cu=1.0x, B.Cu=3.0x, In1.Cu=-1x, In2.Cu=-1x, In3.Cu=-1x, In4.Cu=-1x
+  .kicad_dru rule 'bga_via': NOT honoured (condition: predicate intersectsArea() not modelled); KiCad will still enforce it
+  .kicad_dru rule 'bga_width': NOT honoured (condition: predicate intersectsArea() not modelled); KiCad will still enforce it
+  .kicad_dru rule 'bga_clearance': NOT honoured (condition: predicate intersectsArea() not modelled); KiCad will still enforce it
+  .kicad_dru rule 'via_size': NOT honoured (annular_width: a via a step sizes itself holds it, an explicit via size and a last-resort descent need not, so this line is printed whatever the vias are; route.py and route_diff.py grade their own vias against it when they end, check_drc the board); KiCad will still enforce it
+  .kicad_dru rule 'tap_via': NOT honoured (annular_width: a via a step sizes itself holds it, an explicit via size and a last-resort descent need not, so this line is printed whatever the vias are; route.py and route_diff.py grade their own vias against it when they end, check_drc the board); KiCad will still enforce it
+  .kicad_dru rule 'corner_angle': parsed, but track_angle has no consumer in this tool yet
+  .kicad_dru rule 'min_segment': parsed, but track_segment_length has no consumer in this tool yet
+  .kicad_dru rule 'tht_thermal': parsed, but min_resolved_spokes, thermal_relief_gap, thermal_spoke_width, zone_connection has no consumer in this tool yet
+  .kicad_dru rule 'smd_solid': parsed, but zone_connection has no consumer in this tool yet
+  .kicad_dru rule 'usb3_skew': skew is not routed to (a --length-match-group aims its target into a length window); check_drc grades it
+  .kicad_dru: rule 'bga_clearance': clearance 0.09mm has a non-layer scope (netclass/area/... condition) -- skipped, KiCad will still enforce it
+  Auto-read netclass clearances for 16 net(s) (cross-class max(A,B) respected for plane taps).
+
+============================================================
+Processing net 'GND' on layer F.Cu
+============================================================
+  17 pad(s) on 'GND' deferred to the route step, each kept as a virtual via for the split
+
+Pad analysis for net 'GND':
+  Through-hole pads (no via needed): 10
+  SMD pads on F.Cu (no via needed): 95
+  SMD pads kept for thermal via arrays (via needed): 0
+
+  Plane Resistance Analysis (1 oz copper, 10°C rise):
+    Path length: 112.6 mm (diagonal)
+    Avg width:   56.2 mm
+    Resistance:  0.962 mΩ
+    Max current: not rated -- 3049 mils² cross-section is past the IPC-2221 chart range (700 mils²); the fit would say 44.38 A by extrapolation
+
+Results for 'GND':
+  Zone created on F.Cu
+  New vias placed: 0
+  Traces added: 0
+
+============================================================
+Processing net 'GND' on layer B.Cu
+============================================================
+  43 pad(s) on 'GND' deferred to the route step, each kept as a virtual via for the split
+
+Pad analysis for net 'GND':
+  Through-hole pads (no via needed): 10
+  SMD pads on B.Cu (no via needed): 0
+  SMD pads already routed to plane (no via needed): 69
+  SMD pads kept for thermal via arrays (via needed): 0
+
+  Plane Resistance Analysis (1 oz copper, 10°C rise):
+    Path length: 112.6 mm (diagonal)
+    Avg width:   56.2 mm
+    Resistance:  0.962 mΩ
+    Max current: not rated -- 3049 mils² cross-section is past the IPC-2221 chart range (700 mils²); the fit would say 44.38 A by extrapolation
+
+Results for 'GND':
+  Zone created on B.Cu
+  New vias placed: 0
+  Traces added: 0
+
+============================================================
+OVERALL TOTALS
+============================================================
+  Nets processed: 2
+  Total new vias placed: 0
+  Total traces added: 0
+  Closed 52 soft joint(s) in plane/restored copper
+
+Writing output to E:/Projects/claude_workspace/PCB/.claude/worktrees/copper-regions/prototypes/copper-regions/out/b_krt/tmp.kicad_pcb...
+Output written to E:/Projects/claude_workspace/PCB/.claude/worktrees/copper-regions/prototypes/copper-regions/out/b_krt/tmp.kicad_pcb
+Note: Open in KiCad and press 'B' to refill zones
+
+============================================================
+GEOMETRIC VERIFICATION (re-parsed output)
+============================================================
+  GND: 122/122 pads connected to plane on F.Cu
+  Bare pour (no track or via drawn; its 52 soft-joint bridge(s) join copper the board already carried): writing the copper clearance only -- no size or copper-to-hole floor (#1319)
+  DRC settings: wrote 2 value(s) to E:/Projects/claude_workspace/PCB/.claude/worktrees/copper-regions/prototypes/copper-regions/out/b_krt/tmp.kicad_pro to match the routed floors (close+reopen in KiCad if it is open). WRITES, not changes: a key the project never declared counts here, and one logical value is written once per net class:
+      rules.min_via_drill: None -> 0.15 mm
+      kicad_routing_tools.fab_floor_origin: recorded
+PROJECT_WRITES_JSON: {"project": "E:/Projects/claude_workspace/PCB/.claude/worktrees/copper-regions/prototypes/copper-regions/out/b_krt/tmp.kicad_pro", "writes": ["rules.min_via_drill: None -> 0.15 mm", "kicad_routing_tools.fab_floor_origin: recorded"]}
+JSON_SUMMARY: {"complete": true, "env_knobs": {}, "min_clearance_used": 0.127, "pads": {"failed_pads": 0, "geometric_failed": 0, "pads_needing_vias": 0}, "pads_scope": "all zones in this run, summed -- not per zone; see plane_zones for what was poured", "plane_nets": ["GND"], "plane_resistance": [{"avg_width_mm": 56.194, "copper_oz": 1.0, "max_current_a": 44.38, "max_current_ipc2152_a": 44.38, "net": "GND", "path_basis": "route", "path_length_mm": 112.64, "resistance_ohms": 0.000962, "temp_rise_c": 10.0}], "plane_zones": [{"layer": "F.Cu", "net": "GND"}, {"layer": "B.Cu", "net": "GND"}], "status": "ok"}
+EXIT=0

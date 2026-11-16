@@ -1,0 +1,1657 @@
+{
+    "$schema": "https://schemas.kicad.org/drc.v1.json",
+    "coordinate_units": "mm",
+    "date": "2026-11-16T10:29:17",
+    "ignored_checks": [
+        {
+            "description": "Track endpoint not centered on via",
+            "key": "track_not_centered_on_via"
+        },
+        {
+            "description": "Tuning profile track geometries",
+            "key": "tuning_profile_track_geometries"
+        },
+        {
+            "description": "Footprint doesn't match symbol's footprint filters",
+            "key": "footprint_filters_mismatch"
+        },
+        {
+            "description": "NPTH inside courtyard",
+            "key": "npth_inside_courtyard"
+        }
+    ],
+    "included_severities": [
+        "error",
+        "warning",
+        "exclusion"
+    ],
+    "kicad_version": "10.0.8",
+    "schematic_parity": [],
+    "source": "h7cu.kicad_pcb",
+    "unconnected_items": [
+        {
+            "description": "Missing connection between items",
+            "items": [
+                {
+                    "description": "F.Cu 上 U11 的焊盘 7 [CANH]",
+                    "pos": {
+                        "x": 166.025,
+                        "y": 122.635
+                    },
+                    "uuid": "0caccb2a-0d3c-45a0-8ddb-a59fffca83dc"
+                },
+                {
+                    "description": "J8 的PTH 焊盘 1 [CANH]",
+                    "pos": {
+                        "x": 180.5,
+                        "y": 115.5
+                    },
+                    "uuid": "b761b09a-b2b3-42b9-bf7b-564106f0e445"
+                }
+            ],
+            "severity": "error",
+            "type": "unconnected_items"
+        },
+        {
+            "description": "Missing connection between items",
+            "items": [
+                {
+                    "description": "F.Cu 上 U11 的焊盘 6 [CANL]",
+                    "pos": {
+                        "x": 166.025,
+                        "y": 121.365
+                    },
+                    "uuid": "981c0d25-dc3b-416d-aada-a02b13472f61"
+                },
+                {
+                    "description": "J8 的PTH 焊盘 2 [CANL]",
+                    "pos": {
+                        "x": 180.5,
+                        "y": 119.0
+                    },
+                    "uuid": "2db98ef1-ff54-46ce-a690-fa410130c683"
+                }
+            ],
+            "severity": "error",
+            "type": "unconnected_items"
+        },
+        {
+            "description": "Missing connection between items",
+            "items": [
+                {
+                    "description": "J5 的PTH 焊盘 4 [VDDA_PHY]",
+                    "pos": {
+                        "x": 119.84,
+                        "y": 139.81
+                    },
+                    "uuid": "f75742f4-6535-4e5e-9921-8712c2126a5c"
+                },
+                {
+                    "description": "J5 的PTH 焊盘 5 [VDDA_PHY]",
+                    "pos": {
+                        "x": 117.3,
+                        "y": 141.08
+                    },
+                    "uuid": "7ca5ca73-c064-47d8-8c54-23b1df5146e5"
+                }
+            ],
+            "severity": "error",
+            "type": "unconnected_items"
+        },
+        {
+            "description": "Missing connection between items",
+            "items": [
+                {
+                    "description": "J5 的PTH 焊盘 4 [VDDA_PHY]",
+                    "pos": {
+                        "x": 119.84,
+                        "y": 139.81
+                    },
+                    "uuid": "f75742f4-6535-4e5e-9921-8712c2126a5c"
+                },
+                {
+                    "description": "F.Cu 上 U7 的焊盘 1 [VDDA_PHY]",
+                    "pos": {
+                        "x": 125.5625,
+                        "y": 139.75
+                    },
+                    "uuid": "40908187-c623-44f7-a176-49ac3148e473"
+                }
+            ],
+            "severity": "error",
+            "type": "unconnected_items"
+        },
+        {
+            "description": "Missing connection between items",
+            "items": [
+                {
+                    "description": "F.Cu 上 U7 的焊盘 1 [VDDA_PHY]",
+                    "pos": {
+                        "x": 125.5625,
+                        "y": 139.75
+                    },
+                    "uuid": "40908187-c623-44f7-a176-49ac3148e473"
+                },
+                {
+                    "description": "F.Cu 上 U7 的焊盘 19 [VDDA_PHY]",
+                    "pos": {
+                        "x": 128.75,
+                        "y": 139.0625
+                    },
+                    "uuid": "4b7e3e7a-701a-4361-bc7a-22775cfdb158"
+                }
+            ],
+            "severity": "error",
+            "type": "unconnected_items"
+        },
+        {
+            "description": "Missing connection between items",
+            "items": [
+                {
+                    "description": "F.Cu 上 U1 的焊盘 P1 [VDDA_MCU]",
+                    "pos": {
+                        "x": 133.45,
+                        "y": 140.9
+                    },
+                    "uuid": "820cc2c2-922a-4b82-b9b6-2cdb023c70d6"
+                },
+                {
+                    "description": "F.Cu 上 U1 的焊盘 R1 [VDDA_MCU]",
+                    "pos": {
+                        "x": 133.45,
+                        "y": 141.55
+                    },
+                    "uuid": "b50e83f2-78bc-459d-a671-735ce989d59b"
+                }
+            ],
+            "severity": "error",
+            "type": "unconnected_items"
+        },
+        {
+            "description": "Missing connection between items",
+            "items": [
+                {
+                    "description": "F.Cu 上 L2 的焊盘 1 [SW_3V3]",
+                    "pos": {
+                        "x": 162.8,
+                        "y": 134.575
+                    },
+                    "uuid": "201b582f-5c7c-4396-ad05-34bf896dfa4b"
+                },
+                {
+                    "description": "F.Cu 上 U9 的焊盘 3 [SW_3V3]",
+                    "pos": {
+                        "x": 165.05,
+                        "y": 135.3625
+                    },
+                    "uuid": "73110c0c-ed19-4d30-8b1c-b2b77f45453e"
+                }
+            ],
+            "severity": "error",
+            "type": "unconnected_items"
+        }
+    ],
+    "violations": [
+        {
+            "description": "Via is not connected or connected on only one layer",
+            "items": [
+                {
+                    "description": "过孔 [PI6] (F.Cu - B.Cu)",
+                    "pos": {
+                        "x": 134.425,
+                        "y": 133.425
+                    },
+                    "uuid": "62e6d04f-2475-4cab-a266-738229132295"
+                }
+            ],
+            "severity": "warning",
+            "type": "via_dangling"
+        },
+        {
+            "description": "Via is not connected or connected on only one layer",
+            "items": [
+                {
+                    "description": "过孔 [PI5] (F.Cu - B.Cu)",
+                    "pos": {
+                        "x": 135.075,
+                        "y": 133.425
+                    },
+                    "uuid": "da5fb2ec-1b57-44ad-8090-615a97a059dd"
+                }
+            ],
+            "severity": "warning",
+            "type": "via_dangling"
+        },
+        {
+            "description": "Via is not connected or connected on only one layer",
+            "items": [
+                {
+                    "description": "过孔 [PG9] (F.Cu - B.Cu)",
+                    "pos": {
+                        "x": 139.625,
+                        "y": 133.425
+                    },
+                    "uuid": "4ff934be-aeba-453d-9f76-16754ef76105"
+                }
+            ],
+            "severity": "warning",
+            "type": "via_dangling"
+        },
+        {
+            "description": "Via is not connected or connected on only one layer",
+            "items": [
+                {
+                    "description": "过孔 [PD5] (F.Cu - B.Cu)",
+                    "pos": {
+                        "x": 140.275,
+                        "y": 133.425
+                    },
+                    "uuid": "4df2de70-75e3-4f7a-b2c4-3249d2e7d912"
+                }
+            ],
+            "severity": "warning",
+            "type": "via_dangling"
+        },
+        {
+            "description": "Via is not connected or connected on only one layer",
+            "items": [
+                {
+                    "description": "过孔 [PD1] (F.Cu - B.Cu)",
+                    "pos": {
+                        "x": 140.925,
+                        "y": 133.425
+                    },
+                    "uuid": "12adb2f5-b286-4f0e-9c60-a185ae3e8777"
+                }
+            ],
+            "severity": "warning",
+            "type": "via_dangling"
+        },
+        {
+            "description": "Via is not connected or connected on only one layer",
+            "items": [
+                {
+                    "description": "过孔 [PI3] (F.Cu - B.Cu)",
+                    "pos": {
+                        "x": 141.575,
+                        "y": 133.425
+                    },
+                    "uuid": "093f3953-34b6-4b74-8e61-da4cadf7c8dc"
+                }
+            ],
+            "severity": "warning",
+            "type": "via_dangling"
+        },
+        {
+            "description": "Via is not connected or connected on only one layer",
+            "items": [
+                {
+                    "description": "过孔 [PI9] (F.Cu - B.Cu)",
+                    "pos": {
+                        "x": 134.425,
+                        "y": 134.074999
+                    },
+                    "uuid": "6e8f2081-090a-4ca3-b5a1-5eb259666eea"
+                }
+            ],
+            "severity": "warning",
+            "type": "via_dangling"
+        },
+        {
+            "description": "Via is not connected or connected on only one layer",
+            "items": [
+                {
+                    "description": "过孔 [PI4] (F.Cu - B.Cu)",
+                    "pos": {
+                        "x": 135.075,
+                        "y": 134.074999
+                    },
+                    "uuid": "6fa91e91-72d8-4503-aeb3-3b5e05f3e580"
+                }
+            ],
+            "severity": "warning",
+            "type": "via_dangling"
+        },
+        {
+            "description": "Via is not connected or connected on only one layer",
+            "items": [
+                {
+                    "description": "过孔 [BOOT0] (F.Cu - B.Cu)",
+                    "pos": {
+                        "x": 136.375,
+                        "y": 134.074999
+                    },
+                    "uuid": "cfa8eff2-5d9b-40c0-a60d-2f62ab31739a"
+                }
+            ],
+            "severity": "warning",
+            "type": "via_dangling"
+        },
+        {
+            "description": "Via is not connected or connected on only one layer",
+            "items": [
+                {
+                    "description": "过孔 [PD4] (F.Cu - B.Cu)",
+                    "pos": {
+                        "x": 139.625,
+                        "y": 134.074999
+                    },
+                    "uuid": "6b701fd0-7203-4ec7-a38b-97b3ce4ec25c"
+                }
+            ],
+            "severity": "warning",
+            "type": "via_dangling"
+        },
+        {
+            "description": "Via is not connected or connected on only one layer",
+            "items": [
+                {
+                    "description": "过孔 [PD3] (F.Cu - B.Cu)",
+                    "pos": {
+                        "x": 140.275,
+                        "y": 134.074999
+                    },
+                    "uuid": "5a61b595-f984-4411-ab6c-b99803ab5af4"
+                }
+            ],
+            "severity": "warning",
+            "type": "via_dangling"
+        },
+        {
+            "description": "Via is not connected or connected on only one layer",
+            "items": [
+                {
+                    "description": "过孔 [PD2] (F.Cu - B.Cu)",
+                    "pos": {
+                        "x": 140.925,
+                        "y": 134.074999
+                    },
+                    "uuid": "3bbb84ad-0fa6-4b72-9e81-42d0f2490a10"
+                }
+            ],
+            "severity": "warning",
+            "type": "via_dangling"
+        },
+        {
+            "description": "Via is not connected or connected on only one layer",
+            "items": [
+                {
+                    "description": "过孔 [PH15] (F.Cu - B.Cu)",
+                    "pos": {
+                        "x": 141.575,
+                        "y": 134.074999
+                    },
+                    "uuid": "94076e32-fa90-4dc5-9f68-87e719928190"
+                }
+            ],
+            "severity": "warning",
+            "type": "via_dangling"
+        },
+        {
+            "description": "Via is not connected or connected on only one layer",
+            "items": [
+                {
+                    "description": "过孔 [PI10] (F.Cu - B.Cu)",
+                    "pos": {
+                        "x": 134.425,
+                        "y": 134.725
+                    },
+                    "uuid": "0bec7dab-4cec-4d3c-b554-38dc4c0ff1d8"
+                }
+            ],
+            "severity": "warning",
+            "type": "via_dangling"
+        },
+        {
+            "description": "Via is not connected or connected on only one layer",
+            "items": [
+                {
+                    "description": "过孔 [PI11] (F.Cu - B.Cu)",
+                    "pos": {
+                        "x": 135.075,
+                        "y": 134.725
+                    },
+                    "uuid": "f26263ae-e0a1-4601-81ab-13c7a6ad9d2b"
+                }
+            ],
+            "severity": "warning",
+            "type": "via_dangling"
+        },
+        {
+            "description": "Via is not connected or connected on only one layer",
+            "items": [
+                {
+                    "description": "过孔 [PH13] (F.Cu - B.Cu)",
+                    "pos": {
+                        "x": 140.925,
+                        "y": 134.725
+                    },
+                    "uuid": "16a11e6c-e2c5-4bdf-bdf1-4f885e40cbb6"
+                }
+            ],
+            "severity": "warning",
+            "type": "via_dangling"
+        },
+        {
+            "description": "Via is not connected or connected on only one layer",
+            "items": [
+                {
+                    "description": "过孔 [PH14] (F.Cu - B.Cu)",
+                    "pos": {
+                        "x": 141.575,
+                        "y": 134.725
+                    },
+                    "uuid": "9f6a5501-a889-4781-90a3-32b6c5146530"
+                }
+            ],
+            "severity": "warning",
+            "type": "via_dangling"
+        },
+        {
+            "description": "Via is not connected or connected on only one layer",
+            "items": [
+                {
+                    "description": "过孔 [PH2] (F.Cu - B.Cu)",
+                    "pos": {
+                        "x": 135.075,
+                        "y": 135.375
+                    },
+                    "uuid": "fca18584-dd18-4515-a2ce-f79cff034535"
+                }
+            ],
+            "severity": "warning",
+            "type": "via_dangling"
+        },
+        {
+            "description": "Via is not connected or connected on only one layer",
+            "items": [
+                {
+                    "description": "过孔 [VCAP_F13] (F.Cu - B.Cu)",
+                    "pos": {
+                        "x": 141.575,
+                        "y": 135.375
+                    },
+                    "uuid": "38ba7784-fb45-48c1-915e-0afa6afb0bbe"
+                }
+            ],
+            "severity": "warning",
+            "type": "via_dangling"
+        },
+        {
+            "description": "Via is not connected or connected on only one layer",
+            "items": [
+                {
+                    "description": "过孔 [PH3] (F.Cu - B.Cu)",
+                    "pos": {
+                        "x": 135.075,
+                        "y": 136.675
+                    },
+                    "uuid": "e06bd3dc-e100-41d9-bc7b-abaad6238b90"
+                }
+            ],
+            "severity": "warning",
+            "type": "via_dangling"
+        },
+        {
+            "description": "Via is not connected or connected on only one layer",
+            "items": [
+                {
+                    "description": "过孔 [PF1] (F.Cu - B.Cu)",
+                    "pos": {
+                        "x": 134.425,
+                        "y": 137.325
+                    },
+                    "uuid": "7725ad7c-ba6d-4ccc-ac42-aee0af4002fa"
+                }
+            ],
+            "severity": "warning",
+            "type": "via_dangling"
+        },
+        {
+            "description": "Via is not connected or connected on only one layer",
+            "items": [
+                {
+                    "description": "过孔 [PH4] (F.Cu - B.Cu)",
+                    "pos": {
+                        "x": 135.075,
+                        "y": 137.325
+                    },
+                    "uuid": "72382a5c-b1cc-4dbc-b1b7-464fb3648c8e"
+                }
+            ],
+            "severity": "warning",
+            "type": "via_dangling"
+        },
+        {
+            "description": "Via is not connected or connected on only one layer",
+            "items": [
+                {
+                    "description": "过孔 [PF4] (F.Cu - B.Cu)",
+                    "pos": {
+                        "x": 134.425,
+                        "y": 137.975
+                    },
+                    "uuid": "d4872390-6652-4f4c-b1e5-9ccc8ca51935"
+                }
+            ],
+            "severity": "warning",
+            "type": "via_dangling"
+        },
+        {
+            "description": "Via is not connected or connected on only one layer",
+            "items": [
+                {
+                    "description": "过孔 [PH5] (F.Cu - B.Cu)",
+                    "pos": {
+                        "x": 135.075,
+                        "y": 137.975
+                    },
+                    "uuid": "0e2328d9-d34e-4a1a-b453-6528df6d8a89"
+                }
+            ],
+            "severity": "warning",
+            "type": "via_dangling"
+        },
+        {
+            "description": "Via is not connected or connected on only one layer",
+            "items": [
+                {
+                    "description": "过孔 [PF5] (F.Cu - B.Cu)",
+                    "pos": {
+                        "x": 134.425,
+                        "y": 138.625
+                    },
+                    "uuid": "0ddbf1e9-8f36-444d-8cc5-b7de791e46db"
+                }
+            ],
+            "severity": "warning",
+            "type": "via_dangling"
+        },
+        {
+            "description": "Via is not connected or connected on only one layer",
+            "items": [
+                {
+                    "description": "过孔 [PH12] (F.Cu - B.Cu)",
+                    "pos": {
+                        "x": 140.925,
+                        "y": 138.625
+                    },
+                    "uuid": "d2e4e5fc-8779-4429-85ca-c9d3ae8720fe"
+                }
+            ],
+            "severity": "warning",
+            "type": "via_dangling"
+        },
+        {
+            "description": "Via is not connected or connected on only one layer",
+            "items": [
+                {
+                    "description": "过孔 [PG5] (F.Cu - B.Cu)",
+                    "pos": {
+                        "x": 141.575,
+                        "y": 138.625
+                    },
+                    "uuid": "6eafc729-1639-4ee4-8af8-2ea159ac3e56"
+                }
+            ],
+            "severity": "warning",
+            "type": "via_dangling"
+        },
+        {
+            "description": "Via is not connected or connected on only one layer",
+            "items": [
+                {
+                    "description": "过孔 [PF8] (F.Cu - B.Cu)",
+                    "pos": {
+                        "x": 134.425,
+                        "y": 139.275
+                    },
+                    "uuid": "328e01b0-24c9-40cd-a73b-3b3be6570f5c"
+                }
+            ],
+            "severity": "warning",
+            "type": "via_dangling"
+        },
+        {
+            "description": "Via is not connected or connected on only one layer",
+            "items": [
+                {
+                    "description": "过孔 [PH11] (F.Cu - B.Cu)",
+                    "pos": {
+                        "x": 140.925,
+                        "y": 139.275
+                    },
+                    "uuid": "15d36542-1657-4fb5-8058-7c0b273b8770"
+                }
+            ],
+            "severity": "warning",
+            "type": "via_dangling"
+        },
+        {
+            "description": "Via is not connected or connected on only one layer",
+            "items": [
+                {
+                    "description": "过孔 [PH10] (F.Cu - B.Cu)",
+                    "pos": {
+                        "x": 141.575,
+                        "y": 139.275
+                    },
+                    "uuid": "6fe52eae-f756-4485-8590-26f5a891d4d8"
+                }
+            ],
+            "severity": "warning",
+            "type": "via_dangling"
+        },
+        {
+            "description": "Via is not connected or connected on only one layer",
+            "items": [
+                {
+                    "description": "过孔 [PC1] (F.Cu - B.Cu)",
+                    "pos": {
+                        "x": 134.425,
+                        "y": 139.925
+                    },
+                    "uuid": "8c0ff435-f86b-4f8c-859e-e2336ae0aa52"
+                }
+            ],
+            "severity": "warning",
+            "type": "via_dangling"
+        },
+        {
+            "description": "Via is not connected or connected on only one layer",
+            "items": [
+                {
+                    "description": "过孔 [PC2_C] (F.Cu - B.Cu)",
+                    "pos": {
+                        "x": 135.075,
+                        "y": 139.925
+                    },
+                    "uuid": "902e888d-e4d4-4339-ac4e-37865b91ba58"
+                }
+            ],
+            "severity": "warning",
+            "type": "via_dangling"
+        },
+        {
+            "description": "Via is not connected or connected on only one layer",
+            "items": [
+                {
+                    "description": "过孔 [PC3_C] (F.Cu - B.Cu)",
+                    "pos": {
+                        "x": 135.725,
+                        "y": 139.925
+                    },
+                    "uuid": "baf1d8e3-024a-465e-9ced-8685538c6c80"
+                }
+            ],
+            "severity": "warning",
+            "type": "via_dangling"
+        },
+        {
+            "description": "Via is not connected or connected on only one layer",
+            "items": [
+                {
+                    "description": "过孔 [PB2] (F.Cu - B.Cu)",
+                    "pos": {
+                        "x": 136.375,
+                        "y": 139.925
+                    },
+                    "uuid": "92448392-84b7-4c2a-98a4-c403412aefd2"
+                }
+            ],
+            "severity": "warning",
+            "type": "via_dangling"
+        },
+        {
+            "description": "Via is not connected or connected on only one layer",
+            "items": [
+                {
+                    "description": "过孔 [PG1] (F.Cu - B.Cu)",
+                    "pos": {
+                        "x": 137.025,
+                        "y": 139.925
+                    },
+                    "uuid": "b09bbc0d-7d62-4623-8d62-1d0e663ed030"
+                }
+            ],
+            "severity": "warning",
+            "type": "via_dangling"
+        },
+        {
+            "description": "Via is not connected or connected on only one layer",
+            "items": [
+                {
+                    "description": "过孔 [VCAP_M10] (F.Cu - B.Cu)",
+                    "pos": {
+                        "x": 139.625,
+                        "y": 139.925
+                    },
+                    "uuid": "5e881e14-eed3-4a7f-a4b1-f754e53d6ba2"
+                }
+            ],
+            "severity": "warning",
+            "type": "via_dangling"
+        },
+        {
+            "description": "Via is not connected or connected on only one layer",
+            "items": [
+                {
+                    "description": "过孔 [PH6] (F.Cu - B.Cu)",
+                    "pos": {
+                        "x": 140.275,
+                        "y": 139.925
+                    },
+                    "uuid": "5061afb7-1ecd-409d-bb14-44acd8db2826"
+                }
+            ],
+            "severity": "warning",
+            "type": "via_dangling"
+        },
+        {
+            "description": "Via is not connected or connected on only one layer",
+            "items": [
+                {
+                    "description": "过孔 [PH8] (F.Cu - B.Cu)",
+                    "pos": {
+                        "x": 140.925,
+                        "y": 139.925
+                    },
+                    "uuid": "afbd5462-c837-4fc9-9db2-2dde7c412d35"
+                }
+            ],
+            "severity": "warning",
+            "type": "via_dangling"
+        },
+        {
+            "description": "Via is not connected or connected on only one layer",
+            "items": [
+                {
+                    "description": "过孔 [PH9] (F.Cu - B.Cu)",
+                    "pos": {
+                        "x": 141.575,
+                        "y": 139.925
+                    },
+                    "uuid": "7d9dd088-2e81-4df2-862d-79c68f9608a2"
+                }
+            ],
+            "severity": "warning",
+            "type": "via_dangling"
+        },
+        {
+            "description": "Via is not connected or connected on only one layer",
+            "items": [
+                {
+                    "description": "过孔 [PA0] (F.Cu - B.Cu)",
+                    "pos": {
+                        "x": 134.425,
+                        "y": 140.575
+                    },
+                    "uuid": "3fd16b25-6cc4-48e7-bdde-b4c0a74da8b4"
+                }
+            ],
+            "severity": "warning",
+            "type": "via_dangling"
+        },
+        {
+            "description": "Via is not connected or connected on only one layer",
+            "items": [
+                {
+                    "description": "过孔 [PA4] (F.Cu - B.Cu)",
+                    "pos": {
+                        "x": 135.075,
+                        "y": 140.575
+                    },
+                    "uuid": "21a304e3-8aa6-4dc7-9ea0-825ec41b1f1c"
+                }
+            ],
+            "severity": "warning",
+            "type": "via_dangling"
+        },
+        {
+            "description": "Via is not connected or connected on only one layer",
+            "items": [
+                {
+                    "description": "过孔 [PC4] (F.Cu - B.Cu)",
+                    "pos": {
+                        "x": 135.725,
+                        "y": 140.575
+                    },
+                    "uuid": "381b3489-5c5e-46b5-8be7-757926e9fe36"
+                }
+            ],
+            "severity": "warning",
+            "type": "via_dangling"
+        },
+        {
+            "description": "Via is not connected or connected on only one layer",
+            "items": [
+                {
+                    "description": "过孔 [PF13] (F.Cu - B.Cu)",
+                    "pos": {
+                        "x": 136.375,
+                        "y": 140.575
+                    },
+                    "uuid": "c7c67a8c-3f09-4a25-be66-045249fe65c2"
+                }
+            ],
+            "severity": "warning",
+            "type": "via_dangling"
+        },
+        {
+            "description": "Via is not connected or connected on only one layer",
+            "items": [
+                {
+                    "description": "过孔 [PG0] (F.Cu - B.Cu)",
+                    "pos": {
+                        "x": 137.025,
+                        "y": 140.575
+                    },
+                    "uuid": "a9aec3bb-7d26-4d2b-bfbe-64cf02c9062a"
+                }
+            ],
+            "severity": "warning",
+            "type": "via_dangling"
+        },
+        {
+            "description": "Via is not connected or connected on only one layer",
+            "items": [
+                {
+                    "description": "过孔 [PE13] (F.Cu - B.Cu)",
+                    "pos": {
+                        "x": 140.275,
+                        "y": 140.575
+                    },
+                    "uuid": "7a3a2b2e-810a-4c91-8d86-9668926f18f4"
+                }
+            ],
+            "severity": "warning",
+            "type": "via_dangling"
+        },
+        {
+            "description": "Via is not connected or connected on only one layer",
+            "items": [
+                {
+                    "description": "过孔 [PH7] (F.Cu - B.Cu)",
+                    "pos": {
+                        "x": 140.925,
+                        "y": 140.575
+                    },
+                    "uuid": "c359442c-826b-4d01-a107-e999af3360cf"
+                }
+            ],
+            "severity": "warning",
+            "type": "via_dangling"
+        },
+        {
+            "description": "Via is not connected or connected on only one layer",
+            "items": [
+                {
+                    "description": "过孔 [PD12] (F.Cu - B.Cu)",
+                    "pos": {
+                        "x": 141.575,
+                        "y": 140.575
+                    },
+                    "uuid": "0f4eb333-2a79-4ffe-be81-99dccece62a8"
+                }
+            ],
+            "severity": "warning",
+            "type": "via_dangling"
+        },
+        {
+            "description": "被板边截断的丝印 (<电路板配置> 中的 \"丝印\" 约束 间距 0.1000 mm; 实际 0.0000 mm)",
+            "items": [
+                {
+                    "description": "Edge.Cuts 上的 线段",
+                    "pos": {
+                        "x": 185.0,
+                        "y": 102.0
+                    },
+                    "uuid": "7b961f8b-c20c-4a73-8163-6515e27021aa"
+                },
+                {
+                    "description": "J1 的 线段, 位于 F.Silkscreen",
+                    "pos": {
+                        "x": 176.3,
+                        "y": 153.4
+                    },
+                    "uuid": "393c7dfe-71df-4cdb-9459-1acbaf6582cb"
+                }
+            ],
+            "severity": "warning",
+            "type": "silk_edge_clearance"
+        },
+        {
+            "description": "被板边截断的丝印 (<电路板配置> 中的 \"丝印\" 约束 间距 0.1000 mm; 实际 0.0400 mm)",
+            "items": [
+                {
+                    "description": "Edge.Cuts 上的 线段",
+                    "pos": {
+                        "x": 185.0,
+                        "y": 102.0
+                    },
+                    "uuid": "7b961f8b-c20c-4a73-8163-6515e27021aa"
+                },
+                {
+                    "description": "J1 的 线段, 位于 F.Silkscreen",
+                    "pos": {
+                        "x": 185.1,
+                        "y": 153.4
+                    },
+                    "uuid": "afa97f53-b5e2-420b-8a32-ca7c58db776c"
+                }
+            ],
+            "severity": "warning",
+            "type": "silk_edge_clearance"
+        },
+        {
+            "description": "被板边截断的丝印 (<电路板配置> 中的 \"丝印\" 约束 间距 0.1000 mm; 实际 0.0000 mm)",
+            "items": [
+                {
+                    "description": "Edge.Cuts 上的 线段",
+                    "pos": {
+                        "x": 185.0,
+                        "y": 102.0
+                    },
+                    "uuid": "7b961f8b-c20c-4a73-8163-6515e27021aa"
+                },
+                {
+                    "description": "J1 的 线段, 位于 F.Silkscreen",
+                    "pos": {
+                        "x": 185.1,
+                        "y": 162.6
+                    },
+                    "uuid": "3e68b509-0c28-45a2-bba3-4c19b7bf56fb"
+                }
+            ],
+            "severity": "warning",
+            "type": "silk_edge_clearance"
+        },
+        {
+            "description": "被板边截断的丝印 (<电路板配置> 中的 \"丝印\" 约束 间距 0.1000 mm; 实际 0.0000 mm)",
+            "items": [
+                {
+                    "description": "Edge.Cuts 上的 线段",
+                    "pos": {
+                        "x": 102.0,
+                        "y": 100.0
+                    },
+                    "uuid": "ace3d9d0-f33d-47b3-9540-fadb0ded03a5"
+                },
+                {
+                    "description": "J3 的参考字段",
+                    "pos": {
+                        "x": 126.0,
+                        "y": 99.6
+                    },
+                    "uuid": "64012d01-c5a9-4905-bb5a-69fba3b468b1"
+                }
+            ],
+            "severity": "warning",
+            "type": "silk_edge_clearance"
+        },
+        {
+            "description": "被板边截断的丝印 (<电路板配置> 中的 \"丝印\" 约束 间距 0.1000 mm; 实际 0.0000 mm)",
+            "items": [
+                {
+                    "description": "Edge.Cuts 上的 线段",
+                    "pos": {
+                        "x": 185.0,
+                        "y": 102.0
+                    },
+                    "uuid": "7b961f8b-c20c-4a73-8163-6515e27021aa"
+                },
+                {
+                    "description": "J8 的参考字段",
+                    "pos": {
+                        "x": 184.72,
+                        "y": 119.0
+                    },
+                    "uuid": "10ce660a-d52c-41ef-8b6a-ab9c44304ef7"
+                }
+            ],
+            "severity": "warning",
+            "type": "silk_edge_clearance"
+        },
+        {
+            "description": "被板边截断的丝印 (<电路板配置> 中的 \"丝印\" 约束 间距 0.1000 mm; 实际 0.0000 mm)",
+            "items": [
+                {
+                    "description": "Edge.Cuts 上的 线段",
+                    "pos": {
+                        "x": 102.0,
+                        "y": 100.0
+                    },
+                    "uuid": "ace3d9d0-f33d-47b3-9540-fadb0ded03a5"
+                },
+                {
+                    "description": "H1 的参考字段",
+                    "pos": {
+                        "x": 104.0,
+                        "y": 99.85
+                    },
+                    "uuid": "0891fa71-39ac-479d-8ae9-1dc04609c064"
+                }
+            ],
+            "severity": "warning",
+            "type": "silk_edge_clearance"
+        },
+        {
+            "description": "被板边截断的丝印 (<电路板配置> 中的 \"丝印\" 约束 间距 0.1000 mm; 实际 0.0000 mm)",
+            "items": [
+                {
+                    "description": "Edge.Cuts 上的 线段",
+                    "pos": {
+                        "x": 102.0,
+                        "y": 100.0
+                    },
+                    "uuid": "ace3d9d0-f33d-47b3-9540-fadb0ded03a5"
+                },
+                {
+                    "description": "H2 的参考字段",
+                    "pos": {
+                        "x": 181.0,
+                        "y": 99.85
+                    },
+                    "uuid": "83ac7007-da7e-4917-b423-f3e2f31111e9"
+                }
+            ],
+            "severity": "warning",
+            "type": "silk_edge_clearance"
+        },
+        {
+            "description": "被板边截断的丝印 (<电路板配置> 中的 \"丝印\" 约束 间距 0.1000 mm; 实际 0.0000 mm)",
+            "items": [
+                {
+                    "description": "Edge.Cuts 上的 线段",
+                    "pos": {
+                        "x": 102.0,
+                        "y": 100.0
+                    },
+                    "uuid": "ace3d9d0-f33d-47b3-9540-fadb0ded03a5"
+                },
+                {
+                    "description": "J2 的参考字段",
+                    "pos": {
+                        "x": 114.0,
+                        "y": 99.6
+                    },
+                    "uuid": "18e1c874-ab8f-4816-9968-46ebd52f745d"
+                }
+            ],
+            "severity": "warning",
+            "type": "silk_edge_clearance"
+        },
+        {
+            "description": "Silkscreen clipped by solder mask",
+            "items": [
+                {
+                    "description": "C23 的参考字段",
+                    "pos": {
+                        "x": 162.22,
+                        "y": 129.699999
+                    },
+                    "uuid": "44702ca2-c28a-4ead-80e4-3481905dc58e"
+                }
+            ],
+            "severity": "warning",
+            "type": "silk_over_copper"
+        },
+        {
+            "description": "Silkscreen clipped by solder mask",
+            "items": [
+                {
+                    "description": "C13 的参考字段",
+                    "pos": {
+                        "x": 159.42,
+                        "y": 140.6
+                    },
+                    "uuid": "3a0dccdd-5cbd-44d6-b24c-bec5f9e1e0b6"
+                }
+            ],
+            "severity": "warning",
+            "type": "silk_over_copper"
+        },
+        {
+            "description": "Silkscreen clipped by solder mask",
+            "items": [
+                {
+                    "description": "C10 的参考字段",
+                    "pos": {
+                        "x": 155.7,
+                        "y": 154.35
+                    },
+                    "uuid": "b34e5150-1336-480c-96ed-311a526f0d60"
+                }
+            ],
+            "severity": "warning",
+            "type": "silk_over_copper"
+        },
+        {
+            "description": "Silkscreen clipped by solder mask",
+            "items": [
+                {
+                    "description": "U5 的参考字段",
+                    "pos": {
+                        "x": 112.5,
+                        "y": 123.1
+                    },
+                    "uuid": "30ccf24d-c02d-4911-88d8-868b04aec3f9"
+                }
+            ],
+            "severity": "warning",
+            "type": "silk_over_copper"
+        },
+        {
+            "description": "Silkscreen clipped by solder mask",
+            "items": [
+                {
+                    "description": "C51 的参考字段",
+                    "pos": {
+                        "x": 113.97,
+                        "y": 123.6
+                    },
+                    "uuid": "63a1945c-464d-413b-bb5c-ea8e3f4e5c57"
+                }
+            ],
+            "severity": "warning",
+            "type": "silk_over_copper"
+        },
+        {
+            "description": "Silkscreen clipped by solder mask",
+            "items": [
+                {
+                    "description": "TP_12V 的参考字段",
+                    "pos": {
+                        "x": 156.9,
+                        "y": 151.352
+                    },
+                    "uuid": "0f3326b5-e3fb-429f-94f5-fc77447cbd88"
+                }
+            ],
+            "severity": "warning",
+            "type": "silk_over_copper"
+        },
+        {
+            "description": "Silkscreen clipped by solder mask",
+            "items": [
+                {
+                    "description": "C11 的参考字段",
+                    "pos": {
+                        "x": 160.0,
+                        "y": 146.45
+                    },
+                    "uuid": "c3c93bea-ba20-4cc5-9c93-5230bf111ccb"
+                }
+            ],
+            "severity": "warning",
+            "type": "silk_over_copper"
+        },
+        {
+            "description": "Silkscreen clipped by solder mask",
+            "items": [
+                {
+                    "description": "C21 的参考字段",
+                    "pos": {
+                        "x": 164.3,
+                        "y": 138.02
+                    },
+                    "uuid": "9d855e50-e376-459f-889f-38bc375f5a42"
+                }
+            ],
+            "severity": "warning",
+            "type": "silk_over_copper"
+        },
+        {
+            "description": "Silkscreen clipped by solder mask",
+            "items": [
+                {
+                    "description": "L3 的参考字段",
+                    "pos": {
+                        "x": 159.5,
+                        "y": 167.25
+                    },
+                    "uuid": "3bf8d3bc-8fc5-408e-bb73-7efdea90b19e"
+                }
+            ],
+            "severity": "warning",
+            "type": "silk_over_copper"
+        },
+        {
+            "description": "丝印间距 (<电路板配置> 中的 \"丝印\" 约束 间距 0.1000 mm; 实际 0.0000 mm)",
+            "items": [
+                {
+                    "description": "C23 的参考字段",
+                    "pos": {
+                        "x": 162.22,
+                        "y": 129.699999
+                    },
+                    "uuid": "44702ca2-c28a-4ead-80e4-3481905dc58e"
+                },
+                {
+                    "description": "C22 的 线段, 位于 F.Silkscreen",
+                    "pos": {
+                        "x": 162.435,
+                        "y": 129.961251
+                    },
+                    "uuid": "73c889f2-1fc0-4029-81f4-1feb9c87e1d5"
+                }
+            ],
+            "severity": "warning",
+            "type": "silk_overlap"
+        },
+        {
+            "description": "丝印间距 (<电路板配置> 中的 \"丝印\" 约束 间距 0.1000 mm; 实际 0.0794 mm)",
+            "items": [
+                {
+                    "description": "TP_3V3 的 圆形, 位于 F.Silkscreen",
+                    "pos": {
+                        "x": 158.5,
+                        "y": 126.0
+                    },
+                    "uuid": "160a5d26-5330-4be9-a2d2-e39fd2233cc9"
+                },
+                {
+                    "description": "TP_3V3 的参考字段",
+                    "pos": {
+                        "x": 158.5,
+                        "y": 124.352
+                    },
+                    "uuid": "c643830d-82ac-410d-a512-2fcfc2b1237d"
+                }
+            ],
+            "severity": "warning",
+            "type": "silk_overlap"
+        },
+        {
+            "description": "丝印间距 (<电路板配置> 中的 \"丝印\" 约束 间距 0.1000 mm; 实际 0.0000 mm)",
+            "items": [
+                {
+                    "description": "C21 的参考字段",
+                    "pos": {
+                        "x": 164.3,
+                        "y": 138.02
+                    },
+                    "uuid": "9d855e50-e376-459f-889f-38bc375f5a42"
+                },
+                {
+                    "description": "U9 的 线段, 位于 F.Silkscreen",
+                    "pos": {
+                        "x": 164.44,
+                        "y": 137.41
+                    },
+                    "uuid": "c0a3da20-3a1c-4620-aeac-ee60495e9015"
+                }
+            ],
+            "severity": "warning",
+            "type": "silk_overlap"
+        },
+        {
+            "description": "丝印间距 (<电路板配置> 中的 \"丝印\" 约束 间距 0.1000 mm; 实际 0.0000 mm)",
+            "items": [
+                {
+                    "description": "U9 的 线段, 位于 F.Silkscreen",
+                    "pos": {
+                        "x": 164.49,
+                        "y": 137.41
+                    },
+                    "uuid": "22d24210-315b-4feb-842f-59bbf811fd0c"
+                },
+                {
+                    "description": "C21 的参考字段",
+                    "pos": {
+                        "x": 164.3,
+                        "y": 138.02
+                    },
+                    "uuid": "9d855e50-e376-459f-889f-38bc375f5a42"
+                }
+            ],
+            "severity": "warning",
+            "type": "silk_overlap"
+        },
+        {
+            "description": "丝印间距 (<电路板配置> 中的 \"丝印\" 约束 间距 0.1000 mm; 实际 0.0000 mm)",
+            "items": [
+                {
+                    "description": "C13 的参考字段",
+                    "pos": {
+                        "x": 159.42,
+                        "y": 140.6
+                    },
+                    "uuid": "3a0dccdd-5cbd-44d6-b24c-bec5f9e1e0b6"
+                },
+                {
+                    "description": "C12 的 线段, 位于 F.Silkscreen",
+                    "pos": {
+                        "x": 159.635,
+                        "y": 140.861252
+                    },
+                    "uuid": "fb00eae5-117d-4652-8c0a-a984637d807a"
+                }
+            ],
+            "severity": "warning",
+            "type": "silk_overlap"
+        },
+        {
+            "description": "丝印间距 (<电路板配置> 中的 \"丝印\" 约束 间距 0.1000 mm; 实际 0.0093 mm)",
+            "items": [
+                {
+                    "description": "TP_3V3A 的参考字段",
+                    "pos": {
+                        "x": 127.5,
+                        "y": 126.551999
+                    },
+                    "uuid": "064dddaa-8b32-495c-b2aa-f9c7702c8ee6"
+                },
+                {
+                    "description": "U4 的参考字段",
+                    "pos": {
+                        "x": 129.0,
+                        "y": 125.4
+                    },
+                    "uuid": "9ff8e670-efb0-4426-995b-e8dbf7d97e26"
+                }
+            ],
+            "severity": "warning",
+            "type": "silk_overlap"
+        },
+        {
+            "description": "丝印间距 (<电路板配置> 中的 \"丝印\" 约束 间距 0.1000 mm; 实际 0.0794 mm)",
+            "items": [
+                {
+                    "description": "TP_1V8 的参考字段",
+                    "pos": {
+                        "x": 113.2,
+                        "y": 120.552
+                    },
+                    "uuid": "7cbbbfdd-5f29-4982-aa69-7e3167038b14"
+                },
+                {
+                    "description": "TP_1V8 的 圆形, 位于 F.Silkscreen",
+                    "pos": {
+                        "x": 113.2,
+                        "y": 122.2
+                    },
+                    "uuid": "b3f3cdaf-0444-4990-9c41-34bca3c934bb"
+                }
+            ],
+            "severity": "warning",
+            "type": "silk_overlap"
+        },
+        {
+            "description": "丝印间距 (<电路板配置> 中的 \"丝印\" 约束 间距 0.1000 mm; 实际 0.0000 mm)",
+            "items": [
+                {
+                    "description": "U5 的参考字段",
+                    "pos": {
+                        "x": 112.5,
+                        "y": 123.1
+                    },
+                    "uuid": "30ccf24d-c02d-4911-88d8-868b04aec3f9"
+                },
+                {
+                    "description": "TP_1V8 的 圆形, 位于 F.Silkscreen",
+                    "pos": {
+                        "x": 113.2,
+                        "y": 122.2
+                    },
+                    "uuid": "b3f3cdaf-0444-4990-9c41-34bca3c934bb"
+                }
+            ],
+            "severity": "warning",
+            "type": "silk_overlap"
+        },
+        {
+            "description": "丝印间距 (<电路板配置> 中的 \"丝印\" 约束 间距 0.1000 mm; 实际 0.0000 mm)",
+            "items": [
+                {
+                    "description": "C51 的参考字段",
+                    "pos": {
+                        "x": 113.97,
+                        "y": 123.6
+                    },
+                    "uuid": "63a1945c-464d-413b-bb5c-ea8e3f4e5c57"
+                },
+                {
+                    "description": "TP_1V8 的 圆形, 位于 F.Silkscreen",
+                    "pos": {
+                        "x": 113.2,
+                        "y": 122.2
+                    },
+                    "uuid": "b3f3cdaf-0444-4990-9c41-34bca3c934bb"
+                }
+            ],
+            "severity": "warning",
+            "type": "silk_overlap"
+        },
+        {
+            "description": "丝印间距 (<电路板配置> 中的 \"丝印\" 约束 间距 0.1000 mm; 实际 0.0998 mm)",
+            "items": [
+                {
+                    "description": "J5 的 线段, 位于 F.Silkscreen",
+                    "pos": {
+                        "x": 121.42,
+                        "y": 148.555
+                    },
+                    "uuid": "09feb0bc-93cc-4664-b327-4d410d05e90e"
+                },
+                {
+                    "description": "J5 的参考字段",
+                    "pos": {
+                        "x": 122.2,
+                        "y": 140.445
+                    },
+                    "uuid": "3f179aa8-c01d-42ca-9436-bd5e48c9fd95"
+                }
+            ],
+            "severity": "warning",
+            "type": "silk_overlap"
+        },
+        {
+            "description": "丝印间距 (<电路板配置> 中的 \"丝印\" 约束 间距 0.1000 mm; 实际 0.0729 mm)",
+            "items": [
+                {
+                    "description": "TP_5V 的参考字段",
+                    "pos": {
+                        "x": 170.0,
+                        "y": 141.352
+                    },
+                    "uuid": "5eb6c401-0341-4f07-8b58-47723dbc3893"
+                },
+                {
+                    "description": "TP_5V 的 圆形, 位于 F.Silkscreen",
+                    "pos": {
+                        "x": 170.0,
+                        "y": 143.0
+                    },
+                    "uuid": "dd77284a-66d2-4c20-8d5f-4a5a14de7f6d"
+                }
+            ],
+            "severity": "warning",
+            "type": "silk_overlap"
+        },
+        {
+            "description": "丝印间距 (<电路板配置> 中的 \"丝印\" 约束 间距 0.1000 mm; 实际 0.0794 mm)",
+            "items": [
+                {
+                    "description": "TP_12V 的 圆形, 位于 F.Silkscreen",
+                    "pos": {
+                        "x": 156.9,
+                        "y": 153.0
+                    },
+                    "uuid": "0281864f-1853-4ee1-aa3d-4a500e759cd3"
+                },
+                {
+                    "description": "TP_12V 的参考字段",
+                    "pos": {
+                        "x": 156.9,
+                        "y": 151.352
+                    },
+                    "uuid": "0f3326b5-e3fb-429f-94f5-fc77447cbd88"
+                }
+            ],
+            "severity": "warning",
+            "type": "silk_overlap"
+        },
+        {
+            "description": "丝印间距 (<电路板配置> 中的 \"丝印\" 约束 间距 0.1000 mm; 实际 0.0723 mm)",
+            "items": [
+                {
+                    "description": "TP_12V 的 圆形, 位于 F.Silkscreen",
+                    "pos": {
+                        "x": 156.9,
+                        "y": 153.0
+                    },
+                    "uuid": "0281864f-1853-4ee1-aa3d-4a500e759cd3"
+                },
+                {
+                    "description": "C10 的参考字段",
+                    "pos": {
+                        "x": 155.7,
+                        "y": 154.35
+                    },
+                    "uuid": "b34e5150-1336-480c-96ed-311a526f0d60"
+                }
+            ],
+            "severity": "warning",
+            "type": "silk_overlap"
+        },
+        {
+            "description": "丝印间距 (<电路板配置> 中的 \"丝印\" 约束 间距 0.1000 mm; 实际 0.0531 mm)",
+            "items": [
+                {
+                    "description": "TP_12V 的参考字段",
+                    "pos": {
+                        "x": 156.9,
+                        "y": 151.352
+                    },
+                    "uuid": "0f3326b5-e3fb-429f-94f5-fc77447cbd88"
+                },
+                {
+                    "description": "U8 的 线段, 位于 F.Silkscreen",
+                    "pos": {
+                        "x": 158.44,
+                        "y": 152.91
+                    },
+                    "uuid": "3d0af525-eb0a-4e95-bb75-e055b114da5e"
+                }
+            ],
+            "severity": "warning",
+            "type": "silk_overlap"
+        },
+        {
+            "description": "丝印间距 (<电路板配置> 中的 \"丝印\" 约束 间距 0.1000 mm; 实际 0.0529 mm)",
+            "items": [
+                {
+                    "description": "TP_12V 的参考字段",
+                    "pos": {
+                        "x": 156.9,
+                        "y": 151.352
+                    },
+                    "uuid": "0f3326b5-e3fb-429f-94f5-fc77447cbd88"
+                },
+                {
+                    "description": "U8 的 线段, 位于 F.Silkscreen",
+                    "pos": {
+                        "x": 158.44,
+                        "y": 151.09
+                    },
+                    "uuid": "3ae9ad6c-0fdf-41fe-a44a-9ec7c48e9219"
+                }
+            ],
+            "severity": "warning",
+            "type": "silk_overlap"
+        },
+        {
+            "description": "丝印间距 (<电路板配置> 中的 \"丝印\" 约束 间距 0.1000 mm; 实际 0.0673 mm)",
+            "items": [
+                {
+                    "description": "L3 的参考字段",
+                    "pos": {
+                        "x": 159.5,
+                        "y": 167.25
+                    },
+                    "uuid": "3bf8d3bc-8fc5-408e-bb73-7efdea90b19e"
+                },
+                {
+                    "description": "C31 的 线段, 位于 F.Silkscreen",
+                    "pos": {
+                        "x": 159.05942,
+                        "y": 167.11
+                    },
+                    "uuid": "9b409d58-3dc5-407b-a87b-adc27d51ce17"
+                }
+            ],
+            "severity": "warning",
+            "type": "silk_overlap"
+        },
+        {
+            "description": "丝印间距 (<电路板配置> 中的 \"丝印\" 约束 间距 0.1000 mm; 实际 0.0269 mm)",
+            "items": [
+                {
+                    "description": "U5 的参考字段",
+                    "pos": {
+                        "x": 112.5,
+                        "y": 123.1
+                    },
+                    "uuid": "30ccf24d-c02d-4911-88d8-868b04aec3f9"
+                },
+                {
+                    "description": "C51 的参考字段",
+                    "pos": {
+                        "x": 113.97,
+                        "y": 123.6
+                    },
+                    "uuid": "63a1945c-464d-413b-bb5c-ea8e3f4e5c57"
+                }
+            ],
+            "severity": "warning",
+            "type": "silk_overlap"
+        },
+        {
+            "description": "丝印间距 (<电路板配置> 中的 \"丝印\" 约束 间距 0.1000 mm; 实际 0.0000 mm)",
+            "items": [
+                {
+                    "description": "U5 的 线段, 位于 F.Silkscreen",
+                    "pos": {
+                        "x": 111.59,
+                        "y": 123.94
+                    },
+                    "uuid": "27d67200-d4bf-4469-83f6-710bde234275"
+                },
+                {
+                    "description": "C51 的参考字段",
+                    "pos": {
+                        "x": 113.97,
+                        "y": 123.6
+                    },
+                    "uuid": "63a1945c-464d-413b-bb5c-ea8e3f4e5c57"
+                }
+            ],
+            "severity": "warning",
+            "type": "silk_overlap"
+        },
+        {
+            "description": "丝印间距 (<电路板配置> 中的 \"丝印\" 约束 间距 0.1000 mm; 实际 0.0000 mm)",
+            "items": [
+                {
+                    "description": "U5 的 线段, 位于 F.Silkscreen",
+                    "pos": {
+                        "x": 113.41,
+                        "y": 123.94
+                    },
+                    "uuid": "3c0c0ead-3672-43bd-b235-fbd83f153823"
+                },
+                {
+                    "description": "C51 的参考字段",
+                    "pos": {
+                        "x": 113.97,
+                        "y": 123.6
+                    },
+                    "uuid": "63a1945c-464d-413b-bb5c-ea8e3f4e5c57"
+                }
+            ],
+            "severity": "warning",
+            "type": "silk_overlap"
+        }
+    ]
+}

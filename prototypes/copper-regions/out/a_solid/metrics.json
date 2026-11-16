@@ -1,0 +1,377 @@
+{
+ "zones": [
+  {
+   "zone": "L1_12V",
+   "net": "+12V",
+   "layer": "L1",
+   "prio": 2,
+   "outline_edges": 20,
+   "off_angle_edges": 0,
+   "shortest_edge": 0.44,
+   "clearance": 0.2,
+   "min_width": 0.25,
+   "area": 46.9,
+   "pieces": 1,
+   "unfed_pieces": 0,
+   "anchors_on_main": 6,
+   "anchors_on_other_pieces": 0,
+   "neck": 1.76,
+   "neck_outside_bga": 1.76,
+   "neck_at": [
+    "Q1.2",
+    "D1.2"
+   ]
+  },
+  {
+   "zone": "L1_SW5V",
+   "net": "SW_5V",
+   "layer": "L1",
+   "prio": 2,
+   "outline_edges": 8,
+   "off_angle_edges": 0,
+   "shortest_edge": 0.8,
+   "clearance": 0.2,
+   "min_width": 0.2,
+   "area": 8.4,
+   "pieces": 1,
+   "unfed_pieces": 0,
+   "anchors_on_main": 2,
+   "anchors_on_other_pieces": 0,
+   "neck": 0.79,
+   "neck_outside_bga": 0.79,
+   "neck_at": [
+    "U8.2"
+   ]
+  },
+  {
+   "zone": "L1_5V",
+   "net": "+5V",
+   "layer": "L1",
+   "prio": 2,
+   "outline_edges": 20,
+   "off_angle_edges": 0,
+   "shortest_edge": 0.16,
+   "clearance": 0.2,
+   "min_width": 0.25,
+   "area": 43.2,
+   "pieces": 1,
+   "unfed_pieces": 0,
+   "anchors_on_main": 9,
+   "anchors_on_other_pieces": 0,
+   "neck": 0.69,
+   "neck_outside_bga": 0.69,
+   "neck_at": [
+    "U9.4"
+   ]
+  },
+  {
+   "zone": "L1_12VIN",
+   "net": "+12V_IN",
+   "layer": "L1",
+   "prio": 2,
+   "outline_edges": 8,
+   "off_angle_edges": 0,
+   "shortest_edge": 0.707,
+   "clearance": 0.2,
+   "min_width": 0.25,
+   "area": 34.5,
+   "pieces": 1,
+   "unfed_pieces": 0,
+   "anchors_on_main": 1,
+   "anchors_on_other_pieces": 1,
+   "neck": null,
+   "neck_outside_bga": null,
+   "neck_at": []
+  },
+  {
+   "zone": "L1_1V8",
+   "net": "+1V8",
+   "layer": "L1",
+   "prio": 2,
+   "outline_edges": 8,
+   "off_angle_edges": 0,
+   "shortest_edge": 0.3,
+   "clearance": 0.2,
+   "min_width": 0.2,
+   "area": 8.3,
+   "pieces": 1,
+   "unfed_pieces": 0,
+   "anchors_on_main": 4,
+   "anchors_on_other_pieces": 0,
+   "neck": 0.29,
+   "neck_outside_bga": 0.29,
+   "neck_at": [
+    "U6.4"
+   ]
+  },
+  {
+   "zone": "L1_GND",
+   "net": "GND",
+   "layer": "L1",
+   "prio": 0,
+   "outline_edges": 4,
+   "off_angle_edges": 0,
+   "shortest_edge": 79.0,
+   "clearance": 0.2,
+   "min_width": 0.3,
+   "area": 5604.1,
+   "pieces": 6,
+   "unfed_pieces": 0,
+   "anchors_on_main": 0,
+   "anchors_on_other_pieces": 174,
+   "neck": null,
+   "neck_outside_bga": null,
+   "neck_at": []
+  },
+  {
+   "zone": "L6_GND",
+   "net": "GND",
+   "layer": "L6",
+   "prio": 0,
+   "outline_edges": 4,
+   "off_angle_edges": 0,
+   "shortest_edge": 79.0,
+   "clearance": 0.2,
+   "min_width": 0.3,
+   "area": 6142.4,
+   "pieces": 1,
+   "unfed_pieces": 0,
+   "anchors_on_main": 0,
+   "anchors_on_other_pieces": 79,
+   "neck": null,
+   "neck_outside_bga": null,
+   "neck_at": []
+  },
+  {
+   "zone": "L2_GND",
+   "net": "GND",
+   "layer": "L2",
+   "prio": 0,
+   "outline_edges": 4,
+   "off_angle_edges": 0,
+   "shortest_edge": 79.0,
+   "clearance": 0.127,
+   "min_width": 0.15,
+   "area": 6163.2,
+   "pieces": 1,
+   "unfed_pieces": 0,
+   "anchors_on_main": 0,
+   "anchors_on_other_pieces": 79,
+   "neck": null,
+   "neck_outside_bga": null,
+   "neck_at": []
+  },
+  {
+   "zone": "L3_3V3",
+   "net": "+3V3",
+   "layer": "L3",
+   "prio": 0,
+   "outline_edges": 44,
+   "off_angle_edges": 0,
+   "shortest_edge": 1.107,
+   "clearance": 0.127,
+   "min_width": 0.15,
+   "area": 4794.6,
+   "pieces": 1,
+   "unfed_pieces": 0,
+   "anchors_on_main": 42,
+   "anchors_on_other_pieces": 0,
+   "neck": 0.7,
+   "neck_outside_bga": 4.8,
+   "neck_at": [
+    "via(16.21,25.75)",
+    "via(9.58,23.20)"
+   ]
+  },
+  {
+   "zone": "L3_3V3A",
+   "net": "+3V3A",
+   "layer": "L3",
+   "prio": 1,
+   "outline_edges": 8,
+   "off_angle_edges": 0,
+   "shortest_edge": 1.414,
+   "clearance": 0.127,
+   "min_width": 0.15,
+   "area": 103.4,
+   "pieces": 1,
+   "unfed_pieces": 0,
+   "anchors_on_main": 6,
+   "anchors_on_other_pieces": 0,
+   "neck": 4.37,
+   "neck_outside_bga": 4.37,
+   "neck_at": [
+    "via(23.74,26.25)"
+   ]
+  },
+  {
+   "zone": "L3_5V",
+   "net": "+5V",
+   "layer": "L3",
+   "prio": 1,
+   "outline_edges": 32,
+   "off_angle_edges": 0,
+   "shortest_edge": 1.32,
+   "clearance": 0.127,
+   "min_width": 0.15,
+   "area": 947.7,
+   "pieces": 1,
+   "unfed_pieces": 0,
+   "anchors_on_main": 6,
+   "anchors_on_other_pieces": 0,
+   "neck": 1.57,
+   "neck_outside_bga": 1.57,
+   "neck_at": [
+    "via(57.03,66.60)"
+   ]
+  },
+  {
+   "zone": "L5_GND",
+   "net": "GND",
+   "layer": "L5",
+   "prio": 0,
+   "outline_edges": 4,
+   "off_angle_edges": 0,
+   "shortest_edge": 79.0,
+   "clearance": 0.127,
+   "min_width": 0.15,
+   "area": 6163.2,
+   "pieces": 1,
+   "unfed_pieces": 0,
+   "anchors_on_main": 0,
+   "anchors_on_other_pieces": 79,
+   "neck": null,
+   "neck_outside_bga": null,
+   "neck_at": []
+  }
+ ],
+ "not_reached": [
+  {
+   "layer": "L1",
+   "net": "GND",
+   "copper": 174,
+   "not_reached": 0,
+   "which": []
+  },
+  {
+   "layer": "L6",
+   "net": "GND",
+   "copper": 79,
+   "not_reached": 0,
+   "which": []
+  },
+  {
+   "layer": "L2",
+   "net": "GND",
+   "copper": 79,
+   "not_reached": 0,
+   "which": []
+  },
+  {
+   "layer": "L3",
+   "net": "+3V3",
+   "copper": 42,
+   "not_reached": 0,
+   "which": []
+  },
+  {
+   "layer": "L3",
+   "net": "+3V3A",
+   "copper": 6,
+   "not_reached": 0,
+   "which": []
+  },
+  {
+   "layer": "L3",
+   "net": "+5V",
+   "copper": 6,
+   "not_reached": 0,
+   "which": []
+  },
+  {
+   "layer": "L5",
+   "net": "GND",
+   "copper": 79,
+   "not_reached": 0,
+   "which": []
+  }
+ ],
+ "gaps": [
+  {
+   "layer": "L1",
+   "a": "+12V",
+   "b": "SW_5V",
+   "gap": 0.3
+  },
+  {
+   "layer": "L1",
+   "a": "+12V",
+   "b": "+5V",
+   "gap": 3.451
+  },
+  {
+   "layer": "L1",
+   "a": "+12V",
+   "b": "GND",
+   "gap": 0.206
+  },
+  {
+   "layer": "L1",
+   "a": "SW_5V",
+   "b": "+5V",
+   "gap": 1.75
+  },
+  {
+   "layer": "L1",
+   "a": "SW_5V",
+   "b": "GND",
+   "gap": 0.201
+  },
+  {
+   "layer": "L1",
+   "a": "+5V",
+   "b": "GND",
+   "gap": 0.203
+  },
+  {
+   "layer": "L1",
+   "a": "+12V_IN",
+   "b": "GND",
+   "gap": 0.203
+  },
+  {
+   "layer": "L1",
+   "a": "+1V8",
+   "b": "GND",
+   "gap": 0.201
+  },
+  {
+   "layer": "L3",
+   "a": "+3V3",
+   "b": "+3V3A",
+   "gap": 0.5
+  },
+  {
+   "layer": "L3",
+   "a": "+3V3",
+   "b": "+5V",
+   "gap": 0.5
+  },
+  {
+   "layer": "L3",
+   "a": "+3V3A",
+   "b": "+5V",
+   "gap": 0.5
+  }
+ ],
+ "drc": {
+  "violations": {
+   "via_dangling": 47,
+   "silk_edge_clearance": 8,
+   "silk_over_copper": 9,
+   "silk_overlap": 19
+  },
+  "unconnected_total": 7,
+  "unconnected_copper_nets": {}
+ }
+}
