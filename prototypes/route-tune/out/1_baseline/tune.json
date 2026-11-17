@@ -1,0 +1,228 @@
+{
+ "natural": {
+  "FMC_D0": 19.4516,
+  "FMC_D1": 18.6773,
+  "FMC_D2": 29.2886,
+  "FMC_D3": 23.7786,
+  "FMC_D4": 24.142,
+  "FMC_D5": 23.4116,
+  "FMC_D6": 21.1817,
+  "FMC_D7": 22.7121,
+  "FMC_D8": 13.9523,
+  "FMC_D9": 12.7512,
+  "FMC_D10": 14.8311,
+  "FMC_D11": 13.6537,
+  "FMC_D12": 11.6527,
+  "FMC_D13": 8.7069,
+  "FMC_D14": 9.2947,
+  "FMC_D15": 8.3134,
+  "FMC_NBL0": 34.9461,
+  "FMC_NBL1": 29.4304,
+  "FMC_SDCLK": 8.8468
+ },
+ "predicted": {
+  "FMC_D0": 19.4516,
+  "FMC_D1": 18.6773,
+  "FMC_D2": 29.2886,
+  "FMC_D3": 23.7786,
+  "FMC_D4": 24.142,
+  "FMC_D5": 23.4116,
+  "FMC_D6": 21.1817,
+  "FMC_D7": 22.7121,
+  "FMC_D8": 13.9523,
+  "FMC_D9": 18.6238,
+  "FMC_D10": 18.6238,
+  "FMC_D11": 18.6238,
+  "FMC_D12": 11.6527,
+  "FMC_D13": 16.1192,
+  "FMC_D14": 9.2947,
+  "FMC_D15": 12.6549,
+  "FMC_NBL0": 34.9461,
+  "FMC_NBL1": 29.4304,
+  "FMC_SDCLK": 21.0738
+ },
+ "blocks": [
+  {
+   "net": "FMC_SDCLK",
+   "layer": "L1",
+   "kind": "chain",
+   "side": "both",
+   "pitch": 0.5,
+   "width": 0.1016,
+   "from": [
+    19.723,
+    12.623
+   ],
+   "to": [
+    21.49,
+    14.39
+   ],
+   "gain": 12.22699,
+   "humps": 4,
+   "bumps": 0,
+   "amps": [
+    2.0,
+    1.65,
+    1.35,
+    1.65
+   ],
+   "run_length": 3.342,
+   "under_sdram": 0.0,
+   "inside_area": false
+  },
+  {
+   "net": "FMC_D15",
+   "layer": "L1",
+   "kind": "single",
+   "side": "NE",
+   "pitch": 0.5,
+   "width": 0.1016,
+   "from": [
+    19.987,
+    15.637
+   ],
+   "to": [
+    21.401,
+    17.051
+   ],
+   "gain": 4.34159,
+   "humps": 2,
+   "bumps": 0,
+   "amps": [
+    1.65,
+    0.95
+   ],
+   "run_length": 3.094,
+   "under_sdram": 0.0,
+   "inside_area": false
+  },
+  {
+   "net": "FMC_D13",
+   "layer": "L1",
+   "kind": "single",
+   "side": "SW",
+   "pitch": 0.5,
+   "width": 0.1016,
+   "from": [
+    19.383,
+    16.183
+   ],
+   "to": [
+    21.505,
+    18.305
+   ],
+   "gain": 7.41239,
+   "humps": 3,
+   "bumps": 0,
+   "amps": [
+    0.65,
+    1.7,
+    2.0
+   ],
+   "run_length": 3.801,
+   "under_sdram": 0.0,
+   "inside_area": false
+  },
+  {
+   "net": "FMC_D9",
+   "layer": "L1",
+   "kind": "single",
+   "side": "S",
+   "pitch": 0.5,
+   "width": 0.1016,
+   "from": [
+    17.95,
+    21.5
+   ],
+   "to": [
+    20.95,
+    21.5
+   ],
+   "gain": 5.87257,
+   "humps": 3,
+   "bumps": 0,
+   "amps": [
+    1.193,
+    1.193,
+    1.193
+   ],
+   "run_length": 4.5,
+   "under_sdram": 0.0,
+   "inside_area": false
+  },
+  {
+   "net": "FMC_D11",
+   "layer": "L1",
+   "kind": "single",
+   "side": "N",
+   "pitch": 0.5,
+   "width": 0.1016,
+   "from": [
+    17.988,
+    20.3
+   ],
+   "to": [
+    20.988,
+    20.3
+   ],
+   "gain": 4.97006,
+   "humps": 3,
+   "bumps": 0,
+   "amps": [
+    1.679,
+    0.65,
+    0.8
+   ],
+   "run_length": 4.425,
+   "under_sdram": 0.0,
+   "inside_area": false
+  },
+  {
+   "net": "FMC_D10",
+   "layer": "L4",
+   "kind": "single",
+   "side": "SW",
+   "pitch": 0.5,
+   "width": 0.1016,
+   "from": [
+    19.383,
+    15.858
+   ],
+   "to": [
+    21.505,
+    17.98
+   ],
+   "gain": 3.79267,
+   "humps": 3,
+   "bumps": 0,
+   "amps": [
+    0.65,
+    0.945,
+    0.945
+   ],
+   "run_length": 3.801,
+   "under_sdram": 0.0,
+   "inside_area": false
+  }
+ ],
+ "notes": [],
+ "missing": {
+  "FMC_SDCLK": 11.4223,
+  "FMC_D15": 5.9689,
+  "FMC_D13": 2.5045,
+  "FMC_D14": 9.3291,
+  "FMC_D12": 6.9711,
+  "FMC_D8": 4.6715
+ },
+ "clear": {
+  "end": 0.35,
+  "clr": 0.19,
+  "area_gap": 0.127,
+  "edge": 0.254,
+  "field": 0.6
+ },
+ "pitch": {
+  "default": 0.5
+ },
+ "window_L": 21.0738
+}

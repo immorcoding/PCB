@@ -1,0 +1,8 @@
+185 segments, 66 arcs
+off-grid: 2
+    /FMC_D10 L4_SIG (19.631, 16.672) -> (19.737, 16.565): 134.7 deg, 0.15 mm
+    /FMC_D13 F.Cu (19.631, 16.997) -> (19.737, 16.89): 134.7 deg, 0.15 mm
+staircase: 0
+sharp: 0
+crowded: 0
+tiny (< 0.1 mm): 0 {}
