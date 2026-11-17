@@ -1,0 +1,121 @@
+{
+ "src": "out/0_base",
+ "amp": 0.5,
+ "r": 0.25,
+ "mode": "double",
+ "where": "middle",
+ "trim": "last",
+ "ref": "/FMC_SDCLK",
+ "target": 12.7089,
+ "goal": "window",
+ "end": 0.35,
+ "clr": 0.19,
+ "area_gap": 0.127,
+ "leg_spacing": 0.5,
+ "nets": {
+  "/FMC_SDCLK": {
+   "natural": 10.8238,
+   "goal_len": 12.7089,
+   "need": 1.8851,
+   "added": 1.88515,
+   "missing": 0.0,
+   "predicted": 12.7089,
+   "blocks": [
+    {
+     "layer": "L1",
+     "side": "两",
+     "from": [
+      21.25,
+      13.525
+     ],
+     "to": [
+      21.25,
+      15.525
+     ],
+     "gain": 1.88515,
+     "humps": 3,
+     "bumps": 0,
+     "amps": [
+      0.5,
+      0.372,
+      0.5
+     ],
+     "run_length": 3.375
+    }
+   ]
+  },
+  "/FMC_D10": {
+   "natural": 13.969,
+   "goal_len": 13.969,
+   "need": 0.0,
+   "added": 0,
+   "missing": 0.0,
+   "predicted": 13.969,
+   "blocks": []
+  },
+  "/FMC_D11": {
+   "natural": 14.0311,
+   "goal_len": 14.0311,
+   "need": 0.0,
+   "added": 0,
+   "missing": 0.0,
+   "predicted": 14.0311,
+   "blocks": []
+  },
+  "/FMC_D12": {
+   "natural": 11.8284,
+   "goal_len": 11.8284,
+   "need": 0.0,
+   "added": 0,
+   "missing": 0.0,
+   "predicted": 11.8284,
+   "blocks": []
+  },
+  "/FMC_D13": {
+   "natural": 11.8299,
+   "goal_len": 11.8299,
+   "need": 0.0,
+   "added": 0,
+   "missing": 0.0,
+   "predicted": 11.8299,
+   "blocks": []
+  },
+  "/FMC_D14": {
+   "natural": 12.9433,
+   "goal_len": 12.9433,
+   "need": 0.0,
+   "added": 0,
+   "missing": 0.0,
+   "predicted": 12.9433,
+   "blocks": []
+  },
+  "/FMC_D15": {
+   "natural": 10.8799,
+   "goal_len": 10.8799,
+   "need": 0.0,
+   "added": 0,
+   "missing": 0.0,
+   "predicted": 10.8799,
+   "blocks": []
+  },
+  "/FMC_D8": {
+   "natural": 14.538,
+   "goal_len": 14.538,
+   "need": 0.0,
+   "added": 0,
+   "missing": 0.0,
+   "predicted": 14.538,
+   "blocks": []
+  },
+  "/FMC_D9": {
+   "natural": 13.7471,
+   "goal_len": 13.7471,
+   "need": 0.0,
+   "added": 0,
+   "missing": 0.0,
+   "predicted": 13.7471,
+   "blocks": []
+  }
+ },
+ "window_L": 12.7089
+}

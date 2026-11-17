@@ -1,0 +1,2 @@
+GND_In1 L2_GND: filled area 1162.3 mm2, 1 outline(s); signal via pad to pour: min 0.2005, max 0.2005 mm (pour clearance 0.200)
+GND_In4 L5_GND: filled area 1162.3 mm2, 1 outline(s); signal via pad to pour: min 0.2005, max 0.2005 mm (pour clearance 0.200)

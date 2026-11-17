@@ -1,0 +1,9 @@
+- 窗口规则 `sdram_window`（每根对 SDCLK ±2.5 mm，L 取这块板上 SDCLK 的实测长度）：报 4 根（FMC_D8 实际 17.5380，限值 16.3238；FMC_D9 实际 16.7471，限值 16.3238；FMC_D10 实际 16.9690，限值 16.3238；FMC_D11 实际 17.0311，限值 16.3238）。
+- DRC：未连接 0；长度超窗 4；其他 0。规则金丝雀：OK: custom rules loaded (corner_angle fired on the canary bend)
+- 圆弧（脚本从板文件逐个检查）：0 个；半径 —；最短圆弧 None mm；圆弧端点和相邻线段的切向最大偏差 0.0000°；没有接上或有分叉的端点 0 个；这组线里最短的直线段 0.400 mm。
+- `track_shape.py`（不检查圆弧）：72 segments, 0 arcs；off-grid: 0；staircase: 0；sharp: 0；crowded: 0；tiny (< 0.1 mm): 0 {}
+- 这组线（含没有蛇形的部分）离别的网络的铜最近 0.130 mm（SDCLK 对 U1.H15，在 (18.26, 12.32)）。
+- 规则区外的 0.09 mm 线：D10 0.40，D11 0.40，D12 0.60，D13 0.60，D14 0.40，D15 0.60，D8 0.60，D9 0.60，SDCLK 0.40。
+- 过孔两侧走向的夹角（0 = 直穿，180 = 原路折回）：D10 0°，D10 90°，D11 0°，D11 90°，D14 90°，D14 0°。
+- 不在 1 µm 网格上的线端（圆弧端点除外）：0 个。
+- 铺地到信号过孔：GND_In1 L2_GND: filled area 1162.3 mm2, 1 outline(s); signal via pad to pour: min 0.2005, max 0.2005 mm (pour clearance 0.200)；GND_In4 L5_GND: filled area 1162.3 mm2, 1 outline(s); signal via pad to pour: min 0.2005, max 0.2005 mm (pour clearance 0.200)

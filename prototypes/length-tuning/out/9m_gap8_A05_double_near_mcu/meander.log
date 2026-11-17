@@ -1,0 +1,9 @@
+/FMC_SDCLK  natural 13.824  need 3.714  added 3.714  missing 0.000  L1 两侧 3弯
+/FMC_D15    natural 13.880  need 3.658  added 3.658  missing 0.000  L1 两侧 3弯
+/FMC_D12    natural 14.828  need 2.710  added 2.710  missing 0.000  L1 两侧 4弯
+/FMC_D13    natural 14.830  need 2.708  added 2.708  missing 0.000  L1 两侧 2弯
+/FMC_D14    natural 15.943  need 1.595  added 1.595  missing 0.000  L4 西南侧 2弯; L4 南侧 0弯+1小弯
+/FMC_D9     natural 16.747  need 0.791  added 0.791  missing 0.000  L1 南侧 1弯+1小弯
+/FMC_D10    natural 16.969  need 0.569  added 0.569  missing 0.000  L4 东北侧 0弯+1小弯
+/FMC_D11    natural 17.031  need 0.507  added 0.507  missing 0.000  L4 北侧 0弯+1小弯
+/FMC_D8     natural 17.538  need 0.000  added 0.000  missing 0.000  

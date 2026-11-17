@@ -1,0 +1,6 @@
+61 segments, 8 arcs
+off-grid: 0
+staircase: 0
+sharp: 0
+crowded: 0
+tiny (< 0.1 mm): 0 {}

@@ -1,0 +1,9 @@
+/FMC_SDCLK  natural 10.824  need 1.885  added 1.885  missing 0.000  L1 两侧 3弯
+/FMC_D10    natural 13.969  need 0.000  added 0.000  missing 0.000  
+/FMC_D11    natural 14.031  need 0.000  added 0.000  missing 0.000  
+/FMC_D12    natural 11.828  need 0.000  added 0.000  missing 0.000  
+/FMC_D13    natural 11.830  need 0.000  added 0.000  missing 0.000  
+/FMC_D14    natural 12.943  need 0.000  added 0.000  missing 0.000  
+/FMC_D15    natural 10.880  need 0.000  added 0.000  missing 0.000  
+/FMC_D8     natural 14.538  need 0.000  added 0.000  missing 0.000  
+/FMC_D9     natural 13.747  need 0.000  added 0.000  missing 0.000  

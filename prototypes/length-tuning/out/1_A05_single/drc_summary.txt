@@ -1,0 +1,5 @@
+DRC (KiCad 10.0.8): unconnected 0, violations 3, schematic parity 0
+    3 x length_out_of_range (error)
+    length_out_of_range @ (15.275, 15.575) 走线 [/FMC_D10] (L4_SIG), 长度: 0.4596 mm
+    length_out_of_range @ (24.600, 21.500) F.Cu 上 U2 的焊盘 R2 [/FMC_D8]
+    length_out_of_range @ (23.800, 21.500) F.Cu 上 U2 的焊盘 R1 [/FMC_D9]

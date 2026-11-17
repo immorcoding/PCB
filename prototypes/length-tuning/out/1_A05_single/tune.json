@@ -1,0 +1,245 @@
+{
+ "src": "out/0_base",
+ "amp": 0.5,
+ "r": 0.25,
+ "mode": "single",
+ "where": "middle",
+ "trim": "last",
+ "ref": "/FMC_SDCLK",
+ "target": 14.538,
+ "goal": "equal",
+ "end": 0.35,
+ "clr": 0.19,
+ "area_gap": 0.127,
+ "leg_spacing": 0.5,
+ "nets": {
+  "/FMC_SDCLK": {
+   "natural": 10.8238,
+   "goal_len": 14.538,
+   "need": 3.7142,
+   "added": 1.14159,
+   "missing": 2.5726,
+   "predicted": 11.9654,
+   "blocks": [
+    {
+     "layer": "L1",
+     "side": "西",
+     "from": [
+      21.25,
+      13.525
+     ],
+     "to": [
+      21.25,
+      15.525
+     ],
+     "gain": 1.14159,
+     "humps": 2,
+     "bumps": 0,
+     "amps": [
+      0.5,
+      0.5
+     ],
+     "run_length": 3.375
+    }
+   ]
+  },
+  "/FMC_D15": {
+   "natural": 10.8799,
+   "goal_len": 14.538,
+   "need": 3.6581,
+   "added": 1.14159,
+   "missing": 2.5165,
+   "predicted": 12.0215,
+   "blocks": [
+    {
+     "layer": "L1",
+     "side": "西",
+     "from": [
+      20.9,
+      16.35
+     ],
+     "to": [
+      20.9,
+      18.35
+     ],
+     "gain": 1.14159,
+     "humps": 2,
+     "bumps": 0,
+     "amps": [
+      0.5,
+      0.5
+     ],
+     "run_length": 3.25
+    }
+   ]
+  },
+  "/FMC_D12": {
+   "natural": 11.8284,
+   "goal_len": 14.538,
+   "need": 2.7096,
+   "added": 1.14159,
+   "missing": 1.568,
+   "predicted": 12.97,
+   "blocks": [
+    {
+     "layer": "L1",
+     "side": "南",
+     "from": [
+      16.05,
+      19.2
+     ],
+     "to": [
+      18.05,
+      19.2
+     ],
+     "gain": 1.14159,
+     "humps": 2,
+     "bumps": 0,
+     "amps": [
+      0.5,
+      0.5
+     ],
+     "run_length": 3.25
+    }
+   ]
+  },
+  "/FMC_D13": {
+   "natural": 11.8299,
+   "goal_len": 14.538,
+   "need": 2.7081,
+   "added": 1.14159,
+   "missing": 1.5665,
+   "predicted": 12.9715,
+   "blocks": [
+    {
+     "layer": "L1",
+     "side": "西",
+     "from": [
+      19.8,
+      17.1
+     ],
+     "to": [
+      19.8,
+      19.1
+     ],
+     "gain": 1.14159,
+     "humps": 2,
+     "bumps": 0,
+     "amps": [
+      0.5,
+      0.5
+     ],
+     "run_length": 3.4
+    }
+   ]
+  },
+  "/FMC_D14": {
+   "natural": 12.9433,
+   "goal_len": 14.538,
+   "need": 1.5947,
+   "added": 1.14159,
+   "missing": 0.4531,
+   "predicted": 14.0849,
+   "blocks": [
+    {
+     "layer": "L4",
+     "side": "西南",
+     "from": [
+      19.666,
+      17.116
+     ],
+     "to": [
+      21.08,
+      18.53
+     ],
+     "gain": 1.14159,
+     "humps": 2,
+     "bumps": 0,
+     "amps": [
+      0.5,
+      0.5
+     ],
+     "run_length": 3.606
+    }
+   ]
+  },
+  "/FMC_D9": {
+   "natural": 13.7471,
+   "goal_len": 14.538,
+   "need": 0.7909,
+   "added": 0.7909,
+   "missing": 0.0,
+   "predicted": 14.538,
+   "blocks": [
+    {
+     "layer": "L1",
+     "side": "南",
+     "from": [
+      16.1,
+      20.8
+     ],
+     "to": [
+      18.0,
+      20.8
+     ],
+     "gain": 0.7909,
+     "humps": 1,
+     "bumps": 1,
+     "amps": [
+      0.5,
+      0.282
+     ],
+     "run_length": 4.5
+    }
+   ]
+  },
+  "/FMC_D10": {
+   "natural": 13.969,
+   "goal_len": 14.538,
+   "need": 0.569,
+   "added": 0.569,
+   "missing": 0.0,
+   "predicted": 14.538,
+   "blocks": [
+    {
+     "layer": "L4",
+     "side": "东北",
+     "from": [
+      20.055,
+      16.205
+     ],
+     "to": [
+      20.762,
+      16.912
+     ],
+     "gain": 0.569,
+     "humps": 0,
+     "bumps": 1,
+     "amps": [
+      0.499
+     ],
+     "run_length": 3.748
+    }
+   ]
+  },
+  "/FMC_D11": {
+   "natural": 14.0311,
+   "goal_len": 14.538,
+   "need": 0.5069,
+   "added": 0,
+   "missing": 0.5069,
+   "predicted": 14.0311,
+   "blocks": []
+  },
+  "/FMC_D8": {
+   "natural": 14.538,
+   "goal_len": 14.538,
+   "need": 0.0,
+   "added": 0,
+   "missing": 0.0,
+   "predicted": 14.538,
+   "blocks": []
+  }
+ },
+ "window_L": 11.9654
+}

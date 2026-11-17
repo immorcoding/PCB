@@ -1,0 +1,112 @@
+{
+ "drc": {
+  "unconnected": 0,
+  "length": {
+   "/FMC_D10": "实际 16.9690，限值 16.3238",
+   "/FMC_D11": "实际 17.0311，限值 16.3238",
+   "/FMC_D8": "实际 17.5380，限值 16.3238",
+   "/FMC_D9": "实际 16.7471，限值 16.3238"
+  },
+  "other": {}
+ },
+ "canary": "OK: custom rules loaded (corner_angle fired on the canary bend)",
+ "track_shape": "72 segments, 0 arcs\noff-grid: 0\nstaircase: 0\nsharp: 0\ncrowded: 0\ntiny (< 0.1 mm): 0 {}",
+ "arcs": {
+  "arcs": 0,
+  "radii": {},
+  "shortest_arc": null,
+  "worst_tangent_deg": 0.0,
+  "ends_without_one_neighbour": 0,
+  "shortest_segment": 0.4
+ },
+ "geo": {
+  "arcs": 0,
+  "sweep_min": null,
+  "sweep_max": null,
+  "area_gap": {
+   "arc": null,
+   "leg": null
+  },
+  "serp_net_gap": null,
+  "all_net_gap": {
+   "gap": 0.13,
+   "net": "/FMC_SDCLK",
+   "other": "U1.H15",
+   "other_kind": "pad",
+   "at": [
+    18.262,
+    12.325
+   ]
+  },
+  "pairs": [],
+  "leads": [],
+  "sharp_arc": 0,
+  "lead_min": null,
+  "thin_outside": {
+   "/FMC_D10": 0.4,
+   "/FMC_D11": 0.4,
+   "/FMC_D12": 0.6,
+   "/FMC_D13": 0.6,
+   "/FMC_D14": 0.4,
+   "/FMC_D15": 0.6,
+   "/FMC_D8": 0.6,
+   "/FMC_D9": 0.6,
+   "/FMC_SDCLK": 0.4
+  },
+  "via_turn": [
+   {
+    "net": "/FMC_D10",
+    "at": [
+     25.6,
+     17.9
+    ],
+    "turn": 0.0
+   },
+   {
+    "net": "/FMC_D10",
+    "at": [
+     15.275,
+     15.575
+    ],
+    "turn": 90.0
+   },
+   {
+    "net": "/FMC_D11",
+    "at": [
+     25.6,
+     18.7
+    ],
+    "turn": 0.0
+   },
+   {
+    "net": "/FMC_D11",
+    "at": [
+     15.275,
+     16.225
+    ],
+    "turn": 90.0
+   },
+   {
+    "net": "/FMC_D14",
+    "at": [
+     28.0,
+     19.5
+    ],
+    "turn": 90.0
+   },
+   {
+    "net": "/FMC_D14",
+    "at": [
+     17.225,
+     16.225
+    ],
+    "turn": 0.0
+   }
+  ],
+  "off_grid": []
+ },
+ "pour": [
+  "GND_In1 L2_GND: filled area 1162.3 mm2, 1 outline(s); signal via pad to pour: min 0.2005, max 0.2005 mm (pour clearance 0.200)",
+  "GND_In4 L5_GND: filled area 1162.3 mm2, 1 outline(s); signal via pad to pour: min 0.2005, max 0.2005 mm (pour clearance 0.200)"
+ ]
+}

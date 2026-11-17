@@ -1,0 +1,103 @@
+{
+    "$schema": "https://schemas.kicad.org/drc.v1.json",
+    "coordinate_units": "mm",
+    "date": "2026-11-17T02:44:26",
+    "ignored_checks": [
+        {
+            "description": "Track endpoint not centered on via",
+            "key": "track_not_centered_on_via"
+        },
+        {
+            "description": "Tuning profile track geometries",
+            "key": "tuning_profile_track_geometries"
+        },
+        {
+            "description": "Footprint doesn't match symbol's footprint filters",
+            "key": "footprint_filters_mismatch"
+        },
+        {
+            "description": "NPTH inside courtyard",
+            "key": "npth_inside_courtyard"
+        }
+    ],
+    "included_severities": [
+        "error",
+        "warning",
+        "exclusion"
+    ],
+    "kicad_version": "10.0.8",
+    "schematic_parity": [],
+    "source": "lentune.kicad_pcb",
+    "unconnected_items": [],
+    "violations": [
+        {
+            "description": "走线长度超出范围 (约束条件 规则 'sdram_window' 中, 最大长度 14.4654 mm; 实际 14.5380 mm)",
+            "items": [
+                {
+                    "description": "走线 [/FMC_D10] (L4_SIG), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 115.275,
+                        "y": 115.575
+                    },
+                    "uuid": "52b645d5-f38c-4ad1-8607-e51740674183"
+                },
+                {
+                    "description": "走线 [/FMC_D10] (L4_SIG), 长度: 3.5000 mm",
+                    "pos": {
+                        "x": 115.6,
+                        "y": 115.25
+                    },
+                    "uuid": "789a163e-d514-40a1-b950-1a9bd4afbe21"
+                }
+            ],
+            "severity": "error",
+            "type": "length_out_of_range"
+        },
+        {
+            "description": "走线长度超出范围 (约束条件 规则 'sdram_window' 中, 最大长度 14.4654 mm; 实际 14.5380 mm)",
+            "items": [
+                {
+                    "description": "F.Cu 上 U2 的焊盘 R2 [/FMC_D8]",
+                    "pos": {
+                        "x": 124.6,
+                        "y": 121.5
+                    },
+                    "uuid": "ae9c265a-1709-4f8f-84b3-6f3b5510c951"
+                },
+                {
+                    "description": "F.Cu 上 U1 的焊盘 P10 [/FMC_D8]",
+                    "pos": {
+                        "x": 114.3,
+                        "y": 115.9
+                    },
+                    "uuid": "3eaa01c6-e9da-4f05-a3e4-eda3a71b72e9"
+                }
+            ],
+            "severity": "error",
+            "type": "length_out_of_range"
+        },
+        {
+            "description": "走线长度超出范围 (约束条件 规则 'sdram_window' 中, 最大长度 14.4654 mm; 实际 14.5380 mm)",
+            "items": [
+                {
+                    "description": "F.Cu 上 U2 的焊盘 R1 [/FMC_D9]",
+                    "pos": {
+                        "x": 123.8,
+                        "y": 121.5
+                    },
+                    "uuid": "01f7e4ca-22c9-468e-82cd-6537ad602e0a"
+                },
+                {
+                    "description": "F.Cu 上 U1 的焊盘 R10 [/FMC_D9]",
+                    "pos": {
+                        "x": 114.3,
+                        "y": 116.55
+                    },
+                    "uuid": "0a4d853a-ebcf-4f1e-a7f5-5800337d5740"
+                }
+            ],
+            "severity": "error",
+            "type": "length_out_of_range"
+        }
+    ]
+}

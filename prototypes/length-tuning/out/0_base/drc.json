@@ -1,0 +1,126 @@
+{
+    "$schema": "https://schemas.kicad.org/drc.v1.json",
+    "coordinate_units": "mm",
+    "date": "2026-11-17T02:44:04",
+    "ignored_checks": [
+        {
+            "description": "Track endpoint not centered on via",
+            "key": "track_not_centered_on_via"
+        },
+        {
+            "description": "Tuning profile track geometries",
+            "key": "tuning_profile_track_geometries"
+        },
+        {
+            "description": "Footprint doesn't match symbol's footprint filters",
+            "key": "footprint_filters_mismatch"
+        },
+        {
+            "description": "NPTH inside courtyard",
+            "key": "npth_inside_courtyard"
+        }
+    ],
+    "included_severities": [
+        "error",
+        "warning",
+        "exclusion"
+    ],
+    "kicad_version": "10.0.8",
+    "schematic_parity": [],
+    "source": "lentune.kicad_pcb",
+    "unconnected_items": [],
+    "violations": [
+        {
+            "description": "走线长度超出范围 (约束条件 规则 'sdram_window' 中, 最大长度 13.3238 mm; 实际 13.9690 mm)",
+            "items": [
+                {
+                    "description": "走线 [/FMC_D10] (L4_SIG), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 115.275,
+                        "y": 115.575
+                    },
+                    "uuid": "52b645d5-f38c-4ad1-8607-e51740674183"
+                },
+                {
+                    "description": "走线 [/FMC_D10] (L4_SIG), 长度: 3.5000 mm",
+                    "pos": {
+                        "x": 115.6,
+                        "y": 115.25
+                    },
+                    "uuid": "789a163e-d514-40a1-b950-1a9bd4afbe21"
+                }
+            ],
+            "severity": "error",
+            "type": "length_out_of_range"
+        },
+        {
+            "description": "走线长度超出范围 (约束条件 规则 'sdram_window' 中, 最大长度 13.3238 mm; 实际 14.0311 mm)",
+            "items": [
+                {
+                    "description": "走线 [/FMC_D11] (F.Cu), 长度: 0.5657 mm",
+                    "pos": {
+                        "x": 124.2,
+                        "y": 118.7
+                    },
+                    "uuid": "e55dd49a-0c23-4bfc-b6a8-e497f9465dfc"
+                },
+                {
+                    "description": "走线 [/FMC_D11] (F.Cu), 长度: 1.6000 mm",
+                    "pos": {
+                        "x": 122.6,
+                        "y": 118.7
+                    },
+                    "uuid": "469f770c-66a6-4f3a-8b39-07f54362756d"
+                }
+            ],
+            "severity": "error",
+            "type": "length_out_of_range"
+        },
+        {
+            "description": "走线长度超出范围 (约束条件 规则 'sdram_window' 中, 最大长度 13.3238 mm; 实际 14.5380 mm)",
+            "items": [
+                {
+                    "description": "走线 [/FMC_D8] (F.Cu), 长度: 3.2750 mm",
+                    "pos": {
+                        "x": 114.625,
+                        "y": 116.225
+                    },
+                    "uuid": "c39ac739-6211-49a7-9dc5-af5846bc418b"
+                },
+                {
+                    "description": "走线 [/FMC_D8] (F.Cu), 长度: 0.4596 mm",
+                    "pos": {
+                        "x": 114.3,
+                        "y": 115.9
+                    },
+                    "uuid": "acc8934f-9b65-4eb2-8801-db2f5e88ba58"
+                }
+            ],
+            "severity": "error",
+            "type": "length_out_of_range"
+        },
+        {
+            "description": "走线长度超出范围 (约束条件 规则 'sdram_window' 中, 最大长度 13.3238 mm; 实际 13.7471 mm)",
+            "items": [
+                {
+                    "description": "走线 [/FMC_D9] (F.Cu), 长度: 4.5000 mm",
+                    "pos": {
+                        "x": 114.8,
+                        "y": 120.8
+                    },
+                    "uuid": "410402f8-eb8d-47cf-9055-337659867d01"
+                },
+                {
+                    "description": "走线 [/FMC_D9] (F.Cu), 长度: 0.7071 mm",
+                    "pos": {
+                        "x": 114.3,
+                        "y": 120.3
+                    },
+                    "uuid": "4559da14-56c9-4019-ad1f-ec729861f1a2"
+                }
+            ],
+            "severity": "error",
+            "type": "length_out_of_range"
+        }
+    ]
+}

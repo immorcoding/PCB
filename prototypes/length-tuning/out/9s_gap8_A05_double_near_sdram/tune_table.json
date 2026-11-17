@@ -1,0 +1,471 @@
+{
+ "drc": {
+  "unconnected": 0,
+  "length": {},
+  "other": {}
+ },
+ "canary": "OK: custom rules loaded (corner_angle fired on the canary bend)",
+ "track_shape": "95 segments, 56 arcs\noff-grid: 0\nstaircase: 0\nsharp: 0\ncrowded: 0\ntiny (< 0.1 mm): 0 {}",
+ "arcs": {
+  "arcs": 56,
+  "radii": {
+   "0.25": 56
+  },
+  "shortest_arc": 0.2801,
+  "worst_tangent_deg": 0.0113,
+  "ends_without_one_neighbour": 0,
+  "shortest_segment": 0.2528
+ },
+ "geo": {
+  "arcs": 56,
+  "sweep_min": 64.19,
+  "sweep_max": 179.79,
+  "area_gap": {
+   "arc": {
+    "gap": 0.5992,
+    "net": "/FMC_D10",
+    "area": "BGA_SDRAM",
+    "at": [
+     24.173,
+     17.973
+    ]
+   },
+   "leg": {
+    "gap": 0.8992,
+    "net": "/FMC_D12",
+    "area": "BGA_MCU",
+    "at": [
+     17.6,
+     18.95
+    ]
+   }
+  },
+  "serp_net_gap": {
+   "gap": 0.1984,
+   "net": "/FMC_D12",
+   "other": "/FMC_D8",
+   "other_kind": "seg",
+   "at": [
+    16.348,
+    19.7
+   ]
+  },
+  "all_net_gap": {
+   "gap": 0.13,
+   "net": "/FMC_SDCLK",
+   "other": "U1.H15",
+   "other_kind": "pad",
+   "at": [
+    18.262,
+    12.325
+   ]
+  },
+  "pairs": [
+   {
+    "gap": 0.1984,
+    "net": "/FMC_D12",
+    "other": "/FMC_D8",
+    "other_kind": "seg",
+    "at": [
+     16.348,
+     19.7
+    ]
+   },
+   {
+    "gap": 0.1993,
+    "net": "/FMC_D10",
+    "other": "/FMC_D11",
+    "other_kind": "seg",
+    "at": [
+     23.848,
+     18.399
+    ]
+   },
+   {
+    "gap": 0.2204,
+    "net": "/FMC_D11",
+    "other": "/FMC_D10",
+    "other_kind": "arc",
+    "at": [
+     23.327,
+     18.38
+    ]
+   },
+   {
+    "gap": 0.2984,
+    "net": "/FMC_D14",
+    "other": "/FMC_D11",
+    "other_kind": "seg",
+    "at": [
+     24.348,
+     19.1
+    ]
+   },
+   {
+    "gap": 0.2984,
+    "net": "/FMC_D9",
+    "other": "/FMC_D8",
+    "other_kind": "seg",
+    "at": [
+     24.348,
+     21.5
+    ]
+   }
+  ],
+  "leads": [
+   {
+    "net": "/FMC_SDCLK",
+    "len": 0.35,
+    "at": [
+     23.9,
+     12.325
+    ]
+   },
+   {
+    "net": "/FMC_D14",
+    "len": 0.35,
+    "at": [
+     21.65,
+     19.1
+    ]
+   },
+   {
+    "net": "/FMC_D15",
+    "len": 0.35,
+    "at": [
+     22.6,
+     19.0
+    ]
+   },
+   {
+    "net": "/FMC_D13",
+    "len": 0.35,
+    "at": [
+     20.8,
+     19.8
+    ]
+   },
+   {
+    "net": "/FMC_D12",
+    "len": 0.35,
+    "at": [
+     18.7,
+     19.2
+    ]
+   },
+   {
+    "net": "/FMC_D12",
+    "len": 0.4,
+    "at": [
+     15.45,
+     19.2
+    ]
+   },
+   {
+    "net": "/FMC_D11",
+    "len": 0.7,
+    "at": [
+     21.9,
+     18.7
+    ]
+   },
+   {
+    "net": "/FMC_D14",
+    "len": 0.7,
+    "at": [
+     21.65,
+     19.1
+    ]
+   },
+   {
+    "net": "/FMC_D15",
+    "len": 0.9,
+    "at": [
+     22.6,
+     15.75
+    ]
+   },
+   {
+    "net": "/FMC_D13",
+    "len": 1.55,
+    "at": [
+     20.8,
+     16.4
+    ]
+   },
+   {
+    "net": "/FMC_D10",
+    "len": 1.6,
+    "at": [
+     21.75,
+     17.9
+    ]
+   },
+   {
+    "net": "/FMC_D14",
+    "len": 2.2641,
+    "at": [
+     19.1,
+     16.55
+    ]
+   },
+   {
+    "net": "/FMC_D9",
+    "len": 2.4497,
+    "at": [
+     20.0,
+     21.5
+    ]
+   }
+  ],
+  "sharp_arc": 0,
+  "lead_min": 0.35,
+  "thin_outside": {
+   "/FMC_D10": 0.4,
+   "/FMC_D11": 0.4,
+   "/FMC_D12": 0.6,
+   "/FMC_D13": 0.6,
+   "/FMC_D14": 0.4,
+   "/FMC_D15": 0.6,
+   "/FMC_D8": 0.6,
+   "/FMC_D9": 0.6,
+   "/FMC_SDCLK": 0.4
+  },
+  "via_turn": [
+   {
+    "net": "/FMC_D10",
+    "at": [
+     25.6,
+     17.9
+    ],
+    "turn": 0.0
+   },
+   {
+    "net": "/FMC_D10",
+    "at": [
+     15.275,
+     15.575
+    ],
+    "turn": 90.0
+   },
+   {
+    "net": "/FMC_D11",
+    "at": [
+     25.6,
+     18.7
+    ],
+    "turn": 0.0
+   },
+   {
+    "net": "/FMC_D11",
+    "at": [
+     15.275,
+     16.225
+    ],
+    "turn": 90.0
+   },
+   {
+    "net": "/FMC_D14",
+    "at": [
+     28.0,
+     19.5
+    ],
+    "turn": 90.0
+   },
+   {
+    "net": "/FMC_D14",
+    "at": [
+     17.225,
+     16.225
+    ],
+    "turn": 0.0
+   }
+  ],
+  "off_grid": []
+ },
+ "pour": [
+  "GND_In1 L2_GND: filled area 1162.3 mm2, 1 outline(s); signal via pad to pour: min 0.2005, max 0.2005 mm (pour clearance 0.200)",
+  "GND_In4 L5_GND: filled area 1162.3 mm2, 1 outline(s); signal via pad to pour: min 0.2005, max 0.2005 mm (pour clearance 0.200)"
+ ],
+ "target": 17.538,
+ "window_L": 17.538,
+ "params": {
+  "amp": 0.5,
+  "r": 0.25,
+  "mode": "double",
+  "where": "sdram",
+  "trim": "last",
+  "leg_spacing": 0.5,
+  "goal": "equal",
+  "end": 0.35,
+  "clr": 0.19,
+  "area_gap": 0.127
+ },
+ "window_before": {
+  "/FMC_D12": "实际 14.8284，限值 15.0380",
+  "/FMC_D13": "实际 14.8299，限值 15.0380",
+  "/FMC_D15": "实际 13.8799，限值 15.0380",
+  "/FMC_SDCLK": "实际 13.8238，限值 15.0380"
+ },
+ "rows": [
+  {
+   "net": "FMC_SDCLK",
+   "natural": 13.8238,
+   "need": 3.7142,
+   "added": 3.7142,
+   "predicted": 17.538,
+   "drc": 17.538,
+   "diff": 0.0,
+   "err": 0.0,
+   "missing": 0.0,
+   "humps": 3,
+   "bumps": 0,
+   "amps": "0.76 0.76 0.76",
+   "where": "L1 两侧 (21.55, 12.32)→(23.55, 12.32)",
+   "vias": 0,
+   "to_ref": 0.0
+  },
+  {
+   "net": "FMC_D8",
+   "natural": 17.538,
+   "need": 0.0,
+   "added": 0,
+   "predicted": 17.538,
+   "drc": 17.538,
+   "diff": 0.0,
+   "err": 0.0,
+   "missing": 0.0,
+   "humps": 0,
+   "bumps": 0,
+   "amps": "—",
+   "where": "—",
+   "vias": 0,
+   "to_ref": 0.0
+  },
+  {
+   "net": "FMC_D9",
+   "natural": 16.7471,
+   "need": 0.7909,
+   "added": 0.7909,
+   "predicted": 17.538,
+   "drc": 17.5378,
+   "diff": 0.0002,
+   "err": -0.0002,
+   "missing": 0.0,
+   "humps": 1,
+   "bumps": 1,
+   "amps": "0.50 0.28",
+   "where": "L1 南侧 (22.45, 21.50)→(24.35, 21.50)",
+   "vias": 0,
+   "to_ref": -0.0002
+  },
+  {
+   "net": "FMC_D10",
+   "natural": 16.969,
+   "need": 0.569,
+   "added": 0.569,
+   "predicted": 17.538,
+   "drc": 17.538,
+   "diff": 0.0,
+   "err": 0.0,
+   "missing": 0.0,
+   "humps": 0,
+   "bumps": 1,
+   "amps": "0.50",
+   "where": "L4 南侧 (23.35, 17.90)→(24.35, 17.90)",
+   "vias": 2,
+   "to_ref": 0.0
+  },
+  {
+   "net": "FMC_D11",
+   "natural": 17.0311,
+   "need": 0.5069,
+   "added": 0.5069,
+   "predicted": 17.538,
+   "drc": 17.538,
+   "diff": 0.0,
+   "err": 0.0,
+   "missing": 0.0,
+   "humps": 0,
+   "bumps": 1,
+   "amps": "0.47",
+   "where": "L4 北侧 (22.60, 18.70)→(23.60, 18.70)",
+   "vias": 2,
+   "to_ref": 0.0
+  },
+  {
+   "net": "FMC_D12",
+   "natural": 14.8284,
+   "need": 2.7096,
+   "added": 2.7096,
+   "predicted": 17.538,
+   "drc": 17.5381,
+   "diff": -0.0001,
+   "err": 0.0001,
+   "missing": 0.0,
+   "humps": 4,
+   "bumps": 0,
+   "amps": "0.50 0.45 0.45 0.50",
+   "where": "L1 两侧 (15.85, 19.20)→(18.35, 19.20)",
+   "vias": 0,
+   "to_ref": 0.0001
+  },
+  {
+   "net": "FMC_D13",
+   "natural": 14.8299,
+   "need": 2.7081,
+   "added": 2.7081,
+   "predicted": 17.538,
+   "drc": 17.538,
+   "diff": 0.0,
+   "err": 0.0,
+   "missing": 0.0,
+   "humps": 2,
+   "bumps": 0,
+   "amps": "0.84 0.84",
+   "where": "L1 两侧 (20.80, 17.95)→(20.80, 19.45)",
+   "vias": 0,
+   "to_ref": 0.0
+  },
+  {
+   "net": "FMC_D14",
+   "natural": 15.9433,
+   "need": 1.5947,
+   "added": 1.5947,
+   "predicted": 17.538,
+   "drc": 17.5377,
+   "diff": 0.0003,
+   "err": -0.0003,
+   "missing": 0.0,
+   "humps": 2,
+   "bumps": 1,
+   "amps": "0.50 0.50 0.44",
+   "where": "L4 南侧 (22.35, 19.10)→(24.35, 19.10)；L4 西南侧 (20.70, 18.15)→(21.40, 18.85)",
+   "vias": 2,
+   "to_ref": -0.0003
+  },
+  {
+   "net": "FMC_D15",
+   "natural": 13.8799,
+   "need": 3.6581,
+   "added": 3.6581,
+   "predicted": 17.538,
+   "drc": 17.5381,
+   "diff": -0.0001,
+   "err": 0.0001,
+   "missing": 0.0,
+   "humps": 3,
+   "bumps": 0,
+   "amps": "0.75 0.75 0.75",
+   "where": "L1 两侧 (22.60, 16.65)→(22.60, 18.65)",
+   "vias": 0,
+   "to_ref": 0.0001
+  }
+ ],
+ "summary": {
+  "max_abs_err": 0.0003,
+  "max_abs_diff": 0.0003,
+  "not_reached": 0,
+  "spread_after": 0.0004
+ }
+}

@@ -1,0 +1,284 @@
+{
+ "src": "out/6_gap8_base",
+ "amp": 1.0,
+ "r": 0.25,
+ "mode": "single",
+ "where": "middle",
+ "trim": "last",
+ "ref": "/FMC_SDCLK",
+ "target": 17.538,
+ "goal": "equal",
+ "end": 0.35,
+ "clr": 0.19,
+ "area_gap": 0.127,
+ "leg_spacing": 0.5,
+ "nets": {
+  "/FMC_SDCLK": {
+   "natural": 13.8238,
+   "goal_len": 17.538,
+   "need": 3.7142,
+   "added": 3.7142,
+   "missing": 0.0,
+   "predicted": 17.538,
+   "blocks": [
+    {
+     "layer": "L1",
+     "side": "南",
+     "from": [
+      19.65,
+      12.325
+     ],
+     "to": [
+      23.534,
+      12.325
+     ],
+     "gain": 3.7142,
+     "humps": 2,
+     "bumps": 2,
+     "amps": [
+      1.0,
+      1.0,
+      0.332,
+      0.332
+     ],
+     "run_length": 4.6
+    }
+   ]
+  },
+  "/FMC_D15": {
+   "natural": 13.8799,
+   "goal_len": 17.538,
+   "need": 3.6581,
+   "added": 3.6581,
+   "missing": 0.0,
+   "predicted": 17.538,
+   "blocks": [
+    {
+     "layer": "L1",
+     "side": "西",
+     "from": [
+      22.6,
+      16.35
+     ],
+     "to": [
+      22.6,
+      18.35
+     ],
+     "gain": 3.14159,
+     "humps": 2,
+     "bumps": 0,
+     "amps": [
+      1.0,
+      1.0
+     ],
+     "run_length": 3.25
+    },
+    {
+     "layer": "L1",
+     "side": "南",
+     "from": [
+      20.2,
+      15.25
+     ],
+     "to": [
+      21.198,
+      15.25
+     ],
+     "gain": 0.51651,
+     "humps": 0,
+     "bumps": 1,
+     "amps": [
+      0.472
+     ],
+     "run_length": 2.8
+    }
+   ]
+  },
+  "/FMC_D12": {
+   "natural": 14.8284,
+   "goal_len": 17.538,
+   "need": 2.7096,
+   "added": 2.7096,
+   "missing": 0.0,
+   "predicted": 17.538,
+   "blocks": [
+    {
+     "layer": "L1",
+     "side": "北",
+     "from": [
+      16.05,
+      19.2
+     ],
+     "to": [
+      18.05,
+      19.2
+     ],
+     "gain": 2.7096,
+     "humps": 2,
+     "bumps": 0,
+     "amps": [
+      1.0,
+      0.784
+     ],
+     "run_length": 3.25
+    }
+   ]
+  },
+  "/FMC_D13": {
+   "natural": 14.8299,
+   "goal_len": 17.538,
+   "need": 2.7081,
+   "added": 2.7081,
+   "missing": 0.0,
+   "predicted": 17.538,
+   "blocks": [
+    {
+     "layer": "L1",
+     "side": "西",
+     "from": [
+      20.8,
+      17.1
+     ],
+     "to": [
+      20.8,
+      19.1
+     ],
+     "gain": 2.7081,
+     "humps": 2,
+     "bumps": 0,
+     "amps": [
+      1.0,
+      0.783
+     ],
+     "run_length": 3.4
+    }
+   ]
+  },
+  "/FMC_D14": {
+   "natural": 15.9433,
+   "goal_len": 17.538,
+   "need": 1.5947,
+   "added": 1.5947,
+   "missing": 0.0,
+   "predicted": 17.538,
+   "blocks": [
+    {
+     "layer": "L4",
+     "side": "南",
+     "from": [
+      22.65,
+      19.1
+     ],
+     "to": [
+      23.65,
+      19.1
+     ],
+     "gain": 1.5947,
+     "humps": 1,
+     "bumps": 0,
+     "amps": [
+      1.012
+     ],
+     "run_length": 3.05
+    }
+   ]
+  },
+  "/FMC_D9": {
+   "natural": 16.7471,
+   "goal_len": 17.538,
+   "need": 0.7909,
+   "added": 0.7909,
+   "missing": 0.0,
+   "predicted": 17.538,
+   "blocks": [
+    {
+     "layer": "L1",
+     "side": "南",
+     "from": [
+      16.55,
+      20.8
+     ],
+     "to": [
+      17.55,
+      20.8
+     ],
+     "gain": 0.7909,
+     "humps": 1,
+     "bumps": 0,
+     "amps": [
+      0.61
+     ],
+     "run_length": 4.5
+    }
+   ]
+  },
+  "/FMC_D10": {
+   "natural": 16.969,
+   "goal_len": 17.538,
+   "need": 0.569,
+   "added": 0.569,
+   "missing": 0.0,
+   "predicted": 17.538,
+   "blocks": [
+    {
+     "layer": "L4",
+     "side": "东北",
+     "from": [
+      20.055,
+      16.205
+     ],
+     "to": [
+      20.762,
+      16.912
+     ],
+     "gain": 0.569,
+     "humps": 0,
+     "bumps": 1,
+     "amps": [
+      0.499
+     ],
+     "run_length": 3.748
+    }
+   ]
+  },
+  "/FMC_D11": {
+   "natural": 17.0311,
+   "goal_len": 17.538,
+   "need": 0.5069,
+   "added": 0.5069,
+   "missing": 0.0,
+   "predicted": 17.538,
+   "blocks": [
+    {
+     "layer": "L4",
+     "side": "北",
+     "from": [
+      22.8,
+      18.7
+     ],
+     "to": [
+      23.798,
+      18.7
+     ],
+     "gain": 0.5069,
+     "humps": 0,
+     "bumps": 1,
+     "amps": [
+      0.467
+     ],
+     "run_length": 2.8
+    }
+   ]
+  },
+  "/FMC_D8": {
+   "natural": 17.538,
+   "goal_len": 17.538,
+   "need": 0.0,
+   "added": 0,
+   "missing": 0.0,
+   "predicted": 17.538,
+   "blocks": []
+  }
+ },
+ "window_L": 17.538
+}

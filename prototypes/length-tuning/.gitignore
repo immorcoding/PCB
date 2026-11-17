@@ -1,0 +1,6 @@
+__pycache__/
+fp-info-cache
+*.kicad_prl
+*-bak
+*.lck
+out/build.log

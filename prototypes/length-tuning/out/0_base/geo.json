@@ -1,0 +1,86 @@
+{
+ "arcs": 0,
+ "sweep_min": null,
+ "sweep_max": null,
+ "area_gap": {
+  "arc": null,
+  "leg": null
+ },
+ "serp_net_gap": null,
+ "all_net_gap": {
+  "gap": 0.13,
+  "net": "/FMC_SDCLK",
+  "other": "U1.H15",
+  "other_kind": "pad",
+  "at": [
+   18.987,
+   12.325
+  ]
+ },
+ "pairs": [],
+ "leads": [],
+ "sharp_arc": 0,
+ "lead_min": null,
+ "thin_outside": {
+  "/FMC_D10": 0.35,
+  "/FMC_D11": 0.2,
+  "/FMC_D12": 2.5,
+  "/FMC_D13": 1.999,
+  "/FMC_D14": 0.45,
+  "/FMC_D15": 2.0,
+  "/FMC_D8": 3.4,
+  "/FMC_D9": 4.301,
+  "/FMC_SDCLK": 2.0
+ },
+ "via_turn": [
+  {
+   "net": "/FMC_D10",
+   "at": [
+    22.6,
+    17.9
+   ],
+   "turn": 0.0
+  },
+  {
+   "net": "/FMC_D10",
+   "at": [
+    15.275,
+    15.575
+   ],
+   "turn": 90.0
+  },
+  {
+   "net": "/FMC_D11",
+   "at": [
+    22.6,
+    18.7
+   ],
+   "turn": 0.0
+  },
+  {
+   "net": "/FMC_D11",
+   "at": [
+    15.275,
+    16.225
+   ],
+   "turn": 90.0
+  },
+  {
+   "net": "/FMC_D14",
+   "at": [
+    25.0,
+    19.5
+   ],
+   "turn": 90.0
+  },
+  {
+   "net": "/FMC_D14",
+   "at": [
+    17.225,
+    16.225
+   ],
+   "turn": 0.0
+  }
+ ],
+ "off_grid": []
+}
