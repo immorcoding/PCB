@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>走线与等长配合：参考图</title>
+<style>
+:root{--bg:#f6f5f1;--card:#fff;--ink:#1c1d1f;--mute:#5d6168;--line:#d9d6cd;--acc:#a8480f;--warn:#7a5a00;--warnbg:#fbf1cf}
+@media (prefers-color-scheme:dark){:root{--bg:#15171a;--card:#1e2126;--ink:#e8e6e1;--mute:#a3a7ae;--line:#33373e;--acc:#f0a064;--warn:#e9c96a;--warnbg:#3a3214}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.65 "Microsoft YaHei","PingFang SC",system-ui,sans-serif}
+main{max-width:1180px;margin:0 auto;padding:28px 16px 80px}
+h1{font-size:26px;margin:0 0 6px}
+h2{font-size:20px;margin:44px 0 6px;padding-top:18px;border-top:1px solid var(--line)}
+p{margin:8px 0}
+.lead{color:var(--mute);max-width:70ch}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(330px,1fr));gap:16px;margin-top:14px}
+figure{margin:0;background:var(--card);border:1px solid var(--line);border-radius:8px;overflow:hidden}
+figure.wide{grid-column:1/-1}
+figure a{display:block;background:#0d0f12}
+figure img{display:block;width:100%;height:auto;max-height:640px;object-fit:contain}
+figcaption{padding:10px 14px 14px;font-size:14.5px}
+figcaption b{display:block;font-size:15.5px;margin-bottom:2px}
+.src{color:var(--mute);font-size:13px;margin-top:6px}
+.caveat{background:var(--warnbg);color:var(--warn);border-radius:4px;padding:3px 8px;margin-top:6px;font-size:13.5px}
+table{border-collapse:collapse;width:100%;margin-top:12px;font-size:14.5px;background:var(--card)}
+th,td{border:1px solid var(--line);padding:7px 10px;text-align:left;vertical-align:top}
+th{font-weight:600}
+td.n{font-variant-numeric:tabular-nums;white-space:nowrap}
+.scroll{overflow-x:auto}
+ol,ul{padding-left:22px;max-width:80ch}
+li{margin:5px 0}
+a{color:var(--acc)}
+code{font-family:Consolas,monospace;font-size:.92em}
+</style>
+</head>
+<body>
+<main>
+<h1>走线与等长配合：参考图</h1>
+<p class="lead">给 <a href="https://github.com/immorcoding/PCB/issues/21">原型：走线和等长一起规划，对比占用的空间</a> 找的参考。五个方向共 60 张图，这里挑了 19 张；每张图都由第二个 agent 打开核对过，被推翻的说法已在各方向的 <code>notes.md</code> 里改掉。点图看原尺寸。图只作定性参考，下面表里的数是从板文件或 Gerber 算的。</p>
+<p class="lead">ST 的图来自官方制造文件（许可 OPLA），厂商和教程的图来自公开文档和网页：只作内部设计参考，不要再分发。</p>
+
+<h2>一、和我们最像的：芯片间距 4–6 mm 的板</h2>
+<p>OrangeCrab r0.2.1（Greg Davill，开源 KiCad 工程）：0.5 mm BGA 的 FPGA 加 0.8 mm BGA 的 DDR3L，六层，封装体间距 4.15 mm，49 根总线。尺寸是直接从 <code>.kicad_pcb</code> 量的。这是找到的唯一一块间距和我们相当、又能量数的板。</p>
+<div class="grid">
+<figure class="wide"><a href="open-boards/05-orangecrab-3-layers-overlay-bodies.png"><img src="open-boards/05-orangecrab-3-layers-overlay-bodies.png" alt=""></a>
+<figcaption><b>三层信号叠在一起（按层着色），虚线是两颗芯片的封装体</b>
+4.15 mm 的缝里三层都排满了；蛇形不只在缝里，还伸到 DDR3 封装体下面（在背面和内层上，约 17% 的弯在 DDR3 体下）。过孔都打在两颗芯片的体内，缝里只有 2 个过孔，所以缝是一条没有过孔的通道。
+<div class="caveat">这张图很挤，适合看"占了多大地方"，不适合逐根看。</div></figcaption></figure>
+<figure><a href="open-boards/03-orangecrab-B-Cu.png"><img src="open-boards/03-orangecrab-B-Cu.png" alt=""></a>
+<figcaption><b>背面一层</b>
+数据线（蓝）的蛇形一块挨一块、互相错开，外侧两根橙色线没有蛇形、走外圈。粉色是 DQS 差分对，两根画一样的蛇形。右边的蛇形已经进到 DDR3 的球阵下面。</figcaption></figure>
+<figure><a href="open-boards/04-orangecrab-F-Cu-zoom-accordion.png"><img src="open-boards/04-orangecrab-F-Cu-zoom-accordion.png" alt=""></a>
+<figcaption><b>顶层局部放大（6.6 mm 见方）</b>
+相邻的蛇形块互相咬合；同一根线上弯的高度不一样，哪里有地方就伸到哪里。圆弧拐角。腿和腿之间的缝只有 1.1–1.7 倍线宽。
+<div class="caveat">这和我们已定的"一串弯等高"不一样，也比我们的腿间距（中心距 0.5 mm，缝约 4 倍线宽）紧得多。</div></figcaption></figure>
+<figure><a href="open-boards/01-orangecrab-F-Cu.png"><img src="open-boards/01-orangecrab-F-Cu.png" alt=""></a>
+<figcaption><b>顶层</b>
+绿色的蛇形块上下叠放、左右错开，塞在两颗 BGA 之间。红线是 CKE：先绕远再加一小段蛇形。
+<div class="caveat">橙色长线是 RESET#，不在等长组里，不是等长的例子。</div></figcaption></figure>
+<figure><a href="tutorials-en/01-thunderscope-inner-tuning-pocket.png"><img src="tutorials-en/01-thunderscope-inner-tuning-pocket.png" alt=""></a>
+<figcaption><b>ThunderScope FPGA 模块（Hackaday.io）</b>
+线束按 45° 一圈套一圈，长的走外圈；成片的蛇形排在线束中间。右图是另一层：线束走在电源铜皮让出来的一条槽里。
+<div class="caveat">作者自述是第一次做大 BGA 加 DDR3；间距没有标尺（估 5–7 mm）；铜皮上的槽是不是特意留的，看不出来。</div></figcaption></figure>
+</div>
+<div class="scroll">
+<table>
+<tr><th>OrangeCrab 上量到的</th><th>数值</th><th>我们现在的做法</th></tr>
+<tr><td>封装体间距 / 球阵边到边</td><td class="n">4.15 / 5.89 mm</td><td>约定 5 mm</td></tr>
+<tr><td>每根线的长度</td><td class="n">约 15–16 mm</td><td>—</td></tr>
+<tr><td>控制组 25 根的长度差（焊盘到焊盘）</td><td class="n">0.12 mm 以内</td><td>窗口 ±2.5 mm</td></tr>
+<tr><td>蛇形摆幅（三层的平均）</td><td class="n">0.73–0.86 mm</td><td>0.5 mm 起</td></tr>
+<tr><td>腿的中心距 / 缝与线宽之比</td><td class="n">0.27–0.33 mm / 1.2–1.7 倍</td><td>0.5 mm / 约 4 倍</td></tr>
+<tr><td>线宽</td><td class="n">0.121 mm</td><td>0.1016 mm</td></tr>
+<tr><td>过孔</td><td>每根最多 2 个，都在芯片体内</td><td>上一版走 L4 的 3 根各 2 个孔，其中 2 根的第二个孔在 SDRAM 封装体外</td></tr>
+<tr><td>没有蛇形的线</td><td>约一半（检测只认 3 个弯以上，是下限）</td><td>—</td></tr>
+</table>
+</div>
+
+<h2>二、ST 自己的板：同一类 MCU 加 32 位 SDRAM</h2>
+<p>STM32H747I-DISCO 主板（MB1248 Rev D）。每根线的长度是从 ST 的 Gerber 和 IPC 网表算的，颜色是我们加的。芯片间距约 18.5 mm，比我们宽得多，看的是做法。这块板由一家外包设计公司用 Allegro 画（图框上有署名）。</p>
+<div class="grid">
+<figure class="wide"><a href="st-boards/04-mb1248d-length-chart.png"><img src="st-boards/04-mb1248d-length-chart.png" alt=""></a>
+<figcaption><b>57 根线各自的长度（蓝：SDRAM 到串阻；橙：串阻到 MCU）</b>
+57 根里 56 根落在 SDCLK ±2.5 mm 以内，正好是我们取的窗口；ST 自己的应用笔记只要求 ±10 mm。两段此消彼长（相关系数 −0.87）：MCU 一侧出线长的，SDRAM 一侧就少补。SDCLK 自己也画了蛇形（应用笔记说时钟不要画）。</figcaption></figure>
+<figure><a href="st-boards/01-mb1248d-bottom-layer.png"><img src="st-boards/01-mb1248d-bottom-layer.png" alt=""></a>
+<figcaption><b>底层（数据线为主，按字节通道着色）</b>
+一个通道里几种手法并用：最外面几根只绕外圈不画蛇形，里面的线各带一串蛇形，绿色那组是沿 45° 斜线的锯齿带。蛇形在同一组里一根挨一根错开。
+<div class="caveat">图例盖住了 SDRAM 的下半部分。</div></figcaption></figure>
+<figure><a href="st-boards/02-mb1248d-L4.png"><img src="st-boards/02-mb1248d-L4.png" alt=""></a>
+<figcaption><b>L4（地址和控制线为主）</b>
+一片几乎只有总线的空地，成块的蛇形放在里面。数据和地址分在不同的层（数据 81% 在底层，地址 73% 在 L4）。</figcaption></figure>
+<figure><a href="st-boards/06-mb1191e-layer-F6.png"><img src="st-boards/06-mb1191e-layer-F6.png" alt=""></a>
+<figcaption><b>STM32F746G-DISCO（MB1191 Rev E）内层</b>
+ST 的板里芯片最近的一块（球阵间 12.5 mm）。铺铜上开出一个窗口，每根线在自己的直线段上带一小段蛇形，位置前后错开。
+<div class="caveat">没有网表，不能确认窗口里都是 SDRAM 的线。</div></figcaption></figure>
+<figure><a href="st-boards/03-mb1248d-top-layer.png"><img src="st-boards/03-mb1248d-top-layer.png" alt=""></a>
+<figcaption><b>MB1248D 顶层</b>
+顶层主要是扇出的短线，但串阻焊盘旁和球阵边上也挤进了几段蛇形：地方不够时，靠近芯片的位置也用。</figcaption></figure>
+</div>
+
+<h2>三、芯片厂的参考设计</h2>
+<div class="grid">
+<figure><a href="vendor-guides/07-mchp-an4598-sama7g54-ddr3l-addr-ctrl.png"><img src="vendor-guides/07-mchp-an4598-sama7g54-ddr3l-addr-ctrl.png" alt=""></a>
+<figcaption><b>Microchip AN4598（SAMA7G54 加 DDR3L），地址和控制线</b>
+"绕远"和"蛇形"配合得最清楚的一张：长的线绕着内存一圈套一圈走外圈，短的线在里圈带密集的蛇形块。
+<div class="caveat">图小，没有任何尺寸。</div></figcaption></figure>
+<figure><a href="vendor-guides/04-mchp-an2717-sama5d24-ddr3l-layer3-fan.png"><img src="vendor-guides/04-mchp-an2717-sama5d24-ddr3l-layer3-fan.png" alt=""></a>
+<figcaption><b>Microchip AN2717（SAMA5D24 加 DDR3L），内层</b>
+三个字节通道各成一束从 BGA 出来，每束在自己的直线段上有一块蛇形（一束是纵向的长弯，一束是斜向的锯齿）。</figcaption></figure>
+<figure><a href="vendor-guides/02-mchp-an2717-ptcek-layer6-ddr2.png"><img src="vendor-guides/02-mchp-an2717-ptcek-layer6-ddr2.png" alt=""></a>
+<figcaption><b>Microchip AN2717（DDR2），内层</b>
+一组线的蛇形叠成三排，另两组互相穿插。腿间的缝约 2 倍线宽（按像素估的，只有比例可信）。</figcaption></figure>
+<figure><a href="vendor-guides/01-mchp-an2717-ptcek-top-ddr2.png"><img src="vendor-guides/01-mchp-an2717-ptcek-top-ddr2.png" alt=""></a>
+<figcaption><b>Microchip AN2717（DDR2），顶层</b>
+三组线共用顶层铺铜里让出来的一条通道，蛇形叠在靠处理器的一端。芯片间距约 10–11 mm（估算）。</figcaption></figure>
+</div>
+
+<h2>四、教程里的实例</h2>
+<div class="grid">
+<figure><a href="tutorials-zh/04-ddr2-bottom-addr-before-tuning.png"><img src="tutorials-zh/04-ddr2-bottom-addr-before-tuning.png" alt=""></a>
+<figcaption><b>Altium DDR2 实战，底层地址线：绕之前</b>
+先走通：线束并排，中间留着空地。</figcaption></figure>
+<figure><a href="tutorials-zh/02-ddr2-bottom-addr-after-tuning.png"><img src="tutorials-zh/02-ddr2-bottom-addr-after-tuning.png" alt=""></a>
+<figcaption><b>同一层：绕之后</b>
+约 14 根线，十来个蛇形块沿通道上下错开，几乎排满整条通道；最上面的块紧贴 CPU 的球阵。
+<div class="caveat">原文没有说那片空地是特意留的；这块板 CPU 到 DDR 的距离很大。</div></figcaption></figure>
+<figure><a href="tutorials-zh/10-fanyi-interlocked-serpentine-blocks.png"><img src="tutorials-zh/10-fanyi-interlocked-serpentine-blocks.png" alt=""></a>
+<figcaption><b>凡亿教育的示意图</b>
+相邻的线用带圆角的阶梯折线给蛇形块让位，块和块咬合。腿间的缝约 3 倍线宽。
+<div class="caveat">是示意图，不是有记录的实际板。</div></figcaption></figure>
+<figure><a href="tutorials-zh/11-altium-6net-bus-before-after.png"><img src="tutorials-zh/11-altium-6net-bus-before-after.png" alt=""></a>
+<figcaption><b>Altium 自带示例（6 根线）</b>
+阶梯错开最清楚的一张：6 个块分成两段三级台阶，相邻线的块横向不重叠。
+<div class="caveat">上半是第一根已绕、其余未绕的中间状态。</div></figcaption></figure>
+<figure><a href="tutorials-en/07-feranec-imx6rex-outside-groups-layer3.jpg"><img src="tutorials-en/07-feranec-imx6rex-outside-groups-layer3.jpg" alt=""></a>
+<figcaption><b>Robert Feranec 的 iMX6 Rex 板</b>
+这批教程图里唯一一张出自资深工程师自己的板。他的做法（论坛原话的意思）：先定各组走哪几层、怎么换层，每组的线都按同样的方式走；然后分三步：连通（这时可以差 20 mm）、粗调（宁可先长一点，缩短比加长容易）、精调后锁定。</figcaption></figure>
+</div>
+
+<h2>五、对照：整齐但没做等长</h2>
+<div class="grid">
+<figure><a href="open-boards/11-ulx3s-F-Cu-untuned.png"><img src="open-boards/11-ulx3s-F-Cu-untuned.png" alt=""></a>
+<figcaption><b>ULX3S（FPGA 加 16 位 SDR SDRAM，四层）</b>
+线很整齐，但没做等长：各线长度 16.6–32.9 mm，差 16.3 mm。同样是 SDR SDRAM，作者没有补。</figcaption></figure>
+<figure><a href="tutorials-en/04-fedevel-artix-ddr3-serpentine-pocket.png"><img src="tutorials-en/04-fedevel-artix-ddr3-serpentine-pocket.png" alt=""></a>
+<figcaption><b>FEDEVEL 论坛上一位新手的板</b>
+走完之后才往内存和 BGA 之间的空里塞蛇形的样子：块大小不一、不成排。和我们上一版原型是同一类问题。</figcaption></figure>
+</div>
+
+<h2>几块板上反复出现的做法</h2>
+<ol>
+<li><b>先分层，过孔打在芯片体内。</b>两端是很短的顶层出线加一个过孔，中间一整段走在同一层上，芯片之间的通道里没有过孔。等长在这一整段上做。</li>
+<li><b>补线区不只是两颗芯片之间的缝。</b>间距小的板把蛇形放到内存封装体下面的内层和背面（OrangeCrab），或者让线绕着内存走一圈（Microchip）。</li>
+<li><b>绕远和蛇形一起用。</b>一束线拐弯时外圈天然长，短的里圈线带蛇形；最外面的几根通常没有蛇形。</li>
+<li><b>蛇形块前后错开、互相咬合</b>，很少排成整齐的一排（只有在很窄的条带里才并排）。</li>
+<li><b>间距紧的板，腿排得很密</b>：腿间的缝 1.2–2 倍线宽；ST 的板和中文资料里常见的是 3 倍。</li>
+<li><b>同一组的线走同样的层、同样的过孔数</b>，过孔的长度就互相抵消。</li>
+<li><b>工具上是边走边量</b>：OrangeCrab 的工程带一个脚本，走线时开在旁边，每次保存就重算每组的长度差。</li>
+</ol>
+
+<h2>没找到的</h2>
+<ul>
+<li>没有一份资料写"走线之前先量好、给蛇形预留多少地方"的流程。中文教程一律是先走通再绕；预留空间只能从图上看出来，没有人写成规则。</li>
+<li>没有 0.65 mm BGA 的 STM32 贴着 0.8 mm BGA 的 SDRAM（5 mm 以内）的公开板。ST 自己的板最近也有 12.5 mm。</li>
+<li>STM32 的 FMC 能不能在 SDRAM 一侧换位，没有找到出处（我们已定只在 SDRAM 一侧换）。</li>
+<li>Phil's Lab、吴川斌博客、EDA365、Reddit 上的评审帖没有取到（页面打不开或只有视频）。</li>
+</ul>
+
+<p class="src">各方向的完整笔记：<a href="open-boards/notes.md">open-boards</a>、<a href="st-boards/notes.md">st-boards</a>（另有 <a href="st-boards/mb1248d-net-lengths.csv">MB1248D 每根线的长度表</a>）、<a href="vendor-guides/notes.md">vendor-guides</a>、<a href="tutorials-en/notes.md">tutorials-en</a>、<a href="tutorials-zh/notes.md">tutorials-zh</a>。每份笔记末尾列了核对时改掉的说法。</p>
+</main>
+</body>
+</html>
