@@ -1,0 +1,888 @@
+{
+ "variant": "3_under_sdram",
+ "description": "方案 3：走线和等长一起规划，蛇形全部放在 SDRAM 封装下面（L4 九行“梯子”+ L6 的几行），窄条里只有成束的走线，没有蛇形也没有过孔。",
+ "lanes_swapped": false,
+ "pitch": {
+  "default": 0.3,
+  "SDCLK": 0.5
+ },
+ "nets": {
+  "FMC_SDCLK": {
+   "length_mm": 25.6499,
+   "length_by_geometry_mm": 25.6499,
+   "delta_to_sdclk_mm": 0.0,
+   "in_window": true,
+   "vias": 2,
+   "via_mm": 2.7864,
+   "layers": {
+    "L1": 9.8046,
+    "L4": 13.0589
+   },
+   "mcu_ball": "H14",
+   "sdram_pin": "CLK",
+   "sdram_ball": "J1",
+   "direct_mm": 8.8468,
+   "route_mm": 21.1411,
+   "detour_mm": 12.2943,
+   "serpentine_mm": 4.5088,
+   "n_serpentines": 1,
+   "n_humps": 2,
+   "pitch_mm": [
+    0.5
+   ],
+   "max_amplitude_mm": 1.342,
+   "amplitudes_mm": [
+    [
+     1.342,
+     1.342
+    ]
+   ],
+   "serpentine_where": [
+    "L4 S side, (23.05, 9.90) to (25.05, 9.90), inside a rule area"
+   ],
+   "serpentine_under_sdram_mm": 4.5088,
+   "why": "梯子最上面一行（L4，y=9.9）：从 MCU 右边出，在窄条里沿 45° 上到这一行，行尾在中间没有球的那一条里打孔，L1 向南回到 J 行上面的通道进 J1。它要补得最多，所以故意排在最远的一行，绕出 12.3 mm（其中 2.8 mm 是两个过孔的高度）；剩下的 4.5 mm 用这一行上 2 个等高的弯补（腿间距 0.5，朝南，全在封装下面）。行比过孔高 0.4 mm，是给这两个高弯和下面 D10 的弯留间距。",
+   "tuning_note": ""
+  },
+  "FMC_D0": {
+   "length_mm": 23.7497,
+   "length_by_geometry_mm": 23.7497,
+   "delta_to_sdclk_mm": -1.9002,
+   "in_window": true,
+   "vias": 2,
+   "via_mm": 3.3008,
+   "layers": {
+    "L1": 2.3003,
+    "L6": 18.1486
+   },
+   "mcu_ball": "M14",
+   "sdram_pin": "DQ3",
+   "sdram_ball": "N8",
+   "direct_mm": 14.6953,
+   "route_mm": 18.2654,
+   "detour_mm": 3.5701,
+   "serpentine_mm": 5.4843,
+   "n_serpentines": 1,
+   "n_humps": 4,
+   "pitch_mm": [
+    0.3
+   ],
+   "max_amplitude_mm": 0.814,
+   "amplitudes_mm": [
+    [
+     0.814,
+     0.814,
+     0.814,
+     0.814
+    ]
+   ],
+   "serpentine_where": [
+    "L6 N side, (23.05, 18.20) to (25.45, 18.20), inside a rule area"
+   ],
+   "serpentine_under_sdram_mm": 5.4843,
+   "why": "跟着 D1，在它下面 1.1 mm 的一行（y=18.2）：4 个等高的弯（0.81），朝北；两行的间距就是按这个弯高定的。之后斜下到 N8 旁的过孔。",
+   "tuning_note": ""
+  },
+  "FMC_D1": {
+   "length_mm": 23.7499,
+   "length_by_geometry_mm": 23.7499,
+   "delta_to_sdclk_mm": -1.9,
+   "in_window": true,
+   "vias": 2,
+   "via_mm": 3.3008,
+   "layers": {
+    "L1": 2.3003,
+    "L6": 18.1488
+   },
+   "mcu_ball": "L14",
+   "sdram_pin": "DQ6",
+   "sdram_ball": "M7",
+   "direct_mm": 13.8332,
+   "route_mm": 17.4032,
+   "detour_mm": 3.57,
+   "serpentine_mm": 6.3467,
+   "n_serpentines": 1,
+   "n_humps": 4,
+   "pitch_mm": [
+    0.3
+   ],
+   "max_amplitude_mm": 0.922,
+   "amplitudes_mm": [
+    [
+     0.922,
+     0.922,
+     0.922,
+     0.922
+    ]
+   ],
+   "serpentine_where": [
+    "L6 N side, (23.05, 17.10) to (25.45, 17.10), inside a rule area"
+   ],
+   "serpentine_under_sdram_mm": 6.3467,
+   "why": "L6：从 MCU 右边一条斜线到 SDRAM 左半边下面的一行（y=17.1），这一行就是给它留的补线位置：4 个等高的弯（0.92），朝北；过了蛇形再斜下到 M7 旁的过孔。L6 这几根里它的直连最短，所以补得最多（6.3 mm）。",
+   "tuning_note": ""
+  },
+  "FMC_D2": {
+   "length_mm": 23.3729,
+   "length_by_geometry_mm": 23.3729,
+   "delta_to_sdclk_mm": -2.277,
+   "in_window": true,
+   "vias": 2,
+   "via_mm": 3.3008,
+   "layers": {
+    "L1": 1.9239,
+    "L6": 18.1482
+   },
+   "mcu_ball": "B12",
+   "sdram_pin": "DQ5",
+   "sdram_ball": "M8",
+   "direct_mm": 18.3563,
+   "route_mm": 23.3729,
+   "detour_mm": 5.0166,
+   "serpentine_mm": 0,
+   "n_serpentines": 0,
+   "n_humps": 0,
+   "pitch_mm": [],
+   "max_amplitude_mm": 0.0,
+   "amplitudes_mm": [],
+   "serpentine_where": [],
+   "serpentine_under_sdram_mm": 0,
+   "why": "和 NBL0 同一束，在内侧，L6 斜线从梯子第 5、第 6 个过孔中间穿过，到 L7 球旁边向南折 0.8 mm，进 M8 旁的过孔。它和 D3 在 SDRAM 一侧对调了球（同一个字节里），就是为了多走这 0.8 mm：这样自然长度就在窗口里（离下沿 0.22 mm），不用蛇形。",
+   "tuning_note": ""
+  },
+  "FMC_D3": {
+   "length_mm": 24.5531,
+   "length_by_geometry_mm": 24.5531,
+   "delta_to_sdclk_mm": -1.0968,
+   "in_window": true,
+   "vias": 2,
+   "via_mm": 2.7864,
+   "layers": {
+    "L1": 1.0253,
+    "L4": 20.7413
+   },
+   "mcu_ball": "C12",
+   "sdram_pin": "DQ7",
+   "sdram_ball": "L8",
+   "direct_mm": 17.7557,
+   "route_mm": 24.5531,
+   "detour_mm": 6.7974,
+   "serpentine_mm": 0,
+   "n_serpentines": 0,
+   "n_humps": 0,
+   "pitch_mm": [],
+   "max_amplitude_mm": 0.0,
+   "amplitudes_mm": [],
+   "serpentine_where": [],
+   "serpentine_under_sdram_mm": 0,
+   "why": "内圈球，只能从 L4 出。梯子占了 SDRAM 左半边的 L4，所以故意让它从梯子上面过去（贴着封装上沿里面，y=9.45），斜穿封装右上角，沿封装右侧向下到 L8 旁的过孔。这样绕出来的长度在窗口里（比 SDCLK 短 1.1），不用蛇形。这一段贴在封装外形线里面 0.05 mm，空间指标按定义不数它（见 README 的说明）。",
+   "tuning_note": ""
+  },
+  "FMC_D4": {
+   "length_mm": 24.4721,
+   "length_by_geometry_mm": 24.4721,
+   "delta_to_sdclk_mm": -1.1778,
+   "in_window": true,
+   "vias": 2,
+   "via_mm": 3.3008,
+   "layers": {
+    "L1": 1.3157,
+    "L6": 19.8556
+   },
+   "mcu_ball": "R8",
+   "sdram_pin": "DQ2",
+   "sdram_ball": "R9",
+   "direct_mm": 19.2504,
+   "route_mm": 24.4721,
+   "detour_mm": 5.2217,
+   "serpentine_mm": 0,
+   "n_serpentines": 0,
+   "n_humps": 0,
+   "pitch_mm": [],
+   "max_amplitude_mm": 0.0,
+   "amplitudes_mm": [],
+   "serpentine_where": [],
+   "serpentine_under_sdram_mm": 0,
+   "why": "这一束最外面一根，行在封装下沿里面 0.1 mm（y=22.3），末端 45° 上到 R9 旁的过孔。在窗口里，没有蛇形。",
+   "tuning_note": ""
+  },
+  "FMC_D5": {
+   "length_mm": 23.7422,
+   "length_by_geometry_mm": 23.7422,
+   "delta_to_sdclk_mm": -1.9077,
+   "in_window": true,
+   "vias": 2,
+   "via_mm": 3.3008,
+   "layers": {
+    "L1": 2.5003,
+    "L6": 17.9411
+   },
+   "mcu_ball": "P8",
+   "sdram_pin": "DQ0",
+   "sdram_ball": "R8",
+   "direct_mm": 18.7196,
+   "route_mm": 23.7422,
+   "detour_mm": 5.0226,
+   "serpentine_mm": 0,
+   "n_serpentines": 0,
+   "n_humps": 0,
+   "pitch_mm": [],
+   "max_amplitude_mm": 0.0,
+   "amplitudes_mm": [],
+   "serpentine_where": [],
+   "serpentine_under_sdram_mm": 0,
+   "why": "跟着 D7，到 R8 旁的过孔。自然长度就在窗口里（比 SDCLK 短 1.9），没有蛇形。",
+   "tuning_note": ""
+  },
+  "FMC_D6": {
+   "length_mm": 23.7502,
+   "length_by_geometry_mm": 23.7502,
+   "delta_to_sdclk_mm": -1.8997,
+   "in_window": true,
+   "vias": 2,
+   "via_mm": 3.3008,
+   "layers": {
+    "L1": 2.5003,
+    "L6": 17.9491
+   },
+   "mcu_ball": "P9",
+   "sdram_pin": "DQ1",
+   "sdram_ball": "N7",
+   "direct_mm": 16.6069,
+   "route_mm": 21.5131,
+   "detour_mm": 4.9062,
+   "serpentine_mm": 2.2371,
+   "n_serpentines": 1,
+   "n_humps": 4,
+   "pitch_mm": [
+    0.3
+   ],
+   "max_amplitude_mm": 0.408,
+   "amplitudes_mm": [
+    [
+     0.408,
+     0.408,
+     0.408,
+     0.408
+    ]
+   ],
+   "serpentine_where": [
+    "L6 N side, (23.05, 20.30) to (25.45, 20.30), inside a rule area"
+   ],
+   "serpentine_under_sdram_mm": 2.2371,
+   "why": "L6：MCU 下边打孔，斜向东南后向东直进 SDRAM 下面，到 N7 旁的过孔。行上 4 个等高的弯（0.41），朝北。",
+   "tuning_note": ""
+  },
+  "FMC_D7": {
+   "length_mm": 24.148,
+   "length_by_geometry_mm": 24.148,
+   "delta_to_sdclk_mm": -1.5019,
+   "in_window": true,
+   "vias": 2,
+   "via_mm": 3.3008,
+   "layers": {
+    "L1": 1.3157,
+    "L6": 19.5315
+   },
+   "mcu_ball": "R9",
+   "sdram_pin": "DQ4",
+   "sdram_ball": "P9",
+   "direct_mm": 18.269,
+   "route_mm": 23.043,
+   "detour_mm": 4.7741,
+   "serpentine_mm": 1.105,
+   "n_serpentines": 1,
+   "n_humps": 2,
+   "pitch_mm": [
+    0.3
+   ],
+   "max_amplitude_mm": 0.405,
+   "amplitudes_mm": [
+    [
+     0.405,
+     0.405
+    ]
+   ],
+   "serpentine_where": [
+    "L6 N side, (23.05, 21.10) to (24.25, 21.10), inside a rule area"
+   ],
+   "serpentine_under_sdram_mm": 1.105,
+   "why": "跟着 D6，在它下面 0.8 mm，到 P9 旁的过孔。只差 0.1 mm 进窗口，放 2 个最矮的带直腿的弯（0.405，朝北）。",
+   "tuning_note": ""
+  },
+  "FMC_D8": {
+   "length_mm": 24.0508,
+   "length_by_geometry_mm": 24.0508,
+   "delta_to_sdclk_mm": -1.5991,
+   "in_window": true,
+   "vias": 2,
+   "via_mm": 2.7864,
+   "layers": {
+    "L1": 6.4539,
+    "L4": 14.8105
+   },
+   "mcu_ball": "P10",
+   "sdram_pin": "DQ13",
+   "sdram_ball": "R1",
+   "direct_mm": 11.8196,
+   "route_mm": 24.0508,
+   "detour_mm": 12.2312,
+   "serpentine_mm": 0,
+   "n_serpentines": 0,
+   "n_humps": 0,
+   "pitch_mm": [],
+   "max_amplitude_mm": 0.0,
+   "amplitudes_mm": [],
+   "serpentine_where": [],
+   "serpentine_under_sdram_mm": 0,
+   "why": "和 D11、D12 同一束向东，到窄条里向下折到倒数第二行（y=20.5），过孔在 P 行旁边，L1 回程走 R 行上面的通道进 R1。这一行和球差不多高，长度主要来自 MCU 下方那一段；在窗口里，没有蛇形。",
+   "tuning_note": ""
+  },
+  "FMC_D9": {
+   "length_mm": 23.5625,
+   "length_by_geometry_mm": 23.5625,
+   "delta_to_sdclk_mm": -2.0874,
+   "in_window": true,
+   "vias": 2,
+   "via_mm": 2.7864,
+   "layers": {
+    "L1": 4.6892,
+    "L4": 16.0869
+   },
+   "mcu_ball": "R10",
+   "sdram_pin": "DQ15",
+   "sdram_ball": "R2",
+   "direct_mm": 12.3504,
+   "route_mm": 23.5625,
+   "detour_mm": 11.2121,
+   "serpentine_mm": 0,
+   "n_serpentines": 0,
+   "n_humps": 0,
+   "pitch_mm": [],
+   "max_amplitude_mm": 0.0,
+   "amplitudes_mm": [],
+   "serpentine_where": [],
+   "serpentine_under_sdram_mm": 0,
+   "why": "同 D8，最下面一行（y=21.3），过孔在 R 行旁边，L1 回程走 R 行下面进 R2。没有蛇形。",
+   "tuning_note": ""
+  },
+  "FMC_D10": {
+   "length_mm": 23.9374,
+   "length_by_geometry_mm": 23.9374,
+   "delta_to_sdclk_mm": -1.7125,
+   "in_window": true,
+   "vias": 2,
+   "via_mm": 2.7864,
+   "layers": {
+    "L1": 7.6096,
+    "L4": 13.5415
+   },
+   "mcu_ball": "N11",
+   "sdram_pin": "DQ8",
+   "sdram_ball": "L2",
+   "direct_mm": 10.9134,
+   "route_mm": 22.8324,
+   "detour_mm": 11.9191,
+   "serpentine_mm": 1.105,
+   "n_serpentines": 1,
+   "n_humps": 2,
+   "pitch_mm": [
+    0.3
+   ],
+   "max_amplitude_mm": 0.405,
+   "amplitudes_mm": [
+    [
+     0.405,
+     0.405
+    ]
+   ],
+   "serpentine_where": [
+    "L4 N side, (23.05, 12.15) to (24.25, 12.15), inside a rule area"
+   ],
+   "serpentine_under_sdram_mm": 1.105,
+   "why": "内圈球，狗骨孔下 L4。梯子第 2 行，L1 回程走 L 行上面的通道进 L2。绕远以后只差 0.3 mm 进窗口，在行上放 2 个最矮的带直腿的弯（0.405，朝北）留出余量。",
+   "tuning_note": ""
+  },
+  "FMC_D11": {
+   "length_mm": 24.1407,
+   "length_by_geometry_mm": 24.1407,
+   "delta_to_sdclk_mm": -1.5092,
+   "in_window": true,
+   "vias": 2,
+   "via_mm": 2.7864,
+   "layers": {
+    "L1": 6.8389,
+    "L4": 14.5154
+   },
+   "mcu_ball": "P11",
+   "sdram_pin": "DQ14",
+   "sdram_ball": "N3",
+   "direct_mm": 12.1069,
+   "route_mm": 24.1407,
+   "detour_mm": 12.0338,
+   "serpentine_mm": 0,
+   "n_serpentines": 0,
+   "n_humps": 0,
+   "pitch_mm": [],
+   "max_amplitude_mm": 0.0,
+   "amplitudes_mm": [],
+   "serpentine_where": [],
+   "serpentine_under_sdram_mm": 0,
+   "why": "从 MCU 下边出，在 MCU 下方和 D12、D8、D9 并成一束向东，再沿 45° 上到梯子第 6 行，L1 回程沿 N 行直进 N3。光靠“行 + L1 回程”的绕远就进了窗口，没有蛇形；行上留的直线空着。它和上一行之间多留的距离是给 D2 的斜线（L6）穿过去的。",
+   "tuning_note": ""
+  },
+  "FMC_D12": {
+   "length_mm": 24.9295,
+   "length_by_geometry_mm": 24.9295,
+   "delta_to_sdclk_mm": -0.7204,
+   "in_window": true,
+   "vias": 2,
+   "via_mm": 2.7864,
+   "layers": {
+    "L1": 6.8999,
+    "L4": 15.2432
+   },
+   "mcu_ball": "R11",
+   "sdram_pin": "DQ11",
+   "sdram_ball": "P1",
+   "direct_mm": 10.569,
+   "route_mm": 24.9295,
+   "detour_mm": 14.3605,
+   "serpentine_mm": 0,
+   "n_serpentines": 0,
+   "n_humps": 0,
+   "pitch_mm": [],
+   "max_amplitude_mm": 0.0,
+   "amplitudes_mm": [],
+   "serpentine_where": [],
+   "serpentine_under_sdram_mm": 0,
+   "why": "同 D11，梯子第 7 行，L1 回程走 P 行上面的通道进 P1。靠绕远进窗口，没有蛇形。",
+   "tuning_note": ""
+  },
+  "FMC_D13": {
+   "length_mm": 23.7497,
+   "length_by_geometry_mm": 23.7497,
+   "delta_to_sdclk_mm": -1.9002,
+   "in_window": true,
+   "vias": 2,
+   "via_mm": 2.7864,
+   "layers": {
+    "L1": 7.2399,
+    "L4": 13.7233
+   },
+   "mcu_ball": "P15",
+   "sdram_pin": "DQ12",
+   "sdram_ball": "N2",
+   "direct_mm": 8.7069,
+   "route_mm": 19.2163,
+   "detour_mm": 10.5095,
+   "serpentine_mm": 4.5334,
+   "n_serpentines": 1,
+   "n_humps": 5,
+   "pitch_mm": [
+    0.3
+   ],
+   "max_amplitude_mm": 0.582,
+   "amplitudes_mm": [
+    [
+     0.582,
+     0.582,
+     0.582,
+     0.582,
+     0.582
+    ]
+   ],
+   "serpentine_where": [
+    "L4 N side, (23.05, 15.40) to (26.05, 15.40), inside a rule area"
+   ],
+   "serpentine_under_sdram_mm": 4.5334,
+   "why": "梯子第 5 行，L1 回程走 N 行上面的通道进 N2。行上 5 个等高的弯，朝北。",
+   "tuning_note": ""
+  },
+  "FMC_D14": {
+   "length_mm": 23.7502,
+   "length_by_geometry_mm": 23.7502,
+   "delta_to_sdclk_mm": -1.8997,
+   "in_window": true,
+   "vias": 2,
+   "via_mm": 2.7864,
+   "layers": {
+    "L1": 7.6589,
+    "L4": 13.3049
+   },
+   "mcu_ball": "P14",
+   "sdram_pin": "DQ9",
+   "sdram_ball": "M3",
+   "direct_mm": 9.8255,
+   "route_mm": 19.1558,
+   "detour_mm": 9.3303,
+   "serpentine_mm": 4.5944,
+   "n_serpentines": 1,
+   "n_humps": 5,
+   "pitch_mm": [
+    0.3
+   ],
+   "max_amplitude_mm": 0.588,
+   "amplitudes_mm": [
+    [
+     0.588,
+     0.588,
+     0.588,
+     0.588,
+     0.588
+    ]
+   ],
+   "serpentine_where": [
+    "L4 N side, (23.05, 14.47) to (26.05, 14.47), inside a rule area"
+   ],
+   "serpentine_under_sdram_mm": 4.5944,
+   "why": "梯子第 4 行，L1 回程沿 M 行直进 M3。行上 5 个等高的弯，朝北。它和上一行之间多留了 0.4 mm，是让 NBL0 的斜线（L6）从两个过孔中间穿过去。",
+   "tuning_note": ""
+  },
+  "FMC_D15": {
+   "length_mm": 23.7497,
+   "length_by_geometry_mm": 23.7497,
+   "delta_to_sdclk_mm": -1.9002,
+   "in_window": true,
+   "vias": 2,
+   "via_mm": 2.7864,
+   "layers": {
+    "L1": 8.0799,
+    "L4": 12.8833
+   },
+   "mcu_ball": "N15",
+   "sdram_pin": "DQ10",
+   "sdram_ball": "M2",
+   "direct_mm": 8.6447,
+   "route_mm": 20.0798,
+   "detour_mm": 11.4351,
+   "serpentine_mm": 3.6699,
+   "n_serpentines": 1,
+   "n_humps": 4,
+   "pitch_mm": [
+    0.3
+   ],
+   "max_amplitude_mm": 0.588,
+   "amplitudes_mm": [
+    [
+     0.588,
+     0.588,
+     0.588,
+     0.588
+    ]
+   ],
+   "serpentine_where": [
+    "L4 N side, (23.05, 13.10) to (25.45, 13.10), inside a rule area"
+   ],
+   "serpentine_under_sdram_mm": 3.6699,
+   "why": "梯子第 3 行，L1 回程走 M 行上面的通道进 M2。这一行在封装下面的直线是事先留的补线位置：4 个等高的弯，朝北。",
+   "tuning_note": ""
+  },
+  "FMC_NBL0": {
+   "length_mm": 27.9264,
+   "length_by_geometry_mm": 27.9264,
+   "delta_to_sdclk_mm": 2.2765,
+   "in_window": true,
+   "vias": 2,
+   "via_mm": 3.3008,
+   "layers": {
+    "L1": 1.6971,
+    "L6": 22.9285
+   },
+   "mcu_ball": "A4",
+   "sdram_pin": "DQM0",
+   "sdram_ball": "K9",
+   "direct_mm": 23.9628,
+   "route_mm": 27.9264,
+   "detour_mm": 3.9636,
+   "serpentine_mm": 0,
+   "n_serpentines": 0,
+   "n_humps": 0,
+   "pitch_mm": [],
+   "max_amplitude_mm": 0.0,
+   "amplitudes_mm": [],
+   "serpentine_where": [],
+   "serpentine_under_sdram_mm": 0,
+   "why": "最长的一根，窗口上限由它定：MCU 上边出，L6 上一条 45° 斜线从 SDRAM 封装下面直穿到 K9 旁的过孔，从梯子第 3、第 4 个过孔中间穿过。除了出球和两个过孔，一点没绕；没有蛇形。",
+   "tuning_note": ""
+  },
+  "FMC_NBL1": {
+   "length_mm": 26.5503,
+   "length_by_geometry_mm": 26.5503,
+   "delta_to_sdclk_mm": 0.9004,
+   "in_window": true,
+   "vias": 2,
+   "via_mm": 3.3008,
+   "layers": {
+    "L1": 10.8608,
+    "L6": 12.3887
+   },
+   "mcu_ball": "A3",
+   "sdram_pin": "DQM1",
+   "sdram_ball": "K1",
+   "direct_mm": 18.2128,
+   "route_mm": 26.5503,
+   "detour_mm": 8.3375,
+   "serpentine_mm": 0,
+   "n_serpentines": 0,
+   "n_humps": 0,
+   "pitch_mm": [],
+   "max_amplitude_mm": 0.0,
+   "amplitudes_mm": [],
+   "serpentine_where": [],
+   "serpentine_under_sdram_mm": 0,
+   "why": "和 NBL0 同一束，在外侧。斜到 SDRAM 左上角规则区里打孔换 L1，沿封装左边向南到 K1。这个 L 形是故意的（封装左半边下面的 L6 留给 D1、D0 的蛇形），长度在窗口里，没有蛇形。",
+   "tuning_note": ""
+  }
+ },
+ "totals": {
+  "window_L_mm": 25.6499,
+  "window_mm": [
+   23.1499,
+   28.1499
+  ],
+  "in_window_count": 19,
+  "nets": 19,
+  "worst_delta_mm": -2.277,
+  "worst_net": "FMC_D2",
+  "out_of_window_by_mm": {},
+  "longest_mm": 27.9264,
+  "shortest_mm": 23.3729,
+  "total_length_mm": 463.535,
+  "total_direct_mm": 273.445,
+  "total_detour_mm": 156.506,
+  "total_serpentine_mm": 33.585,
+  "n_serpentines": 9,
+  "n_humps": 32,
+  "nets_with_serpentine": 9,
+  "max_vias": 2,
+  "total_vias": 38,
+  "nets_over_2_vias": [],
+  "serpentine_under_sdram_mm": 33.585,
+  "serpentine_under_sdram_share": 1.0,
+  "max_abs_geometry_minus_drc_mm": 0.0,
+  "over_60mm": []
+ },
+ "space": {
+  "bus_hull_area_mm2": 165.9,
+  "bus_bbox_mm": [
+   12.784,
+   15.98
+  ],
+  "bus_bbox_corners": [
+   10.216,
+   6.32,
+   23.0,
+   22.3
+  ],
+  "bus_swept_area_mm2": {
+   "all": 57.32,
+   "L1": 8.72,
+   "L4": 27.3,
+   "L6": 35.18
+  },
+  "channel_width_mm": 15.98,
+  "channel_y_range": [
+   6.32,
+   22.3
+  ],
+  "channel_width_by_layer_mm": {
+   "L1": 0.0,
+   "L4": 11.85,
+   "L6": 15.98
+  },
+  "copper_area_by_layer_mm2": {
+   "L1": 8.371,
+   "L4": 13.903,
+   "L6": 15.509
+  }
+ },
+ "checks": {
+  "drc": {
+   "kicad": "10.0.8",
+   "unconnected": 0,
+   "violations": 0,
+   "by_type": {},
+   "length_out_of_range_matches_out_of_window": true,
+   "unexplained": [],
+   "unconnected_items": []
+  },
+  "rule_file_canary": {
+   "ok": true,
+   "text": "OK: custom rules loaded (corner_angle fired on the canary bend)"
+  },
+  "rules_matched": {
+   "per_length_rule": {
+    "sdram_len_max": 19,
+    "sdram_window": 19
+   },
+   "ok": true
+  },
+  "track_shape": {
+   "script": "E:/Projects/claude_workspace/PCB/scripts/track_shape.py",
+   "off-grid": 0,
+   "staircase": 0,
+   "sharp": 0,
+   "crowded": 3,
+   "tiny": 0,
+   "segments": 259,
+   "arcs": 128,
+   "lines": [
+    "/FMC_D10 F.Cu from (26.21, 17.6): 3 bends in 1.33 mm",
+    "/FMC_D15 F.Cu from (26.54, 18.4): 3 bends in 1.66 mm",
+    "/FMC_SDCLK F.Cu from (24.2, 16.3): 3 bends in 1.80 mm"
+   ]
+  },
+  "geometry": {
+   "clearance_violations": [],
+   "path_problems": [],
+   "min_gap_all": {
+    "gap": 0.1282,
+    "net": "D8",
+    "other": "D9",
+    "layer": "L4",
+    "at": [
+     14.625,
+     18.2
+    ],
+    "need": 0.127,
+    "serp": false
+   },
+   "off_grid_exact": [],
+   "thin_outside_mm": {
+    "D0": 0.602,
+    "D1": 0.322,
+    "D10": 0.606,
+    "D11": 0.501,
+    "D12": 0.501,
+    "D13": 0.602,
+    "D14": 0.597,
+    "D15": 0.452,
+    "D2": 0.6,
+    "D3": 0.601,
+    "D4": 0.6,
+    "D5": 0.595,
+    "D6": 0.702,
+    "D7": 0.6,
+    "D8": 0.5,
+    "D9": 0.5,
+    "NBL0": 0.65,
+    "NBL1": 0.601,
+    "SDCLK": 0.606
+   },
+   "via_turn_90_or_more": [],
+   "arcs": 128,
+   "arc_radii_mm": [
+    0.15,
+    0.25
+   ],
+   "arc_sweep_deg": [
+    90.0,
+    90.0
+   ]
+  },
+  "serpentine_clearances": {
+   "limits_used": {
+    "end": 0.35,
+    "clr": 0.19,
+    "area_gap": 0.127,
+    "edge": 0.254,
+    "field": 0.6
+   },
+   "smallest_to_other_net": {
+    "gap": 0.2681,
+    "net": "D0",
+    "other": "D1",
+    "layer": "L6",
+    "at": [
+     25.219,
+     17.403
+    ],
+    "need": 0.09,
+    "serp": true
+   },
+   "smallest_to_rule_area_edge_from_outside": null,
+   "shortest_straight_between_bend_and_arc": 0.35,
+   "leads_below_0.35": [],
+   "pairs_below_0.3": [
+    {
+     "gap": 0.2681,
+     "net": "D1",
+     "other": "D0",
+     "layer": "L6",
+     "at": [
+      24.181,
+      17.083
+     ],
+     "need": 0.09,
+     "serp": true
+    },
+    {
+     "gap": 0.2681,
+     "net": "D0",
+     "other": "D1",
+     "layer": "L6",
+     "at": [
+      25.219,
+      17.403
+     ],
+     "need": 0.09,
+     "serp": true
+    },
+    {
+     "gap": 0.2725,
+     "net": "D15",
+     "other": "D10",
+     "layer": "L4",
+     "at": [
+      24.55,
+      12.513
+     ],
+     "need": 0.09,
+     "serp": true
+    }
+   ]
+  },
+  "conventions": [],
+  "ball_check": [
+   "MCU: 19 port->ball pairs equal the KiCad symbol STM32H743IIKx; pads on the 15x15 0.65 mm grid",
+   "SDRAM: 90 ball names and positions equal the KiCad footprint; functions come from the research ball map (no KiCad symbol)"
+  ],
+  "tuning_notes": []
+ },
+ "pictures": [
+  "bus_L1.png",
+  "bus_L4.png",
+  "bus_L6.png",
+  "bus_all.png",
+  "corridor_L1.png",
+  "corridor_L4.png",
+  "corridor_L6.png",
+  "corridor_all.png",
+  "sdram_L1.png",
+  "sdram_L4.png",
+  "sdram_L6.png",
+  "sdram_all.png",
+  "south_L1.png",
+  "south_L4.png",
+  "south_L6.png",
+  "south_all.png",
+  "north_L1.png",
+  "north_L4.png",
+  "north_L6.png",
+  "north_all.png",
+  "ladder_L1.png",
+  "ladder_L4.png",
+  "ladder_L6.png",
+  "ladder_all.png",
+  "harps_L1.png",
+  "harps_L4.png",
+  "harps_L6.png",
+  "harps_all.png",
+  "north_L1.png",
+  "north_L4.png",
+  "north_L6.png",
+  "north_all.png"
+ ],
+ "build_seconds": 16.0
+}

@@ -1,0 +1,9 @@
+259 segments, 128 arcs
+off-grid: 0
+staircase: 0
+sharp: 0
+crowded: 3
+    /FMC_D10 F.Cu from (26.21, 17.6): 3 bends in 1.33 mm
+    /FMC_D15 F.Cu from (26.54, 18.4): 3 bends in 1.66 mm
+    /FMC_SDCLK F.Cu from (24.2, 16.3): 3 bends in 1.80 mm
+tiny (< 0.1 mm): 0 {}

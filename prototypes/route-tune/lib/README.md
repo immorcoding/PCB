@@ -197,3 +197,96 @@ entries in the diagnostic list `pairs_below_0.3`, where two spots tie for the sa
   rule alone.
 - Git Bash heredocs mangled Python source with `'''` and backslashes; write files with the editor.
 - No series resistor on SDCLK in this prototype (the real board will have one near the MCU).
+
+## Bundles (`lib/bundle.py`): write a bus, not 19 coordinate lists
+
+A generator in front of the builder: it returns `ROUTES` pieces and `TUNING` entries in the formats above
+and changes nothing in `board.py` / `serp.py`. Working example: `variants/_bundle_demo/routes.py` (not a
+candidate; `build.py _bundle_demo`). Geometry self test without a board: `D:/KiCad/bin/python.exe lib/bundle.py`.
+
+```python
+from bundle import Bundle, Bus
+bus = Bus(SWAP)                                   # knows every pad of both chips (unused balls are obstacles on L1)
+bus.keep({net: pieces})                           # hand-written nets: returned unchanged, used as obstacles
+b = Bundle("trunk", ["SDCLK", "D15", ...], "L1",  # lane order: lane 0 = LEFT seen along the travel direction on the picture
+           path=[(18.2, 15.575), (19.2, 15.575), (22.325, 18.7), (23.4, 18.7)],   # centre path, corners exactly 45 degrees
+           pitch=0.2298,                          # centre-to-centre spacing, every leg not named in gaps
+           gaps={0: 0.325, 2: [1.2, 0.8, 0.8, 0.8, 0.4, 0.4, 0.4]},   # per leg: one pitch, or N-1 gaps
+           anchor="D14",                          # the lane that sits ON the path ("centre": the middle of the bundle)
+           span={"SDCLK": (1, 2)})                # a lane that exists only on legs 1..2 (joins late / leaves early)
+b.widen(leg, s0, s1, after="D14", by=0.6)         # lanes right of D14 step 0.6 aside between stations s0 and s1 (mm along the leg
+                                                  # from its first path point); side=-1: lanes left of it step left;
+                                                  # s0=None / s1=None: wide from the leg's start / to its end, no jog there
+s = b.slot("D14", leg, s0, length, side="R", pitch=0.3)   # serpentine site; free=0.85 also calls widen for it
+bus.add(b, start={net: terminal}, end={net: terminal})
+ROUTES = bus.routes()                             # stops with EVERY problem listed; routes(strict=False) prints them and goes on
+print(bus.report())                               # per lane: length before any serpentine, direct, to CLK, to the longest, vias
+e = s.fill(add=2.0)                               # or fill(amp=0.6) / fill(amp=0.6, n=2): ONE block of equal-height humps
+TUNING = bus.tuning()
+```
+
+What comes out and why it is tidy:
+
+- **Lanes are pieces of lines** `x = c`, `y = c`, `x - y = c`, `x + y = c` on a 0.1 um integer grid; every vertex
+  is where two consecutive lines meet. So segments are exactly 0/45/90, corners exactly 45 degrees, neighbours
+  exactly parallel, and corners nest by themselves (the outer lane of a corner is longer by
+  `0.828 x pitch`; an S-shaped corner pair cancels, a U-shaped pair adds up). On a diagonal leg a gap is rounded
+  UP to the grid (`0.2298` gives lines 0.325 apart in x, the MCU's half ball pitch).
+- **Terminals** (`start` / `end`): `"U1"` / `"U2"` (the pad), `(x, y)` (a via or any point), a list of points
+  = a hand-written lead on the bundle's layer in travel order (`["U1", (17.225, 15.575)]`,
+  `[(24.2, 17.9), "U2"]`), or `{"pieces": [("L1", ["U1", (13.65, 17.3)])]}` = pieces on other layers (the
+  bundle starts at their last point / ends at their first; the via is inserted).
+- **Fan in / fan out**: from the terminal a straight along the lane direction (as short as shape and clearance
+  allow, 0.05 mm steps), then one 45-degree stub onto the lane line. Lanes whose terminal already lies on the
+  lane line get no stub (choose `gaps` equal to the ball rows, as the demo does on the SDRAM side). Checked
+  against pads, vias, kept routes and the lanes already placed. An order that must cross is reported as
+  `ORDER <bundle> start|end: lane A is left of lane B but its terminal is on the right`, a stub that finds no
+  clean place as `FAN ...` with what it hits.
+- **Merging / splitting**: a net with no `start` whose route so far ends open on the same layer JOINS: its last
+  line runs on until it meets its lane of the new bundle (the demo's `south` runs into `trunk`). A net with no
+  `end` stays open for a later bundle; nets that leave get an `end` (or a shorter `span`). Layer change: end the
+  lane at a via point and start the next bundle there; `routes()` puts the via in.
+- **Stepping aside**: `widen` moves all lanes on one side by 45-degree jogs, nested (outer lanes jog out
+  earlier and back later, spacing kept). The first moved lane has reached its place exactly at `s0`.
+- **Slots**: `slot.geometry()` gives end points, side as a board direction, free width to the neighbour,
+  tallest hump that keeps the serpentine clearance (`free - width - 0.19 - 0.004`), and the board track the
+  site is on. `fill()` writes ONE equal-height block (amendment of 2026-11-17: no tail hump, the height of the
+  whole block is adjusted): with `add` it takes as many humps as the site holds and solves the height, with
+  fewer humps only when they would be illegally low; it never mixes heights. `bus.tuning()` orders blocks that
+  share a board track from the SDRAM end backwards so the `where` offsets stay true.
+- **Checks before the board exists** (all in the `bundle: N problem(s)` list): `SHAPE` (a segment under
+  0.15 mm, a corner that is not 45 degrees, a piece that runs backwards = a leg too short for its corners or
+  jogs), `SHARP` (two corners the same way closer than 0.35 mm, the project's `sharp` rule), `GAP` (crossing,
+  or centre distance below width + DRC clearance of the place, against tracks, pads and vias), `PATH`.
+  `build.py --fast` and DRC still decide.
+
+Rules of thumb found while building the demo:
+
+- A lane that carries a serpentine needs **0.294 mm to the neighbour BEHIND the humps too** (serp.py keeps
+  0.19 round all copper of a block, 0.282 on 0.09 track). `slot.geometry()` refuses a tighter lane and says so.
+- A jog out right after a corner (or a jog back right before a join) leaves a short flat piece: under 0.35 mm
+  it is a `SHARP` finding, above it a visible notch. Use `s0=None` / `gaps` for that leg instead, or move it.
+- Every jog pair is four bends; track_shape.py counts them under "3 or more bends within 2 mm" (6 in the
+  demo, all of them jogs or the SDCLK stub; `sharp` is 0). List them in the variant's notes.
+- A slot must lie on ONE board track: not across a corner, a jog or a width change (0.09 runs to 0.3 mm
+  outside a rule area), and 0.35 mm from each end of that track.
+
+What it cannot do (say so instead of working round it silently):
+
+- **No BGA escape.** It does not know which channel between balls a track may take: for a ball that is not on
+  the edge row write the lead by hand (the demo does for D11, D8, D14, SDCLK) and let the fan start at its end.
+- **One stub shape** (straight + one 45-degree piece). No two-stage fans, no fan that swaps direction; a
+  terminal far off the lane gives a long stub (SDCLK in the demo: 1.3 mm diagonal + 0.8 mm south).
+- **Lane order is the author's.** It reports an order that must cross; it does not reorder lanes or choose the
+  SDRAM swap. Use `bus.report()` and the `ORDER` lines, then change `nets` / `SWAP` yourself.
+- **Slots are placed by the author** (leg, station, length, side). Nothing staggers them automatically and
+  nothing sizes them from a length target; `fill(add=...)` fails with the site's capacity when it is too small.
+- **A widen moves every lane on that side** of the bundle (also lanes that join further down: they simply join
+  on whatever position is current there). Lanes cannot change order inside a bundle and cannot cross a slot.
+- **Pitch changes only at a corner** (per-leg `gaps`) or by `widen`; `widen` events must not reach over a corner.
+- **No arcs or rounded corners** in routes, no differential pairs, no equal-length solving across lanes, no
+  automatic choice of layer or via position; through vias only (as the builder).
+- `side="both"` slots (double-sided chains) are coded but were not exercised by the demo; slots on 0.09 track
+  under the SDRAM (L4 / L6) use the same code path but were not built either.
+- With a wrong lane order the generator may stop at the first stub it cannot draw at all
+  (`cannot even draw the stub`), after printing the `ORDER` lines found so far; `strict=False` does not help there.

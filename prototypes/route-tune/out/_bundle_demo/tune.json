@@ -1,0 +1,163 @@
+{
+ "natural": {
+  "FMC_D0": 19.4516,
+  "FMC_D1": 18.6773,
+  "FMC_D2": 29.2886,
+  "FMC_D3": 23.7786,
+  "FMC_D4": 24.1407,
+  "FMC_D5": 23.4108,
+  "FMC_D6": 21.1817,
+  "FMC_D7": 22.7117,
+  "FMC_D8": 13.8292,
+  "FMC_D9": 13.1495,
+  "FMC_D10": 14.8311,
+  "FMC_D11": 13.0679,
+  "FMC_D12": 11.5882,
+  "FMC_D13": 9.2206,
+  "FMC_D14": 9.2947,
+  "FMC_D15": 8.3134,
+  "FMC_NBL0": 34.9461,
+  "FMC_NBL1": 29.4304,
+  "FMC_SDCLK": 9.3263
+ },
+ "predicted": {
+  "FMC_D0": 19.4516,
+  "FMC_D1": 18.6773,
+  "FMC_D2": 29.2886,
+  "FMC_D3": 23.7786,
+  "FMC_D4": 24.1407,
+  "FMC_D5": 23.4108,
+  "FMC_D6": 21.1817,
+  "FMC_D7": 22.7117,
+  "FMC_D8": 15.4294,
+  "FMC_D9": 13.1495,
+  "FMC_D10": 14.8311,
+  "FMC_D11": 14.9529,
+  "FMC_D12": 11.5882,
+  "FMC_D13": 9.2206,
+  "FMC_D14": 10.7797,
+  "FMC_D15": 8.3134,
+  "FMC_NBL0": 34.9461,
+  "FMC_NBL1": 29.4304,
+  "FMC_SDCLK": 10.6971
+ },
+ "blocks": [
+  {
+   "net": "FMC_D11",
+   "layer": "L1",
+   "kind": "single",
+   "side": "S",
+   "pitch": 0.3,
+   "width": 0.1016,
+   "from": [
+    16.775,
+    18.3
+   ],
+   "to": [
+    17.975,
+    18.3
+   ],
+   "gain": 1.88496,
+   "humps": 2,
+   "bumps": 0,
+   "amps": [
+    0.6,
+    0.6
+   ],
+   "run_length": 5.0,
+   "under_sdram": 0.0,
+   "inside_area": false
+  },
+  {
+   "net": "FMC_D8",
+   "layer": "L1",
+   "kind": "single",
+   "side": "S",
+   "pitch": 0.3,
+   "width": 0.1016,
+   "from": [
+    18.025,
+    19.6
+   ],
+   "to": [
+    19.225,
+    19.6
+   ],
+   "gain": 1.60016,
+   "humps": 2,
+   "bumps": 0,
+   "amps": [
+    0.529,
+    0.529
+   ],
+   "run_length": 3.074,
+   "under_sdram": 0.0,
+   "inside_area": false
+  },
+  {
+   "net": "FMC_D14",
+   "layer": "L1",
+   "kind": "single",
+   "side": "SW",
+   "pitch": 0.3,
+   "width": 0.1016,
+   "from": [
+    20.102,
+    16.477
+   ],
+   "to": [
+    20.95,
+    17.325
+   ],
+   "gain": 1.48496,
+   "humps": 2,
+   "bumps": 0,
+   "amps": [
+    0.5,
+    0.5
+   ],
+   "run_length": 3.66,
+   "under_sdram": 0.0,
+   "inside_area": false
+  },
+  {
+   "net": "FMC_SDCLK",
+   "layer": "L1",
+   "kind": "single",
+   "side": "NE",
+   "pitch": 0.5,
+   "width": 0.1016,
+   "from": [
+    19.978,
+    15.221
+   ],
+   "to": [
+    20.685,
+    15.928
+   ],
+   "gain": 1.3708,
+   "humps": 1,
+   "bumps": 0,
+   "amps": [
+    0.9
+   ],
+   "run_length": 3.174,
+   "under_sdram": 0.0,
+   "inside_area": false
+  }
+ ],
+ "notes": [],
+ "missing": {},
+ "clear": {
+  "end": 0.35,
+  "clr": 0.19,
+  "area_gap": 0.127,
+  "edge": 0.254,
+  "field": 0.6
+ },
+ "pitch": {
+  "default": 0.3,
+  "SDCLK": 0.5
+ },
+ "window_L": 10.6971
+}

@@ -1,0 +1,16 @@
+189 segments, 28 arcs
+off-grid: 4
+    /FMC_D14 F.Cu (20.102, 16.689) -> (19.96, 16.83): 135.2 deg, 0.20 mm
+    /FMC_D14 F.Cu (20.172, 17.042) -> (20.314, 16.901): 135.2 deg, 0.20 mm
+    /FMC_D14 F.Cu (20.526, 17.113) -> (20.384, 17.254): 135.2 deg, 0.20 mm
+    /FMC_D14 F.Cu (20.597, 17.467) -> (20.738, 17.325): 134.8 deg, 0.20 mm
+staircase: 0
+sharp: 0
+crowded: 6
+    /FMC_D12 F.Cu from (19.875, 19.3): 3 bends in 1.66 mm
+    /FMC_D13 F.Cu from (19.483, 17.06): 3 bends in 1.28 mm
+    /FMC_D8 F.Cu from (19.999, 19.6): 3 bends in 1.52 mm
+    /FMC_D9 F.Cu from (16.9, 19.9): 3 bends in 1.41 mm
+    /FMC_D9 F.Cu from (19.225, 20.6): 3 bends in 1.19 mm
+    /FMC_SDCLK F.Cu from (18.82, 13.245): 3 bends in 1.98 mm
+tiny (< 0.1 mm): 0 {}
