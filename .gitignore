@@ -19,3 +19,6 @@ __pycache__/
 
 # kicad-happy analyzer runs (regenerable); the manifest stays tracked
 analysis/*/
+
+# Vendor datasheets downloaded by hand (not redistributed)
+stm32h743_sdram/datasheet/
