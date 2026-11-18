@@ -43,9 +43,5 @@ Next id: PWR-10
 
 ### Signals
 
-- 2026-11-16 · cite · PWR-4 · H7 测试板的电源层在方案阶段就定成三块（`+3V3`、`+5V`、`+3V3A`），每块都有实际负载，形状留到铜皮区域草图画（[决定票](https://github.com/immorcoding/PCB/issues/11)）。
-- 2026-11-16 · cite · PWR-5 · H7 测试板的地不分割，模拟地和数字地是同一个网络，靠布局分区（[决定票](https://github.com/immorcoding/PCB/issues/11)）。
 - 2026-11-16 · cite · new · H7 测试板每条轨只放测试点，不串 0 Ω 或跳线，理由是串联件会把铜皮掐成细脖子；目前只是这块板的决定（[决定票](https://github.com/immorcoding/PCB/issues/11)）。
-- 2026-11-16 · cite · PWR-3 · 草图脚本在写文件之前检查每条边是不是 0°、45°、90°，不合格就不生成；H7 占位板上手画的 7 块铜皮没有一条边越格（[原型票](https://github.com/immorcoding/PCB/issues/16)）。
-- 2026-11-16 · cite · PWR-6 · 原型各版的数字都取自 `kicad-cli pcb drc --refill-zones --save-board` 填充并保存后的板文件，脚本不自己算填充（[原型票](https://github.com/immorcoding/PCB/issues/16)）。
 - 2026-11-16 · friction · PWR-5 · 规则只说了外层铺地的最小铜宽，没说局部铜皮的最小宽度和它到铺地的间距；原型里取的是最小宽 0.20–0.25 mm、间距 0.20 mm（[原型票](https://github.com/immorcoding/PCB/issues/16)）。
