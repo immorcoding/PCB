@@ -28,3 +28,4 @@ Next id: FIN-5
 
 ## Signals
 - 2026-11-15 · FIN-3 · 有了答案：嘉立创两个站点都写丝印字高最小 1.0 mm，项目现在用的 0.8 mm 低于它（[调研票](https://github.com/immorcoding/PCB/issues/5)）。
+- 2026-11-16 · FIN-3 · 未处理：嘉立创丝印字高下限 1.0 mm 的答案早有了，`design-rules.md` 仍写 0.8 mm（[任务票](https://github.com/immorcoding/PCB/issues/18)）。

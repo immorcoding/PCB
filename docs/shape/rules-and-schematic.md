@@ -18,7 +18,7 @@ Next id: RUL-13
 - **RUL-1** · provisional · 新工程从所选规格档的模板起（A 档是 `templates/common/` 加板厂覆盖）；规则值只写在 `docs/design-rules.md`、`docs/rule-profiles/` 和工程的规则文件里，别处不重复。 _Why:_ 模板保留 AD `common.RUL` 的原值，板厂和层数的差异放在工程里才看得出改了什么。
 - **RUL-11** · exploring · 方案阶段选定规格档（`docs/rule-profiles/`）；没有合适的就先新建一档交用户批准，不从低一档的数值改起。 _Why:_ 给四层板加的过孔下限 0.45 mm 被带到下一块板上，把用户原本够用的 0.8 mm BGA 规则挤过了临界点；六层废弃板的规则是边做边叠出来的。
 - **RUL-12** · exploring · 用到 BGA 或更密封装的板子，规则阶段先按球距列计算表（焊盘间过线、球间过孔、孔到焊盘、过孔间过线、孔到线），和板厂下限对照得出需要的例外；例外在布局开始前定完。 _Why:_ 六层废弃板上规则区、小过孔、区内线宽都是走线中途加的。
-- **RUL-2** · provisional · 新建工程或改动 `.kicad_dru` 之后跑金丝雀（`scripts/dru_canary.py`），输出 `OK` 才算完成。 _Why:_ `.kicad_dru` 有任何语法错误，KiCad 会静默跳过整个文件，DRC 照常输出。
+- **RUL-2** · provisional · 新建工程或改动 `.kicad_dru` 之后跑金丝雀（`scripts/dru_canary.py`），输出 `OK` 才算完成；另外检查每条规则至少匹配到一个对象，空匹配的规则数进指标表。 _Why:_ `.kicad_dru` 有任何语法错误，KiCad 会静默跳过整个文件，DRC 照常输出；网络类名、网络名、规则区名或函数名拼错时文件照常加载，那条规则匹配不到任何东西，金丝雀抓不到。 _Source:_ [调研票](https://github.com/immorcoding/PCB/issues/14)
 - **RUL-3** · provisional · 布局前按板厂的叠层数据算差分阻抗，为每种接口建网络类并填线宽和间距。 _Why:_ 模板里故意没填；阻抗取决于叠层。
 - **RUL-4** · provisional · 改了 `.kicad_pro`（网络类、规则）之后，在用户下次关闭 KiCad 之后重新读回核对。 _Why:_ KiCad 关闭工程时用内存里的旧设置覆盖文件，丢过一次 USB2 网络类。
 - **RUL-5** · exploring · 规则的例外（盘中孔、更小的过孔、扩大规则区）先问用户，批准后写进规则文件并注明日期和原因。 _Why:_ 六层废弃板上把 BGA 规则区向外扩 4 mm 是自己定的，超出了用户批准的范围。
@@ -51,3 +51,11 @@ Next id: RUL-13
 - 2026-11-16 · RUL-10 · 第五次没用上：这次两个调研 agent 的技能列表里都有 `kicad-happy:datasheets`，也都加载了，但都没跑它的提取流程。理由是：它是"本地 PDF 提取并缓存到工程"的流水线，不管下载；固定的提取结构不含 I2C 地址、各模式电流、在产状态；方案阶段没有工程目录可挂缓存。两个 agent 都改用 pdftotext 加渲染图，并给了页码（[决定票](https://github.com/immorcoding/PCB/issues/9)）。这条规则在方案阶段该怎么执行，仍然没有写明。
 - 2026-11-16 · RUL-6 · 提前起作用：SAI1、I2C4 的七个脚和套 A 原有 108 个脚的球号，在方案阶段就对照 DS12110 的引脚表用脚本比过；AF 编号只重核了新增的七个脚，其余留在未核对项。
 - 2026-11-16 · RUL-7 · 相关：12 个辅助脚里除 SWO、背光 PWM、按键外都是普通 GPIO，和用户约定布局时可以在空脚间调换、换了当场报告；连接器位置仍在地图的迷雾里。
+- 2026-11-16 · RUL-10 · 第六次没用上：汇总未核对项的 agent 技能列表里没有 `datasheets` skill，也没有工程可挂缓存（[任务票](https://github.com/immorcoding/PCB/issues/18)）。
+- 2026-11-16 · RUL-6 · 提前起作用：MCU 的电源球和特殊球在方案阶段就用脚本对着 DS12110 表 9 比完，201 个球全部一致（[任务票](https://github.com/immorcoding/PCB/issues/18)）。
+- 2026-11-16 · RUL-2 · 相关：会让整个规则文件被跳过的写法多了四种（数值不带单位、条件里单个 `=`、约束名拼错、行尾 `#` 注释），`design-rules.md` 的"已知陷阱"还没记（[调研票](https://github.com/immorcoding/PCB/issues/14)）。
+- 2026-11-16 · RUL-7 · 起作用：连接器的脚序和所在的边是对照 MCU 球位定的。SWD 的球在右上角，座从左下改到上边；串口排针的 TX、RX 顺序跟 R14、R15 两个球的左右一致；LCD 排线座的脚序方向用飞线交叉数比过（1 脚在右 79，在左 91）（[连接器票](https://github.com/immorcoding/PCB/issues/17)）。
+- 2026-11-16 · RUL-7 · 缺口：脚序由面板定死的连接器（LCD 排线座）只能选方向，20 根 LTDC 线怎么摆都有约 70–110 个飞线交叉，根子在外设引脚分配那一步；这条规则没说引脚分配阶段要不要把连接器脚序一起算进去（[连接器票](https://github.com/immorcoding/PCB/issues/17)）。
+- 2026-11-16 · RUL-10 · 相关：两份面板规格书都没写排线触点在哪一面，改用双面接触的座绕开；KiCad 库对 Omron XF2M-4015-1A 的描述（上接）和规格书（双面接触）不符，库的描述不能当依据（[连接器票](https://github.com/immorcoding/PCB/issues/17)）。
+- 2026-11-16 · RUL-2 · 缺口：金丝雀只证明规则文件被加载了，查不出规则的作用范围写错。规格档 C 的规则区间距规则对铺铜区是按整块判断的，盖到规则区的整板铺铜全板按 0.09 mm 填充（原型里实测 0.092 mm，排除铺铜区后 0.201 mm）；废弃的六层板就是这样写的，当时没有发现。写法已在规格档 C 和 `design-rules.md` 里改正（[原型票](https://github.com/immorcoding/PCB/issues/16)）。
+- 2026-11-16 · RUL-1 · 碍事：规格档 C 没有模板文件，铜皮原型的工程文件是从废弃板的 `.kicad_pro` 和 `.kicad_dru` 改出来的（[原型票](https://github.com/immorcoding/PCB/issues/16)）。
