@@ -31,13 +31,18 @@ VARIANTS = [  # key, label on the page
     ("3_under_sdram", "3 蛇形在 SDRAM 下"),
     ("4_combined", "4 综合（0.3）"),
     ("4b_combined_p05", "4b 综合（0.5）"),
+    ("5_no_detour", "5 不绕远，蛇形成块"),
 ]
 KEYS = [k for k, _ in VARIANTS]
 BASELINE = "1_baseline"
-COORD = ["2_detour_first", "3_under_sdram", "4_combined", "4b_combined_p05"]      # the coordinated variants
+COORD = ["2_detour_first", "3_under_sdram", "4_combined", "4b_combined_p05", "5_no_detour"]      # the coordinated variants
+NEW, REF = "5_no_detour", "4_combined"      # the variant built after the user's verdict of 2026-11-17, and the one it is derived from
 GROUPS = [
+    ("基线、综合、不绕远", ["1_baseline", "4_combined", "5_no_detour"]),
+    ("综合 对 不绕远", ["4_combined", "5_no_detour"]),
+    ("蛇形在 SDRAM 下 对 不绕远", ["3_under_sdram", "5_no_detour"]),
     ("基线和三种协调做法", ["1_baseline", "2_detour_first", "3_under_sdram", "4_combined"]),
-    ("全部六块", KEYS),
+    ("全部 %d 块" % len(KEYS), KEYS),
     ("底板 → 基线", ["0_base", "1_baseline"]),
     ("基线 对 综合方案", ["1_baseline", "4_combined"]),
     ("基线 对 蛇形在 SDRAM 下", ["1_baseline", "3_under_sdram"]),
@@ -175,9 +180,9 @@ def comp(m):
     return {"direct": t["total_direct_mm"], "via": via, "plane": t["total_detour_mm"] - via, "serp": t["total_serpentine_mm"], "total": t["total_length_mm"]}
 
 
-def rel(v, base, unit=""):
+def rel(v, base, unit="", prec=1):
     d = v - base
-    return "%+.1f%s（%+.0f%%）" % (d, unit, 100 * d / base) if base else "—"
+    return "%+.*f%s（%+.0f%%）" % (prec, d, unit, 100 * d / base) if base else "—"
 
 
 SIDE = {"N": "北", "S": "南", "E": "东", "W": "西", "NE": "东北", "NW": "西北", "SE": "东南", "SW": "西南", "both": "两侧交替"}
@@ -191,6 +196,7 @@ def rows(M, X):
         R.append((label, [fn(M[k], X[k], k) for k in KEYS], [bool(bad and bad(M[k], X[k], k)) for k in KEYS]))
 
     b = M[BASELINE]["space"]
+    r4 = M[REF]["space"]
     T = lambda m: m["totals"]
     S = lambda m: m["space"]
     C = lambda m: m["checks"]
@@ -201,12 +207,15 @@ def rows(M, X):
     add("最长 / 最短", lambda m, x, k: "%.3f / %.3f" % (T(m)["longest_mm"], T(m)["shortest_mm"]))
     add("凸包面积 mm²", lambda m, x, k: "%.1f" % S(m)["bus_hull_area_mm2"])
     add("　比基线", lambda m, x, k: "—" if k == BASELINE else rel(S(m)["bus_hull_area_mm2"], b["bus_hull_area_mm2"]))
+    add("　比 4_combined", lambda m, x, k: "—" if k == REF else rel(S(m)["bus_hull_area_mm2"], r4["bus_hull_area_mm2"]))
     add("外包矩形 宽 × 高", lambda m, x, k: "%.2f × %.2f" % tuple(S(m)["bus_bbox_mm"]))
     add("窄条里上下占（通道宽度）", lambda m, x, k: "%.2f" % S(m)["channel_width_mm"])
-    add("　比基线", lambda m, x, k: "—" if k == BASELINE else rel(S(m)["channel_width_mm"], b["channel_width_mm"]))
+    add("　比基线", lambda m, x, k: "—" if k == BASELINE else rel(S(m)["channel_width_mm"], b["channel_width_mm"], prec=2))
+    add("　比 4_combined", lambda m, x, k: "—" if k == REF else rel(S(m)["channel_width_mm"], r4["channel_width_mm"], prec=2))
     add("　其中 L1 / L4 / L6", lambda m, x, k: " / ".join("%.2f" % S(m)["channel_width_by_layer_mm"][l] for l in ("L1", "L4", "L6")))
     add("扫过的面积 mm²（三层合并）", lambda m, x, k: "%.1f" % S(m)["bus_swept_area_mm2"]["all"])
     add("　比基线", lambda m, x, k: "—" if k == BASELINE else rel(S(m)["bus_swept_area_mm2"]["all"], b["bus_swept_area_mm2"]["all"]))
+    add("　比 4_combined", lambda m, x, k: "—" if k == REF else rel(S(m)["bus_swept_area_mm2"]["all"], r4["bus_swept_area_mm2"]["all"]))
     add("　其中 L1 / L4 / L6", lambda m, x, k: " / ".join("%.1f" % S(m)["bus_swept_area_mm2"][l] for l in ("L1", "L4", "L6")))
     add("蛇形处数 / 弯数", lambda m, x, k: "%d / %d" % (T(m)["n_serpentines"], T(m)["n_humps"]))
     add("蛇形补的长度合计", lambda m, x, k: "%.2f" % T(m)["total_serpentine_mm"])
@@ -234,6 +243,8 @@ def rows(M, X):
     add("独立重量 review/remeasure.py 的出入", lambda m, x, k: "没跑成" if x["remeasure"]["findings"] is None else "%d 处" % x["remeasure"]["findings"], lambda m, x, k: x["remeasure"]["findings"] != 0)
     add("补充：SDRAM 封装下面的总线长度（L1 / L4 / L6）", lambda m, x, k: "%.1f（%s）" % (x["under_body_mm"]["U2"]["total"], " / ".join("%.1f" % x["under_body_mm"]["U2"][l] for l in ("L1", "L4", "L6"))))
     add("补充：封装外形内缩 0.1 mm 再算的凸包 mm²", lambda m, x, k: "%.1f" % x["outline_shrunk_0.1"]["hull"])
+    add("　比基线同口径", lambda m, x, k: "—" if k == BASELINE else rel(x["outline_shrunk_0.1"]["hull"], X[BASELINE]["outline_shrunk_0.1"]["hull"]))
+    add("　比 4_combined 同口径", lambda m, x, k: "—" if k == REF else rel(x["outline_shrunk_0.1"]["hull"], X[REF]["outline_shrunk_0.1"]["hull"]))
     add("完整构建一次（秒）", lambda m, x, k: "%s" % m.get("build_seconds", "—"), lambda m, x, k: (m.get("build_seconds") or 0) > 600)
     return R
 
@@ -442,7 +453,7 @@ def md_space(M, X, R):
         o.append("| `%s` | %d / %d | %.1f | %s | %.1f，%s | %.2f | %s | %.1f | %s | %.1f | %s |" % (
             k, m["totals"]["in_window_count"], m["totals"]["nets"], s["bus_hull_area_mm2"], rel(s["bus_hull_area_mm2"], bs["bus_hull_area_mm2"], " mm²"),
             X[k]["outline_shrunk_0.1"]["hull"], rel(X[k]["outline_shrunk_0.1"]["hull"], X[BASELINE]["outline_shrunk_0.1"]["hull"], " mm²"),
-            s["channel_width_mm"], rel(s["channel_width_mm"], bs["channel_width_mm"], " mm"),
+            s["channel_width_mm"], rel(s["channel_width_mm"], bs["channel_width_mm"], " mm", 2),
             s["bus_swept_area_mm2"]["all"], rel(s["bus_swept_area_mm2"]["all"], bs["bus_swept_area_mm2"]["all"], " mm²"),
             X[k]["under_body_mm"]["U2"]["total"], rel(X[k]["under_body_mm"]["U2"]["total"], X[BASELINE]["under_body_mm"]["U2"]["total"], " mm")))
     o += ["", "正数 = 比基线多占，负数 = 比基线省。"]
@@ -526,7 +537,87 @@ def md_conclusion(M, X, R):
                      s["channel_width_mm"], word(dch), abs(dch), abs(100 * dch / bs["channel_width_mm"]),
                      t["n_serpentines"], t["total_serpentine_mm"], b["totals"]["total_serpentine_mm"], t["total_detour_mm"], b["totals"]["total_detour_mm"],
                      X[k]["under_body_mm"]["U2"]["total"], X[BASELINE]["under_body_mm"]["U2"]["total"]))
+    n, r = M[NEW], M[REF]
+    less = lambda a, c, unit, prec=1: "%s %.*f%s（%.0f%%）" % ("省" if a < c else "多占", prec, abs(a - c), unit, abs(100 * (a - c) / c))
+    o.append("- **`%s` 对 `%s`（去掉特意绕远以后）**：凸包%s，扫过的面积%s，其中表层 L1 从 %.1f 降到 %.1f mm²；窄条里上下占%s。"
+             "蛇形从 %d 块 %.1f mm 变成 %d 块 %.1f mm，平面内绕远从 %.1f 降到 %.1f mm；SDRAM 封装下面的总线从 %.1f 变成 %.1f mm，过孔从 %d 个变成 %d 个。" % (
+                 NEW, REF, less(n["space"]["bus_hull_area_mm2"], r["space"]["bus_hull_area_mm2"], " mm²"),
+                 less(n["space"]["bus_swept_area_mm2"]["all"], r["space"]["bus_swept_area_mm2"]["all"], " mm²"),
+                 r["space"]["bus_swept_area_mm2"]["L1"], n["space"]["bus_swept_area_mm2"]["L1"],
+                 less(n["space"]["channel_width_mm"], r["space"]["channel_width_mm"], " mm", 2),
+                 r["totals"]["n_serpentines"], r["totals"]["total_serpentine_mm"], n["totals"]["n_serpentines"], n["totals"]["total_serpentine_mm"],
+                 comp(r)["plane"], comp(n)["plane"], X[REF]["under_body_mm"]["U2"]["total"], X[NEW]["under_body_mm"]["U2"]["total"],
+                 r["totals"]["total_vias"], n["totals"]["total_vias"]))
     return o
+
+
+def md_nodetour(M, X, R, T):
+    """What taking the deliberate detours out changed: NEW against REF and against the baseline."""
+    ks = [NEW, REF, BASELINE]
+    bl = {k: blocks(T[k]) for k in ks}
+    o = ["| 项 | `%s` | `%s` | `%s` | 比 `%s` | 比基线 |" % (NEW, REF, BASELINE, REF), "|---|---|---|---|---|---|"]
+
+    def row(label, fn, prec=1, unit=""):
+        v = [fn(k) for k in ks]
+        o.append("| %s | %s | %s | %s |" % (label, " | ".join("%.*f" % (prec, x) for x in v), rel(v[0], v[1], unit, prec), rel(v[0], v[2], unit, prec)))
+
+    def text(label, fn):
+        o.append("| %s | %s | | |" % (label, " | ".join(fn(k) for k in ks)))
+
+    text("在窗口内", lambda k: "%d / %d" % (M[k]["totals"]["in_window_count"], M[k]["totals"]["nets"]))
+    row("凸包面积 mm²", lambda k: M[k]["space"]["bus_hull_area_mm2"], 1, " mm²")
+    row("封装外形内缩 0.1 mm 再算的凸包 mm²", lambda k: X[k]["outline_shrunk_0.1"]["hull"], 1, " mm²")
+    row("窄条里上下占 mm", lambda k: M[k]["space"]["channel_width_mm"], 2, " mm")
+    row("扫过的面积 mm²（三层合并）", lambda k: M[k]["space"]["bus_swept_area_mm2"]["all"], 1, " mm²")
+    row("↳ 其中 L1（表层）", lambda k: M[k]["space"]["bus_swept_area_mm2"]["L1"], 1, " mm²")
+    text("蛇形：块 / 弯", lambda k: "%d / %d" % (M[k]["totals"]["n_serpentines"], M[k]["totals"]["n_humps"]))
+    row("蛇形补的长度 mm", lambda k: M[k]["totals"]["total_serpentine_mm"], 1, " mm")
+    row("↳ 其中补在 SDRAM 封装下面的 mm", lambda k: M[k]["totals"]["serpentine_under_sdram_mm"], 1, " mm")
+    row("蛇形块自己的占地合计 mm²（长 × 宽）", lambda k: sum(r["foot"] for r in bl[k]), 1, " mm²")
+    row("平面内绕远 mm", lambda k: comp(M[k])["plane"], 1, " mm")
+    row("过孔高度 mm", lambda k: comp(M[k])["via"], 1, " mm")
+    row("长度合计 mm", lambda k: comp(M[k])["total"], 1, " mm")
+    text("过孔：每根最多 / 合计", lambda k: "%d / %d" % (M[k]["totals"]["max_vias"], M[k]["totals"]["total_vias"]))
+    row("SDRAM 封装下面的总线 mm", lambda k: X[k]["under_body_mm"]["U2"]["total"], 1, " mm")
+    o += ["", "负数 = `%s` 更小或更少。百分比的分母是被比的那一块。" % NEW, ""]
+
+    c0, s0 = comp(M["0_base"]), M["0_base"]["space"]["bus_swept_area_mm2"]["all"]
+    o.append("整块板的账（对不考虑等长的底板 `0_base`：扫过 %.1f mm²、总长 %.1f mm；封装下面的铜不算在面积里）：" % (s0, c0["total"]))
+    o.append("")
+    for k in (BASELINE, REF, NEW):
+        dl, ds = comp(M[k])["total"] - c0["total"], M[k]["space"]["bus_swept_area_mm2"]["all"] - s0
+        part = M[k]["totals"]["in_window_count"] < M[k]["totals"]["nets"]
+        o.append("- `%s`：多出 %.1f mm 长度，多扫 %.1f mm²，平均每多 1 mm 多扫 %.2f mm²%s。" % (
+            k, dl, ds, ds / dl, "（只有 %d / %d 根进窗口）" % (M[k]["totals"]["in_window_count"], M[k]["totals"]["nets"]) if part else ""))
+    n = bl[NEW]
+    data, clk = [r for r in n if r["net"] != "SDCLK"], [r for r in n if r["net"] == "SDCLK"]
+    top, und = [r for r in n if r["layer"] == "L1"], [r for r in n if r["under"] > 0.5]
+    o += ["", "`%s` 的蛇形块：数据线 %d 块，摆幅 %.2f–%.2f，每补 1 mm 占 %.2f–%.2f mm²%s。表层（L1）上的蛇形 %d 块共补 %.1f mm，SDRAM 封装下面 %d 块共补 %.1f mm。" % (
+        NEW, len(data), min(r["amps"][0] for r in data), max(r["amps"][0] for r in data), min(r["foot"] / r["gain"] for r in data), max(r["foot"] / r["gain"] for r in data),
+        "；时钟 %d 块，单边摆幅 %.2f，整块 %.2f × %.2f mm，每补 1 mm 占 %.2f mm²" % (len(clk), clk[0]["amps"][0], clk[0]["width"], clk[0]["used"], clk[0]["foot"] / clk[0]["gain"]) if clk else "",
+        len(top), sum(r["gain"] for r in top), len(und), sum(r["gain"] for r in und))]
+    return o
+
+
+def md_sizing(M, X, R, T):
+    """The sizing rule of NEW checked against what was built: straight used and length gained, per block."""
+    o = ["| 网络 | 层 | 单侧 / 双侧 | 弯数 n | 摆幅 a | 腿间距 p | 所在的直线段长 | 公式：块占直线 | 实际占 | 这一段上块以外还剩 | 公式：补长 | 实际补 | 差 |", "|---|---|---|---|---|---|---|---|---|---|---|---|---|"]
+    worst, spare = 0.0, []
+    k = 4 - math.pi                                    # length lost per hump to the four quarter arcs, in units of the leg pitch
+    for b in sorted(T[NEW]["blocks"], key=lambda b: order(short(b["net"]))):
+        n, a, p, both = b["humps"] + b["bumps"], max(b["amps"]), b["pitch"], b["side"] == "both"
+        used = math.dist(b["from"], b["to"])
+        f_used = p * (n + 1) if both else 2 * p * n
+        f_gain = 2 * n * a - k / 2 * p * (n + 1) if both else n * (2 * a - k * p)
+        worst = max(worst, abs(f_gain - b["gain"]), abs(f_used - used))
+        spare.append(b["run_length"] - used)
+        o.append("| %s | %s | %s | %d | %.3f | %.1f | %.2f | %.2f | %.2f | %.2f | %.3f | %.3f | %+.3f |" % (
+            short(b["net"]), b["layer"], "双侧" if both else "单侧", n, a, p, b["run_length"], f_used, used, b["run_length"] - used, f_gain, b["gain"], b["gain"] - f_gain))
+    N = M[NEW]["totals"]["nets"]
+    return o + ["", "公式（圆弧半径是腿间距的一半）：单侧一块占直线 2·p·n，补 n·(2a − %.3f·p)；双侧一块占直线 p·(n + 1)，补 2·n·a − %.3f·p·(n + 1)。" % (k, k / 2),
+                "", "公式和板上量到的最多差 %.3f mm（表里的摆幅只记到 0.001）。"
+                "“所在的直线段”是同一线宽的一段直线（换线宽的地方算断开，所以它不一定是拐弯到拐弯的距离）；块以外还剩的，两头合计最少 %.2f mm，最多 %.2f mm。" % (worst, min(spare), max(spare)),
+                "", "轮数上限的暂定式 5 + N·log2(N)/7：N = %d 时是 %.1f 轮。" % (N, 5 + N * math.log2(N) / 7)]
 
 
 def md_base(M, X, R):
@@ -550,7 +641,8 @@ def md_build(M, X, R):
 
 def fill_readme(M, T, X, R):
     BL = {"conclusion": md_conclusion, "variants": md_variants, "metrics": md_metrics, "space": md_space, "means": md_means,
-          "blocks": lambda M, X, R: md_blocks(M, X, R, T), "clearances": md_clear, "equal": md_equal, "base": md_base, "build": md_build}
+          "blocks": lambda M, X, R: md_blocks(M, X, R, T), "nodetour": lambda M, X, R: md_nodetour(M, X, R, T),
+          "sizing": lambda M, X, R: md_sizing(M, X, R, T), "clearances": md_clear, "equal": md_equal, "base": md_base, "build": md_build}
     p = os.path.join(HERE, "README.md")
     text = open(p, encoding="utf-8").read()
     done = []
