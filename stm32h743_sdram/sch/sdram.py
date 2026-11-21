@@ -94,6 +94,9 @@ def build(sh):
                  description="256 Mb SDRAM 8M x 32, 3.3 V, 166 MHz, 90-ball TF-BGA")
 
     sh.title("SDRAM 256 Mbit (8M x 32), SDCLK 100 MHz, CL3", 6, 8)
+    sh.title("Bring-up link", 90, 60)
+    sh.link("R301", "+3V3", "+3V3_SDRAM", 96, 66)
+    sh.rails = {"+3V3": "+3V3_SDRAM"}
     nets = {ball: net_of(sig, swap) for ball, sig in balls.items()}
     sh.ic(lib, "U301", "IS42S32800J-6BLI", 50, 56, "h743:BGA-90_8.0x13.0mm_Layout2x3x15_P0.8mm_Pad0.33mm", nets,
           stub=3, fields={"MPN": "IS42S32800J-6BLI", "Manufacturer": "ISSI", "Alternate": "Alliance AS4C8M32SA-6BIN"})

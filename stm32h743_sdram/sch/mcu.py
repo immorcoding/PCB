@@ -68,13 +68,17 @@ RESET_SW = dict(mpn="B3U-1000P", mfr="Omron", fp="Button_Switch_SMD:SW_SPST_B3U-
 
 
 def build(sh):
+    x0 = 84
     nets = io_nets()
     nets.update(SUPPLY)
+    sh.title("Bring-up link", x0, 97)
+    sh.link("R203", "+3V3", "+3V3_MCU", x0 + 8, 101, flag_at=(x0 + 24, 99))
+    sh.rails = {"+3V3": "+3V3_MCU"}
     sh.title("MCU STM32H743IIK6 (UFBGA176+25): IO from pins.csv, 127 of 140 used, 13 free IOs unconnected", 6, 4)
     sh.ic("MCU_ST_STM32H7:STM32H743IIKx", "U201", "STM32H743IIK6", 40, 62, FP_MCU, nets, stub=3,
           fields={"MPN": "STM32H743IIK6", "Manufacturer": "STMicroelectronics", "Alternate": "STM32H753IIK6, STM32H750IBK6"})
 
-    x = 84
+    x = x0
     sh.title("VDD decoupling: 100 nF per VDD ball (13) + VBAT + VDD33USB, bulk 4.7 uF, 1 uF at VDD33USB", x, 10)
     sh.caps(201, ["100nF"] * 8, x + 2, 18, "+3V3", step=6)
     sh.caps(209, ["100nF"] * 7 + ["1uF"], x + 2, 30, "+3V3", step=6)

@@ -64,7 +64,7 @@ J501 Wuerth 7499010211A, RJ45 with magnetics, through hole, tab down. Pins [W] p
 """
 from .common import FP, NC, P, U
 
-PHY_FP = "Package_DFN_QFN:VQFN-24-1EP_4x4mm_P0.5mm_EP2.5x2.5mm"
+PHY_FP = "Package_DFN_QFN:VQFN-24-1EP_4x4mm_P0.5mm_EP2.5x2.5mm_ThermalVias"
 RJ45_FP = "Connector_RJ:RJ45_Wuerth_7499010211A_Horizontal"
 XTAL_FP = "Crystal:Crystal_SMD_3225-4Pin_3.2x2.5mm"
 
@@ -82,6 +82,9 @@ def attach_pins(sh, part, nets, stub):
 def build(sh):
     # ---- PHY
     sh.title("Ethernet PHY LAN8742A: RMII, 50 MHz REF_CLK out of pin 14", 6, 8)
+    sh.title("Bring-up link", 126, 38)
+    sh.link("R514", "+3V3", "+3V3_PHY", 134, 44)
+    sh.rails = {"+3V3": "+3V3_PHY"}
     x, y = P(44, 44)
     u = sh.page.sym("Interface_Ethernet:LAN8742A", "U501", "LAN8742A-CZ-TR", x, y, 0, PHY_FP,
                     ref_at=(x + 4 * U, y - 13 * U, "left"), val_at=(x + 4 * U, y - 12 * U, "left"),

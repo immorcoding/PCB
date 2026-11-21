@@ -27,7 +27,7 @@ FP = {
     "C0402": "Capacitor_SMD:C_0402_1005Metric", "C0603": "Capacitor_SMD:C_0603_1608Metric",
     "C0805": "Capacitor_SMD:C_0805_2012Metric", "C1206": "Capacitor_SMD:C_1206_3216Metric",
     "R0402": "Resistor_SMD:R_0402_1005Metric", "R0603": "Resistor_SMD:R_0603_1608Metric",
-    "R0805": "Resistor_SMD:R_0805_2012Metric",
+    "R0805": "Resistor_SMD:R_0805_2012Metric", "R1206": "Resistor_SMD:R_1206_3216Metric",
     "L0603": "Inductor_SMD:L_0603_1608Metric", "L0805": "Inductor_SMD:L_0805_2012Metric",
     "LED0603": "LED_SMD:LED_0603_1608Metric",
     "TP_1.5": "TestPoint:TestPoint_Pad_D1.5mm", "TP_1.0": "TestPoint:TestPoint_Pad_D1.0mm",
@@ -57,6 +57,7 @@ class Sheet:
     def __init__(self, page, number):
         self.page, self.number = page, number
         self.nets = {}                       # net -> [(ref, pin number)] as intended by this page (for self-checks)
+        self.rails = {}                      # supply renaming in force, e.g. {"+3V3": "+3V3_SD"}; see link()
 
     # ---- low level
     def pin_dirs(self, part):
@@ -68,8 +69,11 @@ class Sheet:
                 out[str(find(p, "number")[1])] = xform(-round(math.cos(a)), -round(math.sin(a)), part.rot)
         return out
 
-    def attach(self, part, nets, stub=2):
-        """Connect every pin of `part`. nets: {pin number or unique pin name: net name | NC}."""
+    def attach(self, part, nets, stub=2, raw=False):
+        """Connect every pin of `part`. nets: {pin number or unique pin name: net name | NC}.
+        Net names go through self.rails (a block fed through a 0 ohm link) unless raw=True."""
+        if not raw:
+            nets = {k: self.rails.get(v, v) for k, v in nets.items()}
         dirs = self.pin_dirs(part)
         types = {p[0]: p[4] for p in part._pins}
         names = {}
@@ -203,6 +207,24 @@ class Sheet:
         self.attach(part, {"1": net}, stub=1)
         return part
 
+    def link(self, ref, src, dst, i, j, size="R0805", flag_at=None):
+        """A 0 ohm link from rail `src` to the block rail `dst` (user 2026-11-20: one at the supply entry of
+        every block, so that blocks can be powered one at a time during bring-up), with the PWR_FLAG the
+        block rail needs. Horizontal at grid (i, j); the flag sits 8 units below, or at flag_at=(i, j). After this call set
+        sh.rails = {src: dst} for the parts of the block."""
+        x, y = P(i, j)
+        part = self.page.sym("Device:R", ref, "0R", x, y, 90, FP[size], ref_at=(x, y - 1.0 * U, None), val_at=(x, y + 1.0 * U, None),
+                             fields={"Rating": "jumper, 2 A or more" if size != "R0603" else "jumper, 1 A or more"})
+        nets = {}
+        for num, _n, pt in part.pins():
+            nets[num] = src if pt[0] < x else dst
+        assert len(set(nets.values())) == 2
+        self.attach(part, nets, stub=1, raw=True)
+        saved, self.rails = self.rails, {}
+        self.flag(dst, *(flag_at or (i, j + 8)))
+        self.rails = saved
+        return part
+
     def flag(self, net, i, j):
         """PWR_FLAG on a net that is driven through a label or a passive part (keeps ERC's
         'power input not driven' quiet). One per net on the whole design."""
@@ -210,6 +232,7 @@ class Sheet:
         self.page.flag((x, y))
         end = (x, round(y + U, 4))
         self.page.wire((x, y), end)
+        net = self.rails.get(net, net)
         if net in POWER:
             self.power(net, end, PWR_ROT[(net == "GND", (0, 1))])
         else:

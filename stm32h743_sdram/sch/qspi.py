@@ -11,6 +11,9 @@ from .common import FP
 
 def build(sh):
     sh.title("QSPI NOR Flash 128 Mbit", 6, 8)
+    sh.title("Bring-up link", 116, 8)
+    sh.link("R404", "+3V3", "+3V3_QSPI", 124, 14)
+    sh.rails = {"+3V3": "+3V3_QSPI"}
     sh.ic("Memory_Flash:W25Q128JVE", "U401", "W25Q128JVEIM", 36, 24, "Package_SON:WSON-8-1EP_8x6mm_P1.27mm_EP3.4x4.3mm", {
         "1": "QSPI_BK1_NCS", "6": "QSPI_CLK",
         "5": "QSPI_BK1_IO0", "2": "QSPI_BK1_IO1", "3": "QSPI_BK1_IO2", "7": "QSPI_BK1_IO3",

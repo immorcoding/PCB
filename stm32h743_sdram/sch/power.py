@@ -135,7 +135,16 @@ def build(sh):
     sh.flag("+12V", 114, 21)
 
     # ---- +12V -> +5V
+    # bulk capacitor at the input: damps the hot-plug ringing of the cable against the ceramic capacitors
+    sh.two("Device:C_Polarized", "C114", "100uF 35V", 122, 22, "Capacitor_SMD:CP_Elec_6.3x7.7", "+12V", "GND", first="1",
+           fields={"Rating": "aluminium electrolytic, 35 V"})
+    # 0 ohm links (user 2026-11-20): each regulator output and each LDO input can be opened for bring-up
+    sh.title("Bring-up links: regulator outputs", 128, 9)
+    sh.link("R110", "+5V_REG", "+5V", 134, 15, "R1206")
+    sh.link("R111", "+3V3_REG", "+3V3", 150, 15, "R1206")
+
     sh.title("+12V to +5V, 2 A: LMR51420XF (500 kHz, forced PWM)", 6, 35)
+    sh.rails = {"+5V": "+5V_REG"}
     sh.note("VOUT = 0.6 V x (1 + R102 / R103) = 4.98 V.  L101: ripple 0.58 A at 12 V, 0.72 A at 18 V; saturation 7 A is above the 5.1 A current limit.  EN tied to VIN (always on).", 6, 37)
     sh.note("C105-C107: about 54 uF at 5 V bias; the worst overshoot (inductor energy at current limit) stays near 5.5 V, the TPS62A02 abs max is 6.5 V.  SW_5V, +12V, +5V: copper regions.", 6, 39)
     sh.ic(lmr, "U101", "LMR51420XFDDCR", 18, 49, SOT23_6,
@@ -153,8 +162,8 @@ def build(sh):
     _cap(sh, "C105", "22uF/25V", 96, 49, "+5V", C1210, "X7R 25V")
     _cap(sh, "C106", "22uF/25V", 103, 49, "+5V", C1210, "X7R 25V")
     _cap(sh, "C107", "22uF/25V", 110, 49, "+5V", C1210, "X7R 25V")
+    sh.rails = {}
     sh.tp("TP102", "+5V", 118, 47)
-    sh.flag("+5V", 125, 47)
 
     # ---- +5V -> +3V3
     sh.title("+5V to +3V3, 2 A: TPS62A02 (2.4 MHz); enabled by +5V", 6, 60)
@@ -164,16 +173,15 @@ def build(sh):
           {"4": "+5V", "1": "EN_3V3", "3": "SW_3V3", "6": "FB_3V3", "5": NC, "2": "GND"},
           val_at=_below(18, 74, 2),
           fields={"MPN": "TPS62A02PDDCR", "Manufacturer": TI})
-    sh.two("Device:L", "L102", "1uH 4.5A", 38, 74, "Inductor_SMD:L_Vishay_IHLP-1616", "SW_3V3", "+3V3",
+    sh.two("Device:L", "L102", "1uH 4.5A", 38, 74, "Inductor_SMD:L_Vishay_IHLP-1616", "SW_3V3", "+3V3_REG",
            horizontal=True, fields={"MPN": "IHLP1616BZER1R0M11", "Manufacturer": VISHAY})
     sh.R("R104", "10k", 48, 74, "+5V", "EN_3V3")
-    sh.R("R105", "100k 1%", 56, 74, "+3V3", "FB_3V3")
+    sh.R("R105", "100k 1%", 56, 74, "+3V3_REG", "FB_3V3")
     sh.R("R106", "22.1k 1%", 64, 74, "FB_3V3", "GND")
     _cap(sh, "C108", "10uF/16V", 74, 74, "+5V", FP["C0805"], "X7R 16V")
-    _cap(sh, "C109", "22uF/16V", 81, 74, "+3V3", FP["C1206"], "X7R or X5R 16V")
+    _cap(sh, "C109", "22uF/16V", 81, 74, "+3V3_REG", FP["C1206"], "X7R or X5R 16V")
     sh.tp("TP103", "+3V3", 89, 72)
     sh.tp("TP106", "EN_3V3", 96, 72, kind="TP_1.0")
-    sh.flag("+3V3", 104, 72)
     sh.R("R107", "470R", 114, 74, "+3V3", "LED_3V3")
     _diode(sh, "Device:LED", "D103", "green", 122, 74, FP["LED0603"], "LED_3V3", "GND", "2",
            fields={"MPN": "VLMG1300-GS08", "Manufacturer": VISHAY})
@@ -181,9 +189,12 @@ def build(sh):
     # ---- LDOs
     sh.title("+5V to +3V3A (codec AVDD / DRVDD) and +3V3 to +1V8 (codec DVDD): TPS7A20, 300 mA", 6, 85)
     sh.note("Power-up order for the codec: +3V3 (IOVDD), then +3V3A, then +1V8.  Power-down order is not controlled.  U103 dissipates about 0.11 W.", 6, 87)
+    sh.title("Bring-up links: LDO inputs", 128, 60)
+    sh.link("R112", "+5V", "+5V_LDO", 134, 66, "R0805")
+    sh.link("R113", "+3V3", "+3V3_LDO", 150, 66, "R0805")
     for ref, val, i, vin, en, out, r, cin, cout in (
-            ("U103", "TPS7A2033PDBVR", 18, "+5V", "EN_3V3A", "+3V3A", "R108", "C110", "C111"),
-            ("U104", "TPS7A2018PDBVR", 82, "+3V3", "EN_1V8", "+1V8", "R109", "C112", "C113")):
+            ("U103", "TPS7A2033PDBVR", 18, "+5V_LDO", "EN_3V3A", "+3V3A", "R108", "C110", "C111"),
+            ("U104", "TPS7A2018PDBVR", 82, "+3V3_LDO", "EN_1V8", "+1V8", "R109", "C112", "C113")):
         sh.ic("Regulator_Linear:TPS7A20xxxDBV", ref, val, i, 95, SOT23_5,
               {"1": vin, "3": en, "5": out, "2": "GND"}, val_at=_below(i, 95, 2),
               fields={"MPN": val, "Manufacturer": TI})

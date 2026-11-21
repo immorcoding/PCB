@@ -17,8 +17,8 @@ Sources (PDFs in datasheet/, read from rendered page images, text layer as cross
         diode (onsemi NSR0240 recommended); p.13 COUT 1-4.7 uF.
   [L]   Coilcraft LPS4018, Document 435-1 rev. 02/23/22 p.1: LPS4018-472MR_ 4.7 uH +-20 %, DCR 0.125 ohm max,
         Isat 1.8 A (10 % drop), Irms 1.3 A (20 C rise), SRF 65 MHz.
-  [D]   onsemi MBR0540T1/D rev. 8 (Oct 2024) p.1-2: SOD-123, cathode band = pin 1, VRRM 40 V, IO 0.5 A,
-        IFRM 1.0 A, IFSM 5.5 A, VF 0.51 V at 0.5 A, IR 20 uA at 40 V 25 C.
+  [D]   Diodes Inc B160S1F DS37031 rev. 5-2 (Mar 2018) p.1-2: SOD123F, cathode band = pad 1, VRRM 60 V, IO 1 A,
+        IFSM 30 A, VF 0.53 V typ at 1 A, IR 20 uA typ / 200 uA max at 60 V 25 C, 45 pF at 4 V. (60 V: user 2026-11-20.)
 
 J701 Omron XF2M-4015-1A. [OM] p.7: seen from above with the solder tails up and the FPC opening down,
 terminal 1 is at the left end. Stock footprint Omron_XF2M-4015-1A_1x40-1MP_P0.5mm_Horizontal compared with the
@@ -40,7 +40,7 @@ Choices:
   - R705 pulls DISP low: the panel stays in standby while PG14 floats during reset. [IN] p.7 order is VDD,
     interface signals, DISP, then the LED supply at least 160 ms after DISP.
   - R706 pulls CTRL low (PB5 floats during reset): backlight off. The chip has 300 k inside as well ([TPS] p.5).
-  - R708 = 10 ohm: 204 mV / 10 = 20.4 mA (18.8 .. 22.0 mA over the VREF range). 5.1 ohm gives 40 mA, for the
+  - R708 = 10.2 ohm (TI example value, user 2026-11-20): 204 mV / 10.2 = 20.0 mA (18.4 .. 21.6 mA over the VREF range). 5.1 ohm gives 40 mA, for the
     Rocktech panel only (two strings); the Innolux string is rated 22 mA, 25 mA absolute.
   - R707 (DNP). [TPS] p.8: with the LED string open the output rises to the OVP threshold, then the chip
     latches off until CTRL is toggled; the output falls back to VIN. A dummy load is not needed for
@@ -61,13 +61,13 @@ Inductor arithmetic ([TPS] eq. 3-5; VIN = 5 V, VOUT = VLED + 0.2 V):
   LPS4018-472: Isat 1.8 A, 2.5 times the worst peak and equal to the typical switch limit (1.8 A).
   10 uH would halve the ripple (0.29 / 0.34 A, peak 0.21 / 0.30 A at 20 mA) but [TPS] p.12 recommends
   4.7 uH for inputs of 5 V and above (peak current and loop stability) and its application circuit uses 4.7 uH.
-  D701: mean current = LED current (20-40 mA); repetitive peak 0.72 A worst < IFRM 1.0 A; VRRM 40 V against OVP 39 V max.
+  D701: mean current = LED current (20-40 mA); worst peak 0.72 A against 1 A average rating; VRRM 60 V against OVP 39 V max.
 """
 from .common import FP, NC, symbol
 
 # panel pin -> (Rocktech name, Innolux name, net).  LCD_P37..40 are the panel side of the 0 ohm links.
 PANEL = {
-    1: ("K (LED-)", "VLED-", "LED_K"), 2: ("A (LED+)", "VLED+", "LED_A"), 3: ("GND", "GND", "GND"), 4: ("VDD", "VDD", "+3V3"),
+    1: ("K (LED-)", "VLED-", "LED_K"), 2: ("A (LED+)", "VLED+", "LED_A"), 3: ("GND", "GND", "GND"), 4: ("VDD", "VDD", "+3V3_LCD"),
     29: ("GND", "GND", "GND"), 30: ("DCLK", "CLK", "LCD_CLK"), 31: ("DISP", "DISP", "LCD_DISP"),
     32: ("HSYNC", "NC", "LCD_HSYNC"), 33: ("VSYNC", "NC", "LCD_VSYNC"), 34: ("DE", "DE", "LCD_DE"),
     35: ("GND", "NC", NC), 36: ("GND", "GND", "GND"),
@@ -89,6 +89,10 @@ def _pin_name(p):
 def build(sh):
     # ---- connector
     sh.title("LCD FPC connector: pad k = panel pin 41 - k", 6, 9)
+    sh.title("Bring-up links: panel 3.3 V, backlight 5 V", 62, 9)
+    sh.link("R709", "+3V3", "+3V3_LCD", 68, 15, "R0603")
+    sh.link("R710", "+5V", "+5V_BL", 84, 15)
+    sh.rails = {"+3V3": "+3V3_LCD", "+5V": "+5V_BL"}
     pads = [(k, _pin_name(41 - k), "passive") for k in range(1, 41)]
     j701 = symbol("XF2M-4015-1A_LCD", right=pads + [None, ("MP", "MP", "passive")], ref="J",
                   description="Omron XF2M-4015-1A, 40 pin 0.5 mm FPC connector, dual-sided contacts; pin names are the panel pins")
@@ -124,11 +128,11 @@ def build(sh):
           fields={"MPN": "TPS61169DCKR", "Manufacturer": "Texas Instruments"})
     sh.two("Device:L", "L701", "4.7uH 1.8A", 94, 65, "Inductor_SMD:L_Coilcraft_LPS4018", "+5V", "SW_BL", horizontal=True,
            fields={"MPN": "LPS4018-472MRC", "Manufacturer": "Coilcraft"})
-    sh.ic("Device:D_Schottky", "D701", "MBR0540 40V 0.5A", 94, 74, "Diode_SMD:D_SOD-123",
-          {"2": "SW_BL", "1": "LED_A"}, rot=180, fields={"MPN": "MBR0540T1G", "Manufacturer": "onsemi"})
+    sh.ic("Device:D_Schottky", "D701", "B160S1F 60V 1A", 94, 74, "Diode_SMD:D_SOD-123F",
+          {"2": "SW_BL", "1": "LED_A"}, rot=180, fields={"MPN": "B160S1F-7", "Manufacturer": "Diodes Inc"})
     sh.C("C705", "2.2uF 50V X7R", 108, 70, "LED_A", fp=FP["C1206"])
     sh.R("R707", "330R DNP", 120, 70, "LED_A", "LED_K", fp="Resistor_SMD:R_1206_3216Metric", dnp=True)
-    sh.R("R708", "10R 1%", 130, 70, "LED_K", "GND", fp=FP["R0603"])
+    sh.R("R708", "10.2R 1%", 130, 70, "LED_K", "GND", fp=FP["R0603"])
     sh.tp("TP701", "LED_A", 140, 70)
 
     # ---- per-pin table, one row per pin, one text item per cell
@@ -156,10 +160,10 @@ def build(sh):
         "Colour: RGB565 on the upper bits. Panel R0-R2, G0-G1, B0-B2 are tied to GND at the connector (CMOS inputs, must not float; the datasheets give no rule). Full white is 248/252/248.",
         "R705: DISP low = standby while PG14 floats in reset. Power-on order (Innolux p.7): VDD, LTDC signals within 100 ms, DISP high, backlight at least 160 ms after DISP; reverse order for power-off.",
         "R706: CTRL low = backlight off while PB5 floats in reset (the chip also has 300k inside). CTRL low for 2.5 ms = shutdown. PWM 5-100 kHz; LED current = duty x 204 mV / R708 (analog dimming).",
-        "R708: 10R = 20.4 mA, safe for both panels (Rocktech 2 strings x 5 LED, 16 V, 40 mA typ; Innolux 1 string, 27.9 V, 20 mA typ, 22 mA max). 5.1R = 40 mA: Rocktech only.",
-        "No panel or open string: LED_A rises to the OVP threshold (36-39 V), then U701 latches off until CTRL goes low and high again. C705 is 50 V, D701 40 V. Without a panel LED_A sits at +5V minus the diode drop.",
+        "R708: 10.2R = 20.0 mA (18.4-21.6 mA), safe for both panels (Rocktech 2 strings x 5 LED, 16 V, 40 mA typ; Innolux 1 string, 27.9 V, 20 mA typ, 22 mA max). 5.1R = 40 mA: Rocktech only.",
+        "No panel or open string: LED_A rises to the OVP threshold (36-39 V), then U701 latches off until CTRL goes low and high again. C705 is 50 V, D701 60 V. Without a panel LED_A sits at +5V minus the diode drop.",
         "R707 (DNP) is not needed for protection. It is a bench load in place of the LED string: 330R with R708 = 10R gives 6.9 V, 0.14 W. Do not fit 1.8k-13k: FB stays above 30 mV and the open-LED protection no longer trips.",
-        "L701 4.7 uH: discontinuous at these loads; peak 0.31 A (Rocktech 20 mA), 0.44 A (Innolux 20 mA), 0.72 A worst case; Isat 1.8 A. D701: IFRM 1.0 A, VRRM 40 V.",
+        "L701 4.7 uH: discontinuous at these loads; peak 0.31 A (Rocktech 20 mA), 0.44 A (Innolux 20 mA), 0.72 A worst case; Isat 1.8 A. D701: 1 A, VRRM 60 V.",
         "Innolux AT043TN24: pins 37-40 are the resistive touch film (X1, Y1, X2, Y2): remove R701-R704, or the film ties TP_RST to I2C4_SCL and TP_INT to I2C4_SDA. Its pins 32, 33 are NC (DE mode only).",
         "The connector takes a 0.5 mm pitch FPC, 20.5 mm wide, 0.3 mm thick, contacts on either side (Innolux drawing p.20 matches). The Rocktech -CT672B tail is 0.8 mm pitch (outline p.16) and does not fit; only its pin order is used.",
     ):

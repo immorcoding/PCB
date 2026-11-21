@@ -86,6 +86,9 @@ def build(sh):
     sh.title("Audio: TLV320AIC3104 codec (I2S slave on SAI1, I2C4 address 0x18), headphone out, line in", 6, 8)
 
     # ---- codec
+    sh.title("Bring-up link: IOVDD", 8, 52)
+    sh.link("R610", "+3V3", "+3V3_AUD", 14, 58, "R0603", flag_at=(28, 56))
+    sh.rails = {"+3V3": "+3V3_AUD"}
     sh.title("Codec", 34, 13)
     sh.ic(codec_symbol(), "U601", "TLV320AIC3104IRHBR", 62, 46, CODEC_FP, {
         "1": "SAI1_MCLK_A", "2": "SAI1_SCK_A", "3": "SAI1_FS_A",
@@ -102,6 +105,7 @@ def build(sh):
         val_at=(P(66, 59)[0], P(66, 59)[1], "left"))
 
     # ---- I2C pull-ups, reset
+    sh.rails = {}
     sh.title("I2C4 pull-ups", 8, 13)
     sh.R("R601", "2.2k", 12, 20, "+3V3", "I2C4_SCL")
     sh.R("R602", "2.2k", 20, 20, "+3V3", "I2C4_SDA")
@@ -111,7 +115,9 @@ def build(sh):
 
     # ---- decoupling, one group per supply pin (Figure 11-1)
     sh.title("Codec decoupling: IOVDD (7)   DVDD (32)   AVDD (25), DRVDD (18), DRVDD (24), bulk", 8, 70)
+    sh.rails = {"+3V3": "+3V3_AUD"}
     sh.caps(601, ["100nF", "1uF"], 10, 78, "+3V3", step=5)
+    sh.rails = {}
     sh.caps(603, ["100nF", "1uF"], 24, 78, "+1V8", step=5)
     sh.caps(605, ["100nF", "1uF", "100nF", "1uF", "100nF", "1uF", "10uF"], 38, 78, "+3V3A", step=5)
 

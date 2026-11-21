@@ -50,6 +50,8 @@ def build(sh):
     # ---------------------------------------------------------------- microSD
     sh.box(6, 8, 80, 50)
     sh.title("microSD on SDMMC1, 4-bit, 3.3 V only", 7, 10)
+    sh.link("R812", "+3V3", "+3V3_SD", 66, 38, "R0603", flag_at=(80, 34))
+    sh.rails = {"+3V3": "+3V3_SD"}
     sh.ic("Connector:Micro_SD_Card_Det_Hirose_DM3AT", "J801", "DM3AT-SF-PEJM5", 30, 26, SD, {
         "1": "SDMMC1_D2", "2": "SDMMC1_D3", "3": "SDMMC1_CMD", "4": "+3V3", "5": "SDMMC1_CK", "6": "GND",
         "7": "SDMMC1_D0", "8": "SDMMC1_D1",
@@ -67,6 +69,10 @@ def build(sh):
     # ---------------------------------------------------------------- CAN
     sh.box(84, 8, 155, 50)
     sh.title("CAN (FDCAN1), not isolated", 85, 10)
+    sh.note("Bring-up links, CAN:", 120, 91)
+    sh.link("R813", "+3V3", "+3V3_CAN", 128, 94, "R0603", flag_at=(142, 92))
+    sh.link("R814", "+5V", "+5V_CAN", 128, 98, "R0603", flag_at=(150, 92))
+    sh.rails = {"+3V3": "+3V3_CAN", "+5V": "+5V_CAN"}
     sh.ic("Interface_CAN_LIN:MCP2562-E-SN", "U801", "TCAN1042HGVDR", 102, 26, "Package_SO:SOIC-8_3.9x4.9mm_P1.27mm", {
         "1": "FDCAN1_TX", "4": "FDCAN1_RX", "8": "CAN_STB", "5": "+3V3", "3": "+5V", "2": "GND",
         "7": "CANH", "6": "CANL",
@@ -90,6 +96,7 @@ def build(sh):
 
     # ---------------------------------------------------------------- SWD
     sh.box(6, 54, 50, 104)
+    sh.rails = {}
     sh.title("SWD, ARM 10-pin 1.27 mm", 7, 56)
     x, y = 22 * 2.54, 78 * 2.54
     sh.ic("Connector:Conn_ARM_JTAG_SWD_10", "J803", "FTSH-105-01-L-DV-K", 22, 78,

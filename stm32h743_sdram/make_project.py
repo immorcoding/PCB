@@ -52,7 +52,7 @@ CLASSES = {
     "RMII":    (0.1016, 0.45, 0.2, 14),
     "ETH100":  (None, 0.45, 0.2, 15),     # 100 ohm pair PHY - RJ45, width / gap from ETH_PAIR
 }
-ETH_PAIR = (0.11, 0.15)   # width, gap in mm on L1: 99.6 ohm calculated with scripts/impedance.py, not confirmed on the fab calculator
+ETH_PAIR = (0.1194, 0.2032)   # width, gap in mm on L1 = 4.7 / 8 mil for 100 ohm: JLC impedance calculator, run by the user 2026-11-20
 
 # pins.csv group -> net class. Net names are the pins.csv signal names (global labels, no '/' prefix).
 GROUP_CLASS = {"SDRAM_DATA": "SDRAM", "SDRAM_ADDR": "SDRAM", "SDRAM_CLK": "SDRAM", "QSPI": "QSPI",

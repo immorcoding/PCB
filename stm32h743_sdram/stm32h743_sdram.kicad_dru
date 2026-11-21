@@ -15,6 +15,8 @@
 #   signal track exactly 0.09, clearance >= 0.09, via >= 0.30 / 0.15 (annular ring 0.075).
 # These exceptions were approved by the user on 2026-11-16 (issue 10) because a 0.65 mm ball pitch leaves
 # a 0.35 mm gap between 0.30 mm pads, and a 0.2 mm drill would sit 0.18 mm from the track between two vias.
+# Approved on 2026-11-20: the via array in the exposed pad of the Ethernet PHY (9 holes 0.5 / 0.2 mm that come
+# with the library footprint; they are footprint pads, not vias, so via_size does not see them).
 
 # --- Track width (AD Width rules, min / preferred / max) ---
 (rule "signal_width"
@@ -31,11 +33,11 @@
   (condition "A.Type == 'Track' && A.NetClass == 'PWR'")
   (constraint track_width (min 0.1524mm) (opt 0.3048mm) (max 2.54mm)))
 
-# 100 ohm pair between the PHY and the RJ45 on L1. 0.11 / 0.15 is the calculated value; the fab calculator
-# gives 4.1 mil (0.104) at a 5.9 mil gap, which the user finds too thin. Width and gap are still open (U18).
+# 100 ohm pair between the PHY and the RJ45, on L1 only: 4.7 mil wide, 8 mil gap (0.1194 / 0.2032 mm), from the
+# fab's impedance calculator, run by the user on 2026-11-20 (on L4 the same gap needs 4.3 mil).
 (rule "eth_width"
   (condition "A.Type == 'Track' && A.NetClass == 'ETH100'")
-  (constraint track_width (min 0.11mm) (opt 0.11mm) (max 0.11mm)))
+  (constraint track_width (min 0.1194mm) (opt 0.1194mm) (max 0.1194mm)))
 
 # --- BGA rule areas: track width ---
 # A track that touches a rule area (also one that crosses its edge) may be 0.09.
@@ -118,7 +120,7 @@
 # confirmed by the user on 2026-11-20 (it is not an electrical need).
 (rule "eth_gap"
   (condition "A.NetClass == 'ETH100'")
-  (constraint diff_pair_gap (min 0.15mm) (opt 0.15mm) (max 0.8mm)))
+  (constraint diff_pair_gap (min 0.2032mm) (opt 0.2032mm) (max 0.8mm)))
 
 (rule "eth_skew"
   (condition "A.NetClass == 'ETH100'")
