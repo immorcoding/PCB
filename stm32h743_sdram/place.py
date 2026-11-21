@@ -62,8 +62,8 @@ PLACE = {
 PLACE.update({
     # ---- MCU, top side. Crystals in the west window that the SDRAM sketch keeps free on L1 (x 29-34,
     # y 33.5-38.5): HSE at balls G1 / H1, LSE at E1 / F1, load capacitors beside the packages.
-    "Y201": (31.45, 37.0, 270), "C225": (28.95, 36.4, 90), "C226": (32.15, 40.4, 90),
-    "Y202": (27.0, 36.1, 90), "C227": (24.9, 34.85, 90), "C228": (24.9, 37.35, 90),
+    "Y201": (31.4, 37.55, 180), "C225": (27.35, 38.4, 90), "C226": (28.75, 38.4, 90),
+    "Y202": (31.9, 34.55, 0), "C227": (27.9, 34.55, 90), "C228": (29.3, 34.55, 90),
     # supply entry of the MCU block (L3_3V3_MCU reaches north under the SDRAM bands to these pads)
     "R203": (39.5, 26.2, 0), "C217": (42.8, 26.2, 0),
     # BOOT0 pull-down and test pad, reset key, SWD header on the top edge
@@ -82,6 +82,8 @@ PLACE.update({
     # ---- audio: jacks on the top edge (headphone left, line in right), codec below them with SAI facing the
     # MCU (L3_3V3A under it; L1_3V3_AUD east of it, L1_1V8 south of it)
     "J601": (16.5, 8.5, 0), "J602": (28.5, 8.5, 0),
+    # U601's exposed pad (DRVSS) gets thermal vias as a via-in-pad exception like the PHY (coordinator, stop 4
+    # round 2); the vias come with the fan-out
     "U601": (19.0, 26.0, 180),
     "C613": (4.6, 22.5, 90), "C614": (9.9, 22.5, 90), "R604": (4.6, 16.9, 0), "R605": (8.2, 16.9, 0),
     "C609": (14.9, 22.3, 90), "C605": (14.9, 24.4, 90), "C607": (14.9, 28.1, 90),
@@ -108,23 +110,23 @@ PLACE.update({
     "Y501": (26.6, 53.2, 180), "C508": (29.6, 52.8, 90), "C509": (23.6, 53.4, 90),
     "C504": (30.0, 44.5, 90), "C505": (31.3, 45.3, 90), "R503": (30.0, 42.4, 0), "R502": (32.6, 46.0, 90),
     "R501": (27.0, 40.9, 0),
-    "FB501": (32.6, 49.6, 270), "R514": (34.4, 49.4, 90), "C501": (21.5, 54.7, 180),
+    "FB501": (32.0, 49.6, 270), "R514": (33.85, 49.4, 90), "C501": (21.5, 54.7, 180),
     "R511": (8.6, 54.4, 0), "R512": (6.2, 54.4, 0), "R513": (13.9, 54.4, 0),
     # ---- QSPI flash under the MCU's south-west corner (L1_3V3_QSPI)
-    "U401": (36.0, 55.0, 0), "C401": (41.0, 52.0, 90), "C402": (42.4, 52.4, 90), "R404": (42.4, 56.0, 90),
-    "R401": (30.9, 53.4, 90), "R402": (30.9, 55.8, 90), "R403": (44.0, 55.6, 270),
+    "U401": (36.0, 55.0, 180), "C401": (30.7, 56.9, 90), "C402": (29.3, 56.9, 90), "R404": (30.4, 59.6, 0),
+    "R401": (38.6, 56.4, 90, "B"), "R402": (38.6, 54.2, 90, "B"), "R403": (27.8, 57.2, 90),
     # ---- user LEDs and key south of the QSPI
-    "D802": (25.6, 60.0, 0), "R808": (25.6, 61.6, 0), "D803": (29.4, 60.0, 0), "R809": (29.4, 61.6, 0),
-    "SW801": (36.0, 60.6, 0), "R810": (32.0, 61.0, 0), "R811": (39.8, 59.8, 90), "C806": (41.2, 59.8, 90),
-    "TP109": (59.9, 54.4, 0),
+    "D802": (14.0, 59.0, 0), "R808": (14.0, 60.6, 0), "D803": (17.6, 59.0, 0), "R809": (17.6, 60.6, 0),
+    "SW801": (16.0, 63.6, 0), "R810": (19.6, 63.0, 90), "R811": (21.0, 63.0, 90), "C806": (22.4, 63.0, 90),
+    "TP109": (60.4, 54.4, 0),
     # ---- LCD connector on the bottom edge, opening out, 3 mm in (L1_3V3_LCD)
     "J701": (41.0, 68.78, 0),
-    "R701": (31.25, 64.0, 90), "R702": (32.45, 64.0, 90), "R703": (33.65, 64.0, 90), "R704": (34.85, 64.0, 90),
-    "R705": (36.3, 64.0, 90), "C701": (47.0, 64.2, 90), "C702": (45.0, 64.2, 90), "R709": (42.4, 64.2, 0),
+    "R701": (29.25, 64.0, 90), "R702": (30.45, 64.0, 90), "R703": (31.65, 64.0, 90), "R704": (32.85, 64.0, 90),
+    "R705": (27.8, 64.0, 90), "C701": (48.6, 64.4, 90), "C702": (48.6, 61.5, 90), "R709": (48.6, 58.4, 90),
     # ---- backlight boost right of the LCD connector (L1_5V_BL, L1_SW_BL, L1_LED_A)
-    "L701": (50.0, 52.8, 270), "U701": (53.0, 56.8, 0), "D701": (50.0, 58.0, 90), "C705": (50.4, 61.8, 0),
-    "C703": (53.2, 51.2, 90), "C704": (54.8, 54.6, 0), "R710": (56.6, 52.4, 90),
-    "R708": (54.0, 59.2, 0), "R707": (55.2, 61.6, 0), "R706": (56.4, 57.4, 0), "TP701": (46.4, 60.8, 0),
+    "L701": (51.9, 53.0, 0), "U701": (55.6, 56.4, 0), "D701": (52.6, 59.3, 90), "C705": (55.0, 59.9, 90),
+    "C703": (56.3, 49.3, 0), "C704": (56.2, 54.6, 180), "R710": (53.0, 48.7, 0),
+    "R708": (52.0, 63.8, 90), "R707": (55.2, 63.6, 0), "R706": (57.8, 55.4, 90), "TP701": (57.6, 58.9, 0),
     # ---- bottom side under the BGAs (SPEC 6, agreed exception to LAY-5): MCU decoupling, VCAP, VDDA filter, and
     # the SDRAM decoupling. Positions from decap_search.py on the SDRAM sketch board: pads clear of every L6
     # track and foreign via, every ball keeps a free via site, every VDD ball has a 100 nF within 2.5 mm.
@@ -154,14 +156,14 @@ PLACE.update({
     "R108": (73.6, 34.3, 0), "TP106": (74.4, 36.2, 0), "TP103": (83.0, 33.6, 0),
     "D103": (73.6, 10.0, 90), "R107": (73.6, 13.2, 90),
     # ---- 5 V buck (L1_12V, L1_SW_5V, L1_5V_REG)
-    "U101": (69.0, 43.0, 180), "L101": (76.3, 43.0, 0), "C101": (69.0, 45.4, 0), "C104": (69.9, 39.7, 90),
+    "U101": (69.0, 43.0, 180), "L101": (76.3, 43.0, 0), "C101": (69.0, 45.4, 0), "C104": (69.9, 40.45, 180),
     "C102": (65.6, 38.8, 180), "C103": (66.4, 47.4, 0), "C105": (82.4, 40.0, 90), "C106": (82.4, 44.8, 270),
     "C107": (77.0, 48.4, 0), "R102": (65.0, 41.6, 90), "R103": (65.0, 44.2, 90), "R110": (72.0, 49.0, 180),
     "TP102": (68.3, 51.35, 0),
     # ---- 12 V input: DC jack on the right edge, fuse, reverse-polarity P-MOS, TVS, bulk (L1_12V_JACK,
     # L1_12V_IN, L1_12V)
     "J101": (71.3, 59.0, 90),
-    "F101": (68.0, 58.5, 90), "Q101": (67.0, 54.4, 0), "D101": (63.6, 54.4, 90), "R101": (63.6, 58.2, 90),
+    "F101": (68.0, 58.5, 90), "Q101": (67.0, 54.4, 0), "D101": (63.6, 54.4, 90), "R101": (64.4, 58.2, 90),
     "D102": (70.8, 68.0, 270), "C114": (62.6, 64.5, 0), "TP101": (64.0, 50.6, 0),
 })
 RULE_AREAS = {
@@ -242,7 +244,14 @@ def main():
         board.Remove(item)
     outline(board)
     rule_areas(board)
+    # SaveBoard also rewrites the project file next to the board (pcbnew's defaults filled in, classes reordered;
+    # same rules). make_project.py is that file's source: keep its bytes.
+    pro = os.path.splitext(PCB)[0] + ".kicad_pro"
+    keep = open(pro, "rb").read() if os.path.isfile(pro) else None
     pcbnew.SaveBoard(PCB, board)
+    if keep is not None:
+        with open(pro, "wb") as f:
+            f.write(keep)
     print("placed %d parts, parked %d; board %g x %g mm; SDRAM at (%.2f, %.2f) rot %d" % (
         len(PLACE), len(fps) - len(PLACE), BOARD_W, BOARD_H, *sdram_centre(), SDRAM_ROT))
 

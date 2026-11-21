@@ -113,6 +113,7 @@
 - **`pcbnew` 的 `GetLayerName` 返回的是自定义层名**（`L2_GND`），文件里是 `In1.Cu`。
 - **`kicad-cli` 的控制台输出不是 UTF-8**：`subprocess.run(..., text=True)` 会在读线程里解码出错，按字节取。
 - **`place.py` 这类脚本里 `board.Remove()` 要放在所有读取之后**：第二次运行时先删旧板框再遍历铺铜区会段错误（上面那条 pcbnew 的坑的又一例）。
+- **工程文件已存在时 `SaveBoard` 照样重写 `.kicad_pro`**：填进 pcbnew 的默认值、重排网络类（规则值不变）。H743 板的工程文件由 `make_project.py` 生成，`place.py` 存板前读下工程文件的字节、存完写回（2026-11-21）。
 - **pcbnew：`LSET(层号)` 在 KiCad 10 的 Python 里报重载错误**：先 `ls = pcbnew.LSET()` 再 `ls.AddLayer(层号)`。
 - **pcbnew：courtyard 和 Fab 图形的 `GetBoundingBox()` 含线宽的一半**：按外形算距离、面积时取轮廓的顶点（`GetCourtyard(...).Outline(0)`），或把框缩回线宽的一半。
 - **背面两脚件的焊盘位置**：`place.py` 先翻面再设方向，结果和顶面同一方向时焊盘位置相同（1 脚在 −x，转 90° 后在 +y），2026-11-21 实测。

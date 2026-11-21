@@ -35,12 +35,12 @@ region L6_GND GND L6 whole minwidth=0.3
 region L3_3V3 +3V3 L3 whole
 
 # +5V: band down x 61.5-72 from the top strip to the 5 V buck output (R110) and its test pad, with an arm west
-# to the backlight link R710 at the bottom; the strip along the top (y 5.5-8.5, under the jacks, SWD and the
+# under the backlight boost to its link R710 (x 51.3-64, y 48-55.5); the strip along the top (y 5.5-8.5, under the jacks, SWD and the
 # microSD) runs to a leg at x 33.5-36.5 that comes down to the analog LDO link R112 (SPEC 5). Loads: U102 VIN
 # and C108, R104 (EN pull-up), R814 (CAN 5 V link). A notch at y 21.3-23.9 leaves R813's +3V3 pad on +3V3.
 region L3_5V +5V L3
-  33.5,5.5  72,5.5  72,21.3  67.2,21.3  67.2,23.9  72,23.9  72,52.3  64,52.3  64,55.5  55,55.5  55,50
-  63,50  63,28  61.5,28  61.5,8.5  36.5,8.5  36.5,22.5  33.5,22.5
+  33.5,5.5  72,5.5  72,21.3  67.2,21.3  67.2,23.9  72,23.9  72,52.3  64,52.3  64,55.5  51.3,55.5  51.3,48
+  63,48  63,28  61.5,28  61.5,8.5  36.5,8.5  36.5,22.5  33.5,22.5
 
 # +3V3A: under the codec, its analog decoupling and the LDO output (C111, TP104); a notch at x 25-27.4 keeps
 # R610's +3V3 pad on +3V3 (open to the south)
@@ -62,11 +62,12 @@ region L1_12V_JACK +12V_JACK L1
   67,58.9  69.7,58.9  69.7,57.4  72.9,57.4  72.9,60.7  67,60.7
 region L1_12V_IN +12V_IN L1
   67.15,53.9  69,53.9  69,58.6  67.15,58.6
-# +12V: from the 5 V buck input (C102, C104, U101 VIN) down a spine at x 61.8-62.6 west of the buck past C103,
+# +12V: from the 5 V buck input (C102, C104 across the VIN end of the package as in the LMR51420 layout example;
+# its ground pad reaches the GND pin by a top trace under the IC) down a spine at x 61.8-62.6 west of the buck past C103,
 # TP101, the P-MOS source and the zener, to the bulk capacitor C114 and across above it to the TVS D102.
 # U101 pin 5 (EN, tied to +12V) is reached by a track (it sits between FB and BOOT).
 region L1_12V +12V L1
-  61.8,37  68.9,37  68.9,39.75  71,39.75  71,42.4  69.3,42.4  69.3,41.4  66.2,41.4  66.2,37.6  62.6,37.6
+  61.8,37  71.3,37  71.3,42.4  69.4,42.4  69.4,41.4  70,41.4  70,39.75  66.2,39.75  66.2,37.6  62.6,37.6
   62.6,46.4  65.6,46.4  65.6,48.4  62.6,48.4  62.6,49.6  65,49.6  65,51.6  62.6,51.6  62.6,54.9  66.9,54.9
   66.9,56.7  62.6,56.7  62.6,61  72,61  72,67.2  69.5,67.2  69.5,62.6  62.6,62.6  62.6,65.5  58,65.5
   58,63.5  61.8,63.5
@@ -116,13 +117,15 @@ region L6_VDDA_PHY VDDA_PHY L6
 region L1_3V3_PHY +3V3_PHY L1
   29.5,44.6  30.6,44.6  30.6,45.45  32,45.45  32,47.2  35.2,47.2  35.2,49.4  31.4,49.4  31.4,47.3  29.5,47.3
 # the remaining block rails
-# QSPI: flash VCC pin 8 by a short track (pins 6 and 7 are signals 1.27 mm below); pull-ups R401 / R402 west of
-# the flash by tracks
+# QSPI: the flash is turned 180 degrees so VCC (pin 8) is at its south-west corner, out of the LCD fan; C401,
+# C402, the link R404 and the IO3 pull-up R403 in a band west of it. The NCS and IO2 pull-ups R401 / R402 are on
+# the bottom under the flash's east pin row (vias, stop 5).
 region L1_3V3_QSPI +3V3_QSPI L1
-  40.3,52.3  44.6,52.3  44.6,55.55  40.3,55.55
-# LCD 3.3 V: link R709, C702, C701 in a band above the connector and a stub to its pin 37
+  27.5,57.2  31.9,57.2  31.9,56.9  32.6,56.9  32.6,58.2  31.9,58.2  31.9,60.4  30.7,60.4  30.7,58.2  27.5,58.2
+# LCD 3.3 V: link R709, C702, C701 in a column east of the LCD fan (x >= 47.8), straight down to connector pin 37
 region L1_3V3_LCD +3V3_LCD L1
-  42.6,64.3  49.6,64.3  49.6,65.6  49.4,65.6  49.4,66.6  49.05,66.6  49.05,65.6  42.6,65.6
+  48.4,57.2  49.85,57.2  49.85,65.6  49.4,65.6  49.4,66.6  49.1,66.6  49.1,65.1  48.4,65.1  48.4,64.65  49.3,64.65
+  49.3,62.6  48.4,62.6  48.4,61.9  49.3,61.9  49.3,57.9  48.4,57.9
 # microSD: link R812, C801, C802 in a band under the socket with a stub to contact 4, a strip between R802 and
 # R803 down to a second band under the five pull-ups and the card-detect pull-up
 region L1_3V3_SD +3V3_SD L1
@@ -133,12 +136,15 @@ region L1_3V3_CAN +3V3_CAN L1
   69.2,18.5  70.2,18.5  70.2,23.2  69.2,23.2  69.2,21.4  68.2,21.4  68.2,20.8  69.2,20.8
 region L1_5V_CAN +5V_CAN L1
   62,17.3  63.8,17.3  63.8,18  62.85,18  62.85,23.6  61.65,23.6  61.65,18  62,18
-# backlight boost right of the LCD connector
+# backlight boost at the east end of the LCD connector (its pins 39 LED_A and 40 LED_K are the two easternmost;
+# the link R710 takes +5V from the L3 arm). Switch node (L701 pin 2, U701 pin 1, D701 anode) >= 6 mm east of the
+# easternmost straight LCD path (x 47.25); output capacitor C705 between the diode cathode and the IC's GND pin.
 region L1_5V_BL +5V_BL L1
-  48.5,51.1  57.4,51.1  57.4,52.1  54.7,52.1  54.7,56.4  53.9,56.4  53.9,52.1  48.5,52.1
+  49.6,49.8  53.2,49.8  53.2,48.9  56.3,48.9  56.3,50  57,50  57,55.95  56.3,55.95  56.3,50.4  50.6,50.4  50.6,53
+  49.6,53
 region L1_SW_BL SW_BL L1
-  49.4,53.9  51.5,53.9  51.5,55.95  52.7,55.95  52.7,56.4  49.4,56.4
-# LED_A: diode cathode, C705, TP701, the dummy load R707 and a stub to connector pin 39
+  53.1,51.5  54.2,51.5  54.2,55.45  55.35,55.45  55.35,56  53.2,56  53.2,58.5  52,58.5  52,55.45  53.1,55.45
+# LED_A: diode cathode, C705, TP701, the dummy load R707 and a strip down to connector pin 39
 region L1_LED_A LED_A L1
-  45.7,58.7  50.65,58.7  50.65,62.95  53.2,62.95  53.2,61.6  54.35,61.6  54.35,63.5  50.45,63.5  50.45,66.6
-  50.1,66.6  50.1,63.5  49.9,63.5  49.9,63.2  45.7,63.2
+  50.1,59.9  56.2,59.9  56.2,58.1  58.4,58.1  58.4,60.4  56.2,60.4  56.2,62  54.4,62  54.4,64.5  53.1,64.5
+  53.1,62  50.45,62  50.45,66.6  50.1,66.6
