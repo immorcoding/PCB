@@ -28,7 +28,9 @@ Deterministic: no search by trial routing. The model (all of it is an estimate t
 import itertools, json, math, os, sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-BALLS = os.path.join(HERE, "out", "sketch", "balls.json")
+# Ball positions with the UNSWAPPED nets (FMC_Dn on DQn): the SDRAM bytes are read from these names, so `dump`
+# must only be run on a board whose swap.csv is the identity. The committed copy is from 2026-11-21.
+BALLS = os.path.join(HERE, "line_order", "balls_identity.json")
 LAYERS = ("L1", "L4", "L6")
 INNER = ("L4", "L6")
 MCU_HALF = 6.5            # the ring the rivers start from: package 5.0 + rule area 1.0 + 0.5

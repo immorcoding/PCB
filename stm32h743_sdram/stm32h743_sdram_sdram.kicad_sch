@@ -2408,7 +2408,7 @@
 		)
 		(uuid "40b49f98-cb4f-50cd-8325-636fca075f36")
 	)
-	(text "DQ24=D24  DQ25=D25  DQ26=D26  DQ27=D27  DQ28=D28  DQ29=D29  DQ30=D30  DQ31=D31  DQM3=NBL3"
+	(text "DQ24=D27  DQ25=D24  DQ26=D29  DQ27=D25  DQ28=D30  DQ29=D31  DQ30=D28  DQ31=D26  DQM3=NBL3"
 		(exclude_from_sim no)
 		(at 228.6 142.24 0)
 		(effects
@@ -2419,7 +2419,7 @@
 		)
 		(uuid "8291513d-514e-542d-a4ec-3a22e5b800aa")
 	)
-	(text "DQ8=D8  DQ9=D9  DQ10=D10  DQ11=D11  DQ12=D12  DQ13=D13  DQ14=D14  DQ15=D15  DQM1=NBL1"
+	(text "DQ8=D2  DQ9=D1  DQ10=D3  DQ11=D5  DQ12=D0  DQ13=D7  DQ14=D6  DQ15=D4  DQM1=NBL0"
 		(exclude_from_sim no)
 		(at 228.6 132.08 0)
 		(effects
@@ -2430,7 +2430,7 @@
 		)
 		(uuid "851da441-aa76-5269-90a0-60f926c6f6b6")
 	)
-	(text "DQ16=D16  DQ17=D17  DQ18=D18  DQ19=D19  DQ20=D20  DQ21=D21  DQ22=D22  DQ23=D23  DQM2=NBL2"
+	(text "DQ16=D23  DQ17=D20  DQ18=D22  DQ19=D16  DQ20=D21  DQ21=D19  DQ22=D18  DQ23=D17  DQM2=NBL2"
 		(exclude_from_sim no)
 		(at 228.6 137.16 0)
 		(effects
@@ -2464,7 +2464,7 @@
 		)
 		(uuid "c7f7059e-121c-59d6-8471-2ceb0642de72")
 	)
-	(text "DQ0=D0  DQ1=D1  DQ2=D2  DQ3=D3  DQ4=D4  DQ5=D5  DQ6=D6  DQ7=D7  DQM0=NBL0"
+	(text "DQ0=D12  DQ1=D14  DQ2=D11  DQ3=D8  DQ4=D9  DQ5=D15  DQ6=D13  DQ7=D10  DQM0=NBL1"
 		(exclude_from_sim no)
 		(at 228.6 127 0)
 		(effects
@@ -3676,7 +3676,7 @@
 			)
 		)
 	)
-	(global_label "FMC_D26"
+	(global_label "FMC_D29"
 		(shape passive)
 		(at 157.48 175.26 0)
 		(effects
@@ -3786,7 +3786,7 @@
 			)
 		)
 	)
-	(global_label "FMC_D28"
+	(global_label "FMC_D30"
 		(shape passive)
 		(at 157.48 180.34 0)
 		(effects
@@ -3808,7 +3808,7 @@
 			)
 		)
 	)
-	(global_label "FMC_D10"
+	(global_label "FMC_D3"
 		(shape passive)
 		(at 157.48 124.46 0)
 		(effects
@@ -3918,7 +3918,7 @@
 			)
 		)
 	)
-	(global_label "FMC_D19"
+	(global_label "FMC_D16"
 		(shape passive)
 		(at 157.48 152.4 0)
 		(effects
@@ -3984,7 +3984,7 @@
 			)
 		)
 	)
-	(global_label "FMC_D24"
+	(global_label "FMC_D27"
 		(shape passive)
 		(at 157.48 170.18 0)
 		(effects
@@ -4006,7 +4006,7 @@
 			)
 		)
 	)
-	(global_label "FMC_D23"
+	(global_label "FMC_D17"
 		(shape passive)
 		(at 157.48 162.56 0)
 		(effects
@@ -4116,7 +4116,7 @@
 			)
 		)
 	)
-	(global_label "FMC_D29"
+	(global_label "FMC_D31"
 		(shape passive)
 		(at 157.48 182.88 0)
 		(effects
@@ -4182,7 +4182,7 @@
 			)
 		)
 	)
-	(global_label "FMC_D21"
+	(global_label "FMC_D19"
 		(shape passive)
 		(at 157.48 157.48 0)
 		(effects
@@ -4226,7 +4226,7 @@
 			)
 		)
 	)
-	(global_label "FMC_D9"
+	(global_label "FMC_D1"
 		(shape passive)
 		(at 157.48 121.92 0)
 		(effects
@@ -4358,7 +4358,7 @@
 			)
 		)
 	)
-	(global_label "FMC_D1"
+	(global_label "FMC_D14"
 		(shape passive)
 		(at 157.48 96.52 0)
 		(effects
@@ -4402,7 +4402,7 @@
 			)
 		)
 	)
-	(global_label "FMC_D3"
+	(global_label "FMC_D8"
 		(shape passive)
 		(at 157.48 101.6 0)
 		(effects
@@ -4446,7 +4446,7 @@
 			)
 		)
 	)
-	(global_label "FMC_D5"
+	(global_label "FMC_D15"
 		(shape passive)
 		(at 157.48 106.68 0)
 		(effects
@@ -4534,7 +4534,7 @@
 			)
 		)
 	)
-	(global_label "FMC_D15"
+	(global_label "FMC_D4"
 		(shape passive)
 		(at 157.48 137.16 0)
 		(effects
@@ -4644,7 +4644,7 @@
 			)
 		)
 	)
-	(global_label "FMC_D0"
+	(global_label "FMC_D12"
 		(shape passive)
 		(at 157.48 93.98 0)
 		(effects
@@ -4666,7 +4666,7 @@
 			)
 		)
 	)
-	(global_label "FMC_NBL0"
+	(global_label "FMC_NBL1"
 		(shape passive)
 		(at 157.48 114.3 0)
 		(effects
@@ -4688,7 +4688,7 @@
 			)
 		)
 	)
-	(global_label "FMC_D17"
+	(global_label "FMC_D20"
 		(shape passive)
 		(at 157.48 147.32 0)
 		(effects
@@ -4732,7 +4732,7 @@
 			)
 		)
 	)
-	(global_label "FMC_D6"
+	(global_label "FMC_D13"
 		(shape passive)
 		(at 157.48 109.22 0)
 		(effects
@@ -4754,7 +4754,7 @@
 			)
 		)
 	)
-	(global_label "FMC_D30"
+	(global_label "FMC_D28"
 		(shape passive)
 		(at 157.48 185.42 0)
 		(effects
@@ -4776,7 +4776,7 @@
 			)
 		)
 	)
-	(global_label "FMC_D13"
+	(global_label "FMC_D7"
 		(shape passive)
 		(at 157.48 132.08 0)
 		(effects
@@ -4820,7 +4820,7 @@
 			)
 		)
 	)
-	(global_label "FMC_D20"
+	(global_label "FMC_D21"
 		(shape passive)
 		(at 157.48 154.94 0)
 		(effects
@@ -4842,7 +4842,7 @@
 			)
 		)
 	)
-	(global_label "FMC_D31"
+	(global_label "FMC_D26"
 		(shape passive)
 		(at 157.48 187.96 0)
 		(effects
@@ -4864,7 +4864,7 @@
 			)
 		)
 	)
-	(global_label "FMC_D4"
+	(global_label "FMC_D9"
 		(shape passive)
 		(at 157.48 104.14 0)
 		(effects
@@ -4908,7 +4908,7 @@
 			)
 		)
 	)
-	(global_label "FMC_D16"
+	(global_label "FMC_D23"
 		(shape passive)
 		(at 157.48 144.78 0)
 		(effects
@@ -4996,7 +4996,7 @@
 			)
 		)
 	)
-	(global_label "FMC_D22"
+	(global_label "FMC_D18"
 		(shape passive)
 		(at 157.48 160.02 0)
 		(effects
@@ -5040,7 +5040,7 @@
 			)
 		)
 	)
-	(global_label "FMC_D2"
+	(global_label "FMC_D11"
 		(shape passive)
 		(at 157.48 99.06 0)
 		(effects
@@ -5062,7 +5062,7 @@
 			)
 		)
 	)
-	(global_label "FMC_D25"
+	(global_label "FMC_D24"
 		(shape passive)
 		(at 157.48 172.72 0)
 		(effects
@@ -5106,7 +5106,7 @@
 			)
 		)
 	)
-	(global_label "FMC_D14"
+	(global_label "FMC_D6"
 		(shape passive)
 		(at 157.48 134.62 0)
 		(effects
@@ -5150,7 +5150,7 @@
 			)
 		)
 	)
-	(global_label "FMC_D11"
+	(global_label "FMC_D5"
 		(shape passive)
 		(at 157.48 127 0)
 		(effects
@@ -5194,7 +5194,7 @@
 			)
 		)
 	)
-	(global_label "FMC_D18"
+	(global_label "FMC_D22"
 		(shape passive)
 		(at 157.48 149.86 0)
 		(effects
@@ -5216,7 +5216,7 @@
 			)
 		)
 	)
-	(global_label "FMC_D12"
+	(global_label "FMC_D0"
 		(shape passive)
 		(at 157.48 129.54 0)
 		(effects
@@ -5304,7 +5304,7 @@
 			)
 		)
 	)
-	(global_label "FMC_D27"
+	(global_label "FMC_D25"
 		(shape passive)
 		(at 157.48 177.8 0)
 		(effects
@@ -5326,7 +5326,7 @@
 			)
 		)
 	)
-	(global_label "FMC_D7"
+	(global_label "FMC_D10"
 		(shape passive)
 		(at 157.48 111.76 0)
 		(effects
@@ -5370,7 +5370,7 @@
 			)
 		)
 	)
-	(global_label "FMC_D8"
+	(global_label "FMC_D2"
 		(shape passive)
 		(at 157.48 119.38 0)
 		(effects
@@ -5436,7 +5436,7 @@
 			)
 		)
 	)
-	(global_label "FMC_NBL1"
+	(global_label "FMC_NBL0"
 		(shape passive)
 		(at 157.48 139.7 0)
 		(effects

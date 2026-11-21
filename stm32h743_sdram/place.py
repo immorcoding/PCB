@@ -27,8 +27,8 @@ OX, OY = 100.0, 100.0                 # local origin on the page
 BOARD_W, BOARD_H, CORNER_R = 85.0, 75.0, 2.0
 HOLE_INSET = 4.0                      # M3 hole centres from the board edges
 MCU = (40.0, 37.0)                    # centre of U201 (10 x 10 mm body)
-BODY_GAP = 5.0                        # MCU body edge to SDRAM body edge
-SDRAM_ROT = 90                        # 0: 8 wide x 13 tall, A1 top-left; 90: 13 wide x 8 tall, A1 bottom-left
+BODY_GAP = 8.0                        # MCU body edge to SDRAM body edge
+SDRAM_ROT = 0                         # 0: 8 wide x 13 tall, A1 top-left; 90: 13 wide x 8 tall, A1 bottom-left
 if "--rot" in sys.argv:
     SDRAM_ROT = int(sys.argv[sys.argv.index("--rot") + 1])
 AREA_MARGIN = 1.0                     # rule area = package body + 1 mm on every side (approved 2026-11-16)
