@@ -205,15 +205,23 @@ def build(f):
         f.case(cid, what, static, window)
         y = f.run(net, length, 5, y) + 0.5
     net_len("l01", "SDCLK 串阻前一段 3 mm", "FMC_SDCLK", 3)
-    net_len("l02", "SDCLK 串阻后一段 17 mm（基准合计 20 mm）", "FMC_SDCLK_R", 17)
-    net_len("l03", "数据线 20 mm", "FMC_D0", 20)
-    net_len("l04", "数据线 23 mm：比时钟长 3 mm", "FMC_D1", 23, (), {(LEN, "sdram_window")})
-    net_len("l05", "数据线 17 mm：比时钟短 3 mm", "FMC_D2", 17, (), {(LEN, "sdram_window")})
-    net_len("l06", "数据线 61 mm：超过 60 mm", "FMC_D3", 61, {(LEN, "sdram_len_max")}, {(LEN, "sdram_window")})
-    f.case("l07", "数据线 14 mm 加 4 个 L1–L4 过孔（最后一个只接一层）：超过 3 个；长度 14 + 3 × 过孔高度", {(VC, "sdram_via_max")})
+    net_len("l02", "SDCLK 串阻后一段 17 mm（合计 20 mm，由脚本报）", "FMC_SDCLK_R", 17)
+    net_len("l03", "通道 0 数据线 21 mm", "FMC_D0", 21)
+    net_len("l04", "通道 0 数据线 24 mm", "FMC_D1", 24)
+    net_len("l05", "通道 0 的 NBL0 25 mm：本组最长，证明 NBL 在组里", "FMC_NBL0", 25)
+    net_len("l06", "通道 0 数据线 19 mm：比本组最长的短 6 mm，超过 5 mm", "FMC_D2", 19, {(SK, "sdram_lane0")})
+    net_len("l07", "通道 1 数据线 35 mm：比通道 0 长 10 mm，不同组不比", "FMC_D8", 35)
+    net_len("l08", "通道 1 数据线 33 mm", "FMC_D9", 33)
+    net_len("l09", "通道 2 数据线 12 mm：比 D17 短 6 mm，超过 5 mm", "FMC_D16", 12, {(SK, "sdram_lane2")})
+    net_len("l0a", "通道 2 数据线 18 mm：本组最长，不报", "FMC_D17", 18)
+    net_len("l0b", "通道 3 的 NBL3 40 mm", "FMC_NBL3", 40)
+    net_len("l0c", "通道 3 数据线 34 mm：比 NBL3 短 6 mm", "FMC_D24", 34, {(SK, "sdram_lane3")})
+    net_len("l0d", "地址线 61 mm：超过 60 mm；地址不等长", "FMC_A0", 61, {(LEN, "sdram_len_max")})
+    net_len("l0e", "地址线 8 mm：比时钟短 12 mm、比 A0 短 53 mm，不报", "FMC_A1", 8)
+    f.case("l0f", "地址线 14 mm 加 4 个 L1–L4 过孔（最后一个只接一层）：超过 3 个；长度 14 + 3 × 过孔高度", {(VC, "sdram_via_max")})
     for i in range(4):
-        f.trk("FMC_D4", (5 + 3.5 * i, y), (5 + 3.5 * i + 3.5, y), 0.1016, "L1" if i % 2 == 0 else "L4")
-        f.via("FMC_D4", 5 + 3.5 * i + 3.5, y, a="L1", c="L4")
+        f.trk("FMC_A2", (5 + 3.5 * i, y), (5 + 3.5 * i + 3.5, y), 0.1016, "L1" if i % 2 == 0 else "L4")
+        f.via("FMC_A2", 5 + 3.5 * i + 3.5, y, a="L1", c="L4")
     y += 1.5
     net_len("l10", "QSPI 时钟 20 mm", "QSPI_CLK", 20)
     net_len("l11", "QSPI IO 22 mm", "QSPI_BK1_IO0", 22)
@@ -320,7 +328,7 @@ def main(out):
     lines.append(lr.stdout.strip())
     check("rmii_refclk_plus_longest_txd: 102.0000 mm" in lr.stdout and "超出 2.0000" in lr.stdout and lr.returncode == 1,
           "len_rules.py 报出时钟加最长 TXD 超出 100 mm（故意的）")
-    check("sdram_window: 基准 FMC_SDCLK + FMC_SDCLK_R = 20.0000 mm" in lr.stdout, "len_rules.py 把 SDCLK 串阻两侧相加得 20 mm")
+    check("sdclk_total: 20.0000 mm" in lr.stdout, "len_rules.py 把 SDCLK 串阻两侧相加得 20 mm")
     window = classify(drc_probe.run_drc(stem + ".kicad_pcb"), f)
 
     for phase, (got, stray) in (("static", static), ("window", window)):
@@ -340,9 +348,9 @@ def main(out):
     for cid, text, ok in measure(stem + ".kicad_pcb"):
         check(ok, "%s 实测：%s" % (cid, text))
     h = make_project.via_height("F.Cu", "In3.Cu")
-    d4 = drc_probe.measure_lengths(stem + ".kicad_pcb", {"d4": "A.NetName == 'FMC_D4'"})["d4"].get("FMC_D4")
+    d4 = drc_probe.measure_lengths(stem + ".kicad_pcb", {"d4": "A.NetName == 'FMC_A2'"})["d4"].get("FMC_A2")
     check(d4 is not None and abs(d4 - (14 + 3 * h)) < 0.0005,
-          "l07 实测：KiCad 量到 %s mm，按叠层算 14 + 3 × %.4f = %.4f mm（换层的过孔按 L1–L4 的高度计入，只接一层的不计）" % (d4, h, 14 + 3 * h))
+          "l0f 实测：KiCad 量到 %s mm，按叠层算 14 + 3 × %.4f = %.4f mm（换层的过孔按 L1–L4 的高度计入，只接一层的不计）" % (d4, h, 14 + 3 * h))
 
     rows, loaded = dru_match.match(stem + ".kicad_pcb")
     empty = [r["rule"] for r in rows if r["matched"] == 0]

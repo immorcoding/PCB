@@ -1,9 +1,6 @@
 {
-  "_": "SPEC.md section 9. Read by scripts/len_rules.py. Members are rule conditions; lo / hi are mm relative to the reference.",
+  "_": "SPEC.md section 9. Read by scripts/len_rules.py. Members are rule conditions; lo / hi are mm relative to the reference. SDRAM data is matched inside each byte lane by the static skew rules sdram_lane0..3 of the rule file, not here.",
   "groups": [
-    {"rule": "sdram_window",
-     "members": "A.NetClass == 'SDRAM' && A.NetName != 'FMC_SDCLK' && A.NetName != 'FMC_SDCLK_R'",
-     "ref": ["FMC_SDCLK", "FMC_SDCLK_R"], "lo": -2.5, "hi": 2.5, "cap": 60},
     {"rule": "qspi_window",
      "members": "A.NetName == 'QSPI_BK1_IO*'",
      "ref": ["QSPI_CLK"], "lo": -5, "hi": 5, "cap": 30},
