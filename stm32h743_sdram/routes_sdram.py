@@ -26,7 +26,7 @@ REF = ["FMC_SDCLK", "FMC_SDCLK_R"]
 VIA_LIMIT = 3
 VIA_TARGET = 2
 LEN_MAX = 60
-ROUND = int(os.environ.get("ROUND", "1"))
+ROUND = int(os.environ.get("ROUND", "2"))
 DATA = ["FMC_D%d" % i for i in range(32)] + ["FMC_NBL%d" % i for i in range(4)]
 ADDR = ["FMC_A%d" % i for i in range(13)] + ["FMC_BA0", "FMC_BA1", "FMC_SDNRAS", "FMC_SDNCAS", "FMC_SDNWE", "FMC_SDCKE0", "FMC_SDNE0"]
 GROUPS = {"lane0": ["FMC_D%d" % i for i in range(8)] + ["FMC_NBL0"], "lane1": ["FMC_D%d" % i for i in range(8, 16)] + ["FMC_NBL1"],
@@ -159,6 +159,11 @@ def routes(job):
         "FMC_D26": db("C14", (44.225, 33.425), "L4", [(44.55, 33.1), (46.0, 33.1)]),
         "FMC_D27": db("C13", (43.575, 33.425), "L4", [(43.9, 33.75), (46.0, 33.75)]),
         "FMC_D25": db("D14", (44.225, 34.075), "L4", [(44.55, 34.4), (46.0, 34.4)]),
+        # round 2 (user, 2026-11-21): A1 A0 NBL2 from L6 to L4, so that L6 carries no SDRAM track north or west of the MCU.
+        # A1 leaves on row K, south of A2, as the outer lane of the L4 north river
+        "FMC_A1": db("H3", (36.425, 37.325), "L4", [(36.425, 37.975), (36.1, 38.3), (34.0, 38.3)]),
+        "FMC_A0": db("E2", (35.775, 35.375), "L4", [(35.45, 35.7), (34.0, 35.7)]),
+        "FMC_NBL2": db("D4", (37.725, 34.075), "L4", [(38.05, 33.75), (38.05, 31.0)]),
     }
     fo = job.fanout("U201")
     req = {
@@ -170,8 +175,8 @@ def routes(job):
         "H14": "E-:L1",
         # inner rivers
         "N15": "E:via@L4",
-        "A3": "N:via@L4", "B7": "N:via@L4", "D4": "N:via@L6",
-        "H2": "W:via@L4", "G4": "W:via@L4", "H3": "W:via@L6", "E2": "W:via@L6", "J4": "W:via@L6",
+        "A3": "N:via@L4", "B7": "N:via@L4",
+        "H2": "W:via@L4", "G4": "W:via@L4", "J4": "W:via@L6",
         "M13": "S:via@L4", "M12": "S:via@L4",
     }
     for k, v in list(req.items()):
@@ -281,32 +286,22 @@ def routes(job):
         return [(lay, list(pts) + [via]), ("via", via), ("L1", [via, "U301." + ball])]
 
     if "L6" in LAYERS:
-        # l6w: A1 A0 west, north up the west side, east along the north (joins l6n)
-        l6w = bund("l6w", ["FMC_A1", "FMC_A0"], "L6",
-                   [("W", {"FMC_A1": 37.65, "FMC_A0": 35.7}), ("NW", {"FMC_A1": 32.9 - 37.65 + 0.4, "FMC_A0": 33.15 - 35.7 + 0.4}),
-                    ("N", {"FMC_A1": 32.9, "FMC_A0": 33.15}), ("NE", {"FMC_A1": 32.9 + 28.25 + 0.4, "FMC_A0": 33.15 + 28.5 + 0.4}),
-                    ("E", {"FMC_A1": 28.25, "FMC_A0": 28.5})], 34.0, 45.0)
-        bus.add(l6w, start={"FMC_A1": m["FMC_A1"], "FMC_A0": m["FMC_A0"]})
-        # l6n: A1 A0 NBL2 | D23 D22 D21 D19 D18 (north river, D19 / D18 leave on the north side)
-        n6 = ["FMC_A1", "FMC_A0", "FMC_NBL2", "FMC_D23", "FMC_D22", "FMC_D21", "FMC_D19", "FMC_D18"]
+        # l6n: D23 D22 D21 D19 D18 up the strip, east along the SDRAM's north side (D19 / D18 leave there)
+        n6 = ["FMC_D23", "FMC_D22", "FMC_D21", "FMC_D19", "FMC_D18"]
         y0 = {"FMC_D23": 33.75, "FMC_D22": 34.4, "FMC_D21": 35.05, "FMC_D19": 36.35, "FMC_D18": 37.0}
         xn = {"FMC_D23": 47.25, "FMC_D22": 47.5, "FMC_D21": 47.75, "FMC_D19": 48.0, "FMC_D18": 48.25}
-        ye = {"FMC_A1": 28.25, "FMC_A0": 28.5, "FMC_NBL2": 28.75, "FMC_D23": 29.0, "FMC_D22": 29.25, "FMC_D21": 29.5,
-              "FMC_D19": 29.75, "FMC_D18": 30.0}
-        xs = {"FMC_A1": 62.35, "FMC_A0": 62.1, "FMC_NBL2": 61.85, "FMC_D23": 61.6, "FMC_D22": 61.35, "FMC_D21": 61.1}
+        ye = {"FMC_D23": 29.0, "FMC_D22": 29.25, "FMC_D21": 29.5, "FMC_D19": 29.75, "FMC_D18": 30.0}
+        xs = {"FMC_D23": 61.6, "FMC_D22": 61.35, "FMC_D21": 61.1}
         legs = [("E", y0), ("NE", {n: xn[n] + y0[n] - 0.4 for n in y0}), ("N", xn), ("NE", {n: xn[n] + ye[n] + 0.4 for n in xn}),
                 ("E", ye), ("SE", {n: xs[n] - ye[n] - 0.4 for n in xs}), ("S", xs)]
-        span = {"FMC_A1": (4, 6), "FMC_A0": (4, 6), "FMC_NBL2": (4, 6), "FMC_D19": (0, 4), "FMC_D18": (0, 4)}
+        span = {"FMC_D19": (0, 4), "FMC_D18": (0, 4)}
         l6n = bund("l6n", n6, "L6", legs, 46.5, 40.0, span, anchor="FMC_D23")
-        bus.add(l6n, start={n: m[n] for n in ["FMC_NBL2", "FMC_D23", "FMC_D22", "FMC_D21", "FMC_D19", "FMC_D18"]},
+        bus.add(l6n, start={n: m[n] for n in n6},
                 end={"FMC_D18": via_end([(57.8, 30.4), (57.8, 32.2)], (58.2, 32.6), "C7"),
                      "FMC_D19": via_end([(60.2, 30.15), (60.2, 30.6)], (60.6, 31.0), "A9"),
                      "FMC_D21": via_end([(61.1, 33.0), (60.7, 33.4)], (59.8, 33.4), "C8"),
                      "FMC_D22": via_end([(61.35, 33.8), (60.95, 34.2)], (59.8, 34.2), "D8"),
-                     "FMC_D23": via_end([(61.6, 34.6), (61.2, 35.0)], (59.8, 35.0), "E8"),
-                     "FMC_NBL2": via_end([(61.85, 35.4), (61.45, 35.8)], (59.8, 35.8), "F8"),
-                     "FMC_A0": via_end([(62.1, 35.8), (61.7, 36.2), (60.2, 36.2)], (59.8, 36.6), "G8"),
-                     "FMC_A1": via_end([(62.35, 36.2), (61.95, 36.6)], (60.6, 36.6), "G9")})
+                     "FMC_D23": via_end([(61.6, 34.6), (61.2, 35.0)], (59.8, 35.0), "E8")})
         # l6e: A12 D1 D0 straight to the west face (D1 enters M3 from the west face, not through the aisle)
         bus.keep({"FMC_A12": m["FMC_A12"][:-1] + [("L6", [(44.875, 39.275), (45.2, 38.95), (50.0, 38.95), (52.35, 36.6)] + [(55.8, 36.6)])]
                   + [("via", (55.8, 36.6)), ("L1", [(55.8, 36.6), "U301.H3"])],
@@ -340,7 +335,7 @@ def routes(job):
                            "FMC_A8": via_end([(56.2, 38.2), (55.8, 37.8), (54.6, 37.8)], (54.2, 37.4), "H2"),
                            "FMC_A9": via_end([(56.6, 37.8), (56.2, 37.4)], (55.8, 37.4), "J3"),
                            "FMC_A7": via_end([(57.0, 37.4), (56.6, 37.0), (53.8, 37.0)], (53.4, 37.4), "H1"),
-                           "FMC_SDNRAS": via_end([(57.4, 38.6), (57.8, 38.2)], (60.6, 38.2), "J9"),
+                           "FMC_SDNRAS": via_end([(57.4, 38.2), (57.8, 37.8), (60.2, 37.8)], (60.6, 38.2), "J9"),
                            "FMC_SDNWE": via_end([(57.8, 39.8), (58.2, 39.4), (59.4, 39.4)], (59.8, 39.0), "K8")})
     # ---------------------------------------------------------------- clock: H14 -> R201 on L1, R201 -> L4 -> J1
     R["FMC_SDCLK"] = [("L1", list(m["FMC_SDCLK"].pieces[0][1]) + ["R201.1"])]
@@ -353,24 +348,32 @@ def routes(job):
                   "FMC_D25": ext(m["FMC_D25"], [(49.4, 34.4), (51.2, 32.6), (54.2, 32.6)]) + [("via", (54.2, 32.6)), ("L1", [(54.2, 32.6), "U301.C2"])],
                   "FMC_D31": ext(m["FMC_D31"], [(50.3, 35.05), (51.95, 33.4), (54.2, 33.4)]) + [("via", (54.2, 33.4)), ("L1", [(54.2, 33.4), "U301.D2"])],
                   "FMC_SDCKE0": ext(m["FMC_SDCKE0"], [(49.9, 35.7), (52.0, 37.8), (53.8, 37.8), (54.2, 38.2)]) + [("via", (54.2, 38.2)), ("L1", [(54.2, 38.2), "U301.J2"])]})
-        # l4w + l4n: A2 NE0 (west) NBL1 CAS (north) D26 (east, up the strip) to the aisle's north end
-        l4w = bund("l4w", ["FMC_A2", "FMC_SDNE0"], "L4",
-                   [("W", {"FMC_A2": 37.65, "FMC_SDNE0": 37.0}), ("NW", {"FMC_A2": 32.9 - 37.65 + 0.4, "FMC_SDNE0": 33.15 - 37.0 + 0.4}),
-                    ("N", {"FMC_A2": 32.9, "FMC_SDNE0": 33.15}), ("NE", {"FMC_A2": 32.9 + 28.25 + 0.4, "FMC_SDNE0": 33.15 + 28.5 + 0.4}),
-                    ("E", {"FMC_A2": 28.25, "FMC_SDNE0": 28.5})], 34.0, 45.0)
-        bus.add(l4w, start={"FMC_A2": m["FMC_A2"], "FMC_SDNE0": m["FMC_SDNE0"]})
-        n4 = ["FMC_A2", "FMC_SDNE0", "FMC_NBL1", "FMC_SDNCAS", "FMC_D26"]
-        ye = {"FMC_A2": 28.25, "FMC_SDNE0": 28.5, "FMC_NBL1": 28.75, "FMC_SDNCAS": 29.0, "FMC_D26": 29.25}
-        xa = {"FMC_D26": 56.0, "FMC_SDNCAS": 57.0, "FMC_NBL1": 57.25, "FMC_SDNE0": 57.5, "FMC_A2": 57.8}
+        # l4w + l4n: A1 A2 NE0 A0 (west) NBL1 NBL2 CAS (north) D26 (east, up the strip) to the aisle's north end.
+        # In the aisle the lanes turn east in order (eastmost first); A0 and NBL2 reach their balls round the vias
+        # of the nets outside them: A0 below NE0's J8, NBL2 below NBL1's K9 and back up east of column 9.
+        w4 = ["FMC_A1", "FMC_A2", "FMC_SDNE0", "FMC_A0"]
+        yw = {"FMC_A1": 38.3, "FMC_A2": 37.65, "FMC_SDNE0": 37.0, "FMC_A0": 35.7}
+        xw = {"FMC_A1": 32.65, "FMC_A2": 32.9, "FMC_SDNE0": 33.15, "FMC_A0": 33.4}
+        ye = {"FMC_A1": 27.75, "FMC_A2": 28.0, "FMC_SDNE0": 28.25, "FMC_A0": 28.5, "FMC_NBL1": 28.75, "FMC_NBL2": 29.0,
+              "FMC_SDNCAS": 29.25, "FMC_D26": 29.5}
+        l4w = bund("l4w", w4, "L4", [("W", yw), ("NW", {n: xw[n] - yw[n] + 0.4 for n in w4}), ("N", xw),
+                                    ("NE", {n: xw[n] + ye[n] + 0.4 for n in w4}), ("E", {n: ye[n] for n in w4})], 34.0, 45.0)
+        bus.add(l4w, start={n: m[n] for n in w4})
+        n4 = ["FMC_A1", "FMC_A2", "FMC_SDNE0", "FMC_A0", "FMC_NBL1", "FMC_NBL2", "FMC_SDNCAS", "FMC_D26"]
+        xa = {"FMC_D26": 56.0, "FMC_SDNCAS": 56.87, "FMC_NBL2": 57.1, "FMC_NBL1": 57.33, "FMC_A0": 57.56, "FMC_SDNE0": 57.79,
+              "FMC_A2": 58.55, "FMC_A1": 58.85}
         legs = [("E", {"FMC_D26": 33.1}), ("NE", {"FMC_D26": 46.8 + 33.1 - 0.4}), ("N", {"FMC_D26": 46.8}),
-                ("NE", {"FMC_D26": 46.8 + 29.25 + 0.4}), ("E", ye), ("SE", {n: xa[n] - ye[n] - 0.4 for n in n4}), ("S", xa)]
-        l4n = bund("l4n", n4, "L4", legs, 46.3, 33.0, {"FMC_A2": (4, 6), "FMC_SDNE0": (4, 6), "FMC_NBL1": (4, 6), "FMC_SDNCAS": (4, 6)}, anchor="FMC_D26")
-        bus.add(l4n, start={"FMC_NBL1": m["FMC_NBL1"], "FMC_SDNCAS": m["FMC_SDNCAS"], "FMC_D26": m["FMC_D26"]},
+                ("NE", {"FMC_D26": 46.8 + 29.5 + 0.4}), ("E", ye), ("SE", {n: xa[n] - ye[n] - 0.4 for n in n4}), ("S", xa)]
+        l4n = bund("l4n", n4, "L4", legs, 46.3, 33.0, {n: (4, 6) for n in n4 if n != "FMC_D26"}, anchor="FMC_D26")
+        bus.add(l4n, start={n: m[n] for n in ["FMC_NBL1", "FMC_NBL2", "FMC_SDNCAS", "FMC_D26"]},
                 end={"FMC_D26": via_end([(56.0, 33.8), (55.6, 34.2)], (54.2, 34.2), "E2", "L4"),
-                     "FMC_SDNCAS": via_end([(57.0, 38.6), (57.4, 39.0)], (59.0, 39.0), "K7", "L4"),
-                     "FMC_NBL1": via_end([(57.25, 38.2), (57.65, 38.6), (60.2, 38.6)], (60.6, 39.0), "K9", "L4"),
-                     "FMC_SDNE0": via_end([(57.5, 37.0), (57.9, 37.4)], (59.0, 37.4), "J8", "L4"),
-                     "FMC_A2": via_end([(57.8, 34.6)], (58.2, 35.0), "F7", "L4")})
+                     "FMC_SDNCAS": via_end([(56.87, 38.6), (57.27, 39.0)], (59.0, 39.0), "K7", "L4"),
+                     "FMC_NBL2": via_end([(57.1, 38.2), (57.5, 38.6), (60.8, 38.6), (61.0, 38.4), (61.0, 36.0), (60.8, 35.8)], (59.8, 35.8), "F8", "L4"),
+                     "FMC_NBL1": via_end([(57.33, 37.8), (57.73, 38.2)], (59.8, 38.2), "K9", "L4"),
+                     "FMC_A0": via_end([(57.56, 37.4), (57.96, 37.8), (59.2, 37.8), (59.4, 37.6), (59.4, 37.0)], (59.8, 36.6), "G8", "L4"),
+                     "FMC_SDNE0": via_end([(57.79, 37.0), (58.19, 37.4)], (59.0, 37.4), "J8", "L4"),
+                     "FMC_A2": via_end([(58.55, 34.65)], (58.2, 35.0), "F7", "L4"),
+                     "FMC_A1": via_end([(58.85, 35.85), (59.2, 36.2), (60.2, 36.2)], (60.6, 36.6), "G9", "L4")})
         # l4s: A4 A5 D10 D15 south through the strip, east under the SDRAM, north into the aisle's south end
         s4 = ["FMC_A4", "FMC_A5", "FMC_D10", "FMC_D15"]
         y0 = {"FMC_A4": 37.65, "FMC_A5": 38.3, "FMC_D10": 38.95, "FMC_D15": 40.9}
