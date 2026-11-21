@@ -1,4 +1,9 @@
-"""Minimal KiCad schematic writer (single flat sheet).
+"""Minimal KiCad schematic writer.
+
+`Sch` writes one flat sheet. `Design` writes a flat multi-page design: a root
+file holding one sheet symbol per page and one file per page; pages connect
+through global labels (`glabel`) and power symbols, never through hierarchical
+pins. Local labels (`label`) stay inside their page.
 
 Pulls symbols out of the stock KiCad libraries, places them, and connects
 pins with wires / labels / power symbols. Pin coordinates are computed from
@@ -16,6 +21,7 @@ import os, re, uuid
 
 SYMBOL_DIR = r"D:\KiCad\share\kicad\symbols"
 _NS = uuid.UUID("6f1d3c52-8a0e-4c57-9b7e-51a7c0de0001")
+GLABEL_SHAPES = ("input", "output", "bidirectional", "tri_state", "passive")
 
 
 # ---------------------------------------------------------------- s-expr
@@ -170,11 +176,17 @@ class Sch:
         self.libsyms, self.items, self.parts = {}, [], []
         self.wires, self.pin_pts = [], []
         self._n, self._pwr = 0, 0
-        self.root = self._uuid("root")
+        self._ukey = project                  # prefix of every uuid seed
+        self.root = self._uuid("root")        # uuid of this file
+        self._inst_path = "/" + self.root     # hierarchy path of the symbols
 
     def _uuid(self, tag=None):
         self._n += 1
-        return str(uuid.uuid5(_NS, f"{self.project}/{tag or self._n}/{self._n if tag is None else ''}"))
+        return str(uuid.uuid5(_NS, f"{self._ukey}/{tag or self._n}/{self._n if tag is None else ''}"))
+
+    def _next_pwr(self):
+        self._pwr += 1
+        return self._pwr
 
     # -- symbols
     def sym(self, lib_id, ref, value, x, y, rot=0, footprint="", fields=None,
@@ -223,19 +235,17 @@ class Sch:
         for num in sorted({p[0] for p in part._pins}):
             node.append(["pin", Q(num), ["uuid", Q(self._uuid())]])
         node.append(["instances", ["project", Q(self.project),
-                     ["path", Q("/" + self.root), ["reference", Q(ref)], ["unit", "1"]]]])
+                     ["path", Q(self._inst_path), ["reference", Q(ref)], ["unit", "1"]]]])
         self.items.append(node)
         for p in part._pins:
             self.pin_pts.append(part.pin(p[0]))
         return part
 
     def power(self, name, pt, rot=0, **kw):
-        self._pwr += 1
-        return self.sym(f"power:{name}", f"#PWR{self._pwr:03d}", name, pt[0], pt[1], rot, **kw)
+        return self.sym(f"power:{name}", f"#PWR{self._next_pwr():03d}", name, pt[0], pt[1], rot, **kw)
 
     def flag(self, pt, rot=0):
-        self._pwr += 1
-        return self.sym("power:PWR_FLAG", f"#FLG{self._pwr:03d}", "PWR_FLAG", pt[0], pt[1], rot)
+        return self.sym("power:PWR_FLAG", f"#FLG{self._next_pwr():03d}", "PWR_FLAG", pt[0], pt[1], rot)
 
     # -- connectivity
     def wire(self, *pts):
@@ -255,11 +265,28 @@ class Sch:
                            ["effects", ["font", ["size", "1.27", "1.27"]], ["justify"] + just],
                            ["uuid", Q(self._uuid())]])
 
+    def glabel(self, name, pt, rot=0, shape="passive"):
+        """Global label: joins every page of a `Design`; the net is called `name`.
+
+        shape: input, output, bidirectional, tri_state or passive (outline only,
+        ERC does not look at it).
+        """
+        if shape not in GLABEL_SHAPES:
+            raise ValueError(f"glabel shape {shape!r}")
+        just = {0: "left", 180: "right", 90: "left", 270: "right"}[rot]
+        self.items.append(["global_label", Q(name), ["shape", shape], ["at", fmt(pt[0]), fmt(pt[1]), str(rot)],
+                           ["effects", ["font", ["size", "1.27", "1.27"]], ["justify", just]],
+                           ["uuid", Q(self._uuid())],
+                           ["property", Q("Intersheetrefs"), Q("${INTERSHEET_REFS}"),
+                            ["at", fmt(pt[0]), fmt(pt[1]), "0"],
+                            ["effects", ["font", ["size", "1.27", "1.27"]], ["hide", "yes"]]]])
+
     def nc(self, pt):
         self.items.append(["no_connect", ["at", fmt(pt[0]), fmt(pt[1])], ["uuid", Q(self._uuid())]])
 
     def text(self, s, pt, size=1.27, bold=False):
         font = ["font", ["size", fmt(size), fmt(size)]] + ([["bold", "yes"]] if bold else [])
+        s = s.replace("\r", "").replace("\n", "\\n")   # a raw newline breaks the labels after it (RUL-8)
         self.items.append(["text", Q(s), ["exclude_from_sim", "no"], ["at", fmt(pt[0]), fmt(pt[1]), "0"],
                            ["effects", font, ["justify", "left", "bottom"]], ["uuid", Q(self._uuid())]])
 
@@ -287,19 +314,143 @@ class Sch:
                     out.add(p)
         return sorted(out)
 
-    def save(self, path):
-        root = ["kicad_sch", ["version", "20250114"], ["generator", Q("eeschema")],
-                ["generator_version", Q("9.0")], ["uuid", Q(self.root)], ["paper", Q(self.paper)],
-                ["title_block", ["title", Q(self.title)], ["date", Q(self.date)], ["rev", Q(self.rev)]],
-                ["lib_symbols"] + list(self.libsyms.values())]
+    def _doc(self, is_root=True):
+        root = _header(self.root, self.paper, self.title, self.date, self.rev)
+        root.append(["lib_symbols"] + list(self.libsyms.values()))
         for p in self._junctions():
             root.append(["junction", ["at", fmt(p[0]), fmt(p[1])], ["diameter", "0"],
                          ["color", "0", "0", "0", "0"], ["uuid", Q(self._uuid())]])
         root += self.items
-        root.append(["sheet_instances", ["path", Q("/"), ["page", Q("1")]]])
+        if is_root:
+            root.append(["sheet_instances", ["path", Q("/"), ["page", Q("1")]]])
         root.append(["embedded_fonts", "no"])
-        with open(path, "w", encoding="utf-8", newline="\n") as f:
-            f.write(dump(root) + "\n")
+        return root
+
+    def save(self, path):
+        _write(path, self._doc())
+
+
+def _header(file_uuid, paper, title, date, rev):
+    return ["kicad_sch", ["version", "20250114"], ["generator", Q("eeschema")],
+            ["generator_version", Q("9.0")], ["uuid", Q(file_uuid)], ["paper", Q(paper)],
+            ["title_block", ["title", Q(title)], ["date", Q(date)], ["rev", Q(rev)]]]
+
+
+def _write(path, doc):
+    with open(path, "w", encoding="utf-8", newline="\n") as f:
+        f.write(dump(doc) + "\n")
+
+
+# ---------------------------------------------------------------- multi-page
+class Page(Sch):
+    """One page of a `Design`; same drawing API as `Sch`. Made by Design.page()."""
+
+    def __init__(self, design, name, title, paper):
+        self.design, self.name = design, name
+        Sch.__init__(self, design.project, title, paper, design.rev, design.date)
+        self._n = 0
+        self._ukey = f"{design.project}/page:{name}"
+        self.root = self._uuid("root")
+        self.sheet_uuid = self._uuid("sheet")          # the sheet symbol in the root file
+        self._inst_path = f"/{design.root}/{self.sheet_uuid}"
+        self.file = f"{design.project}_{name}.kicad_sch"
+
+    def _next_pwr(self):
+        return self.design._next_pwr()
+
+    def save(self, path):
+        raise RuntimeError("pages are written by Design.save()")
+
+
+class Design:
+    """A flat multi-page schematic.
+
+        d = Design("board", "Board title", rev="A", date="2026-11-20")
+        p = d.page("power", "Power input")      # same API as Sch
+        ...
+        d.save(project_dir)
+
+    Writes `<project>.kicad_sch` (the root: one sheet symbol per page, nothing
+    else) and `<project>_<page>.kicad_sch` for each page. Pages are numbered
+    1..N in the order they were created; the root is page 0. Nets cross pages
+    through `glabel` and power symbols only. `#PWR`/`#FLG` numbers are shared
+    by all pages; a reference used twice is an error.
+    """
+    COLS, X0, Y0, DX, DY, W, H = 4, 25.4, 38.1, 63.5, 38.1, 50.8, 20.32   # sheet symbol grid, mm
+
+    def __init__(self, project, title="", rev="A", date="", paper="A4"):
+        self.project, self.title, self.rev, self.date, self.paper = project, title, rev, date, paper
+        self.pages, self._pwr = [], 0
+        self.root = str(uuid.uuid5(_NS, f"{project}/root/"))
+
+    def _next_pwr(self):
+        self._pwr += 1
+        return self._pwr
+
+    def page(self, name, title="", paper="A3"):
+        if not re.fullmatch(r"[A-Za-z0-9_-]+", name):
+            raise ValueError(f"page name {name!r}: letters, digits, _ and - only (it becomes a file name "
+                             f"and the prefix of the page's local net names)")
+        if any(p.name.lower() == name.lower() for p in self.pages):
+            raise ValueError(f"duplicate page name {name!r}")
+        page = Page(self, name, title or name, paper)
+        self.pages.append(page)
+        return page
+
+    @property
+    def parts(self):
+        return [part for page in self.pages for part in page.parts]
+
+    def files(self):
+        """File names written by save(): the root first, then the pages in order."""
+        return [self.project + ".kicad_sch"] + [p.file for p in self.pages]
+
+    def _check_refs(self):
+        seen = {}
+        for page in self.pages:
+            for part in page.parts:
+                if part.ref in seen:
+                    raise ValueError(f"reference {part.ref} used on page {seen[part.ref]} and on page {page.name}")
+                seen[part.ref] = page.name
+
+    def _root_doc(self):
+        def uid(tag):
+            return str(uuid.uuid5(_NS, f"{self.project}/rootitem:{tag}/"))
+
+        font = ["font", ["size", "1.27", "1.27"]]
+        root = _header(self.root, self.paper, self.title, self.date, self.rev)
+        root.append(["lib_symbols"])
+        for k, page in enumerate(self.pages):
+            x = self.X0 + (k % self.COLS) * self.DX
+            y = self.Y0 + (k // self.COLS) * self.DY
+            label = f"{k + 1}  {page.title}".replace("\r", "").replace("\n", " ")
+            root.append(["text", Q(label), ["exclude_from_sim", "no"],
+                         ["at", fmt(x + 2.54), fmt(y + self.H / 2 + 1.27), "0"],
+                         ["effects", font, ["justify", "left", "bottom"]], ["uuid", Q(uid("text:" + page.name))]])
+            root.append(["sheet", ["at", fmt(x), fmt(y)], ["size", fmt(self.W), fmt(self.H)],
+                         ["exclude_from_sim", "no"], ["in_bom", "yes"], ["on_board", "yes"], ["dnp", "no"],
+                         ["stroke", ["width", "0.1524"], ["type", "solid"]],
+                         ["fill", ["color", "0", "0", "0", "0.0000"]],
+                         ["uuid", Q(page.sheet_uuid)],
+                         ["property", Q("Sheetname"), Q(page.name), ["at", fmt(x), fmt(y - 0.7116), "0"],
+                          ["effects", font, ["justify", "left", "bottom"]]],
+                         ["property", Q("Sheetfile"), Q(page.file), ["at", fmt(x), fmt(y + self.H + 0.5846), "0"],
+                          ["effects", font, ["justify", "left", "top"]]],
+                         ["instances", ["project", Q(self.project),
+                                        ["path", Q("/" + self.root), ["page", Q(str(k + 1))]]]]])
+        root.append(["sheet_instances", ["path", Q("/"), ["page", Q("0")]]])
+        root.append(["embedded_fonts", "no"])
+        return root
+
+    def save(self, directory):
+        """Write the root and every page into `directory`; returns the root path."""
+        if not self.pages:
+            raise ValueError("design has no pages")
+        self._check_refs()
+        _write(os.path.join(directory, self.project + ".kicad_sch"), self._root_doc())
+        for page in self.pages:
+            _write(os.path.join(directory, page.file), page._doc(is_root=False))
+        return os.path.join(directory, self.project + ".kicad_sch")
 
 
 if __name__ == "__main__":

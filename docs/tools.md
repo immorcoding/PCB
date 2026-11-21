@@ -13,6 +13,11 @@
 | 做什么 | 命令 |
 |---|---|
 | 规则是否生效 | `D:\KiCad\bin\python.exe scripts\dru_canary.py <工程>.kicad_pcb`，输出 `OK` |
+| 每条规则是否匹配到对象 | `D:\KiCad\bin\python.exe scripts\dru_match.py <工程>.kicad_pcb`，空匹配的规则标 `EMPTY`（RUL-2）；每条规则跑一次 DRC，31 条规则约 1 分钟 |
+| 生成等长窗口规则 | `D:\KiCad\bin\python.exe scripts\len_rules.py <工程>.kicad_pcb`（读板目录的 `length_groups.json`，改写 `.kicad_dru` 末尾的生成段）；加 `--check` 只报告是否过期 |
+| 全部工具的回归 | `D:\KiCad\bin\python.exe scripts\regress.py`（跑 `scripts/tests/*/check.py`，PROC-15） |
+| 走线阻抗 | `D:\KiCad\bin\python.exe scripts\impedance.py`（嘉立创 JLC06161H-3313E 上的单端和差分，二维场解；结果是计算值） |
+| H743 板按步骤构建 | `sh stm32h743_sdram/build.sh rules`（工程文件、规则基准板、金丝雀、规则匹配；1.5–3 分钟） |
 | 原理图构建并检查 | `sh scripts/sch_build.sh <工程目录> <输出目录>`（生成 → 升级到 KiCad 10 格式 → ERC → 网表 → PDF） |
 | DRC | `kicad-cli pcb drc --refill-zones --severity-all`；收尾时加 `--schematic-parity` |
 | 重新填充铺铜并存回板文件 | `kicad-cli pcb drc --refill-zones --save-board --severity-all --format json -o <报告> <板>`；之后的测量和出图直接读板文件里的填充，不在 pcbnew 里再填一次 |
@@ -25,6 +30,8 @@
 | 脚本 | 用途 |
 |---|---|
 | `kisch.py` | 生成原理图：从官方符号库取符号、按引脚坐标连线。每个工程一个 `gen_sch.py`，参考 `stm32f411_minsys/gen_sch.py` |
+| `drc_probe.py` | 公共函数：在板子的副本上换一份规则文件跑 DRC、解析报告、用探针规则量网络长度 |
+| `dru_match.py`、`len_rules.py`、`impedance.py`、`regress.py` | 见上面的命令表 |
 | `net2pcb.py` | 网表进板 |
 | `pcb_view.py` | 带走线和飞线的示意图 |
 | `layer_view.py` | 带坐标网格的单层视图，规划手工走线用 |
@@ -39,7 +46,7 @@
 
 原理图版面用 `pdftoppm -r 200 -png -x -y -W -H` 裁剪放大看文字重叠。
 
-`kisch.py` 现在只能写单张平铺的图。H7 测试板要给它补分页：多张图纸靠网络标号连通的平铺设计，不做层次图（用户 2026-11-18 定，还没写）。
+`kisch.py` 的分页（2026-11-20）：`Design(project)` 加 `design.page(name, title)`，每页的画法和单张的 `Sch` 相同，另有 `glabel()` 写全局标号；`design.save(目录)` 写一个只放图纸符号的根图 `<工程>.kicad_sch` 和每页一个 `<工程>_<页名>.kicad_sch`。KiCad 没有真正的多文件平铺设计，这是它的标准做法（相当于 AD 里不放端口、网络标号全局有效的平铺工程）。网表里的网络名：全局标号是裸名（`FMC_D0`），电源符号是符号值（`+3V3`），子页上的本地标号是 `/<页名>/<标号>`（改页名就改网络名），单张图的本地标号是 `/<标号>`。跨页的网络用全局标号；规则文件按裸名写。电源轨上不要再放全局标号（全局标号会顶掉电源名）。根图是第 0 页，页面从 1 起。ERC 的违规按整份报告数，不按页数（有两类违规会被记到根图名下）。
 
 ## 指标表的列（PROC-4）
 
@@ -80,5 +87,10 @@
 - **厂商网站对自动下载的限制**（2026-11 实测）：TI、Winbond、Vishay 的 PDF 用 `curl` 能直接下；ST 的 PDF `curl` 拿不到，用 WebFetch；ISSI 返回占位页（反爬），Micron 和 Winbond 的零件页是 JS 渲染、读不到；Microchip、Hirose、Würth（we-online）、sdcard.org 对 `curl` 和 WebFetch 都返回 403。拿不到的不绕过，列出官网地址请用户手动下载到板目录的 `datasheet/`（不提交）。
 - **`kicad-happy:digikey` 需要 `DIGIKEY_CLIENT_ID` / `DIGIKEY_CLIENT_SECRET`**，环境里没有，在产状态和库存查不了。
 - **多列表格的 PDF 文字层会错列**（TI 订货表把 TPS62A02PDDCR 读成别的封装）：表格渲染成图读，`pdftotext` 只作核对（PROC-14）。ST 的 Altium 导出原理图，文字层里网络名和位号是乱的，同样处理。
+- **pcbnew 的 `SaveBoard` 会在板文件旁边写一个默认的 `.kicad_pro`**（板子是从没有工程文件的位置读进来时）：网络类和板级下限全部变回 KiCad 默认值，规则文件照常加载，表现是按网络类写的规则全部匹配不到东西。先存板，再拷工程文件。
+- **断言探针（`assertion`）每个对象只报一条**：几条断言规则匹配同一个对象时只有一条出现在报告里，所以 `dru_match.py` 每条规则单独跑一次 DRC。断言只看单个对象，条件里的 `B.` 子句探不了。
+- **DRC 报告里规则名的写法不统一**：多数违规把规则名放在单引号里，差分对间隙（`diff_pair_gap_out_of_range`）是不带引号的裸名；网络类的间距违规引号里是网络类名（如 `Default`）。
+- **只接了一层的过孔不计入网络长度**（过孔高度按实际换层算），但 `via_count` 照样数它。
+- **过孔可以去掉未连接内层上的焊盘**：pcbnew 里 `via.SetRemoveUnconnected(True)` 加 `SetKeepStartEnd(True)`，板文件里是 `(remove_unused_layers yes) (keep_end_layers yes)`（界面：过孔属性的“焊环”选“起始、结束和已连接的层”）。DRC 认这个设置：该层上只按孔到铜查，不再按焊盘查间距（2026-11-20 实测）。
 - **Git Bash 会把 `/` 开头的网络名改写成路径**：传网络名的命令前 `export MSYS2_ARG_CONV_EXCL='*'`。
 - **Shell here-doc 会改写反斜杠和 `\n`**：补丁脚本用文件写，不用 here-doc。

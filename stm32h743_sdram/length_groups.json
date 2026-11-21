@@ -1,0 +1,21 @@
+{
+  "_": "SPEC.md section 9. Read by scripts/len_rules.py. Members are rule conditions; lo / hi are mm relative to the reference.",
+  "groups": [
+    {"rule": "sdram_window",
+     "members": "A.NetClass == 'SDRAM' && A.NetName != 'FMC_SDCLK' && A.NetName != 'FMC_SDCLK_R'",
+     "ref": ["FMC_SDCLK", "FMC_SDCLK_R"], "lo": -2.5, "hi": 2.5, "cap": 60},
+    {"rule": "qspi_window",
+     "members": "A.NetName == 'QSPI_BK1_IO*'",
+     "ref": ["QSPI_CLK"], "lo": -5, "hi": 5, "cap": 30},
+    {"rule": "sdmmc_window",
+     "members": "A.NetClass == 'SDMMC' && A.NetName != 'SDMMC1_CK'",
+     "ref": ["SDMMC1_CK"], "lo": 0, "hi": 5},
+    {"rule": "rmii_rx_min",
+     "members": "A.NetName == 'RMII_RXD*' || A.NetName == 'RMII_CRS_DV'",
+     "ref": ["RMII_REF_CLK"], "lo": 0, "cap": 60}
+  ],
+  "sums": [
+    {"name": "sdclk_total", "nets": ["FMC_SDCLK", "FMC_SDCLK_R"], "max": 60},
+    {"name": "rmii_refclk_plus_longest_txd", "nets": ["RMII_REF_CLK"], "plus_longest_of": ["RMII_TXD0", "RMII_TXD1"], "max": 100}
+  ]
+}
