@@ -41,8 +41,8 @@ region L3_3V3A +3V3A L3
   10,19.5  21.5,19.5  21.5,31  10,31
 
 # Block rails behind 0 ohm links (user 2026-11-20). The two BGA blocks are on L3 because their supply
-# balls reach the plane through vias under the package; this makes five blocks on L3 instead of the
-# three the SPEC names -- to be confirmed by the user (the alternative is a pour on L6 under each BGA).
+# balls reach the plane through vias under the package; this makes five blocks on L3 instead of
+# three (confirmed by the user on 2026-11-21; SPEC sections 1 and 5 updated).
 region L3_3V3_MCU +3V3_MCU L3
   34,31  46,31  46,43  34,43
 region L3_3V3_SDRAM +3V3_SDRAM L3
