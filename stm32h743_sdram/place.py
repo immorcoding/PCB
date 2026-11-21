@@ -60,10 +60,12 @@ PLACE = {
 # Stop 4: every other part, by block. Positions are absolute local coordinates (the two BGAs stay where the
 # line-order sketch put them). Comments name the copper region of copper.sketch each group sits on.
 PLACE.update({
-    # ---- MCU, top side. Crystals in the west window that the SDRAM sketch keeps free on L1 (x 29-34,
-    # y 33.5-38.5): HSE at balls G1 / H1, LSE at E1 / F1, load capacitors beside the packages.
-    "Y201": (31.4, 37.55, 180), "C225": (27.35, 38.4, 90), "C226": (28.75, 38.4, 90),
-    "Y202": (31.9, 34.55, 0), "C227": (27.9, 34.55, 90), "C228": (29.3, 34.55, 90),
+    # ---- MCU, top side. Crystals west of the MCU (round 3): HSE Y201 turned 270 degrees and centred on the
+    # FMC_A6 via at (31.4, 39.0), which sits in its row gap with the A6 track in its column gap; LSE Y202 stood
+    # vertical north-west of it. Each load capacitor on the far side of its crystal pad; trial routes in
+    # routes_probe_xtal.py (all four nets on L1, no via).
+    "Y201": (31.4, 39.0, 270), "C225": (28.9, 37.9, 270), "C226": (32.4, 41.65, 180),
+    "Y202": (29.2, 34.8, 90), "C227": (27.0, 33.55, 180), "C228": (27.0, 36.05, 180),
     # supply entry of the MCU block (L3_3V3_MCU reaches north under the SDRAM bands to these pads)
     "R203": (39.5, 26.2, 0), "C217": (42.8, 26.2, 0),
     # BOOT0 pull-down and test pad, reset key, SWD header on the top edge
@@ -137,7 +139,7 @@ PLACE.update({
     "C206": (38.15, 38.00, 0, "B"), "C207": (35.35, 34.05, 0, "B"), "C208": (40.85, 33.80, 90, "B"),
     "C209": (42.20, 40.55, 0, "B"), "C210": (44.20, 35.55, 0, "B"), "C211": (38.00, 39.20, 0, "B"),
     "C212": (38.15, 36.75, 0, "B"), "C213": (37.75, 33.00, 90, "B"), "C214": (39.05, 32.50, 90, "B"),
-    "C215": (35.20, 36.30, 90, "B"), "C221": (36.45, 42.50, 0, "B"), "C223": (32.90, 42.40, 90, "B"),
+    "C215": (35.20, 36.30, 90, "B"), "C221": (36.45, 42.50, 0, "B"), "C223": (32.90, 43.40, 90, "B"),
     "C216": (42.70, 41.95, 0, "B"), "FB201": (36.60, 44.05, 0, "B"),
     "C301": (58.80, 33.40, 90, "B"), "C302": (58.35, 41.10, 90, "B"), "C303": (54.80, 34.20, 90, "B"),
     "C304": (55.25, 39.80, 90, "B"), "C305": (56.30, 31.10, 90, "B"), "C306": (59.85, 40.25, 90, "B"),
