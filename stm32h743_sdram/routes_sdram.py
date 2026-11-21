@@ -26,7 +26,7 @@ REF = ["FMC_SDCLK", "FMC_SDCLK_R"]
 VIA_LIMIT = 3
 VIA_TARGET = 2
 LEN_MAX = 60
-ROUND = int(os.environ.get("ROUND", "2"))
+ROUND = int(os.environ.get("ROUND", "3"))
 DATA = ["FMC_D%d" % i for i in range(32)] + ["FMC_NBL%d" % i for i in range(4)]
 ADDR = ["FMC_A%d" % i for i in range(13)] + ["FMC_BA0", "FMC_BA1", "FMC_SDNRAS", "FMC_SDNCAS", "FMC_SDNWE", "FMC_SDCKE0", "FMC_SDNE0"]
 GROUPS = {"lane0": ["FMC_D%d" % i for i in range(8)] + ["FMC_NBL0"], "lane1": ["FMC_D%d" % i for i in range(8, 16)] + ["FMC_NBL1"],
@@ -134,7 +134,14 @@ def routes(job):
         "FMC_SDNRAS": db("R6", (38.375, 41.875), "L6", [(38.375, 43.0)]),
         # L1 nets with deep balls on the south side
         "FMC_A11": db("M7", (39.675, 39.925), "L4", [(40.0, 40.25), (40.0, 46.3)]) + [("via", (40.0, 46.3)), ("L1", [(40.0, 46.3), (40.3, 46.3)])],
-        "FMC_A10": db("N7", (39.025, 39.925), "L4", [(33.2, 39.925), (32.5, 40.625)]) + [("via", (32.5, 40.625)), ("L1", [(32.5, 40.625), (32.5, 40.3)])],
+        # round 3 (user): no SDRAM track on L1 beside the crystal pins E1-H1 (box x 29-34, y 33.5-38.5). A10, A3 and D28
+        # pass the west side on L4 and come up to L1 north of the box; A6 goes down south of it (see l1n)
+        "FMC_A10": db("N7", (39.025, 39.925), "L4", [(31.15, 39.925), (30.9, 39.675), (30.9, 33.05), (30.65, 32.8)])
+                   + [("via", (30.65, 32.8)), ("L1", [(30.65, 32.8), (30.65, 32.5)])],
+        "FMC_A3": db("J2", (35.775, 37.975), "L4", [(32.3, 37.975), (31.9, 37.575), (31.9, 31.8), (32.1, 31.6)])
+                  + [("via", (32.1, 31.6)), ("L1", [(32.1, 31.6), (32.1, 31.3)])],
+        "FMC_D28": db("C3", (37.075, 34.075), "L4", [(36.75, 34.4), (33.7, 34.4), (33.3, 34.0), (33.3, 33.25)])
+                   + [("via", (33.3, 33.25)), ("L1", [(33.3, 33.25), (33.3, 32.95)])],
         # L4 under the MCU (ball-free ring rows E / L, between the centre vias), out on the east side
         "FMC_D31": db("E3", (37.075, 35.375), "L4", [(37.4, 35.05), (46.0, 35.05)]),
         "FMC_SDCKE0": db("F4", (37.725, 36.025), "L4", [(38.05, 35.7), (46.0, 35.7)]),
@@ -171,7 +178,7 @@ def routes(job):
         "P11": "S+:L1", "R11": "S", "R10": "S", "P10": "S-:L1", "P6": "S+:L1",
         "E14": "E+:L1", "K14": "E+:L1", "P15": "E", "P14": "E+:L1",
         "A4": "N", "B12": "N", "D3": "N-:via@L4", "C4": "N-:via@L4",
-        "J2": "W", "C2": "W-:L1", "C3": "W:via@L4",
+        "C2": "W-:L1",
         "H14": "E-:L1",
         # inner rivers
         "N15": "E:via@L4",
@@ -200,31 +207,26 @@ def routes(job):
     s_d3, s_d20 = m["FMC_D3"], m["FMC_D20"]
     s_d30 = surface(m["FMC_D30"], 31.6, "y")
     s_nbl3 = surface(m["FMC_NBL3"], 31.6, "y")
-    s_d28 = surface(m["FMC_D28"], 34.6, "x")
+    s_d28 = m["FMC_D28"]
     a11, a10 = m["FMC_A11"], m["FMC_A10"]
 
     if "L1" in LAYERS:
-        # l1n: A10 A6 | A3 D28 D29 | D30 NBL3 NBL0 D2
+        # l1n: A10 A6 A3 D28 D29 (west, from their vias north of the crystal box) | D30 NBL3 NBL0 D2 (north)
         n_all = ["FMC_A10", "FMC_A6", "FMC_A3", "FMC_D28", "FMC_D29", "FMC_D30", "FMC_NBL3", "FMC_NBL0", "FMC_D2"]
-        west = {"FMC_A6": 43.5}                                           # W leg (y), A6 only (A10 joins on the N leg)
-        north = {"FMC_A10": 32.5, "FMC_A6": 33.0, "FMC_A3": 33.25, "FMC_D28": 33.5, "FMC_D29": 33.75}
+        north = {"FMC_A10": 30.65, "FMC_A6": 31.15, "FMC_A3": 32.1, "FMC_D28": 33.3, "FMC_D29": 33.75}
         ye = {"FMC_A10": 28.8, "FMC_A6": 29.05, "FMC_A3": 29.3, "FMC_D28": 29.55, "FMC_D29": 29.8, "FMC_D30": 30.05,
               "FMC_NBL3": 30.3, "FMC_NBL0": 30.55, "FMC_D2": 30.8}
-        nw = {n: north[n] - 43.5 + 0.6 for n in ("FMC_A6",)}             # x - y of the SW corner diagonal
-        ne = {n: north[n] + ye[n] + 0.6 for n in north}                   # x + y of the NW corner diagonal (wider for outer)
-        for n in north:
-            ne[n] = north[n] + ye[n] + 0.6 + 0.0
-        # strip: SE diagonal then south at xs
+        ne = {n: north[n] + ye[n] + 0.6 for n in north}
         xs = {"FMC_D29": 51.75, "FMC_D30": 51.5, "FMC_NBL3": 51.25, "FMC_NBL0": 51.0, "FMC_D2": 50.75}
         se = {n: xs[n] - ye[n] - 0.6 for n in xs}
-        span = {"FMC_A10": (2, 3), "FMC_A6": (0, 3), "FMC_A3": (2, 3), "FMC_D28": (2, 3), "FMC_D29": (2, 5),
-                "FMC_D30": (4, 5), "FMC_NBL3": (4, 5), "FMC_NBL0": (4, 5), "FMC_D2": (4, 5)}
-        # legs: 0 W, 1 NW, 2 N, 3 NE, 4 E, 5 SE, 6 S  (lane order left->right: going W left = south)
-        legs = [("W", west), ("NW", nw), ("N", north), ("NE", ne), ("E", ye), ("SE", se), ("S", xs)]
-        span = {"FMC_A10": (2, 4), "FMC_A6": (0, 4), "FMC_A3": (2, 4), "FMC_D28": (2, 4), "FMC_D29": (2, 6),
-                "FMC_D30": (4, 6), "FMC_NBL3": (4, 6), "FMC_NBL0": (4, 6), "FMC_D2": (4, 6)}
-        l1n = bund("l1n", n_all, "L1", legs, 38.0, 41.0, span, anchor="FMC_A6")
-        st = {"FMC_A6": m["FMC_A6"], "FMC_A10": a10, "FMC_A3": m["FMC_A3"], "FMC_D28": s_d28, "FMC_D29": m["FMC_D29"],
+        legs = [("N", north), ("NE", ne), ("E", ye), ("SE", se), ("S", xs)]
+        span = {"FMC_A10": (0, 2), "FMC_A6": (0, 2), "FMC_A3": (0, 2), "FMC_D28": (0, 2), "FMC_D29": (0, 4),
+                "FMC_D30": (2, 4), "FMC_NBL3": (2, 4), "FMC_NBL0": (2, 4), "FMC_D2": (2, 4)}
+        l1n = bund("l1n", n_all, "L1", legs, 33.2, 41.0, span, anchor="FMC_D29")
+        # A6: L1 west below the MCU, up the west side to y 39.0, L4 past the crystal box, L1 again at (31.15, 31.9)
+        a6 = [("L1", list(m["FMC_A6"].pieces[0][1]) + [(38.525, 43.5), (32.3, 43.5), (31.4, 42.6), (31.4, 39.0)]), ("via", (31.4, 39.0)),
+              ("L4", [(31.4, 39.0), (31.4, 32.15), (31.15, 31.9)]), ("via", (31.15, 31.9)), ("L1", [(31.15, 31.9), (31.15, 31.6)])]
+        st = {"FMC_A6": a6, "FMC_A10": a10, "FMC_A3": m["FMC_A3"], "FMC_D28": s_d28, "FMC_D29": m["FMC_D29"],
               "FMC_D30": s_d30, "FMC_NBL3": s_nbl3, "FMC_NBL0": m["FMC_NBL0"], "FMC_D2": m["FMC_D2"]}
         en = {"FMC_D29": [(51.75, 31.2), (51.95, 31.4), "U301.A1"],
               "FMC_D30": [(51.5, 31.6), (52.1, 32.2), "U301.B1"],
@@ -353,11 +355,13 @@ def routes(job):
         # of the nets outside them: A0 below NE0's J8, NBL2 below NBL1's K9 and back up east of column 9.
         w4 = ["FMC_A1", "FMC_A2", "FMC_SDNE0", "FMC_A0"]
         yw = {"FMC_A1": 38.3, "FMC_A2": 37.65, "FMC_SDNE0": 37.0, "FMC_A0": 35.7}
-        xw = {"FMC_A1": 32.65, "FMC_A2": 32.9, "FMC_SDNE0": 33.15, "FMC_A0": 33.4}
+        xw = {"FMC_A1": 31.65, "FMC_A2": 32.15, "FMC_SDNE0": 32.4, "FMC_A0": 32.65}     # round 3: A3 runs between A1 and A2
+        xw2 = dict(xw, FMC_A2=32.55, FMC_SDNE0=32.8, FMC_A0=33.05)                         # after the step north of the box
         ye = {"FMC_A1": 27.75, "FMC_A2": 28.0, "FMC_SDNE0": 28.25, "FMC_A0": 28.5, "FMC_NBL1": 28.75, "FMC_NBL2": 29.0,
               "FMC_SDNCAS": 29.25, "FMC_D26": 29.5}
         l4w = bund("l4w", w4, "L4", [("W", yw), ("NW", {n: xw[n] - yw[n] + 0.4 for n in w4}), ("N", xw),
-                                    ("NE", {n: xw[n] + ye[n] + 0.4 for n in w4}), ("E", {n: ye[n] for n in w4})], 34.0, 45.0)
+                                    ("NE", {n: xw2[n] + ye[n] + 0.4 for n in w4}), ("E", {n: ye[n] for n in w4})], 34.0, 45.0)
+        l4w.widen(2, 37.9 - 32.6, None, after="FMC_A1", by=0.4)
         bus.add(l4w, start={n: m[n] for n in w4})
         n4 = ["FMC_A1", "FMC_A2", "FMC_SDNE0", "FMC_A0", "FMC_NBL1", "FMC_NBL2", "FMC_SDNCAS", "FMC_D26"]
         xa = {"FMC_D26": 56.0, "FMC_SDNCAS": 56.87, "FMC_NBL2": 57.1, "FMC_NBL1": 57.33, "FMC_A0": 57.56, "FMC_SDNE0": 57.79,
@@ -391,7 +395,7 @@ def routes(job):
         # l4ss: D17 D16 south about: east below everything, up the SDRAM's east side, west along its north side
         ss = ["FMC_D17", "FMC_D16"]
         xs = {"FMC_D17": 43.9, "FMC_D16": 43.25}
-        ye = {"FMC_D17": 44.85, "FMC_D16": 45.1}
+        ye = {"FMC_D17": 47.5, "FMC_D16": 47.75}      # round 3: below the L1 band, so that the south-east corner balls can drop through
         xn = {"FMC_D17": 61.75, "FMC_D16": 62.0}
         yw = {"FMC_D17": 29.85, "FMC_D16": 29.6}
         legs = [("S", xs), ("SE", {n: xs[n] - ye[n] + 0.3 for n in ss}), ("E", ye), ("NE", {n: xn[n] + ye[n] - 0.6 for n in ss}),
