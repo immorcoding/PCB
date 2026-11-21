@@ -409,6 +409,134 @@ def solve(model, lane_map, free_pass=1, time_limit=60, allow_skip=False):
     return dict(chosen=chosen, cost=res.fun, optimal=res.status == 0, n_opts=n, n_cross=m, left=left)
 
 
+class Chains:
+    """Fast assignment without a solver: each layer holds one chain (options ordered by t, u not decreasing),
+    found exactly by dynamic programming for one layer at a time while the other two are held; layers are
+    re-solved in turn until nothing improves, then every net still without a place is forced in turn.
+    Light on the CPU (one process, milliseconds per layer)."""
+    BIG = 300.0
+
+    def __init__(self, model, lane_map):
+        import numpy as np
+        self.np, self.model = np, model
+        self.O = O = model.options(lane_map)
+        self.nets = sorted({o["net"] for o in O})
+        self.complete = len(self.nets) == len(model.mcu)
+        self.by_layer = {}
+        for l in LAYERS:
+            idx = [i for i, o in enumerate(O) if o["layer"] == l]
+            idx.sort(key=lambda i: (round(O[i]["t"], 2), O[i]["ulo"], i))
+            t = np.array([O[i]["t"] for i in idx]); ulo = np.array([O[i]["ulo"] for i in idx]); uhi = np.array([O[i]["uhi"] for i in idx])
+            net = np.array([self.nets.index(O[i]["net"]) for i in idx])
+            dt = t[None, :] - t[:, None]
+            ok = (np.arange(len(idx))[:, None] < np.arange(len(idx))[None, :]) & (net[:, None] != net[None, :]) \
+                & (ulo[:, None] <= uhi[None, :] + 1e-6) & (dt < model.P - 1e-6) & (np.abs(ulo[None, :] - ulo[:, None]) < model.U - 1e-6)
+            self.by_layer[l] = (idx, net, ok, np.array([O[i]["length"] + VIA_COST * O[i]["vias"] for i in idx]))
+
+    def chain(self, layer, allowed, bonus=None, only=None):
+        """Best chain on a layer among the nets in `allowed`. only = {net id: option index} pins a net's option."""
+        np = self.np
+        idx, net, ok, cost = self.by_layer[layer]
+        n = len(idx)
+        w = np.where(np.isin(net, list(allowed)), self.BIG - cost, -1e9)
+        if bonus:
+            for k, b in bonus.items():
+                w = np.where(net == k, w + b, w)
+        if only:
+            for k, oi in only.items():
+                w = np.where((net == k) & (np.array(idx) != oi), -1e9, w)
+        best = w.copy(); prev = np.full(n, -1)
+        first = np.arange(n)                           # index of the chain's first option, for the one-turn limit
+        t = np.array([self.O[i]["t"] for i in idx])
+        ulo = np.array([self.O[i]["ulo"] for i in idx]); uhi = np.array([self.O[i]["uhi"] for i in idx])
+        rmax = ulo.copy()                              # highest u so far along the chain: keeps the order exact
+        for j in range(n):
+            if w[j] < -1e8:
+                best[j] = -1e9
+                continue
+            cand = np.nonzero(ok[:j, j] & (best[:j] > 0) & (rmax[:j] <= uhi[j] + 1e-6) & (t[j] - t[first[:j]] < self.model.P - 1e-6))[0]
+            if len(cand):
+                i = cand[np.argmax(best[cand])]
+                if best[i] > 0:
+                    best[j] = w[j] + best[i]; prev[j] = i; first[j] = first[i]; rmax[j] = max(rmax[i], ulo[j])
+        j = int(np.argmax(best))
+        if best[j] <= 0:
+            return []
+        out = []
+        while j >= 0:
+            out.append(idx[j]); j = int(prev[j])
+        out.reverse()
+        seen = {}
+        for oi in out:                                 # a net twice in one chain: pin its first option and redo
+            k = self.nets.index(self.O[oi]["net"])
+            if k in seen:
+                pins = dict(only or {}); pins[k] = seen[k]
+                return self.chain(layer, allowed, bonus, pins)
+            seen[k] = oi
+        return out
+
+    def value(self, assign):
+        return sum(self.BIG - self.O[oi]["length"] - VIA_COST * self.O[oi]["vias"] for ch in assign.values() for oi in ch)
+
+    def descend(self, assign, order, bonus=None):
+        allnets = set(range(len(self.nets)))
+        while True:
+            improved = False
+            for l in order:
+                taken = {self.nets.index(self.O[oi]["net"]) for l2 in LAYERS if l2 != l for oi in assign[l2]}
+                new = self.chain(l, allnets - taken, bonus)
+                trial = dict(assign); trial[l] = new
+                gain = lambda a: self.value(a) + sum((bonus or {}).get(self.nets.index(self.O[oi]["net"]), 0) for ch in a.values() for oi in ch)
+                if gain(trial) > gain(assign) + 1e-6:
+                    assign = trial; improved = True
+            if not improved:
+                return assign
+
+    def placed(self, assign):
+        return {self.nets.index(self.O[oi]["net"]) for ch in assign.values() for oi in ch}
+
+    def solve(self):
+        best = None
+        for order in itertools.permutations(LAYERS):
+            a = self.descend({l: [] for l in LAYERS}, order)
+            # force the nets left out, one at a time, and let the layers settle again
+            for _ in range(3):
+                left = sorted(set(range(len(self.nets))) - self.placed(a))
+                progress = False
+                for k in left:
+                    b = self.descend(a, order, bonus={k: 5 * self.BIG})
+                    b = self.descend(b, order)
+                    if len(self.placed(b)) > len(self.placed(a)) or (len(self.placed(b)) == len(self.placed(a)) and self.value(b) > self.value(a) + 1e-6):
+                        a = b; progress = True
+                if not progress:
+                    break
+            key = (len(self.placed(a)), self.value(a))
+            if best is None or key > best[0]:
+                best = (key, a)
+        a = best[1]
+        chosen = [dict(self.O[oi]) for ch in a.values() for oi in ch]
+        left = [x for k, x in enumerate(self.nets) if k not in self.placed(a)]
+        return dict(chosen=chosen, cost=sum(o["length"] + VIA_COST * o["vias"] for o in chosen), optimal=False, n_opts=len(self.O), n_cross=0, left=left)
+
+
+def limits(model, chosen):
+    """Capacities the chains do not see. -> list of texts"""
+    out = []
+    for l in LAYERS[1:]:
+        n = sum(1 for o in chosen if o["layer"] == l and o["wind"] == "under")
+        if n > UNDER_CAP:
+            out.append("%d under the MCU on %s (limit %d)" % (n, l, UNDER_CAP))
+        n = sum(1 for o in chosen if o["layer"] == l and o["side"] == "E" and (o["wind"] == "under" or o["depth"] >= 3))
+        if n > EAST_CHANNELS:
+            out.append("%d row channels on the east side on %s (limit %d)" % (n, l, EAST_CHANNELS))
+    for kind in ("endA", "endR"):
+        for l in LAYERS:
+            n = sum(1 for o in chosen if o["layer"] == l and o["kind"] == kind)
+            if n > OPENING_CAP:
+                out.append("%d through aisle end %s on %s (limit %d)" % (n, kind, l, OPENING_CAP))
+    return out
+
+
 def along_side(o, sd):
     """Does the river of this option run along the north / south side of the MCU?"""
     if sd == "N":
@@ -486,7 +614,7 @@ def scan_one(job):
     if not spread:
         W_LANE = W_ADDR = 0.0
     m = Model(rot, gap, dy)
-    r = solve(m, perm, fp, time_limit=tl, allow_skip=skip)
+    r = Chains(m, perm).solve() if tl <= 0 else solve(m, perm, fp, time_limit=tl, allow_skip=skip)
     tag = "%3d %s" % (rot, "".join(map(str, perm)))
     if not r:
         return tag + " no assignment"
@@ -495,7 +623,7 @@ def scan_one(job):
     return "%s  %2d  %7.1f %6.1f  %5.1f   %3d   %2d/%2d/%2d   %s   %4.1f-%4.1f   %4.1f  %s%s %s" % (
         tag, len(r["left"]), r["cost"], s["total"], s["longest"], s["vias"], *[s["per_layer"][l] for l in LAYERS],
         " ".join("%4.1f" % (b - a) for a, b in s["lanes"]), *s["addr"], s["clk"],
-        "ok" if okb and not crossings(m, r["chosen"]) else "BITS", "" if r["optimal"] else " (time limit)", " ".join(x[4:] for x in r["left"]))
+        "ok" if okb and not crossings(m, r["chosen"]) else "BITS", "; ".join(limits(m, r["chosen"])), " ".join(x[4:] for x in r["left"]))
 
 
 def args_opt(argv, name, default, cast=float):
@@ -510,11 +638,16 @@ def main(argv):
     if argv[0] == "scan":
         from concurrent.futures import ProcessPoolExecutor
         rots = [args_opt(argv, "--rot", 0, int)] if "--rot" in argv else (0, 90, 180, 270)
-        jobs = [(rot, perm, gap, dy, fp, args_opt(argv, "--time", 30), skip, spread) for rot in rots for perm in itertools.permutations(range(4))]
+        jobs = [(rot, perm, gap, dy, fp, args_opt(argv, "--time", 0), skip, spread) for rot in rots for perm in itertools.permutations(range(4))]
         print("rot map  left  cost   total  longest  vias  L1/L4/L6   lane spreads          addr min-max  clk   bits", flush=True)
-        with ProcessPoolExecutor(args_opt(argv, "--jobs", 8, int)) as ex:
-            for line in ex.map(scan_one, jobs):
-                print(line, flush=True)
+        nj = args_opt(argv, "--jobs", 1, int)          # one process unless told otherwise: the PC resets under heavy load
+        if nj <= 1:
+            for job in jobs:
+                print(scan_one(job), flush=True)
+        else:
+            with ProcessPoolExecutor(nj) as ex:
+                for line in ex.map(scan_one, jobs):
+                    print(line, flush=True)
         return
     if argv[0] == "solve":
         rot, perm = int(argv[1]), tuple(int(c) for c in argv[2])
@@ -523,7 +656,8 @@ def main(argv):
         if not spread:
             global W_LANE, W_ADDR
             W_LANE = W_ADDR = 0.0
-        r = solve(m, perm, fp, time_limit=args_opt(argv, "--time", 120), allow_skip=skip)
+        tl = args_opt(argv, "--time", 0)
+        r = Chains(m, perm).solve() if tl <= 0 else solve(m, perm, fp, time_limit=tl, allow_skip=skip)
         if not r:
             sys.exit("no assignment")
         okb = match_bits(m, r["chosen"])
@@ -534,6 +668,7 @@ def main(argv):
             "SDRAM centre (%.2f, %.2f)" % m.sc,
             "bit matching %s; crossings left on a layer: %d %s" % ("ok" if okb else "FAILED", len(bad), bad[:6] if bad else ""),
             "left without a place: %s" % (" ".join(r["left"]) or "none"),
+            "limits exceeded: %s" % ("; ".join(limits(m, r["chosen"])) or "none"),
             "layer net          MCU  side way depth  SDRAM entry  est.mm vias"]
         for o in ch:
             num = m.mcu[o["net"]][0]
