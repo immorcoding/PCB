@@ -3,8 +3,9 @@ KiCad's "Update PCB from Schematic" / AD's "Update PCB Document").
 
     D:\\KiCad\\bin\\python.exe scripts\\net2pcb.py <netlist.net> <board.kicad_pcb>
 
-- Footprints missing on the board are loaded from the stock libraries and
-  dropped at the board origin (placement is a separate step).
+- Footprints missing on the board are loaded from the stock libraries (or from a
+  project library <lib>.pretty next to the board) and dropped at the board origin
+  (placement is a separate step).
 - Footprints already on the board keep their position; value, schematic link
   and pad nets are refreshed. If the schematic names a different footprint,
   the old one is replaced in place (same position, rotation and side).
@@ -64,7 +65,8 @@ def main(net_path, pcb_path):
         if fp is not None and str(fp.GetFPID().GetLibItemName()) != name:
             old, fp = fp, None
         if fp is None:
-            fp = pcbnew.FootprintLoad(os.path.join(FP_DIR, lib + ".pretty"), name)
+            local = os.path.join(os.path.dirname(os.path.abspath(pcb_path)), lib + ".pretty")
+            fp = pcbnew.FootprintLoad(local if os.path.isdir(local) else os.path.join(FP_DIR, lib + ".pretty"), name)
             if fp is None:
                 raise SystemExit(f"{ref}: footprint {c['footprint']} not found")
             fp.SetFPID(pcbnew.LIB_ID(lib, name))
