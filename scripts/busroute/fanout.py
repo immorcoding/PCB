@@ -8,9 +8,11 @@
                                     bundle that takes them over has to have
     res.refused                     {ball: why it could not be drawn}
 
-A request is None (nearest side, automatic) or "<side>[+|-][:mode]": side N / E / S / W; + / - = prefer the
-line on the higher / lower side (higher x for N and S, higher y for E and W); mode straight, L1, via, aisle.
+A request is None (nearest side, automatic) or "<side>[+|-][:mode][@layer]": side N / E / S / W; + / - = prefer
+the line on the higher / lower side (higher x for N and S, higher y for E and W); mode straight, L1, via, aisle;
+@layer = the inner layer of this ball's dog-bone (instead of `inner`), e.g. "E+:via@L6" or "S@L4".
 A mode is binding (no other mode is tried); a sign together with a mode is binding too (only that line).
+keep = {net: route pieces} drawn before (other fan-outs, hand leads): obstacles for every candidate.
 
 The rules (h = half the ball pitch; "depth" = balls between this one and the edge on its way out):
   straight  depth 0: one segment from the pad straight out, on the pad's layer.
@@ -208,14 +210,28 @@ class Fanout:
             used[key] = "%s (%s)" % (net, ball)
         return None
 
-    def _run(self, reqs, pref0, inner, l1_depth, reach):
-        sc = Scene(self.board, self.profile, skip_nets={self.padof[b].net for b in reqs})
+    def _run(self, reqs, pref0, inner, l1_depth, reach, keep=None):
+        sc = Scene(self.board, self.profile, skip_nets={self.padof[b].net for b in reqs} | set(keep or ()))
+        for net, pieces in (keep or {}).items():            # routes drawn before: obstacles
+            for pc in pieces:
+                if pc[0] == "via":
+                    p = (float(pc[1][0]), float(pc[1][1]))
+                    sc.add(sc.via(net, p, *(tuple(pc[2]) if len(pc) > 2 and pc[2] else via_size(self.profile, self.areas, net, p))))
+                else:
+                    pts = [self.board.pad(q, net).pos if isinstance(q, str) else (float(q[0]), float(q[1])) for q in pc[1]]
+                    for a, c, w in split_widths(pts, self.areas, self.profile.w_area, self.profile.width(net), self.profile.extend, self.profile.min_seg):
+                        sc.add(sc.seg(net, pc[0], a, c, w))
         used, leads, refused, plan = {}, {}, {}, []
         for ball, spec in reqs.items():
             if ball not in self.P:
                 raise RouteError("fan-out: %s has no pad %r" % (self.ref, ball))
-            side, pref, mode, strict = None, pref0, None, False
+            side, pref, mode, strict, lay = None, pref0, None, False, inner
             if spec:
+                spec, _, at = spec.partition("@")
+                if at:
+                    if at not in self.board.cu:
+                        raise RouteError("fan-out %s.%s: unknown layer %r" % (self.ref, ball, at))
+                    lay = at
                 s, _, mode = spec.partition(":")
                 mode = mode or None
                 if s.endswith(("+", "-")):
@@ -224,14 +240,14 @@ class Fanout:
                 if side is not None and side not in SIDES:
                     raise RouteError("fan-out %s.%s: side %r is not N, E, S or W" % (self.ref, ball, side))
             side = side or self.nearest(ball)
-            plan.append((SIDES.index(side), self.depth(ball, side)[0], dot((0, 1) if DIRS[side][0] else (1, 0), self.P[ball]) * pref0, ball, side, pref, mode, strict))
-        for _, depth, _, ball, side, pref, mode, strict in sorted(plan):
+            plan.append((SIDES.index(side), self.depth(ball, side)[0], dot((0, 1) if DIRS[side][0] else (1, 0), self.P[ball]) * pref0, ball, side, pref, mode, strict, lay))
+        for _, depth, _, ball, side, pref, mode, strict, lay in sorted(plan, key=lambda r: r[:4]):
             net = self.padof[ball].net
             if not net:
                 refused[ball] = "the pad has no net"
                 continue
             why = []
-            for cand in self._candidates(ball, side, mode, pref, inner, l1_depth, reach, strict):
+            for cand in self._candidates(ball, side, mode, pref, lay, l1_depth, reach, strict):
                 r = self._try(sc, used, net, cand + (ball,))
                 if r is None:
                     kind, layer, key, pieces, v, turn = cand
@@ -246,12 +262,12 @@ class Fanout:
                     net, side, d, self.top, l1_depth))
         return leads, refused
 
-    def escape(self, balls, inner=None, l1_depth=1, reach=None):
+    def escape(self, balls, inner=None, l1_depth=1, reach=None, keep=None):
         """balls = {pad number: request or None} (or a list of pad numbers: all automatic). See the module text."""
         reqs = dict(balls) if isinstance(balls, dict) else {b: None for b in balls}
         best = None
         for pref in (1, -1):
-            leads, refused = self._run(reqs, pref, inner, l1_depth, reach)
+            leads, refused = self._run(reqs, pref, inner, l1_depth, reach, keep)
             score = (len(refused), sum(1 for l in leads.values() if l.turn), 0 if pref == 1 else 1)
             if best is None or score < best[0]:
                 best = (score, leads, refused, pref)

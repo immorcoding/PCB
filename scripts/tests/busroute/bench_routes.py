@@ -24,7 +24,7 @@ REF = ["FMC_D0"]
 GROUPS = {"trunk": ["FMC_D%d" % i for i in range(6)], "under": ["FMC_D%d" % i for i in range(6, 10)], "hand": ["FMC_D10", "FMC_D11"]}
 VIA_TARGET = 2
 VIEWS = [("bus", 14.5, 9.5, 26.0, 20.5, 90)]
-DRC_IGNORE = {}
+DRC_IGNORE = {"skew_out_of_range": "the project rule file matches FMC_D0-D7 as a byte lane; matching is not part of this benchmark"}
 
 
 def routes(job):

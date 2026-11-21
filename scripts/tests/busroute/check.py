@@ -52,7 +52,8 @@ IGNORE = {"lib_footprint_issues": "the two footprints are loaded from library fo
           "lib_footprint_mismatch": "the BGA pads get solder-mask margin 0 as on the real board, which differs from the library",
           "silk_over_copper": "reference text of the footprints is where the generator put it",
           "silk_overlap": "same", "silk_edge_clearance": "same",
-          "isolated_copper": "the two ground pours have no pad of their net on this board (2 items, with and without the stitching vias)"}
+          "isolated_copper": "the two ground pours have no pad of their net on this board (2 items, with and without the stitching vias)",
+          "skew_out_of_range": "the project's byte-lane skew rules (sdram_lane0-3, added after this benchmark) see the bench nets FMC_D0-D7; matching is not benchmarked here"}
 
 
 def make_board(tmp):
@@ -178,6 +179,20 @@ def main(argv):
         mv, cv, lv = neg["channel"]
         want(cv == 2 and any(f["kind"] == "CHANNEL" and "U1.P14" in f["text"] and "already carries FMC_D1 (N14)" in f["text"] for f in mv.get("findings", [])),
              "negative case channel: exit %d\n%s" % (cv, lv[-1500:]))
+
+        # fan-out options: a per-ball inner layer ("@L6") and routes drawn before as obstacles (keep)
+        from busroute import Fanout, Profile
+        bb = Board(pcb, (OX, OY))
+        fo = Fanout(bb, Profile.from_project(pcb), "U1")
+        r1 = fo.escape({"L12": "E:via@L6", "M12": "E:via"}, inner="L4")
+        l12, m12 = r1.leads.get("L12"), r1.leads.get("M12")
+        want(l12 is not None and m12 is not None and l12.layer == "L6" and m12.layer == "L4" and l12.pieces[-1][0] == "L6",
+             "fan-out @layer: %s" % r1.text())
+        if l12 is not None:
+            r2 = fo.escape({"L12": "E:via@L6"}, inner="L4", keep={"FMC_D10": [("via", l12.via)]})
+            l2 = r2.leads.get("L12")
+            want((l2 is None and "L12" in r2.refused) or (l2 is not None and l2.via != l12.via),
+                 "fan-out keep: the via of another net at %r did not move the dog-bone (%s)" % (l12.via, r2.text()))
     except StopIteration:
         pass
     finally:
@@ -187,7 +202,7 @@ def main(argv):
             print("\n".join("  " + f for f in fails))
         else:
             print("OK busroute: 12 nets (ring 0-3 fan-out, bundle with corner and per-leg gaps, join, via field), DRC clean, "
-                  "geometry = DRC lengths, 2 builds identical, 2 groups = 1 build, 4 negative cases; %.0f s%s" % (time.time() - t0, "; kept " + tmp if keep else ""))
+                  "geometry = DRC lengths, 2 builds identical, 2 groups = 1 build, 4 negative cases, fan-out @layer and keep; %.0f s%s" % (time.time() - t0, "; kept " + tmp if keep else ""))
         if not keep:
             shutil.rmtree(tmp, ignore_errors=True)
     return 1 if fails else 0

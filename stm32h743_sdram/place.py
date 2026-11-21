@@ -51,6 +51,9 @@ PLACE = {
     "U301": (*sdram_centre(), SDRAM_ROT),
     "H801": (HOLE_INSET, HOLE_INSET, 0), "H802": (BOARD_W - HOLE_INSET, HOLE_INSET, 0),
     "H803": (HOLE_INSET, BOARD_H - HOLE_INSET, 0), "H804": (BOARD_W - HOLE_INSET, BOARD_H - HOLE_INSET, 0),
+    # SDCLK series resistor (SPEC 9): east of ball H14, on the line of its escape channel (y = 36.675); the
+    # SDRAM line-order sketch (routes_sdram.py) runs FMC_SDCLK_R from pad 2 into a via at x = 48.75
+    "R201": (MCU[0] + 7.2, MCU[1] - 0.325, 0),
 }
 RULE_AREAS = {
     "BGA_MCU": (MCU, MCU_BODY),
