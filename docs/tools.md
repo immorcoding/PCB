@@ -18,6 +18,9 @@
 | 全部工具的回归 | `D:\KiCad\bin\python.exe scripts\regress.py`（跑 `scripts/tests/*/check.py`，PROC-15） |
 | 走线阻抗 | `D:\KiCad\bin\python.exe scripts\impedance.py`（嘉立创 JLC06161H-3313E 上的单端和差分，二维场解；结果是计算值） |
 | H743 板按步骤构建 | `sh stm32h743_sdram/build.sh rules`（工程文件、规则基准板、金丝雀、规则匹配；1.5–3 分钟） |
+| 铜皮区域草图 | `D:\KiCad\bin\python.exe scripts\cu_sketch.py check <草图> [--board <板>]`，另有 `apply`（按草图写铺铜区，只动它自己建的 `cu:` 开头的区）、`read`（从板读回草图，PWR-7）、`measure`（铜皮那组指标）。草图格式见脚本开头和 `stm32h743_sdram/copper.sketch` |
+| 总线走线（线束、BGA 扇出） | `D:\KiCad\bin\python.exe scripts\busroute\build.py <走线描述.py> [--fast] [--sketch] [--out 目录] [--write-board]`。默认在 `--out` 下的板子副本上构建，加 `--write-board` 才写真板；`--fast` 只做几何检查（57 根不到 1 秒），完整构建含 DRC、长度、指标、图片（7–14 秒）。描述文件的格式见 `scripts/busroute/job.py` 开头，例子是 `scripts/tests/busroute/bench_routes.py` |
+| 摆位 | `D:\KiCad\bin\python.exe stm32h743_sdram\place.py`；`--pcb <副本> --rot <角度>` 在副本上试别的 SDRAM 转向 |
 | 原理图构建并检查 | `sh scripts/sch_build.sh <工程目录> <输出目录>`（生成 → 升级到 KiCad 10 格式 → ERC → 网表 → PDF） |
 | H743 板的原理图 | `sh stm32h743_sdram/build.sh sch`（上一行，加网表对意图、对 `pins.csv`、对 `swap.csv` 的检查和 kicad-happy 审查；约 15 秒）；单独试一页：`sh stm32h743_sdram/sch/try_page.sh <输出目录> <页名>` |
 | DRC | `kicad-cli pcb drc --refill-zones --severity-all`；收尾时加 `--schematic-parity` |
@@ -96,5 +99,15 @@
 - **kicad-happy 的 skill 在子 agent 和这类后台会话里调不了**，但分析脚本可以直接跑：`python ~/.claude/plugins/marketplaces/kicad-happy/skills/kicad/scripts/analyze_schematic.py <根图> --text --stage schematic`。它会在当前目录建 `analysis/`，所以先 `cd` 到输出目录。
 - **原理图里库符号横放的两脚件**（`Device:D`、`D_Zener`、`LED`）和竖放的（`R`、`C`）引脚方向不同：按“上面的脚接 a”这类位置判断之前要先转对方向，否则两个脚落到同一个网络上（H743 板的 `sch/common.py` 的 `two()` 第一版有这个错，三页各自绕开，靠网表核对发现）。
 - **KiCad 的 `power` 库没有 `+3V3A`**（有 `+3V3`、`+3.3VA`）：H743 板在工程符号库里放了一个改名的副本。电源符号的网络名取自它的 Value。
+- **读写板子时网络会被旧的铺铜填充带偏**：过孔落在别的网络的旧填充里、自己那块铜上又没有本网络的焊盘时，`LoadBoard` / `SaveBoard` 会把它改成填充的网络（加在旧 GND 填充里的 `+5V` 过孔存出来是 GND）。脚本往板上加铜之前先清填充（`zone.UnFill()`），`cu_sketch.py apply` 就是这么做的。
+- **规则文件里的 `zone_connection` 压过铺铜区自己的焊盘连接设置**（10.0.8 实测：区设成花焊盘、全连接、不连接，填充结果相同）。
+- **孤岛的判定只看焊盘**：一块填充所在的铜上没有焊盘就算孤岛，只有过孔不算；“总是移除孤岛”只在同一个区另有连通的块时才删。
+- **新建 `ZONE()` 的默认值**：间距 0.5 mm、最小宽度 0.25 mm、花焊盘间隙和辐条 0.5 mm、移除孤岛。脚本建区要逐项写明。
+- **`kicad-cli` 的 DRC 报告最多列 499 条未连接**：没布线的板子上别从报告里数某一组的未连接（H743 板 pcbnew 数出来是 633 条）。
+- **KiCad 10 的板文件里走线和过孔按网络名记**（没有网络表），可以当文本增删；`busroute` 就是这样写板的，其余内容逐字节不变。
+- **规则区内 0.30 / 0.15 的过孔，中心距至少 0.425 mm**：卡住的是孔到铜（0.075 + 0.15 + 0.2），不是焊盘间距。
+- **`pcbnew` 的 `GetLayerName` 返回的是自定义层名**（`L2_GND`），文件里是 `In1.Cu`。
+- **`kicad-cli` 的控制台输出不是 UTF-8**：`subprocess.run(..., text=True)` 会在读线程里解码出错，按字节取。
+- **`place.py` 这类脚本里 `board.Remove()` 要放在所有读取之后**：第二次运行时先删旧板框再遍历铺铜区会段错误（上面那条 pcbnew 的坑的又一例）。
 - **Git Bash 会把 `/` 开头的网络名改写成路径**：传网络名的命令前 `export MSYS2_ARG_CONV_EXCL='*'`。
 - **Shell here-doc 会改写反斜杠和 `\n`**：补丁脚本用文件写，不用 here-doc。
