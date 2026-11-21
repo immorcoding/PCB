@@ -167,10 +167,10 @@ def build(sh):
 
     # ---- +5V -> +3V3
     sh.title("+5V to +3V3, 2 A: TPS62A02 (2.4 MHz); enabled by +5V", 6, 60)
-    sh.note("VOUT = 0.6 V x (1 + R105 / R106) = 3.315 V.  VIN abs max 6.5 V, recommended 5.5 V max.  PG (open drain) is not used.", 6, 62)
+    sh.note("VOUT = 0.6 V x (1 + R105 / R106) = 3.315 V.  VIN abs max 6.5 V, recommended 5.5 V max.  PG (open drain, low until +3V3 is above 96 %, low again below 93.5 %) holds EN_3V3A low: R108 100 k is its pull-up.", 6, 62)
     sh.note("Enable chain: +5V -> EN_3V3, +3V3 -> EN_3V3A, +3V3A -> EN_1V8, each through 10 k so the 1.0 mm pad can be pulled to GND on the bench.", 6, 64)
     sh.ic("Regulator_Switching:TPS62A02PDDC", "U102", "TPS62A02PDDCR", 18, 74, SOT23_6,
-          {"4": "+5V", "1": "EN_3V3", "3": "SW_3V3", "6": "FB_3V3", "5": NC, "2": "GND"},
+          {"4": "+5V", "1": "EN_3V3", "3": "SW_3V3", "6": "FB_3V3", "5": "EN_3V3A", "2": "GND"},
           val_at=_below(18, 74, 2),
           fields={"MPN": "TPS62A02PDDCR", "Manufacturer": TI})
     sh.two("Device:L", "L102", "1uH 4.5A", 38, 74, "Inductor_SMD:L_Vishay_IHLP-1616", "SW_3V3", "+3V3_REG",
@@ -198,7 +198,7 @@ def build(sh):
         sh.ic("Regulator_Linear:TPS7A20xxxDBV", ref, val, i, 95, SOT23_5,
               {"1": vin, "3": en, "5": out, "2": "GND"}, val_at=_below(i, 95, 2),
               fields={"MPN": val, "Manufacturer": TI})
-        sh.R(r, "10k", i + 14, 95, {"EN_3V3A": "+3V3", "EN_1V8": "+3V3A"}[en], en)
+        sh.R(r, {"R108": "100k", "R109": "10k"}[r], i + 14, 95, {"EN_3V3A": "+3V3", "EN_1V8": "+3V3A"}[en], en)
         _cap(sh, cin, "1uF", i + 22, 95, vin, FP["C0603"], "X7R 10V")
         _cap(sh, cout, "2.2uF", i + 29, 95, out, FP["C0603"], "X7R 10V")
     sh.tp("TP104", "+3V3A", 55, 93)
