@@ -17,7 +17,7 @@ Connectivity must always be confirmed from the exported netlist
 Coordinates: mm, schematic convention (Y grows downward). Keep everything on
 the 1.27 mm grid.
 """
-import os, re, uuid
+import math, os, re, uuid
 
 SYMBOL_DIR = r"D:\KiCad\share\kicad\symbols"
 _NS = uuid.UUID("6f1d3c52-8a0e-4c57-9b7e-51a7c0de0001")
@@ -110,8 +110,60 @@ def _raw_symbol(lib, name):
     return parse(text[start:i + 1])
 
 
+_custom = {}
+
+
+def register_symbol(lib_id, sym):
+    """Make a symbol that is not in the stock libraries available to sym() under `lib_id`."""
+    _custom[lib_id] = sym
+
+
+def box_symbol(name, left=(), right=(), top=(), bottom=(), ref="U", footprint="", datasheet="", description=""):
+    """A rectangular symbol. Each side is a list of (number, pin name, electrical type) or None for a gap,
+    left / right from the top down, top / bottom from left to right. Pins are 2.54 mm long on a 2.54 mm grid.
+    Electrical types are KiCad's: input, output, bidirectional, tri_state, passive, power_in, power_out,
+    open_collector, no_connect, unspecified."""
+    G = 2.54
+    names = lambda side: max([len(p[1]) for p in side if p] or [0])
+    wchars = names(left) + names(right) + 4
+    half_w = math.ceil(max(wchars * 1.0 / 2, (max(len(top), len(bottom)) + 1) * G / 2, 2 * G) / G) * G
+    extra = (names(top) + names(bottom)) * 1.0
+    half_h = math.ceil(max((max(len(left), len(right)) + 1) * G / 2 + extra / 2, 2 * G) / G) * G
+    font = ["effects", ["font", ["size", "1.27", "1.27"]]]
+    pins = []
+
+    def add(side, x, y, ang, dx, dy):
+        for k, pin in enumerate(side):
+            if pin:
+                num, pname, etype = pin
+                pins.append(["pin", etype, "line", ["at", fmt(x + dx * k), fmt(y + dy * k), str(ang)], ["length", fmt(G)],
+                             ["name", Q(pname), font], ["number", Q(str(num)), font]])
+
+    add(left, -half_w - G, (len(left) - 1) * G / 2, 0, 0, -G)
+    add(right, half_w + G, (len(right) - 1) * G / 2, 180, 0, -G)
+    add(top, -(len(top) - 1) * G / 2, half_h + G, 270, G, 0)
+    add(bottom, -(len(bottom) - 1) * G / 2, -half_h - G, 90, G, 0)
+    prop = lambda k, v, x, y, hide: ["property", Q(k), Q(v), ["at", fmt(x), fmt(y), "0"],
+                                     font + ([["justify", "left"]] if not hide else []) + ([["hide", "yes"]] if hide else [])]
+    return ["symbol", Q(name), ["exclude_from_sim", "no"], ["in_bom", "yes"], ["on_board", "yes"],
+            prop("Reference", ref, -half_w, half_h + 1.27, False), prop("Value", name, -half_w, -half_h - 1.27, False),
+            prop("Footprint", footprint, 0, 0, True), prop("Datasheet", datasheet, 0, 0, True),
+            prop("Description", description, 0, 0, True),
+            ["symbol", Q(name + "_0_1"), ["rectangle", ["start", fmt(-half_w), fmt(half_h)], ["end", fmt(half_w), fmt(-half_h)],
+                                          ["stroke", ["width", "0.254"], ["type", "default"]], ["fill", ["type", "background"]]]],
+            ["symbol", Q(name + "_1_1")] + pins]
+
+
+def write_library(path, symbols):
+    """Write symbols (box_symbol results) as a .kicad_sym library (KiCad 9 format)."""
+    doc = ["kicad_symbol_lib", ["version", "20241209"], ["generator", Q("kisch")], ["generator_version", Q("9.0")]] + list(symbols)
+    _write(path, doc)
+
+
 def load_symbol(lib_id):
     """Return the symbol s-expr, flattened if it `extends` another one."""
+    if lib_id in _custom:
+        return [c for c in _custom[lib_id]]
     lib, name = lib_id.split(":")
     sym = _raw_symbol(lib, name)
     ext = find(sym, "extends")

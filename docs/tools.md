@@ -19,6 +19,7 @@
 | 走线阻抗 | `D:\KiCad\bin\python.exe scripts\impedance.py`（嘉立创 JLC06161H-3313E 上的单端和差分，二维场解；结果是计算值） |
 | H743 板按步骤构建 | `sh stm32h743_sdram/build.sh rules`（工程文件、规则基准板、金丝雀、规则匹配；1.5–3 分钟） |
 | 原理图构建并检查 | `sh scripts/sch_build.sh <工程目录> <输出目录>`（生成 → 升级到 KiCad 10 格式 → ERC → 网表 → PDF） |
+| H743 板的原理图 | `sh stm32h743_sdram/build.sh sch`（上一行，加网表对意图、对 `pins.csv`、对 `swap.csv` 的检查和 kicad-happy 审查；约 15 秒）；单独试一页：`sh stm32h743_sdram/sch/try_page.sh <输出目录> <页名>` |
 | DRC | `kicad-cli pcb drc --refill-zones --severity-all`；收尾时加 `--schematic-parity` |
 | 重新填充铺铜并存回板文件 | `kicad-cli pcb drc --refill-zones --save-board --severity-all --format json -o <报告> <板>`；之后的测量和出图直接读板文件里的填充，不在 pcbnew 里再填一次 |
 | 检查本地 HTML 页面 | `"C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe" --headless=new --window-size=1500,1900 --screenshot=<png> "file:///<路径>"`，再看截图 |
@@ -84,7 +85,7 @@
 - **对整层铺铜做收缩运算很慢**：一整层铺地带着几百个避让孔，收缩几毫米一次要几分钟。这类测量只对电源块和局部铜皮做。
 - **`route.py` 会清掉泪滴**，所以泪滴放在走线和铺铜定稿之后。
 - **删掉封装自带的丝印外框、打开"允许阻焊桥"**，每个封装各多一条 `lib_footprint_mismatch`，在审查清单里说明。
-- **厂商网站对自动下载的限制**（2026-11 实测）：TI、Winbond、Vishay 的 PDF 用 `curl` 能直接下；ST 的 PDF `curl` 拿不到，用 WebFetch；ISSI 返回占位页（反爬），Micron 和 Winbond 的零件页是 JS 渲染、读不到；Microchip、Hirose、Würth（we-online）、sdcard.org 对 `curl` 和 WebFetch 都返回 403。拿不到的不绕过，列出官网地址请用户手动下载到板目录的 `datasheet/`（不提交）。
+- **厂商网站对自动下载的限制**（2026-11 实测）：TI、Winbond、Vishay 的 PDF 用 `curl` 能直接下；ST 的 PDF `curl` 拿不到，用 WebFetch；ISSI 返回占位页（反爬），Micron 和 Winbond 的零件页是 JS 渲染、读不到；Microchip、Hirose、Würth（we-online）、sdcard.org 对 `curl` 和 WebFetch 都返回 403。拿不到的不绕过，列出官网地址请用户手动下载到板目录的 `datasheet/`（不提交）。2026-11-20 补：Abracon、ECS、Bourns、Same Sky、Keystone、onsemi、Coilcraft 的 PDF `curl` 能下；Vishay 要用产品页上的确切文件名（`vishay.com/en/product/<文档号>/`），猜的文件名返回 HTML；Murata、TDK、Nexperia、Phoenix Contact 拒绝 `curl`；ST 的 RM0433 超过抓取工具的大小上限。
 - **`kicad-happy:digikey` 需要 `DIGIKEY_CLIENT_ID` / `DIGIKEY_CLIENT_SECRET`**，环境里没有，在产状态和库存查不了。
 - **多列表格的 PDF 文字层会错列**（TI 订货表把 TPS62A02PDDCR 读成别的封装）：表格渲染成图读，`pdftotext` 只作核对（PROC-14）。ST 的 Altium 导出原理图，文字层里网络名和位号是乱的，同样处理。
 - **pcbnew 的 `SaveBoard` 会在板文件旁边写一个默认的 `.kicad_pro`**（板子是从没有工程文件的位置读进来时）：网络类和板级下限全部变回 KiCad 默认值，规则文件照常加载，表现是按网络类写的规则全部匹配不到东西。先存板，再拷工程文件。
@@ -92,5 +93,8 @@
 - **DRC 报告里规则名的写法不统一**：多数违规把规则名放在单引号里，差分对间隙（`diff_pair_gap_out_of_range`）是不带引号的裸名；网络类的间距违规引号里是网络类名（如 `Default`）。
 - **只接了一层的过孔不计入网络长度**（过孔高度按实际换层算），但 `via_count` 照样数它。
 - **过孔可以去掉未连接内层上的焊盘**：pcbnew 里 `via.SetRemoveUnconnected(True)` 加 `SetKeepStartEnd(True)`，板文件里是 `(remove_unused_layers yes) (keep_end_layers yes)`（界面：过孔属性的“焊环”选“起始、结束和已连接的层”）。DRC 认这个设置：该层上只按孔到铜查，不再按焊盘查间距（2026-11-20 实测）。
+- **kicad-happy 的 skill 在子 agent 和这类后台会话里调不了**，但分析脚本可以直接跑：`python ~/.claude/plugins/marketplaces/kicad-happy/skills/kicad/scripts/analyze_schematic.py <根图> --text --stage schematic`。它会在当前目录建 `analysis/`，所以先 `cd` 到输出目录。
+- **原理图里库符号横放的两脚件**（`Device:D`、`D_Zener`、`LED`）和竖放的（`R`、`C`）引脚方向不同：按“上面的脚接 a”这类位置判断之前要先转对方向，否则两个脚落到同一个网络上（H743 板的 `sch/common.py` 的 `two()` 第一版有这个错，三页各自绕开，靠网表核对发现）。
+- **KiCad 的 `power` 库没有 `+3V3A`**（有 `+3V3`、`+3.3VA`）：H743 板在工程符号库里放了一个改名的副本。电源符号的网络名取自它的 Value。
 - **Git Bash 会把 `/` 开头的网络名改写成路径**：传网络名的命令前 `export MSYS2_ARG_CONV_EXCL='*'`。
 - **Shell here-doc 会改写反斜杠和 `\n`**：补丁脚本用文件写，不用 here-doc。

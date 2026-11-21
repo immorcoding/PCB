@@ -59,7 +59,7 @@ GROUP_CLASS = {"SDRAM_DATA": "SDRAM", "SDRAM_ADDR": "SDRAM", "SDRAM_CLK": "SDRAM
                "SDMMC": "SDMMC", "LTDC": "LTDC", "HSE": "XTAL", "LSE": "XTAL"}
 RMII_NETS = ["RMII_REF_CLK", "RMII_CRS_DV", "RMII_RXD0", "RMII_RXD1", "RMII_TX_EN", "RMII_TXD0", "RMII_TXD1"]
 # Nets that are not MCU pins. FMC_SDCLK_R is the SDRAM side of the SDCLK series resistor.
-EXTRA = [("SDRAM", "FMC_SDCLK_R"), ("XTAL", "PHY_XI"), ("XTAL", "PHY_XO"),
+EXTRA = [("SDRAM", "FMC_SDCLK_R"), ("XTAL", "PHY_XI"), ("XTAL", "PHY_XO"), ("XTAL", "PHY_XO_R"),
          ("ETH100", "ETH_TX_P"), ("ETH100", "ETH_TX_N"), ("ETH100", "ETH_RX_P"), ("ETH100", "ETH_RX_N"),
          # copper-type and short-and-wide nets of SPEC section 5 that the template patterns do not catch
          ("PWR", "SW_*"), ("PWR", "LED_A"), ("PWR", "VCAP*"), ("PWR", "VDDCR")]
@@ -183,6 +183,27 @@ def make_pro(path):
     return len(pats)
 
 
+KICAD_FP = os.path.join("D:" + os.sep, "KiCad", "share", "kicad", "footprints")
+SDRAM_FP = "BGA-90_8.0x13.0mm_Layout2x3x15_P0.8mm"
+
+
+def make_footprints():
+    """Project footprint library h743.pretty: the stock 90-ball BGA with 0.33 mm pads instead of 0.40
+    (SPEC 2.1; 0.33 is Micron's land for the same package, ISSI gives no land pattern)."""
+    lib = os.path.join(HERE, "h743.pretty")
+    os.makedirs(lib, exist_ok=True)
+    s = open(os.path.join(KICAD_FP, "Package_BGA.pretty", SDRAM_FP + ".kicad_mod"), encoding="utf-8").read()
+    new = SDRAM_FP + "_Pad0.33mm"
+    assert s.count("(size 0.4 0.4)") == 90, "stock footprint changed"
+    s = s.replace("(size 0.4 0.4)", "(size 0.33 0.33)").replace('(footprint "%s"' % SDRAM_FP, '(footprint "%s"' % new, 1)
+    assert '(footprint "%s"' % new in s
+    open(os.path.join(lib, new + ".kicad_mod"), "w", encoding="utf-8", newline="\n").write(s)
+    open(os.path.join(HERE, "fp-lib-table"), "w", encoding="utf-8", newline="\n").write(
+        '(fp_lib_table\n\t(version 7)\n\t(lib (name "h743") (type "KiCad") (uri "${KIPRJMOD}/h743.pretty") '
+        '(options "") (descr "Project footprints"))\n)\n')
+    return new
+
+
 def main(argv):
     stem = os.path.join(HERE, NAME)
     if any(f.endswith(".lck") for f in os.listdir(HERE)):
@@ -194,6 +215,7 @@ def main(argv):
         print("wrote %s.kicad_pcb: empty, 6 copper layers, stackup %.4f mm" % (NAME, board_thickness()))
     else:
         print("kept the existing %s.kicad_pcb (pass --new-pcb to replace it with an empty board)" % NAME)
+    print("wrote h743.pretty/%s.kicad_mod and fp-lib-table" % make_footprints())
     print("via heights counted in net lengths: L1-L4 %.4f, L1-L6 %.4f, L4-L6 %.4f mm"
           % (via_height("F.Cu", "In3.Cu"), via_height("F.Cu", "B.Cu"), via_height("In3.Cu", "B.Cu")))
 

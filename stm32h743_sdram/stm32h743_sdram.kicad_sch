@@ -1,0 +1,466 @@
+(kicad_sch
+	(version 20260306)
+	(generator "eeschema")
+	(generator_version "10.0")
+	(uuid "13b66a84-48de-5083-b9cf-92a456182566")
+	(paper "A4")
+	(title_block
+		(title "STM32H743 + SDRAM six-layer test board")
+		(date "2026-11-20")
+		(rev "A")
+	)
+	(lib_symbols)
+	(text "7  LCD connector, touch, backlight"
+		(exclude_from_sim no)
+		(at 154.94 87.63 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "18fbab60-6eba-59e5-8084-3ce48a329e7e")
+	)
+	(text "2  MCU STM32H743IIK6"
+		(exclude_from_sim no)
+		(at 91.44 49.53 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "1b7844e9-5cd8-5d5c-b658-8919bb1cc95a")
+	)
+	(text "5  Ethernet PHY and RJ45"
+		(exclude_from_sim no)
+		(at 27.94 87.63 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "1faa6d5b-b998-541b-93df-a753e7f04571")
+	)
+	(text "4  QSPI flash"
+		(exclude_from_sim no)
+		(at 218.44 49.53 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "2d81c792-a36f-5d1b-a9dd-327213323e67")
+	)
+	(text "3  SDRAM 8M x 32"
+		(exclude_from_sim no)
+		(at 154.94 49.53 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "4637e970-2530-5629-a856-2fce3bf4c5ad")
+	)
+	(text "1  Power: input, 5 V, 3.3 V, LDOs"
+		(exclude_from_sim no)
+		(at 27.94 49.53 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "5a0691a6-4644-59d2-8288-e0487e740183")
+	)
+	(text "6  Audio codec and jacks"
+		(exclude_from_sim no)
+		(at 91.44 87.63 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "b8c59e40-2c7d-59f4-b811-9f5ec558af7b")
+	)
+	(text "8  microSD, CAN, debug, misc"
+		(exclude_from_sim no)
+		(at 218.44 87.63 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "e4cd6686-bd9b-53bd-b8fd-5b4babd14fd7")
+	)
+	(sheet
+		(at 88.9 76.2)
+		(size 50.8 20.32)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(stroke
+			(width 0.1524)
+			(type solid)
+		)
+		(fill
+			(color 0 0 0 0)
+		)
+		(uuid "0e2b88e8-ed21-5045-bd8d-0e96c6530b01")
+		(property "Sheetname" "audio"
+			(at 88.9 75.4884 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left bottom)
+			)
+		)
+		(property "Sheetfile" "stm32h743_sdram_audio.kicad_sch"
+			(at 88.9 97.1046 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+			)
+		)
+		(instances
+			(project "stm32h743_sdram"
+				(path "/13b66a84-48de-5083-b9cf-92a456182566"
+					(page "6")
+				)
+			)
+		)
+	)
+	(sheet
+		(at 215.9 38.1)
+		(size 50.8 20.32)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(stroke
+			(width 0.1524)
+			(type solid)
+		)
+		(fill
+			(color 0 0 0 0)
+		)
+		(uuid "0e9fdd74-00e6-50ba-855e-4ceeb7c2e61a")
+		(property "Sheetname" "qspi"
+			(at 215.9 37.3884 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left bottom)
+			)
+		)
+		(property "Sheetfile" "stm32h743_sdram_qspi.kicad_sch"
+			(at 215.9 59.0046 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+			)
+		)
+		(instances
+			(project "stm32h743_sdram"
+				(path "/13b66a84-48de-5083-b9cf-92a456182566"
+					(page "4")
+				)
+			)
+		)
+	)
+	(sheet
+		(at 215.9 76.2)
+		(size 50.8 20.32)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(stroke
+			(width 0.1524)
+			(type solid)
+		)
+		(fill
+			(color 0 0 0 0)
+		)
+		(uuid "42cedadc-f939-5221-b4a5-24da271d077d")
+		(property "Sheetname" "io"
+			(at 215.9 75.4884 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left bottom)
+			)
+		)
+		(property "Sheetfile" "stm32h743_sdram_io.kicad_sch"
+			(at 215.9 97.1046 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+			)
+		)
+		(instances
+			(project "stm32h743_sdram"
+				(path "/13b66a84-48de-5083-b9cf-92a456182566"
+					(page "8")
+				)
+			)
+		)
+	)
+	(sheet
+		(at 152.4 38.1)
+		(size 50.8 20.32)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(stroke
+			(width 0.1524)
+			(type solid)
+		)
+		(fill
+			(color 0 0 0 0)
+		)
+		(uuid "5a902865-5993-572d-ad8c-89bb54b25e5e")
+		(property "Sheetname" "sdram"
+			(at 152.4 37.3884 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left bottom)
+			)
+		)
+		(property "Sheetfile" "stm32h743_sdram_sdram.kicad_sch"
+			(at 152.4 59.0046 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+			)
+		)
+		(instances
+			(project "stm32h743_sdram"
+				(path "/13b66a84-48de-5083-b9cf-92a456182566"
+					(page "3")
+				)
+			)
+		)
+	)
+	(sheet
+		(at 25.4 76.2)
+		(size 50.8 20.32)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(stroke
+			(width 0.1524)
+			(type solid)
+		)
+		(fill
+			(color 0 0 0 0)
+		)
+		(uuid "7687c520-1553-5a05-87d1-cf14d7d3c5ba")
+		(property "Sheetname" "eth"
+			(at 25.4 75.4884 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left bottom)
+			)
+		)
+		(property "Sheetfile" "stm32h743_sdram_eth.kicad_sch"
+			(at 25.4 97.1046 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+			)
+		)
+		(instances
+			(project "stm32h743_sdram"
+				(path "/13b66a84-48de-5083-b9cf-92a456182566"
+					(page "5")
+				)
+			)
+		)
+	)
+	(sheet
+		(at 152.4 76.2)
+		(size 50.8 20.32)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(stroke
+			(width 0.1524)
+			(type solid)
+		)
+		(fill
+			(color 0 0 0 0)
+		)
+		(uuid "a79c6afe-397e-5b7d-9eeb-1ab0631a0e54")
+		(property "Sheetname" "lcd"
+			(at 152.4 75.4884 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left bottom)
+			)
+		)
+		(property "Sheetfile" "stm32h743_sdram_lcd.kicad_sch"
+			(at 152.4 97.1046 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+			)
+		)
+		(instances
+			(project "stm32h743_sdram"
+				(path "/13b66a84-48de-5083-b9cf-92a456182566"
+					(page "7")
+				)
+			)
+		)
+	)
+	(sheet
+		(at 25.4 38.1)
+		(size 50.8 20.32)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(stroke
+			(width 0.1524)
+			(type solid)
+		)
+		(fill
+			(color 0 0 0 0)
+		)
+		(uuid "c68602ec-f3c2-5016-9ef7-5b549d6e50dc")
+		(property "Sheetname" "power"
+			(at 25.4 37.3884 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left bottom)
+			)
+		)
+		(property "Sheetfile" "stm32h743_sdram_power.kicad_sch"
+			(at 25.4 59.0046 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+			)
+		)
+		(instances
+			(project "stm32h743_sdram"
+				(path "/13b66a84-48de-5083-b9cf-92a456182566"
+					(page "1")
+				)
+			)
+		)
+	)
+	(sheet
+		(at 88.9 38.1)
+		(size 50.8 20.32)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(stroke
+			(width 0.1524)
+			(type solid)
+		)
+		(fill
+			(color 0 0 0 0)
+		)
+		(uuid "f956224a-8509-50c4-a928-05e288743134")
+		(property "Sheetname" "mcu"
+			(at 88.9 37.3884 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left bottom)
+			)
+		)
+		(property "Sheetfile" "stm32h743_sdram_mcu.kicad_sch"
+			(at 88.9 59.0046 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+			)
+		)
+		(instances
+			(project "stm32h743_sdram"
+				(path "/13b66a84-48de-5083-b9cf-92a456182566"
+					(page "2")
+				)
+			)
+		)
+	)
+	(sheet_instances
+		(path "/"
+			(page "0")
+		)
+	)
+)
