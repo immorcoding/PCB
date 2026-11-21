@@ -30,12 +30,14 @@ import itertools, json, math, os, sys
 HERE = os.path.dirname(os.path.abspath(__file__))
 BALLS = os.path.join(HERE, "out", "sketch", "balls.json")
 LAYERS = ("L1", "L4", "L6")
+INNER = ("L4", "L6")
 MCU_HALF = 6.5            # the ring the rivers start from: package 5.0 + rule area 1.0 + 0.5
 SD_HALF = (4.0, 6.5)      # SDRAM body half size at rotation 0
 VIA_COST = 3.0            # mm of objective per via
+OPENING_CAP_INNER = 10    # the same on an inner layer, where the tracks pass 0.45 vias in the aisle
 OPENING_CAP = 12          # tracks through one end of the aisle per layer (3.2 mm between ball rows)
 LEN_CAP = 55.0
-DETOUR_CAP = 22.0         # options longer than a net's shortest one by more than this are not offered
+DETOUR_CAP = 18.0         # options longer than a net's shortest one by more than this are not offered
 UNDER_LAYERS = ("L4",)    # layers that may cross under the MCU
 EAST_END = False          # offer routes round the far end of the SDRAM
 UNDER_CAP = 10            # tracks under the MCU per layer (ring rows E and L, four channels between the centre vias)
@@ -165,19 +167,18 @@ class Model:
         raise ValueError(p)
 
     def _entries(self, lx, ly):
-        """[(kind, entry point on the box, u, length inside)]: kind 'out' or 'endN' / 'endS' (footprint frame)."""
+        """[(kind, entry point on the box, u, length inside, layers)].
+        out   rows 1-2 from their own long side (any layer); the inner row too, on inner layers (between vias)
+        endA / endR   through one end of the aisle: the inner row on any layer, rows 1-2 on inner layers only
+                      (between the vias of the inner row). Deeper balls enter nearer the middle of the opening."""
         sg = 1 if lx > 0 else -1
-        out = []
-        if abs(lx) > 2.0:
-            p = self.to_board(sg * SD_HALF[0], ly)
-            out.append(("out", p, self.u_of(p), SD_HALF[0] - abs(lx)))
-        else:
-            for e, name in ((-1, "endA"), (1, "endR")):
-                frac = (SD_HALF[1] - e * ly) / (2 * SD_HALF[1])
-                p = self.to_board(sg * (1.4 - 1.2 * frac), e * SD_HALF[1])
-                out.append((name, p, self.u_of(p), SD_HALF[1] - e * ly + 0.8))
-            p = self.to_board(sg * SD_HALF[0], ly)          # inner layers only: from its own side, between the vias of rows 1-2
-            out.append(("outv", p, self.u_of(p), SD_HALF[0] - abs(lx)))
+        inner_row = abs(lx) < 2.0
+        p = self.to_board(sg * SD_HALF[0], ly)
+        out = [("out", p, self.u_of(p), SD_HALF[0] - abs(lx), INNER if inner_row else LAYERS)]
+        for e, name in ((-1, "endA"), (1, "endR")):
+            frac = (SD_HALF[1] - e * ly) / (2 * SD_HALF[1])
+            p = self.to_board(sg * (1.4 - 1.2 * frac), e * SD_HALF[1])
+            out.append((name, p, self.u_of(p), SD_HALF[1] - e * ly + 0.8 + (0.0 if inner_row else abs(lx) - 1.6), LAYERS if inner_row else INNER))
         return out
 
     def exits(self, net):
@@ -226,56 +227,44 @@ class Model:
         return shortest(p_exit, first, nodes + sd, boxes, wall) + octile(first, second) + shortest(second, p_entry, [], boxes, wall)
 
     def options(self, lane_map):
-        """lane_map[mcu lane] = SDRAM byte. -> list of option dicts."""
+        """lane_map[mcu lane] = SDRAM byte. -> list of option dicts, one per (way out of the MCU, ball, entry, layer)."""
         opts = []
         fixed_ball = {b["net"]: num for num, b in self.sd.items() if b["byte"] is None}
         dqm = {b["byte"]: num for num, b in self.sd.items() if b["net"].startswith("FMC_NBL")}
-        classes = {}                                  # (quad, kind) -> [ball numbers] of data balls
+        data = {}
         for num, b in self.sd.items():
             if b["net"].startswith("FMC_D"):
-                for kind, p, u, inside in b["entries"]:
-                    classes.setdefault((b["quad"], "out" if kind == "outv" else kind), []).append(num)
-        self.classes = classes
+                data.setdefault(b["byte"], []).append(num)
         for net in sorted(self.mcu):
             lane = None
             if net.startswith("FMC_D"):
                 lane = int(net[5:]) // 8
-                quad = self.quad_of_byte[lane_map[lane]]
-                targets = []
-                for (q, kind), balls in classes.items():
-                    if q == quad:
-                        es = [next(e for e in self.sd[n]["entries"] if e[0] in ((kind, "outv") if kind == "out" else (kind,))) for n in balls]
-                        us = [e[2] for e in es]
-                        mid = es[len(es) // 2]
-                        targets.append(dict(cls=(q, kind), ball=None, ulo=min(us), uhi=max(us), entry=mid[1], inside=sum(e[3] for e in es) / len(es), kind=kind))
+                balls = data[lane_map[lane]]
+            elif net.startswith("FMC_NBL"):
+                lane = int(net[7:])
+                balls = [dqm[lane_map[lane]]]
             else:
-                if net.startswith("FMC_NBL"):
-                    lane = int(net[7:])
-                    ball = dqm[lane_map[lane]]
-                else:
-                    ball = fixed_ball[net]
-                targets = [dict(cls=None, ball=ball, ulo=u, uhi=u, entry=p, inside=inside, kind=kind) for kind, p, u, inside in self.sd[ball]["entries"]]
+                balls = [fixed_ball[net]]
             mine = []
             exits = [(side, way, dep, p_exit, s + turns * self.P, dep * 0.65 + (MCU_HALF - 4.55 - 0.65), LAYERS)
                      for side, dep, p_exit, s in self.exits(net) for (sd, way), (_, turns) in self.WAYS.items() if sd == side]
             exits += self.under(net)
             for side, way, dep, p_exit, t, esc, layers in exits:
-                for tg in targets:
-                    half = self.U / 2
-                    for turn in ((0, -1 if tg["ulo"] > half else 1) if EAST_END else (0,)):
-                        ln = esc + self.path_len(side, way, p_exit, tg["entry"], turn) + tg["inside"]
+                for ball in balls:
+                    for kind, p, u, inside, ok_layers in self.sd[ball]["entries"]:
+                        ln = esc + self.path_len(side, way, p_exit, p, 0) + inside
                         if ln > LEN_CAP:
                             continue
                         for layer in layers:
-                            if tg["kind"] == "outv" and layer == "L1":
+                            if layer not in ok_layers:
                                 continue
                             vias = 0 if (dep <= 2 and layer == "L1") else 2
-                            o = dict(net=net, lane=lane, side=side, wind=way, depth=dep, t=t, layer=layer, vias=vias, length=ln, turn=turn, **tg)
-                            o["ulo"] += turn * self.U; o["uhi"] += turn * self.U
-                            mine.append(o)
+                            mine.append(dict(net=net, lane=lane, side=side, wind=way, depth=dep, t=t, layer=layer, vias=vias, length=ln, turn=0,
+                                             ball=ball, kind=kind, ulo=u, uhi=u, entry=p, inside=inside, cls=None))
             if mine:
                 best = min(o["length"] for o in mine)
                 opts += [o for o in mine if o["length"] <= best + DETOUR_CAP]
+        self.classes = {}
         return opts
 
     def under(self, net):
@@ -410,10 +399,11 @@ def solve(model, lane_map, free_pass=1, time_limit=60, allow_skip=False):
 
 
 class Chains:
-    """Fast assignment without a solver: each layer holds one chain (options ordered by t, u not decreasing),
-    found exactly by dynamic programming for one layer at a time while the other two are held; layers are
+    """Assignment without a solver, one process. Each layer first gets one chain (options ordered by t, u not
+    decreasing), found by dynamic programming for one layer at a time while the other two are held; layers are
     re-solved in turn until nothing improves, then every net still without a place is forced in turn.
-    Light on the CPU (one process, milliseconds per layer)."""
+    Only L1 needs the strict order (it is the side with the pads; user, 2026-11-21): nets that fit no chain are
+    then put on the inner layer where they pass the fewest nets out of order, and those pairs are listed."""
     BIG = 300.0
 
     def __init__(self, model, lane_map):
@@ -422,72 +412,91 @@ class Chains:
         self.O = O = model.options(lane_map)
         self.nets = sorted({o["net"] for o in O})
         self.complete = len(self.nets) == len(model.mcu)
+        self.balls = sorted({o["ball"] for o in O})
         self.by_layer = {}
         for l in LAYERS:
             idx = [i for i, o in enumerate(O) if o["layer"] == l]
             idx.sort(key=lambda i: (round(O[i]["t"], 2), O[i]["ulo"], i))
-            t = np.array([O[i]["t"] for i in idx]); ulo = np.array([O[i]["ulo"] for i in idx]); uhi = np.array([O[i]["uhi"] for i in idx])
-            net = np.array([self.nets.index(O[i]["net"]) for i in idx])
+            t = np.array([O[i]["t"] for i in idx]); u = np.array([O[i]["ulo"] for i in idx])
+            net = np.array([self.nets.index(O[i]["net"]) for i in idx]); ball = np.array([self.balls.index(O[i]["ball"]) for i in idx])
             dt = t[None, :] - t[:, None]
-            ok = (np.arange(len(idx))[:, None] < np.arange(len(idx))[None, :]) & (net[:, None] != net[None, :]) \
-                & (ulo[:, None] <= uhi[None, :] + 1e-6) & (dt < model.P - 1e-6) & (np.abs(ulo[None, :] - ulo[:, None]) < model.U - 1e-6)
-            self.by_layer[l] = (idx, net, ok, np.array([O[i]["length"] + VIA_COST * O[i]["vias"] for i in idx]))
+            ok = (np.arange(len(idx))[:, None] < np.arange(len(idx))[None, :]) & (net[:, None] != net[None, :]) & (ball[:, None] != ball[None, :]) \
+                & (u[:, None] <= u[None, :] + 1e-6) & (dt < model.P - 1e-6)
+            self.by_layer[l] = dict(idx=np.array(idx), net=net, ball=ball, ok=ok, t=t, u=u,
+                                    cost=np.array([O[i]["length"] + VIA_COST * O[i]["vias"] for i in idx]))
 
-    def chain(self, layer, allowed, bonus=None, only=None):
-        """Best chain on a layer among the nets in `allowed`. only = {net id: option index} pins a net's option."""
+    def chain(self, layer, nets_ok, balls_ok, bonus=None, pins=None):
+        """Best chain on a layer among the allowed nets and balls. pins = {net id: option index}."""
         np = self.np
-        idx, net, ok, cost = self.by_layer[layer]
-        n = len(idx)
-        w = np.where(np.isin(net, list(allowed)), self.BIG - cost, -1e9)
+        L = self.by_layer[layer]
+        n = len(L["idx"])
+        w = np.where(nets_ok[L["net"]] & balls_ok[L["ball"]], self.BIG - L["cost"], -1e9)
         if bonus:
             for k, b in bonus.items():
-                w = np.where(net == k, w + b, w)
-        if only:
-            for k, oi in only.items():
-                w = np.where((net == k) & (np.array(idx) != oi), -1e9, w)
-        best = w.copy(); prev = np.full(n, -1)
-        first = np.arange(n)                           # index of the chain's first option, for the one-turn limit
-        t = np.array([self.O[i]["t"] for i in idx])
-        ulo = np.array([self.O[i]["ulo"] for i in idx]); uhi = np.array([self.O[i]["uhi"] for i in idx])
-        rmax = ulo.copy()                              # highest u so far along the chain: keeps the order exact
+                w = np.where(L["net"] == k, w + b, w)
+        if pins:
+            for k, oi in pins.items():
+                w = np.where((L["net"] == k) & (L["idx"] != oi), -1e9, w)
+        best = w.copy(); prev = np.full(n, -1); first = np.arange(n)
+        t, ok = L["t"], L["ok"]
         for j in range(n):
             if w[j] < -1e8:
-                best[j] = -1e9
                 continue
-            cand = np.nonzero(ok[:j, j] & (best[:j] > 0) & (rmax[:j] <= uhi[j] + 1e-6) & (t[j] - t[first[:j]] < self.model.P - 1e-6))[0]
-            if len(cand):
+            m = ok[:j, j] & (best[:j] > 0) & (t[j] - t[first[:j]] < self.model.P - 1e-6)
+            if m.any():
+                cand = np.nonzero(m)[0]
                 i = cand[np.argmax(best[cand])]
-                if best[i] > 0:
-                    best[j] = w[j] + best[i]; prev[j] = i; first[j] = first[i]; rmax[j] = max(rmax[i], ulo[j])
+                best[j] = w[j] + best[i]; prev[j] = i; first[j] = first[i]
         j = int(np.argmax(best))
         if best[j] <= 0:
             return []
         out = []
         while j >= 0:
-            out.append(idx[j]); j = int(prev[j])
+            out.append(int(L["idx"][j])); j = int(prev[j])
         out.reverse()
-        seen = {}
-        for oi in out:                                 # a net twice in one chain: pin its first option and redo
-            k = self.nets.index(self.O[oi]["net"])
-            if k in seen:
-                pins = dict(only or {}); pins[k] = seen[k]
-                return self.chain(layer, allowed, bonus, pins)
-            seen[k] = oi
+        seen_n, seen_b = {}, {}
+        for oi in out:                                 # a net or a ball twice in one chain: pin the first and redo
+            o = self.O[oi]
+            k = self.nets.index(o["net"])
+            if k in seen_n or o["ball"] in seen_b:
+                pins = dict(pins or {})
+                first_oi = seen_n.get(k, seen_b.get(o["ball"]))
+                pins[self.nets.index(self.O[first_oi]["net"])] = first_oi
+                if o["ball"] in seen_b and k not in seen_n:
+                    balls_ok = balls_ok.copy()         # the later net must take another ball
+                    w_net = L["net"] == k
+                    L2 = dict(L); self.by_layer[layer] = L2
+                    ok2 = L["ok"].copy(); sel = w_net & (L["ball"] == self.balls.index(o["ball"]))
+                    ok2[:, sel] = False; ok2[sel, :] = False
+                    L2["ok"] = ok2
+                    res = self.chain(layer, nets_ok, balls_ok, bonus, pins)
+                    self.by_layer[layer] = L
+                    return res
+                return self.chain(layer, nets_ok, balls_ok, bonus, pins)
+            seen_n[k] = oi; seen_b[o["ball"]] = oi
         return out
 
-    def value(self, assign):
-        return sum(self.BIG - self.O[oi]["length"] - VIA_COST * self.O[oi]["vias"] for ch in assign.values() for oi in ch)
+    def value(self, assign, bonus=None):
+        v = 0.0
+        for ch in assign.values():
+            for oi in ch:
+                o = self.O[oi]
+                v += self.BIG - o["length"] - VIA_COST * o["vias"] + (bonus or {}).get(self.nets.index(o["net"]), 0)
+        return v
 
     def descend(self, assign, order, bonus=None):
-        allnets = set(range(len(self.nets)))
+        np = self.np
         while True:
             improved = False
             for l in order:
-                taken = {self.nets.index(self.O[oi]["net"]) for l2 in LAYERS if l2 != l for oi in assign[l2]}
-                new = self.chain(l, allnets - taken, bonus)
-                trial = dict(assign); trial[l] = new
-                gain = lambda a: self.value(a) + sum((bonus or {}).get(self.nets.index(self.O[oi]["net"]), 0) for ch in a.values() for oi in ch)
-                if gain(trial) > gain(assign) + 1e-6:
+                nets_ok = np.ones(len(self.nets), bool); balls_ok = np.ones(len(self.balls), bool)
+                for l2 in LAYERS:
+                    if l2 != l:
+                        for oi in assign[l2]:
+                            nets_ok[self.nets.index(self.O[oi]["net"])] = False
+                            balls_ok[self.balls.index(self.O[oi]["ball"])] = False
+                trial = dict(assign); trial[l] = self.chain(l, nets_ok, balls_ok, bonus)
+                if self.value(trial, bonus) > self.value(assign, bonus) + 1e-6:
                     assign = trial; improved = True
             if not improved:
                 return assign
@@ -495,27 +504,42 @@ class Chains:
     def placed(self, assign):
         return {self.nets.index(self.O[oi]["net"]) for ch in assign.values() for oi in ch}
 
-    def solve(self):
+    def strict(self, orders=None):
         best = None
-        for order in itertools.permutations(LAYERS):
+        for order in (orders or itertools.permutations(LAYERS)):
             a = self.descend({l: [] for l in LAYERS}, order)
-            # force the nets left out, one at a time, and let the layers settle again
-            for _ in range(3):
-                left = sorted(set(range(len(self.nets))) - self.placed(a))
+            for _ in range(2):
                 progress = False
-                for k in left:
-                    b = self.descend(a, order, bonus={k: 5 * self.BIG})
-                    b = self.descend(b, order)
-                    if len(self.placed(b)) > len(self.placed(a)) or (len(self.placed(b)) == len(self.placed(a)) and self.value(b) > self.value(a) + 1e-6):
+                for k in sorted(set(range(len(self.nets))) - self.placed(a)):
+                    b = self.descend(self.descend(a, order, bonus={k: 5 * self.BIG}), order)
+                    if (len(self.placed(b)), self.value(b)) > (len(self.placed(a)), self.value(a) + 1e-6):
                         a = b; progress = True
                 if not progress:
                     break
             key = (len(self.placed(a)), self.value(a))
             if best is None or key > best[0]:
                 best = (key, a)
-        a = best[1]
-        chosen = [dict(self.O[oi]) for ch in a.values() for oi in ch]
-        left = [x for k, x in enumerate(self.nets) if k not in self.placed(a)]
+        return best[1]
+
+    def solve(self, orders=None):
+        a = self.strict(orders)
+        chosen = [dict(self.O[oi], loose=[]) for ch in a.values() for oi in ch]
+        # nets that fit no chain: inner layer, free ball, fewest nets passed out of order, then shortest
+        left = []
+        for k in sorted(set(range(len(self.nets))) - self.placed(a)):
+            used = {o["ball"] for o in chosen}
+            best = None
+            for o in self.O:
+                if o["net"] != self.nets[k] or o["layer"] == "L1" or o["ball"] in used:
+                    continue
+                upset = [c["net"] for c in chosen if c["layer"] == o["layer"] and abs(c["t"] - o["t"]) > 0.2 and (c["t"] - o["t"]) * (c["ulo"] - o["ulo"]) < 0]
+                key = (len(upset), o["length"])
+                if best is None or key < best[0]:
+                    best = (key, o, upset)
+            if best is None:
+                left.append(self.nets[k])
+            else:
+                chosen.append(dict(best[1], loose=best[2]))
         return dict(chosen=chosen, cost=sum(o["length"] + VIA_COST * o["vias"] for o in chosen), optimal=False, n_opts=len(self.O), n_cross=0, left=left)
 
 
@@ -532,8 +556,8 @@ def limits(model, chosen):
     for kind in ("endA", "endR"):
         for l in LAYERS:
             n = sum(1 for o in chosen if o["layer"] == l and o["kind"] == kind)
-            if n > OPENING_CAP:
-                out.append("%d through aisle end %s on %s (limit %d)" % (n, kind, l, OPENING_CAP))
+            if n > (OPENING_CAP if l == "L1" else OPENING_CAP_INNER):
+                out.append("%d through aisle end %s on %s (limit %d)" % (n, kind, l, OPENING_CAP if l == "L1" else OPENING_CAP_INNER))
     return out
 
 
@@ -545,51 +569,16 @@ def along_side(o, sd):
 
 
 def match_bits(model, chosen):
-    """Give every data net its ball: same order of t and u on each layer, smallest spread of the estimate. -> ok"""
-    ok = True
-    used = set()
-    for cls in sorted(model.classes, key=lambda c: c[1] == "out"):          # the two ends first
-        nets = sorted((o for o in chosen if o["cls"] == cls), key=lambda o: o["t"])
-        if not nets:
-            continue
-        kinds = ("out", "outv") if cls[1] == "out" else (cls[1],)
-        ent = {b: next(e for e in model.sd[b]["entries"] if e[0] in kinds) for b in model.classes[cls] if b not in used}
-        balls_u = sorted(ent, key=lambda b: ent[b][2])
-        if len(balls_u) < len(nets):
-            ok = False
-            continue
-        best = None
-        for perm in itertools.permutations(balls_u, len(nets)):
-            good = True
-            for a in range(len(nets)):
-                if nets[a]["layer"] == "L1" and ent[perm[a]][0] == "outv":
-                    good = False; break
-                for b in range(a + 1, len(nets)):
-                    if nets[a]["layer"] == nets[b]["layer"] and nets[b]["t"] - nets[a]["t"] > 0.2 and ent[perm[a]][2] > ent[perm[b]][2]:
-                        good = False; break
-                if not good:
-                    break
-            if not good:
-                continue
-            ls = [o["length"] - o["inside"] + ent[q][3] for o, q in zip(nets, perm)]
-            score = max(ls) - min(ls)
-            if best is None or score < best[0]:
-                best = (score, perm)
-        if best is None:
-            ok = False
-            continue
-        for o, q in zip(nets, best[1]):
-            u = ent[q][2] + o["turn"] * model.U
-            o["ball"], o["ulo"], o["uhi"], o["kind"] = q, u, u, ent[q][0]
-            used.add(q)
-    return ok
+    """Every SDRAM ball taken once."""
+    balls = [o["ball"] for o in chosen]
+    return len(set(balls)) == len(balls)
 
 
 def crossings(model, chosen):
     """Pairs on one layer whose order of t and u disagrees, with the exact balls."""
     bad = []
     for a, b in itertools.combinations(chosen, 2):
-        if a["layer"] != b["layer"]:
+        if a["layer"] != b["layer"] or a.get("loose") or b.get("loose"):
             continue
         dt, du = a["t"] - b["t"], a["ulo"] - b["ulo"]
         if abs(dt) >= model.P or abs(du) >= model.U or (abs(dt) > 0.2 and abs(du) > 1e-6 and dt * du < 0):
@@ -620,8 +609,9 @@ def scan_one(job):
         return tag + " no assignment"
     okb = match_bits(m, r["chosen"])
     s = summary(m, r["chosen"])
-    return "%s  %2d  %7.1f %6.1f  %5.1f   %3d   %2d/%2d/%2d   %s   %4.1f-%4.1f   %4.1f  %s%s %s" % (
-        tag, len(r["left"]), r["cost"], s["total"], s["longest"], s["vias"], *[s["per_layer"][l] for l in LAYERS],
+    loose = [o for o in r["chosen"] if o.get("loose")]
+    return "%s  %2d  %2d %3d  %7.1f %6.1f  %5.1f   %3d   %2d/%2d/%2d   %s   %4.1f-%4.1f   %4.1f  %s%s %s" % (
+        tag, len(r["left"]), len(loose), sum(len(o["loose"]) for o in loose), r["cost"], s["total"], s["longest"], s["vias"], *[s["per_layer"][l] for l in LAYERS],
         " ".join("%4.1f" % (b - a) for a, b in s["lanes"]), *s["addr"], s["clk"],
         "ok" if okb and not crossings(m, r["chosen"]) else "BITS", "; ".join(limits(m, r["chosen"])), " ".join(x[4:] for x in r["left"]))
 
@@ -639,7 +629,7 @@ def main(argv):
         from concurrent.futures import ProcessPoolExecutor
         rots = [args_opt(argv, "--rot", 0, int)] if "--rot" in argv else (0, 90, 180, 270)
         jobs = [(rot, perm, gap, dy, fp, args_opt(argv, "--time", 0), skip, spread) for rot in rots for perm in itertools.permutations(range(4))]
-        print("rot map  left  cost   total  longest  vias  L1/L4/L6   lane spreads          addr min-max  clk   bits", flush=True)
+        print("rot map  left loose pairs  cost   total  longest  vias  L1/L4/L6   lane spreads          addr min-max  clk   bits", flush=True)
         nj = args_opt(argv, "--jobs", 1, int)          # one process unless told otherwise: the PC resets under heavy load
         if nj <= 1:
             for job in jobs:
