@@ -1,6 +1,8 @@
 """Placement of the STM32H743 + SDRAM board: outline, mounting holes, the two BGAs with their rule areas.
 
-    D:\\KiCad\\bin\\python.exe stm32h743_sdram\\place.py
+    D:\\KiCad\\bin\\python.exe stm32h743_sdram\\place.py [--pcb <other board file>] [--rot <SDRAM rotation>]
+
+--pcb and --rot are for trials on a copy of the board (line-order sketches of other SDRAM rotations).
 
 Local frame (mm): origin at the board's top-left corner, x right, y down; board-file mm = local + 100.
 Rotations are KiCad footprint orientations in degrees (counter-clockwise seen from the top).
@@ -18,6 +20,8 @@ from pcbnew import VECTOR2I, FromMM as mm, ToMM
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 PCB = os.path.join(HERE, "stm32h743_sdram.kicad_pcb")
+if "--pcb" in sys.argv:
+    PCB = os.path.abspath(sys.argv[sys.argv.index("--pcb") + 1])
 OX, OY = 100.0, 100.0                 # local origin on the page
 
 BOARD_W, BOARD_H, CORNER_R = 85.0, 75.0, 2.0
@@ -25,6 +29,8 @@ HOLE_INSET = 4.0                      # M3 hole centres from the board edges
 MCU = (40.0, 37.0)                    # centre of U201 (10 x 10 mm body)
 BODY_GAP = 5.0                        # MCU body edge to SDRAM body edge
 SDRAM_ROT = 90                        # 0: 8 wide x 13 tall, A1 top-left; 90: 13 wide x 8 tall, A1 bottom-left
+if "--rot" in sys.argv:
+    SDRAM_ROT = int(sys.argv[sys.argv.index("--rot") + 1])
 AREA_MARGIN = 1.0                     # rule area = package body + 1 mm on every side (approved 2026-11-16)
 
 MCU_BODY = (10.0, 10.0)
