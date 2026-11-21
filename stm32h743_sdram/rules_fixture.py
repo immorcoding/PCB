@@ -218,7 +218,7 @@ def build(f):
     net_len("l0c", "通道 3 数据线 34 mm：比 NBL3 短 6 mm", "FMC_D24", 34, {(SK, "sdram_lane3")})
     net_len("l0d", "地址线 61 mm：超过 60 mm；地址不等长", "FMC_A0", 61, {(LEN, "sdram_len_max")})
     net_len("l0e", "地址线 8 mm：比时钟短 12 mm、比 A0 短 53 mm，不报", "FMC_A1", 8)
-    f.case("l0f", "地址线 14 mm 加 4 个 L1–L4 过孔（最后一个只接一层）：超过 3 个；长度 14 + 3 × 过孔高度", {(VC, "sdram_via_max")})
+    f.case("l0f", "地址线 14 mm 加 4 个 L1–L4 过孔（最后一个只接一层）：地址线不限过孔数；长度 14 + 3 × 过孔高度")
     for i in range(4):
         f.trk("FMC_A2", (5 + 3.5 * i, y), (5 + 3.5 * i + 3.5, y), 0.1016, "L1" if i % 2 == 0 else "L4")
         f.via("FMC_A2", 5 + 3.5 * i + 3.5, y, a="L1", c="L4")
@@ -240,7 +240,12 @@ def build(f):
     net_len("l40", "LTDC 100 mm", "LCD_R3", 100)
     net_len("l41", "LTDC 121 mm：超过 120 mm", "LCD_R4", 121, {(LEN, "ltdc_len_max")})
     net_len("l42", "LTDC 85 mm：比最长的短 36 mm，超过 30 mm", "LCD_R5", 85, {(SK, "ltdc_spread")})
-    f.case("l43", "LTDC 4 个过孔：超过 3 个", {(VC, "ltdc_via_max")})
+    f.case("l0g", "通道 1 数据线 4 个 L1–L4 过孔：超过 3 个（长度 28.8 + 3 × 过孔高度，在通道 1 的 5 mm 之内）", {(VC, "sdram_via_max")})
+    for i in range(4):
+        f.trk("FMC_D10", (5 + 7.2 * i, y), (5 + 7.2 * i + 7.2, y), 0.1016, "L1" if i % 2 == 0 else "L4")
+        f.via("FMC_D10", 5 + 7.2 * i + 7.2, y, a="L1", c="L4")
+    y += 1.5
+    f.case("l43", "LTDC 4 个过孔：不限过孔数")
     for i in range(4):
         f.trk("LCD_R6", (5 + 25 * i, y), (5 + 25 * i + 25, y), 0.1016, "L1" if i % 2 == 0 else "L6")
         f.via("LCD_R6", 5 + 25 * i + 25, y)

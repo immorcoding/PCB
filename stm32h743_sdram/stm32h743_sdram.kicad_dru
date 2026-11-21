@@ -133,8 +133,10 @@
   (condition "A.NetClass == 'SDRAM'")
   (constraint length (max 60mm)))
 
+# Via count is limited only where timing is tight (user, 2026-11-21): the SDRAM data lanes with their NBL and
+# the clock. Address and command, LTDC and the slow signals have no limit; the build still reports their counts.
 (rule "sdram_via_max"
-  (condition "A.NetClass == 'SDRAM'")
+  (condition "A.NetName == 'FMC_D*' || A.NetName == 'FMC_NBL*' || A.NetName == 'FMC_SDCLK*'")
   (constraint via_count (max 3)))
 
 # SDRAM length matching (user, 2026-11-21): only the data lines, inside each byte lane (8 data bits and
@@ -164,10 +166,6 @@
 (rule "ltdc_len_max"
   (condition "A.NetClass == 'LTDC'")
   (constraint length (max 120mm)))
-
-(rule "ltdc_via_max"
-  (condition "A.NetClass == 'LTDC'")
-  (constraint via_count (max 3)))
 
 # skew compares every net of the group with the longest one: exactly "longest minus shortest <= 30 mm".
 (rule "ltdc_spread"
