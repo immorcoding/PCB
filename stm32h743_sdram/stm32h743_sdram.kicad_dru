@@ -31,8 +31,8 @@
   (condition "A.Type == 'Track' && A.NetClass == 'PWR'")
   (constraint track_width (min 0.1524mm) (opt 0.3048mm) (max 2.54mm)))
 
-# 100 ohm pair between the PHY and the RJ45 on L1: calculated with scripts/impedance.py, not confirmed
-# on the fab's calculator (unverified item U18).
+# 100 ohm pair between the PHY and the RJ45 on L1. 0.11 / 0.15 is the calculated value; the fab calculator
+# gives 4.1 mil (0.104) at a 5.9 mil gap, which the user finds too thin. Width and gap are still open (U18).
 (rule "eth_width"
   (condition "A.Type == 'Track' && A.NetClass == 'ETH100'")
   (constraint track_width (min 0.11mm) (opt 0.11mm) (max 0.11mm)))
@@ -114,8 +114,8 @@
   (condition "A.Type == 'Pad' && A.Pad_Type == 'SMD'")
   (constraint zone_connection solid))
 
-# --- Ethernet pair: gap for 100 ohm (see eth_width). The within-pair skew limit is a proposal that the
-# user has not confirmed (not in SPEC section 9).
+# --- Ethernet pair: gap for 100 ohm (see eth_width). The within-pair skew limit of 1.27 mm was
+# confirmed by the user on 2026-11-20 (it is not an electrical need).
 (rule "eth_gap"
   (condition "A.NetClass == 'ETH100'")
   (constraint diff_pair_gap (min 0.15mm) (opt 0.15mm) (max 0.8mm)))
