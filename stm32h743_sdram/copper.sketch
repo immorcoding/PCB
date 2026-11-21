@@ -3,23 +3,27 @@
 # into this file before anything else runs (PWR-7).
 #
 # Coordinates: mm from the board's top-left corner, x right, y down (board 85 x 75).
-# State: stop 3. Only the two BGAs are placed. Every region below says where its block goes; parts are
-# then placed around the regions, and the outlines are tightened in the power-and-copper stage.
+# State: stop 4 (placement). Every part is placed (place.py); the regions below were redrawn around the real
+# pads of their nets. They are still rough (rectangles and L-shapes on the 0/45/90 grid); the outlines are
+# tightened in the power-and-copper stage (stop 5). Pads of a net that a region does not reach are listed
+# next to the region: QFN pins (0.5 mm pitch: a pour cannot pass between the neighbouring pins), feedback
+# and pull-up resistors (track-class ends), and pads that join a region through a via.
 #
-# Floor plan the regions assume (starting values, SPEC 8.2):
-#   top edge     audio jacks x 8-31, SWD x 36-45, microSD x 47-63
-#   left edge    RJ45 y 26-45 with the PHY to its right; QSPI flash below it
-#   centre       MCU body x 35-45, y 32-42; SDRAM to its right at (57, 37), rotation 0, body x 53-61, y 30.5-43.5 (line-order sketch, 2026-11-21)
-#   right        CAN terminal on the right edge near the top; 3.3 V buck below it; 12 V input, 5 V buck
-#                and the DC jack lower down
-#   bottom edge  LCD FPC x 29-56, debug UART right of it, backlight boost at x 58-70
-#   codec        under the audio jacks, x 10-21, y 19-31 (not next to the switchers)
+# Floor plan (stop 4, see place.py):
+#   top edge     headphone jack x 11-22, line-in jack x 23-34, SWD x 36-45, microSD x 47-63
+#   left edge    RJ45 y 34-53, PHY right of it at (26.5, 44.5), QSPI flash under the MCU's SW corner (36, 55)
+#   centre       MCU body x 35-45, y 32-42; SDRAM at (57, 37), body x 53-61, y 30.5-43.5; decoupling under both
+#                BGAs on the bottom
+#   right        CAN terminal on the right edge y 12-23 with the transceiver left of it; 3.3 V buck y 29-37;
+#                5 V buck y 38-50; DC jack on the right edge y 52-64 with fuse, P-MOS, TVS and bulk left of it
+#   bottom edge  LCD FPC x 28-54, debug UART x 56-67; backlight boost x 48-58, y 50-63
+#   codec        under the jacks at (19, 26), LDOs north-east (3.3 V analog) and south (1.8 V) of it
 
 origin 100 100
 planes L2 L3 L5
 gap 0.5                   # L3: distance between blocks of different nets (PWR-8)
-clearance 0.2             # outer layers: local pour to anything else (user to confirm, U33)
-minwidth 0.2              # narrowest drawn part (user to confirm, U33)
+clearance 0.2             # outer layers: local pour to anything else (user 2026-11-21, U33)
+minwidth 0.2              # narrowest drawn part (user 2026-11-21, U33)
 
 # ---- ground: L2 and L5 are whole planes, never cut; L1 and L6 are filled with ground where free
 region L2_GND GND L2 whole
@@ -30,74 +34,111 @@ region L6_GND GND L6 whole minwidth=0.3
 # ---- L3, the power plane. +3V3 is everything that is not one of the blocks below.
 region L3_3V3 +3V3 L3 whole
 
-# +5V: band down the right side (5 V buck, backlight link, CAN link) and a strip along the top to the
-# analog LDO beside the codec (SPEC 5). The strip runs at y 5.5-8.5, between the two rows of locating
-# holes of the audio jacks; its leg at x 22-25 comes down between the jacks' hole columns.
+# +5V: band down x 61.5-72 from the top strip to the 5 V buck output (R110) and its test pad, with an arm west
+# to the backlight link R710 at the bottom; the strip along the top (y 5.5-8.5, under the jacks, SWD and the
+# microSD) runs to a leg at x 33.5-36.5 that comes down to the analog LDO link R112 (SPEC 5). Loads: U102 VIN
+# and C108, R104 (EN pull-up), R814 (CAN 5 V link). A notch at y 21.3-23.9 leaves R813's +3V3 pad on +3V3.
 region L3_5V +5V L3
-  22,5.5  75,5.5  75,26  83.5,26  83.5,66  66,66  66,8.5  25,8.5  25,22  22,22
+  33.5,5.5  72,5.5  72,21.3  67.2,21.3  67.2,23.9  72,23.9  72,52.3  64,52.3  64,55.5  55,55.5  55,50
+  63,50  63,28  61.5,28  61.5,8.5  36.5,8.5  36.5,22.5  33.5,22.5
 
-# +3V3A: under the codec and its analog decoupling only
+# +3V3A: under the codec, its analog decoupling and the LDO output (C111, TP104); a notch at x 25-27.4 keeps
+# R610's +3V3 pad on +3V3 (open to the south)
 region L3_3V3A +3V3A L3
-  10,19.5  21.5,19.5  21.5,31  10,31
+  8.6,17.8  30.6,17.8  30.6,24.7  27.4,24.7  27.4,21.6  25,21.6  25,31.9  8.6,31.9
 
 # Block rails behind 0 ohm links (user 2026-11-20). The two BGA blocks are on L3 because their supply
-# balls reach the plane through vias under the package; this makes five blocks on L3 instead of
-# three (confirmed by the user on 2026-11-21; SPEC sections 1 and 5 updated).
+# balls reach the plane through vias under the package (five blocks on L3, user 2026-11-21). Each reaches
+# north in a tongue under the SDRAM bands to its link (R203, R301) and bulk capacitor (C217, C309), which sit
+# above the bands; the tongue starts 0.5 mm east of the link's +3V3 pad.
 region L3_3V3_MCU +3V3_MCU L3
-  34,31  46,31  46,43  34,43
+  34,31  39.6,31  39.6,25  44.2,25  44.2,31  46,31  46,44.8  34,44.8
 region L3_3V3_SDRAM +3V3_SDRAM L3
-  52,29.5  62,29.5  62,44.5  52,44.5
+  52,29.5  55.6,29.5  55.6,25  61,25  61,29.5  62,29.5  62,44.5  52,44.5
 
-# ---- outer-layer local pours (L1). One per copper-class net of SPEC 5; rectangles for now.
-# 12 V input chain, right edge, lower part
+# ---- outer-layer local pours. One or more per copper-class net of SPEC 5, around the placed pads.
+# 12 V input chain, right edge, lower part: jack pin 1 and fuse; fuse to P-MOS drain
 region L1_12V_JACK +12V_JACK L1
-  70,50  73,50  73,53  70,53
+  67,58.9  69.7,58.9  69.7,57.4  72.9,57.4  72.9,60.7  67,60.7
 region L1_12V_IN +12V_IN L1
-  66.5,50  69.5,50  69.5,53  66.5,53
+  67.15,53.9  69,53.9  69,58.6  67.15,58.6
+# +12V: from the 5 V buck input (C102, C104, U101 VIN) down a spine at x 61.8-62.6 west of the buck past C103,
+# TP101, the P-MOS source and the zener, to the bulk capacitor C114 and across above it to the TVS D102.
+# U101 pin 5 (EN, tied to +12V) is reached by a track (it sits between FB and BOOT).
 region L1_12V +12V L1
-  67,38  75,38  75,46  67,46
-# 5 V buck: switch node kept small, output up to its 0 ohm link
+  61.8,37  68.9,37  68.9,39.75  71,39.75  71,42.4  69.3,42.4  69.3,41.4  66.2,41.4  66.2,37.6  62.6,37.6
+  62.6,46.4  65.6,46.4  65.6,48.4  62.6,48.4  62.6,49.6  65,49.6  65,51.6  62.6,51.6  62.6,54.9  66.9,54.9
+  66.9,56.7  62.6,56.7  62.6,61  72,61  72,67.2  69.5,67.2  69.5,62.6  62.6,62.6  62.6,65.5  58,65.5
+  58,63.5  61.8,63.5
+# 5 V buck: switch node kept small (pin 2 to the inductor), output from the inductor to C105-C107 and the link R110
+# (R102, the feedback divider top, is reached by a track)
 region L1_SW_5V SW_5V L1
-  68,33  71,33  71,36  68,36
+  69.6,42.6  72,42.6  72,41.2  74.8,41.2  74.8,44.8  72,44.8  72,43.4  69.6,43.4
 region L1_5V_REG +5V_REG L1
-  72,28  80,28  80,36  72,36
-# 3.3 V buck, above the 5 V buck
+  77.8,40.3  84.3,40.3  84.3,44.5  80.8,44.5  80.8,45.5  77.7,45.5  77.7,50.3  72.7,50.3  72.7,47  76.9,47
+  76.9,44.8  77.8,44.8
+# 3.3 V buck (R105, the feedback divider top, is reached by a track)
 region L1_SW_3V3 SW_3V3 L1
-  68,14  70.5,14  70.5,16.5  68,16.5
+  70,31.05  72.4,31.05  72.4,30.2  74.5,30.2  74.5,32.7  72.4,32.7  72.4,31.85  70,31.85
 region L1_3V3_REG +3V3_REG L1
-  71,12  77,12  77,18  71,18
-# LDOs beside the codec
+  76.1,30.1  78.4,30.1  78.4,32.6  80.9,32.6  80.9,36  76.1,36
+# LDOs beside the codec: analog 3.3 V input north-east of it, 1.8 V input and output south of it
 region L1_5V_LDO +5V_LDO L1
-  26,21  29,21  29,24  26,24
+  29.9,20.5  35.6,20.5  35.6,22  29.9,22
 region L1_3V3_LDO +3V3_LDO L1
-  26,26  29,26  29,29  26,29
+  14.1,30.1  19.65,30.1  19.65,31.15  17.6,31.15  17.6,31.5  14.1,31.5
+# +1V8: LDO output, C603 / C113 / C604, and a strip between the ground pads to TP105; codec pin 32 by a short
+# track (its neighbour pin 31 is CODEC_NRST, 0.5 mm away)
 region L1_1V8 +1V8 L1
-  22.5,26  25.5,26  25.5,29  22.5,29
+  20.4,29.1  23.1,29.1  23.1,30.3  27.5,30.3  27.5,32.5  25.7,32.5  25.7,30.8  23.8,30.8  23.8,33.8  22,33.8
+  22,31.5  20.4,31.5
+# codec IOVDD behind R610; pin 7 by a short track (pins 6 and 8 are 0.5 mm away)
 region L1_3V3_AUD +3V3_AUD L1
-  10,20  13,20  13,23  10,23
-# MCU analog supply at the VDDA / VREF+ balls (R1, P1: bottom-left corner of the MCU)
+  22.3,24.5  23.6,24.5  23.6,23.8  26.8,23.8  26.8,25.5  22.3,25.5
+# MCU analog supply. The balls P1 / R1 sit in the MCU's south-west corner, which the SDRAM sketch closes on L1
+# (FMC_A6), L4 (FMC_A10) and L6 (FMC_SDNWE): the filter and its capacitors are on the bottom under the corner
+# (L6 pour) and the L1 pocket west of the balls (x 32.7-35.7) joins them through vias. FB201's VDDA pad joins
+# the L6 pour by a track (C221's ground pad sits between).
 region L1_VDDA_MCU VDDA_MCU L1
-  31,40  33.5,40  33.5,44  31,44
-# Ethernet PHY, between the RJ45 and the MCU
+  32.7,40.6  35.7,40.6  35.7,41.85  34.9,41.85  34.9,43.2  32.7,43.2
+region L6_VDDA_MCU VDDA_MCU L6
+  34,40.95  36,40.95  36,42.9  34,42.9
+# Ethernet PHY. VDDA_PHY: a column west of the PHY under the termination resistors and caps, with the two
+# centre-tap pins of the RJ45 (through-hole, covered whole) and C501 at its foot; PHY pins 1 and 19 by short
+# tracks. The bias resistor R505 moved to the bottom (under the PHY's south-west corner) to keep the column whole. FB501 sits east of the PHY next to +3V3_PHY: its VDDA side reaches the column by an L6 strip under
+# the PHY's south side (vias at both ends, stop 5).
 region L1_VDDA_PHY VDDA_PHY L1
-  23,33  27,33  27,36  23,36
+  21.9,40  22.75,40  22.75,55.2  21.9,55.2  21.9,43.91  18.34,43.91  18.34,45.18
+  16.14,45.18  16.14,42.98  18.68,42.98  18.68,41.71  20.88,41.71  20.88,42.98  21.9,42.98
+region L6_VDDA_PHY VDDA_PHY L6
+  22,50.2  33.1,50.2  33.1,50.8  22,50.8
+# +3V3_PHY behind R514: C504, C505, FB501; PHY pin 9 and the MDIO pull-up R503 by short tracks
 region L1_3V3_PHY +3V3_PHY L1
-  23,37.5  27,37.5  27,40  23,40
+  29.5,44.6  30.6,44.6  30.6,45.45  32,45.45  32,47.2  35.2,47.2  35.2,49.4  31.4,49.4  31.4,47.3  29.5,47.3
 # the remaining block rails
+# QSPI: flash VCC pin 8 by a short track (pins 6 and 7 are signals 1.27 mm below); pull-ups R401 / R402 west of
+# the flash by tracks
 region L1_3V3_QSPI +3V3_QSPI L1
-  12,49  15,49  15,52  12,52
+  40.3,52.3  44.6,52.3  44.6,55.55  40.3,55.55
+# LCD 3.3 V: link R709, C702, C701 in a band above the connector and a stub to its pin 37
 region L1_3V3_LCD +3V3_LCD L1
-  38,60  41,60  41,63  38,63
+  42.6,64.3  49.6,64.3  49.6,65.6  49.4,65.6  49.4,66.6  49.05,66.6  49.05,65.6  42.6,65.6
+# microSD: link R812, C801, C802 in a band under the socket with a stub to contact 4, a strip between R802 and
+# R803 down to a second band under the five pull-ups and the card-detect pull-up
 region L1_3V3_SD +3V3_SD L1
-  50,19  53,19  53,22  50,22
+  52.5,17.85  55.33,17.85  55.33,16.5  55.73,16.5  55.73,17.85  58.5,17.85  58.5,18.65  53.78,18.65
+  53.78,21.5  58.9,21.5  58.9,22.5  51.1,22.5  51.1,21.5  53.42,21.5  53.42,18.65  52.5,18.65
+# CAN: VIO (3.3 V) and VCC (5 V) of the transceiver behind R813 and R814
 region L1_3V3_CAN +3V3_CAN L1
-  70,22  72.5,22  72.5,24  70,24
+  69.2,18.5  70.2,18.5  70.2,23.2  69.2,23.2  69.2,21.4  68.2,21.4  68.2,20.8  69.2,20.8
 region L1_5V_CAN +5V_CAN L1
-  73.5,22  76,22  76,24  73.5,24
-# backlight boost at the bottom, right of the FPC
+  62,17.3  63.8,17.3  63.8,18  62.85,18  62.85,23.6  61.65,23.6  61.65,18  62,18
+# backlight boost right of the LCD connector
 region L1_5V_BL +5V_BL L1
-  60,58  63,58  63,61  60,61
+  48.5,51.1  57.4,51.1  57.4,52.1  54.7,52.1  54.7,56.4  53.9,56.4  53.9,52.1  48.5,52.1
 region L1_SW_BL SW_BL L1
-  64,58  66,58  66,60  64,60
+  49.4,53.9  51.5,53.9  51.5,55.95  52.7,55.95  52.7,56.4  49.4,56.4
+# LED_A: diode cathode, C705, TP701, the dummy load R707 and a stub to connector pin 39
 region L1_LED_A LED_A L1
-  60,62  64,62  64,64.5  60,64.5
+  45.7,58.7  50.65,58.7  50.65,62.95  53.2,62.95  53.2,61.6  54.35,61.6  54.35,63.5  50.45,63.5  50.45,66.6
+  50.1,66.6  50.1,63.5  49.9,63.5  49.9,63.2  45.7,63.2

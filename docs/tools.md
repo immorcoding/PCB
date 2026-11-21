@@ -21,6 +21,9 @@
 | 铜皮区域草图 | `D:\KiCad\bin\python.exe scripts\cu_sketch.py check <草图> [--board <板>]`，另有 `apply`（按草图写铺铜区，只动它自己建的 `cu:` 开头的区）、`read`（从板读回草图，PWR-7）、`measure`（铜皮那组指标）。草图格式见脚本开头和 `stm32h743_sdram/copper.sketch` |
 | 总线走线（线束、BGA 扇出） | `D:\KiCad\bin\python.exe scripts\busroute\build.py <走线描述.py> [--fast] [--sketch] [--out 目录] [--write-board]`。默认在 `--out` 下的板子副本上构建，加 `--write-board` 才写真板；`--fast` 只做几何检查（57 根不到 1 秒），完整构建含 DRC、长度、指标、图片（7–14 秒）。描述文件的格式见 `scripts/busroute/job.py` 开头，例子是 `scripts/tests/busroute/bench_routes.py` |
 | 摆位 | `D:\KiCad\bin\python.exe stm32h743_sdram\place.py`；`--pcb <副本> --rot <角度>` 在副本上试别的 SDRAM 转向 |
+| 布局指标（LAY-2、5、6、8） | `D:\KiCad\bin\python.exe scripts\place_check.py <板> [--edge J1=L ...] [--allow-under U1,U2] [--not-supply U3.5] [--json <输出>]`：摆进板框的个数、courtyard 重叠、安装孔周禁布、封装禁布区、连接器到板边、背面焊盘压顶面焊盘、每个电源脚到最近 100 nF 的距离、排针和测试点旁的丝印位置；几秒 |
+| 出线通道（LAY-2） | `D:\KiCad\bin\python.exe scripts\escape_check.py <板> --ref U1 [--ref ...] [--window x0 y0 x1 y1] [--debug U1.A1 <png>]`：每个焊盘单独查能否走出去（到窗口边、到同网络的别的器件、电源网络能否打孔），最多两个过孔；不算容量。两颗 BGA 加 40 mm 窗口约 15 秒 |
+| H743 板布局一步 | `sh stm32h743_sdram/build.sh layout`（摆位 → 线序草图重建 → 上面两个检查 → 铜皮草图检查 → `layout_probe.py` 的实测试走；约 70 秒） |
 | 原理图构建并检查 | `sh scripts/sch_build.sh <工程目录> <输出目录>`（生成 → 升级到 KiCad 10 格式 → ERC → 网表 → PDF） |
 | H743 板的原理图 | `sh stm32h743_sdram/build.sh sch`（上一行，加网表对意图、对 `pins.csv`、对 `swap.csv` 的检查和 kicad-happy 审查；约 15 秒）；单独试一页：`sh stm32h743_sdram/sch/try_page.sh <输出目录> <页名>` |
 | DRC | `kicad-cli pcb drc --refill-zones --severity-all`；收尾时加 `--schematic-parity` |
@@ -43,6 +46,7 @@
 | `track_shape.py` | DRC 不查的走线形状：非 45° 线段、阶梯线、小倒角直角、短距离连续折弯、碎线段 |
 | `pour_islands.py` | 找没接到网络上的铺铜碎片 |
 | `silk_refs.py` | 自动摆位号，稀的板子用；密板把标注坐标写在工程的 `silk.py`（参考 `steval_fcu001v2/silk.py`） |
+| `place_check.py`、`escape_check.py` | 见上面的命令表；基准 `scripts/tests/place_check/check.py` |
 | `teardrops.py` | 泪滴。Python API 不暴露泪滴参数，脚本写入文件后由 `kicad-cli` 生成 |
 | `auto_tracks.py` | 把自动布线结果抽成 JSON，由工程的 `route.py` 回放 |
 | `auto_clean.py` | 清理布线器留下的锯齿和直角 |
@@ -109,5 +113,9 @@
 - **`pcbnew` 的 `GetLayerName` 返回的是自定义层名**（`L2_GND`），文件里是 `In1.Cu`。
 - **`kicad-cli` 的控制台输出不是 UTF-8**：`subprocess.run(..., text=True)` 会在读线程里解码出错，按字节取。
 - **`place.py` 这类脚本里 `board.Remove()` 要放在所有读取之后**：第二次运行时先删旧板框再遍历铺铜区会段错误（上面那条 pcbnew 的坑的又一例）。
+- **pcbnew：`LSET(层号)` 在 KiCad 10 的 Python 里报重载错误**：先 `ls = pcbnew.LSET()` 再 `ls.AddLayer(层号)`。
+- **pcbnew：courtyard 和 Fab 图形的 `GetBoundingBox()` 含线宽的一半**：按外形算距离、面积时取轮廓的顶点（`GetCourtyard(...).Outline(0)`），或把框缩回线宽的一半。
+- **背面两脚件的焊盘位置**：`place.py` 先翻面再设方向，结果和顶面同一方向时焊盘位置相同（1 脚在 −x，转 90° 后在 +y），2026-11-21 实测。
+- **布局阶段的出线检查要在线序草图的副本上跑**：SDRAM 的走线只在 `out/sketch/rot0/` 的副本里，真板文件里没有。
 - **Git Bash 会把 `/` 开头的网络名改写成路径**：传网络名的命令前 `export MSYS2_ARG_CONV_EXCL='*'`。
 - **Shell here-doc 会改写反斜杠和 `\n`**：补丁脚本用文件写，不用 here-doc。
