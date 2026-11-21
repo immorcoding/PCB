@@ -9,7 +9,7 @@
 # Floor plan the regions assume (starting values, SPEC 8.2):
 #   top edge     audio jacks x 8-31, SWD x 36-45, microSD x 47-63
 #   left edge    RJ45 y 26-45 with the PHY to its right; QSPI flash below it
-#   centre       MCU body x 35-45, y 32-42; SDRAM to its right (rotation open: 90 assumed here)
+#   centre       MCU body x 35-45, y 32-42; SDRAM to its right at (57, 37), rotation 0, body x 53-61, y 30.5-43.5 (line-order sketch, 2026-11-21)
 #   right        CAN terminal on the right edge near the top; 3.3 V buck below it; 12 V input, 5 V buck
 #                and the DC jack lower down
 #   bottom edge  LCD FPC x 29-56, debug UART right of it, backlight boost at x 58-70
@@ -46,7 +46,7 @@ region L3_3V3A +3V3A L3
 region L3_3V3_MCU +3V3_MCU L3
   34,31  46,31  46,43  34,43
 region L3_3V3_SDRAM +3V3_SDRAM L3
-  49,32  64,32  64,42  49,42
+  52,29.5  62,29.5  62,44.5  52,44.5
 
 # ---- outer-layer local pours (L1). One per copper-class net of SPEC 5; rectangles for now.
 # 12 V input chain, right edge, lower part
