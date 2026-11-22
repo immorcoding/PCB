@@ -19,7 +19,8 @@
 | 走线阻抗 | `D:\KiCad\bin\python.exe scripts\impedance.py`（嘉立创 JLC06161H-3313E 上的单端和差分，二维场解；结果是计算值） |
 | H743 板按步骤构建 | `sh stm32h743_sdram/build.sh rules`（工程文件、规则基准板、金丝雀、规则匹配；1.5–3 分钟） |
 | 铜皮区域草图 | `D:\KiCad\bin\python.exe scripts\cu_sketch.py check <草图> [--board <板>]`，另有 `apply`（按草图写铺铜区，只动它自己建的 `cu:` 开头的区）、`read`（从板读回草图，PWR-7）、`measure`（铜皮那组指标）。草图格式见脚本开头和 `stm32h743_sdram/copper.sketch` |
-| 总线走线（线束、BGA 扇出） | `D:\KiCad\bin\python.exe scripts\busroute\build.py <走线描述.py> [--fast] [--sketch] [--out 目录] [--write-board]`。默认在 `--out` 下的板子副本上构建，加 `--write-board` 才写真板；`--fast` 只做几何检查（57 根不到 1 秒），完整构建含 DRC、长度、指标、图片（7–14 秒）。描述文件的格式见 `scripts/busroute/job.py` 开头，例子是 `scripts/tests/busroute/bench_routes.py` |
+| 总线走线（线束、BGA 扇出、蛇形等长） | `D:\KiCad\bin\python.exe scripts\busroute\build.py <走线描述.py> [--fast] [--sketch] [--out 目录] [--write-board]`。默认在 `--out` 下的板子副本上构建，加 `--write-board` 才写真板；`--fast` 只做几何检查（57 根不到 1 秒），完整构建含 DRC、长度、指标、图片（7–14 秒）。描述文件的格式见 `scripts/busroute/job.py` 开头（蛇形：`TUNING` 加补线位置 `Bundle.slot` / `job.slot`，画法和限制在 `scripts/busroute/tune.py` 开头），例子是 `scripts/tests/busroute/bench_routes.py`、`bench_tune.py` |
+| 等长预算（只算不画） | `D:\KiCad\bin\python.exe scripts\busroute\build.py <走线描述.py> --tuning-budget`：每组的目标（组内最长 − 容差 + 余量）、每根的自然长度和要补多少、每个补线位置在摆幅 amp 和 amp_max 时按 RTE-2 的式子能补多少（不查间距），列出容量不够的网络；有不够的退出码 1。读板不写板，基准板上 0.1 秒 |
 | 摆位 | `D:\KiCad\bin\python.exe stm32h743_sdram\place.py`；`--pcb <副本> --rot <角度>` 在副本上试别的 SDRAM 转向 |
 | 布局指标（LAY-2、5、6、8） | `D:\KiCad\bin\python.exe scripts\place_check.py <板> [--edge J1=L ...] [--allow-under U1,U2] [--not-supply U3.5] [--json <输出>]`：摆进板框的个数、courtyard 重叠、安装孔周禁布、封装禁布区、连接器到板边、背面焊盘压顶面焊盘、每个电源脚到最近 100 nF 的距离、排针和测试点旁的丝印位置；几秒 |
 | 出线通道（LAY-2） | `D:\KiCad\bin\python.exe scripts\escape_check.py <板> --ref U1 [--ref ...] [--window x0 y0 x1 y1] [--debug U1.A1 <png>]`：每个焊盘单独查能否走出去（到窗口边、到同网络的别的器件、电源网络能否打孔），最多两个过孔；不算容量。两颗 BGA 加 40 mm 窗口约 15 秒 |
@@ -44,7 +45,7 @@
 | `pcb_view.py` | 带走线和飞线的示意图 |
 | `layer_view.py` | 带坐标网格的单层视图，规划手工走线用 |
 | `via_spots.py` | 找合法过孔位置（不看封装里的禁布区） |
-| `track_shape.py` | DRC 不查的走线形状：非 45° 线段、阶梯线、小倒角直角、短距离连续折弯、碎线段 |
+| `track_shape.py` | DRC 不查的走线形状：非 45° 线段、阶梯线、小倒角直角、短距离连续折弯、碎线段。圆弧算进走线：圆弧不算折弯，拐点后不到 0.35 mm 接一段同向转弯的圆弧报 `sharp`，两段相切圆弧之间的短腿（蛇形）不报；板上有圆弧时多一行 `arc-joint`（不相切的圆弧接点，> 1°）。没有圆弧的板输出和以前逐字相同。基准 `scripts/tests/track_shape/check.py` |
 | `pour_islands.py` | 找没接到网络上的铺铜碎片 |
 | `silk_refs.py` | 自动摆位号，稀的板子用；密板把标注坐标写在工程的 `silk.py`（参考 `steval_fcu001v2/silk.py`） |
 | `place_check.py`、`escape_check.py` | 见上面的命令表；基准 `scripts/tests/place_check/check.py` |
@@ -65,7 +66,7 @@
 |---|---|
 | 连通 | DRC 未连接数、开路清单、其他 DRC 项按类型计数 |
 | 线形 | `track_shape.py` 各项，加圆弧的几何检查 |
-| 等长 | 每组在窗口内的根数、最差一根差多少、每根总长对上限、蛇形块数和补的总长 |
+| 等长 | 每组在窗口内的根数、最差一根差多少、每根总长对上限、蛇形块数和补的总长、没补够的网络和差多少 |
 | 过孔 | 每根过孔数的最大值和合计、超过约定上限的清单 |
 | 线序 | 各线最短路径相差多少、同层交叉数 |
 | 铜皮 | 每块的边数、不在 45° 格上的边数、碎片数、最窄连接和位置、不同网络最小距离、铜皮类未连接数、电源面块数 |
@@ -125,3 +126,8 @@
 - **DRC 的 `corner_angle` 也查在过孔中心相交的两段线**：两个球共用一个过孔、两条狗骨线成 90° 时报 `track_angle`；`bga_power.py` 让第二条线停在过孔里、离中心每轴 0.05 mm（靠过孔铜连上，没有共同端点）。
 - **`escape_check.py` 允许单根线从 BGA 球阵内部穿过去**：电源球的狗骨线和过孔会把这些路堵上，外圈球的"不打孔出线"可能因此变成"打 1 个孔"；对比前先看路径是不是从球阵内部走的（`--debug`）。
 - **在铺铜板的副本上做实验，先 `copper_report.py unfill`**：旧填充会在读板时改过孔的网络（上一条 pcbnew 的坑），DRC 也会报一堆和旧填充的间距。
+- **KiCad 10 板文件里的走线圆弧**是 `(arc (start x y) (mid x y) (end x y) (width) (layer) (net "名") (uuid))`，`busroute` 和直线段一样按文本写入（写在直线段之后、过孔之前）。DRC 量网络长度按圆弧真长（三点定圆）：蛇形基准板上脚本算的长度和 DRC 量的最多差 0.0001 mm。
+- **RTE-7 的"半径 0.25"和数据线"腿中心距 0.3"不能同时成立**：弯顶、弯底是半圆，RTE-2 的 0.858·p 也是按半圆（半径 = p / 2）算的。`tune.py` 取半径 = 腿间距 / 2（数据 0.15，时钟 0.5 时 0.25），`TUNING` 的 `radius` 只当上限，腿间距大于 2 × radius 报错。
+- **腿间距 0.5（半径 0.25）时摆幅 0.5–0.605 画不出**：腿长 a − 2r 落在 0 和 0.105 mm 之间，短于 `min_segment`（0.1 整在斜线上会被 DRC 量成 0.0999999）。`tune.py` 跳过这些高度，改用少一个弯、高一点的块（基准板上 3 个 0.5014 改成 2 个 0.6985）。
+- **`Bundle.slot(free=…)` 让位的折线要离下一个拐角够远**：外侧的线在 s1 之后再走 dV 加嵌套量才折回，离拐角近时报 `runs backwards` 或短于 0.1 的线段（蛇形基准板第一次 s1 离拐角约 0.6 mm 就报了）；折回段和拐角挤在 2 mm 内时 `track_shape.py` 报 crowded。
+- **`track_shape.py` 以前遇到圆弧就断开走线**：拐点后 0.1 mm 接同向圆弧的地方报 0 处（RTE-8 的信号）。现在跟着圆弧走；四层板（有圆弧）只多一行 `arc-joint: 0`，其余各项不变，两块没有圆弧的板输出逐字相同（2026-11-22 对比）。

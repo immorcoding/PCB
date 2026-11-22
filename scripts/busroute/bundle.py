@@ -29,13 +29,14 @@ Stations s are mm along a leg from the leg's first path point.
 Errors come at once and say how much is missing: bus.add() raises PitchError when two lanes are closer than
 track width + clearance of the place; bus.vias() when a lane cannot pass its neighbour's via.
 """
-import math
+import itertools, math
 from .geom import (G, R2, NAME, RouteError, sgn, dot, right, diag, unit, ipt, fpt, dir_of, turn, Line, through, meet, at_uv,
                    clean, ilen, shape_errors, sharp_errors, in_rect, pt_seg)
 from .routes import F, split_widths, via_size
 from .checks import Scene
 
 BIG = 10 ** 12
+SEQ = itertools.count()                                     # creation order of serpentine sites (Slot, job.slot)
 
 
 class PitchError(RouteError):
@@ -159,11 +160,12 @@ class Bundle:
             U += 1
         return at_uv(L["D"], U, V)
 
-    # ---- serpentine sites (the seam for the tuning stage: described here, drawn by the serpentine tool later)
-    def slot(self, net, leg, s0, length, side="R", free=None, pitch=0.5):
+    # ---- serpentine sites (drawn by the tuning stage, tune.py, when the routes file has TUNING)
+    def slot(self, net, leg, s0, length, side="R", free=None, pitch=None):
         """A serpentine site: `length` mm of straight on lane `net` from station s0 of `leg`, humps towards
         "R" / "L" (higher / lower lane numbers) or "both". With free = mm the neighbours on that side step aside
-        (widen) so that their centre line is `free` away over the site. Returns a Slot; bus.tuning() lists them."""
+        (widen) so that their centre line is `free` away over the site. pitch = leg centre distance of the
+        serpentine (None: TUNING's pitch for the net). Returns a Slot; bus.tuning() lists them."""
         i, L = self.idx(net), self.legs[leg]
         if free is not None:
             for sd in ((1, -1) if side == "both" else ((1,) if side == "R" else (-1,))):
@@ -180,6 +182,7 @@ class Bundle:
 class Slot:
     def __init__(self, b, i, leg, s0, length, side, pitch):
         self.b, self.i, self.leg, self.s0, self.length, self.side, self.pitch, self.net = b, i, leg, s0, length, side, pitch, b.nets[i]
+        self.seq = next(SEQ)                                # sites of a net are used in the order they were written
 
     def geometry(self):
         """Where the site is: end points, the board direction of each side, the free width to the neighbours."""
@@ -658,5 +661,5 @@ class Bus:
         return best[1] if best else None
 
     def tuning(self):
-        """The serpentine sites described on the bundles (drawn by the serpentine tool in the tuning stage)."""
+        """The serpentine sites described on the bundles (drawn by tune.py when the routes file has TUNING)."""
         return [s.geometry() for b in self.bundles for s in b.slots]

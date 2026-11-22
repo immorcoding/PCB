@@ -66,10 +66,13 @@ def external(pcb, nets, refill=True, canary=True):
     ts["tiny"] = int(m.group(1)) if m else None
     m = re.search(r"^(\d+) segments, (\d+) arcs", txt, re.M)
     ts["segments"], ts["arcs"] = (int(m.group(1)), int(m.group(2))) if m else (None, None)
+    m = re.search(r"^arc-joint: (\d+)", txt, re.M)           # printed only for boards with arcs
+    if m:
+        ts["arc-joint"] = int(m.group(1))
     kind = None
     ts["group"] = collections.Counter()
     for l in txt.splitlines():
-        m = re.match(r"^(off-grid|staircase|sharp|crowded): ", l)
+        m = re.match(r"^(off-grid|staircase|sharp|crowded|arc-joint): ", l)
         if m:
             kind = m.group(1)
         elif l.startswith("    ") and kind and l.split()[0] in nets:
@@ -147,7 +150,8 @@ def table(m):
     A("== 走线构建 %s（%s），模式：%s ==" % (m["group"], os.path.basename(m["routes_file"]), {"sketch": "线序草图（线形只报告）", "final": "正式走线"}[m["mode"]]))
     A("板：%s" % m["board"])
     b = m["built"]
-    A("写入：%d 根网络，%d 段线，%d 个过孔（其中缝合地过孔 %d 个）" % (b["nets"], b["segments"], b["vias"], b["stitching_vias"]))
+    A("写入：%d 根网络，%d 段线，%d 个过孔（其中缝合地过孔 %d 个）%s" % (b["nets"], b["segments"], b["vias"], b["stitching_vias"],
+                                                         "，%d 段圆弧" % b["arcs"] if "arcs" in b else ""))
     A("")
     A("[连通] 不是焊盘到焊盘的线 %d；未走的网络 %d%s" % (c["paths_not_pad_to_pad"], len(c["not_routed"]), "（" + " ".join(c["not_routed"]) + "）" if c["not_routed"] else ""))
     if "drc_unconnected_group" in c:
@@ -166,14 +170,31 @@ def table(m):
     A("[线形] 几何检查：非 0/45/90 或过短 %d，大于 45° 的拐角 %d，小倒角直角 %d，过孔处转弯 90° 及以上 %d（只列出）" % (g["SHAPE"], g["CORNER"], g["SHARP"], g["VIATURN"]))
     if "track_shape" in s:
         t = s["track_shape"]
-        A("       track_shape.py（全板 / 本组）：off-grid %s / %d，staircase %s / %d，sharp %s / %d，crowded %s / %d，tiny %s；圆弧 %s 段" % (
+        A("       track_shape.py（全板 / 本组）：off-grid %s / %d，staircase %s / %d，sharp %s / %d，crowded %s / %d，tiny %s；圆弧 %s 段%s" % (
             t["off-grid"], t["group"].get("off-grid", 0), t["staircase"], t["group"].get("staircase", 0), t["sharp"], t["group"].get("sharp", 0),
-            t["crowded"], t["group"].get("crowded", 0), t["tiny"], t["arcs"]))
-    A("[等长] 自然长度（没有蛇形），基准 %s%s" % (" + ".join(L["ref"]) or "无", " = %.3f mm" % L["ref_length"] if L["ref"] else ""))
+            t["crowded"], t["group"].get("crowded", 0), t["tiny"], t["arcs"],
+            "，圆弧接点不相切 %s / %d" % (t["arc-joint"], t["group"].get("arc-joint", 0)) if "arc-joint" in t else ""))
+    tu = m.get("tuning")
+    if tu:
+        gm = tu["geometry"]
+        A("       蛇形几何：%d 块，%d 段圆弧；接点最大偏角 %.4f°，半径最大误差 %.6f，最短一段 %s，块内弯高最大差 %.6f；"
+          "到别的铜最近 %s（clr %g），到规则区边最近 %s（area_gap %g），拐点到圆弧最短 %s（end %g）；ARC 发现 %d" % (
+              gm["blocks"], gm["arcs"], gm["max_joint_deg"], gm["max_radius_error"], _mm(gm["shortest_piece"]), gm["max_height_spread"],
+              _mm(gm["min_clr"]), tu["settings"]["clr"], _mm(gm["min_area_gap"]), tu["settings"]["area_gap"], _mm(gm["min_end"]), tu["settings"]["end"],
+              sum(1 for f in m["findings"] if f["kind"] == "ARC")))
+    A("[等长] %s，基准 %s%s" % ("长度（含蛇形）" if tu else "自然长度（没有蛇形）", " + ".join(L["ref"]) or "无", " = %.3f mm" % L["ref_length"] if L["ref"] else ""))
     for name, gr in L["groups"].items():
         A("       组 %s（%d 根）：最长 %s %.3f，最短 %s %.3f，相差 %.3f%s；绕远合计 %.2f" % (
             name, gr["nets"], gr["longest"][0], gr["longest"][1], gr["shortest"][0], gr["shortest"][1], gr["spread"],
             "；对基准 %+.3f .. %+.3f" % tuple(gr["to_ref_range"]) if gr["to_ref_range"] else "", gr["detour_total"]))
+    if tu:
+        for name, g in tu["groups"].items():
+            A("       蛇形 组 %s：窗口 %.3f .. %.3f（最长 %s − %g），目标 %.3f；窗口内 %d / %d 根，最差 %s 离窗口下沿 %+.3f；%d 块蛇形，补 %.3f mm；没补够：%s" % (
+                name, g["window"][0], g["window"][1], g["ref"], g["spread"], g["target"], g["inside"], g["total"], g["worst"][0], g["worst"][1],
+                g["blocks"], g["added"], "，".join("%s 差 %.3f" % kv for kv in g["missing"].items()) or "无"))
+        caps = tu.get("caps", {})
+        A("       每根总长对上限：%s" % "，".join("%s %.3f / %s" % (n, L["nets"][n]["length"], caps.get(n) if caps.get(n) is not None else "—")
+                                         for g in tu["groups"].values() for n in sorted(g["nets"], key=_natural)))
     A("       长度上限 %s：超过的 %d 根%s" % (L["limit"] if L["limit"] is not None else "按网络类", len(L["over_limit"]), "（" + " ".join(L["over_limit"]) + "）" if L["over_limit"] else ""))
     if "max_abs_geometry_minus_drc" in L:
         A("       几何长度对 DRC 实测长度：最大相差 %s mm（%d 根有 DRC 数）" % (L["max_abs_geometry_minus_drc"], len(L["geometry_minus_drc"])))
@@ -199,13 +220,14 @@ def table(m):
     for it in c.get("drc_unconnected_group_items", [])[:40]:
         A("  ! DRC     unconnected: %s" % " / ".join(it["items"]))
     A("")
-    A("网络         长度    直线距离  对基准   过孔  各层长度%s" % ("   几何-DRC" if "geometry_minus_drc" in L else ""))
+    A("网络         长度    直线距离  对基准   过孔  各层长度%s%s" % ("                     蛇形" if tu else "", "   几何-DRC" if "geometry_minus_drc" in L else ""))
     refl = L["ref_length"]
     for n in sorted(L["nets"], key=_natural):
         x = L["nets"][n]
-        A("%-12s %7.3f  %7.3f  %7s  %3d   %-28s %s" % (n, x["length"], x["direct"], "基准" if n in L["ref"] else ("%+.3f" % (x["length"] - refl) if refl is not None else "—"),
-                                                     x["vias"], " ".join("%s %.2f" % kv for kv in x["layers"].items()),
-                                                     ("%+.4f" % L["geometry_minus_drc"][n] if n in L.get("geometry_minus_drc", {}) else "")))
+        A("%-12s %7.3f  %7.3f  %7s  %3d   %-28s %s%s" % (n, x["length"], x["direct"], "基准" if n in L["ref"] else ("%+.3f" % (x["length"] - refl) if refl is not None else "—"),
+                                                       x["vias"], " ".join("%s %.2f" % kv for kv in x["layers"].items()),
+                                                       ("%7.3f  " % x.get("tuned", 0.0)) if tu else "",
+                                                       ("%+.4f" % L["geometry_minus_drc"][n] if n in L.get("geometry_minus_drc", {}) else "")))
     if m.get("pictures"):
         A("")
         A("图片：" + " ".join(m["pictures"]))
@@ -214,6 +236,47 @@ def table(m):
 
 def _cnt(d):
     return "、".join("%s %d" % kv for kv in d.items()) if d else "0"
+
+
+def _mm(v):
+    return "—" if v is None else "%.4f" % v
+
+
+def budget_table(b, group, fname):
+    """The text of --tuning-budget (tune.Tuning.budget())."""
+    s = b["settings"]
+    o = []
+    A = o.append
+    A("== 等长预算 %s（%s）：只算，不画 ==" % (group, fname))
+    A("设置：摆幅 amp %g 起、最高 amp_max %g；腿间距 %s；块两头各留 %g（keep）；拐点到圆弧至少 %g（end）；余量 %g" % (
+        s["amp"], s["amp_max"], "，".join("%s %g" % kv for kv in s["pitch"].items()), s["keep"], s["end"], s["margin"]))
+    A("容量按 RTE-2 的式子，不查间距：单侧 n = ⌊(L − 2·keep) / 2p⌋ 个弯，补 n·(2a − 0.858p)；双侧 n = ⌊(L − 2·keep) / p⌋ − 1 个弯，补 2na − 0.429p(n + 1)")
+    for g, t in b["groups"].items():
+        A("")
+        A("组 %s：最长 %s %.3f 是基准，容差 %g，余量 %g → 目标 %.3f%s" % (g, t["ref"], t["longest"], t["spread"], s["margin"], t["target"],
+                                                          "；没有走线的：" + " ".join(t["missing_nets"]) if t["missing_nets"] else ""))
+        A("  %-11s %8s %8s  %-50s %4s %9s %9s" % ("网络", "自然长度", "要补", "补线位置（层，直线长，朝向，腿间距）", "弯数", "容量@%g" % s["amp"], "容量@%g" % s["amp_max"]))
+        for r in sorted(t["rows"], key=lambda r: _natural(r["net"])):
+            first = True
+            sites = r["sites"] or [None]
+            for x in sites:
+                head = ("%-12s %8.3f %8.3f" % (r["net"], r["natural"], r["need"])) if first else " " * 30
+                if r["net"] == t["ref"] and first and x is None:
+                    A("  %s  （基准，不补）" % head)
+                elif x is None:
+                    A("  %s  %s" % (head, "没有补线位置" if r["need"] > 1e-3 else "（不用补）"))
+                else:
+                    A("  %s  %-50s %4d %9.3f %9.3f" % (head, "%s (%s, %.2f mm, %s, p %g)" % (x["site"], x["layer"], x["length"], x["side"], x["pitch"]),
+                                                      x["humps"], x["cap_amp"], x["cap_amp_max"]))
+                first = False
+            if len(r["sites"]) > 1:
+                A("  %s  %-50s %4s %9.3f %9.3f" % (" " * 30, "合计", "", r["cap_amp"], r["cap_amp_max"]))
+    A("")
+    A("容量不够的：%s" % ("，".join("%s 要补 %.3f，最多 %.3f" % (x["net"], x["need"], x["cap_amp_max"]) for x in b["short"]) or "无"))
+    if b["sites_without_group"]:
+        A("不在任何组里的补线位置（不用）：%s" % "，".join(b["sites_without_group"]))
+    A("用时 %.2f 秒" % b.get("seconds", 0))
+    return "\n".join(o) + "\n"
 
 
 def _natural(s):

@@ -6,13 +6,14 @@
     geom.py      exact 0/45/90 geometry on a 0.1 um grid
     bundle.py    Bundle / Bus: lanes, fans, joins, widen, per-leg gaps, spans, via fields (layer change)
     fanout.py    BGA escape leads by rule
+    tune.py      length tuning: arc serpentines on the sites (Bundle.slot, job.slot), the budget, the arc checks
     checks.py    the checks without KiCad
     metrics.py   DRC, DRC lengths, track_shape, canary; metrics.json and the text table
     render.py    PNG views
     job.py       one build of one group (the routes file is described there)
     build.py     the command line
 
-Benchmark: scripts/tests/busroute/check.py (run by scripts/regress.py).
+Benchmark: scripts/tests/busroute/check.py (run by scripts/regress.py); tuning: bench_tune.py there.
 """
 from .geom import RouteError
 from .board import Board

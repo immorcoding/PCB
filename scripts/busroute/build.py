@@ -2,6 +2,7 @@
 
     D:\\KiCad\\bin\\python.exe scripts\\busroute\\build.py <routes.py> [--fast] [--sketch] [--out DIR]
                                                          [--write-board [--ignore-lock]] [--no-refill] [--no-pictures]
+    D:\\KiCad\\bin\\python.exe scripts\\busroute\\build.py <routes.py> --tuning-budget
 
     --fast          geometry only: resolve the description, check it (crossings, gaps, holes, paths, via
                     count, lengths by geometry) and print the table. No file is written, kicad-cli is not run.
@@ -16,6 +17,9 @@
     --ignore-lock   with --write-board: write even while KiCad has the project open (warns; reload it there)
     --no-refill     do not refill the pours for the DRC run (quick build of one group, PROC-6)
     --no-pictures   skip the PNGs
+    --tuning-budget planning of the TUNING stage, nothing is drawn or written: per group the target, per net the
+                    natural length and the need, per site its capacity at amp and at amp_max (RTE-2's formula), and
+                    the nets whose sites cannot take their need. Exit code 1 when there are such nets.
 
 Exit code 0 = passed, 1 = findings, 2 = the description could not be built. See job.py for the routes file,
 routes.py for the route format, bundle.py and fanout.py for the generators.
@@ -36,7 +40,7 @@ def main(argv):
         k = argv.index("--out")
         out = argv[k + 1]
         args.remove(out)
-    known = {"--fast", "--sketch", "--out", "--write-board", "--ignore-lock", "--no-refill", "--no-pictures"}
+    known = {"--fast", "--sketch", "--out", "--write-board", "--ignore-lock", "--no-refill", "--no-pictures", "--tuning-budget"}
     if len(args) != 1 or set(flags) - known:
         print(__doc__)
         return 2
@@ -45,6 +49,8 @@ def main(argv):
     except Exception:
         pass
     from busroute import job
+    if "--tuning-budget" in flags:
+        return job.budget(args[0])[1]
     _, code = job.run(args[0], fast="--fast" in flags, sketch="--sketch" in flags, out=out, write_board="--write-board" in flags,
                       refill="--no-refill" not in flags, pictures="--no-pictures" not in flags, ignore_lock="--ignore-lock" in flags)
     return code
