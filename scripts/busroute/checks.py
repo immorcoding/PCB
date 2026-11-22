@@ -12,14 +12,16 @@ Finding kinds (HARD ones fail a build; SHAPE_KINDS are only reported in sketch m
   LEN      longer than the limit                    EDGE   too close to the board edge
   KEEPOUT  inside a keep-out area                   ZONE   a track through another net's pour
   ORDER, PITCH, FAN, SLOT, CHANNEL                  from the generators (bundle.py, fanout.py)
-  SHAPE, CORNER, SHARP                              0/45/90, shortest segment, corners (design-rules.md)
+  TUNE     a net that does not reach its length target (missing mm), a site off its route   (tune.py)
+  SHAPE, CORNER, SHARP, ARC                         0/45/90, shortest segment, corners (design-rules.md);
+                                                    serpentine arcs: tangency, radius, pieces, heights, clr (tune.py)
   VIATURN, OPEN, NOTE                               listed, never fail a build
 """
 import math
 from .geom import seg_dist, pt_seg, seg_rect_dist, seg_poly_dist, in_poly
 from .routes import F
 
-SHAPE_KINDS = ("SHAPE", "CORNER", "SHARP")
+SHAPE_KINDS = ("SHAPE", "CORNER", "SHARP", "ARC")
 NOTES = ("VIATURN", "OPEN", "NOTE")
 CELL = 1.0
 
@@ -169,14 +171,20 @@ def describe(kind, a, b, gap, need):
     return "hole to hole %.4f mm against the %s, %.3f needed: %.4f missing at" % (gap, who, need, need - gap)
 
 
-def geometry(board, profile, resolved, segs, vias, opts=None):
+def geometry(board, profile, resolved, segs, vias, opts=None, arcs=()):
     """Findings of the group's copper: clearances, crossings, holes, vias on pads, board edge, keep-outs, pours,
-    via count and length limits. `opts`: via_limit, via_target, len_max, yield_nets, allow_via_on."""
+    via count and length limits. `opts`: via_limit, via_target, len_max, yield_nets, allow_via_on. `arcs` (the
+    serpentines of tune.py) are checked as chords, their half width grown by the largest sagitta."""
     opts = opts or {}
     finds = []
     owned = set() if opts.get("shared") else set(resolved)
     sc = Scene(board, profile, skip_nets=owned, skip_items=opts.get("skip_items"))
     new = [sc.seg(n, lay, a, c, w) for n, lay, a, c, w in segs] + [sc.via(n, p, d, h) for n, p, d, h, _ in vias]
+    if arcs:
+        from .tune import chords
+        for n, lay, s, m, e, w in arcs:
+            cs, sag = chords(s, m, e)
+            new += [Item("seg", n, lay, a, c, w / 2 + sag, "arc of %s on %s" % (n, lay), new=True) for a, c in cs]
     for it in new:
         sc.add(it)
     order = {id(it): k for k, it in enumerate(new)}

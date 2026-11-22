@@ -78,13 +78,14 @@ class Board:
                     self.areas[z.GetZoneName()] = {"rect": R, "is_rect": rect, "layers": lays}
             else:
                 self.zones += [{"net": z.GetNetname(), "name": z.GetZoneName(), "layers": lays, "poly": pl} for pl in polys]
-        self.tracks, self.vias, self.arcs = [], [], 0
+        self.tracks, self.vias, self.arcs, self.arc_items = [], [], 0, []
         for t in b.GetTracks():
             n = t.GetNetname()
             if t.Type() == pcbnew.PCB_VIA_T:
                 self.vias.append((n, L(t.GetPosition()), mm(t.GetWidth(pcbnew.F_Cu)), mm(t.GetDrill())))
             elif t.Type() == pcbnew.PCB_ARC_T:
                 self.arcs += 1
+                self.arc_items.append((n, lname[t.GetLayer()], L(t.GetStart()), L(t.GetMid()), L(t.GetEnd()), mm(t.GetWidth())))
                 pts = self._arc(L(t.GetStart()), L(t.GetMid()), L(t.GetEnd()))
                 self.tracks += [(n, lname[t.GetLayer()], a, c, mm(t.GetWidth()), True) for a, c in zip(pts, pts[1:])]
             else:
@@ -233,12 +234,13 @@ def old_items(dst, group):
     return ({tuple(s) for s in old.get("segs", [])}, {tuple(v) for v in old.get("extras", [])})
 
 
-def write(src, dst, group, segs, vias, owned, origin=(0.0, 0.0), cu=None, shared=False):
+def write(src, dst, group, segs, vias, owned, origin=(0.0, 0.0), cu=None, shared=False, arcs=()):
     """Copy board file `src` to `dst` (may be the same path) with the group's copper replaced.
 
     segs   [(net, layer L-name, (x, y), (x, y), width)]   local mm
     vias   [(net, (x, y), diameter, drill, owned_net: bool)]   an un-owned via is an extra (stitching)
-    owned  the nets this group owns: every existing track and via of them is removed first
+    arcs   [(net, layer L-name, start, mid, end, width)]   track arcs (serpentines; written after the segments)
+    owned  the nets this group owns: every existing track, arc and via of them is removed first
 
     Also removed: whatever the same group wrote last time (kept in <dst>.busroute.json), so a net that left
     the group and old stitching vias do not stay behind. Nothing else in the file is touched.
@@ -290,6 +292,11 @@ def write(src, dst, group, segs, vias, owned, origin=(0.0, 0.0), cu=None, shared
         key = "%s|seg|%s|%s|%r|%r|%r|%d" % (group, net, layer, a, c, w, k)
         new += ["\t(segment", "\t\t(start %s %s)" % (_num(a[0] + ox), _num(a[1] + oy)), "\t\t(end %s %s)" % (_num(c[0] + ox), _num(c[1] + oy)),
                 "\t\t(width %s)" % _num(w), '\t\t(layer "%s")' % cu[layer], '\t\t(net "%s")' % _q(net), '\t\t(uuid "%s")' % uuid.uuid5(NS, key), "\t)"]
+    for k, (net, layer, a, m, c, w) in enumerate(arcs):
+        key = "%s|arc|%s|%s|%r|%r|%r|%r|%d" % (group, net, layer, a, m, c, w, k)
+        new += ["\t(arc", "\t\t(start %s %s)" % (_num(a[0] + ox), _num(a[1] + oy)), "\t\t(mid %s %s)" % (_num(m[0] + ox), _num(m[1] + oy)),
+                "\t\t(end %s %s)" % (_num(c[0] + ox), _num(c[1] + oy)), "\t\t(width %s)" % _num(w), '\t\t(layer "%s")' % cu[layer],
+                '\t\t(net "%s")' % _q(net), '\t\t(uuid "%s")' % uuid.uuid5(NS, key), "\t)"]
     top, bot = cu["L1"], cu["L%d" % len(cu)]
     for k, (net, p, d, h, _) in enumerate(vias):
         key = "%s|via|%s|%r|%r|%r|%d" % (group, net, p, d, h, k)
@@ -308,4 +315,7 @@ def write(src, dst, group, segs, vias, owned, origin=(0.0, 0.0), cu=None, shared
     if shared:
         rec["groups"][group]["segs"] = [[n, cu[lay], round(a[0], 6), round(a[1], 6), round(c[0], 6), round(c[1], 6)] for n, lay, a, c, w in segs]
     json.dump(rec, open(side, "w", encoding="utf-8", newline="\n"), indent=1, sort_keys=True)
-    return {"removed": removed, "segments": len(segs), "vias": len(vias)}
+    out_ = {"removed": removed, "segments": len(segs), "vias": len(vias)}
+    if arcs:
+        out_["arcs"] = len(arcs)
+    return out_

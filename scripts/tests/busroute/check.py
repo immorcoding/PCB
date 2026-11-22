@@ -17,6 +17,17 @@ bench_routes.py and expects:
   negative cases    two lanes that must cross (ORDER), a pitch below the clearance (PitchError with the
                     missing 0.0286 mm), a via on a ball pad (VIAPAD), a channel used twice (CHANNEL)
 
+Length tuning (tune.py), on the same board with other balls on the nets (TUNE_PADS) and bench_tune.py:
+  plain             the routes without TUNING: DRC reports the lane's skew (rule sdram_lane1, 5 mm) -- the rule is live
+  budget            --tuning-budget numbers of variant "short": targets, needs, RTE-2 capacities, the one short net
+  tune              a 5-lane bundle (3 slots, start on one line, one of them a bump), a hand-written route with a
+                    double-sided free site, one whose site is short for amp 0.5 (amplitude raised): every group inside
+                    its spread, DRC clean (skew included), geometry length = DRC length within 0.01 mm, no finding,
+                    the arc checks (tangency, radius, pieces >= 0.1, equal heights, clr / area_gap / end) and
+                    track_shape.py (arc joints, sharp, crowded) clean, the pinned lengths and blocks
+  short             one more net whose site is far too short: drawn what fits (DRC clean, arc checks clean), the
+                    only finding is TUNE "missing 9.145 mm", which equals target - its DRC-measured length
+
 Prints one line, `OK ...` or `FAIL ...`; exit code 0 = pass. --keep leaves the temp folder.
 """
 import os, shutil, sys, tempfile, time
@@ -47,6 +58,26 @@ LANES = """fan-out of U1: 10 leads drawn, 0 refused
 fan-out of U2: 6 leads drawn, 0 refused
   side W on L1, left to right going out (6): FMC_D5[M2 channel]  FMC_D4[M1 straight]  FMC_D3[K2 channel]  FMC_D2[K1 straight]  FMC_D1[J2 channel]  FMC_D0[J1 straight]
 via field: 2 rows, step 0.70, via 0.3 / 0.15, ground vias [(22.3, 13.85), (23.0, 13.85), (22.3, 15.95), (23.0, 15.95)]"""
+# The tuning benchmark: other balls on the nets (bench_tune.py).
+TUNE_PADS = {"FMC_D8": ("R13", "R1"), "FMC_D9": ("R12", "P1"), "FMC_D10": ("R11", "R2"), "FMC_D11": ("R10", "P2"), "FMC_D12": ("R9", "R3"),
+             "FMC_A0": ("A9", "A9"), "FMC_A1": ("A10", "A8"), "FMC_A2": ("A11", "A7"), "FMC_A3": ("A12", "A3")}
+# net: (natural length, length with serpentines) by geometry, variant "short" (A3 is tuned only there).
+# Targets: lane1 27.1585 - 4.7 + 0.3 = 22.7585, hand 30.1284 - 2 + 0.3 = 28.4284.
+TUNE_LEN = {'FMC_A0': (30.1284, 30.1284), 'FMC_A1': (26.2784, 28.4284), 'FMC_A2': (22.4284, 28.4284), 'FMC_A3': (16.1784, 19.2834),
+            'FMC_D8': (17.7971, 22.7585), 'FMC_D9': (21.1031, 22.7585), 'FMC_D10': (22.4778, 22.7585), 'FMC_D11': (25.7838, 25.7838),
+            'FMC_D12': (27.1585, 27.1585)}
+# (net, kind, side, humps, height, pitch) of every block drawn in variant "short", in drawing order (neediest net first).
+# A3: 2 humps (its site holds no more), 0.905 high (0.910 comes closer than 0.19 to A2): adds 3.105 of 12.250.
+# A2: 8 humps at 0.504 would add its 6.000, the site holds 5: raised to (6 / 5 + 0.2575) / 2 = 0.7288.
+# D8: 6 x (2 x 0.5422 - 0.858 x 0.3) = 4.961. A1 both-sided, pitch 0.5: 3 humps would be 0.5014 high, an illegal
+# 0.0014 mm leg, so 2 humps of 0.6985. D10 needs 0.281, below one hump of 2r: a bump of radius 0.15.
+TUNE_BLOCKS = [('FMC_A3', 'single', 'L', 2, 0.905, 0.3), ('FMC_A2', 'single', 'L', 5, 0.7288, 0.3), ('FMC_D8', 'single', 'L', 6, 0.5422, 0.3),
+               ('FMC_A1', 'both', 'both', 2, 0.6985, 0.5), ('FMC_D9', 'single', 'L', 2, 0.5426, 0.3), ('FMC_D10', 'bump', 'L', 0, 0.2674, 0.3)]
+# --tuning-budget of variant "short": group -> (target, {net: (need, [(humps, cap at amp, cap at amp_max) per site])})
+TUNE_BUDGET = {'lane1': (22.7585, {'FMC_D8': (4.9614, [(6, 4.4549, 22.4549)]), 'FMC_D9': (1.6554, [(2, 1.485, 7.485)]),
+                                   'FMC_D10': (0.2807, [(1, 0.7425, 3.7425)]), 'FMC_D11': (0.0, []), 'FMC_D12': (0.0, [])}),
+               'hand': (28.4284, {'FMC_A0': (0.0, []), 'FMC_A1': (2.15, [(3, 2.1416, 11.1416)]), 'FMC_A2': (6.0, [(5, 3.7124, 18.7124)]),
+                                  'FMC_A3': (12.25, [(2, 1.485, 7.485)])})}
 # DRC item types that say nothing about the routes on this synthetic board.
 IGNORE = {"lib_footprint_issues": "the two footprints are loaded from library folders, the board has no fp-lib-table",
           "lib_footprint_mismatch": "the BGA pads get solder-mask margin 0 as on the real board, which differs from the library",
@@ -56,7 +87,9 @@ IGNORE = {"lib_footprint_issues": "the two footprints are loaded from library fo
           "skew_out_of_range": "the project's byte-lane skew rules (sdram_lane0-3, added after this benchmark) see the bench nets FMC_D0-D7; matching is not benchmarked here"}
 
 
-def make_board(tmp):
+def make_board(tmp, pads=None):
+    """The benchmark board in `tmp`; `pads` = {net: (U1 ball, U2 ball)} (default PADS)."""
+    pads = pads or PADS
     pcb = os.path.join(tmp, "bench.kicad_pcb")
     make_project.make_pcb(pcb)                              # empty six-layer board with the real stackup
     b = pcbnew.LoadBoard(pcb)
@@ -87,7 +120,7 @@ def make_board(tmp):
         by = {p.GetNumber(): p for p in fp.Pads()}
         for p in fp.Pads():
             p.SetLocalSolderMaskMargin(0)
-        for n, balls in PADS.items():
+        for n, balls in pads.items():
             by[balls[0 if ref == "U1" else 1]].SetNet(net(n))
     for layer in (pcbnew.In1_Cu, pcbnew.In4_Cu):            # ground planes; filled by the DRC run
         z = pcbnew.ZONE(b); z.SetZoneName("GND_%d" % layer); z.SetLayer(layer); z.SetNet(net("GND"))
@@ -115,10 +148,76 @@ def copper(pcb):
     return sorted((t[:5] for t in b.tracks), key=repr), sorted(b.vias, key=repr)
 
 
+def tuning(tmp, want):
+    """The length-tuning cases (see the module text). Returns the seconds they took."""
+    t0 = time.time()
+    tt = os.path.join(tmp, "tune")
+    os.makedirs(tt)
+    make_board(tt, TUNE_PADS)
+    shutil.copy(os.path.join(HERE, "bench_tune.py"), os.path.join(tt, "bench_tune.py"))
+    rt = os.path.join(tt, "bench_tune.py")
+    quiet = lambda *a: None
+
+    def build(variant, out):
+        os.environ["BUSROUTE_BENCH"] = variant
+        return job.run(rt, out=os.path.join(tt, out), pictures=False, log=quiet)
+
+    m, code = build("plain", "out_plain")                  # control: the rule file's skew rule sees the natural spread
+    want("skew_out_of_range" in m.get("connectivity", {}).get("drc_by_type_board", {}),
+         "plain: DRC does not report the lane's skew before tuning: %r" % (m.get("connectivity", {}).get("drc_by_type_board"),))
+
+    os.environ["BUSROUTE_BENCH"] = "short"
+    tb = time.time()
+    b, code = job.budget(rt, log=quiet)
+    budget_s = time.time() - tb
+    got = {g: (t["target"], {r["net"]: (r["need"], [(x["humps"], x["cap_amp"], x["cap_amp_max"]) for x in r["sites"]]) for r in t["rows"]})
+           for g, t in b.get("groups", {}).items()}
+    want(code == 1 and [x["net"] for x in b["short"]] == ["FMC_A3"], "budget: exit %d, short %r" % (code, b.get("short")))
+    want(got == TUNE_BUDGET, "budget changed:\nTUNE_BUDGET = %r" % (got,))
+    want(budget_s < 10, "budget took %.1f s" % budget_s)
+
+    for variant in ("tune", "short"):
+        m, code = build(variant, "out_" + variant)
+        if "error" in m:
+            want(False, "%s: could not be built: %s" % (variant, m["error"]))
+            continue
+        hard = [f for f in m["findings"] if f["hard"]]
+        c, tu, L = m["connectivity"], m["tuning"], m["length"]
+        other = {k: v for k, v in c["drc_by_type_board"].items() if k not in IGNORE}
+        want(not other and c["drc_unconnected_board"] == 0 and c["pcbnew"]["fully_connected"] == 9,
+             "%s: DRC %r, unconnected %d, connected %r" % (variant, other, c["drc_unconnected_board"], c["pcbnew"]))
+        want(m["written"]["matches_model"], "%s: the board file does not hold the model's copper (arcs included)" % variant)
+        d = L["max_abs_geometry_minus_drc"]
+        want(d is not None and d <= 0.01 and not L["not_measured_by_drc"], "%s: geometry against DRC lengths: max %r" % (variant, d))
+        g = tu["geometry"]
+        want(not [f for f in m["findings"] if f["kind"] == "ARC"] and g["max_joint_deg"] <= 0.01 and g["max_radius_error"] <= 1e-4
+             and g["shortest_piece"] >= 0.1 and g["max_height_spread"] <= 1e-4 and g["min_clr"] >= 0.19 and g["min_area_gap"] >= 0.127
+             and g["min_end"] >= 0.35, "%s: arc geometry %r" % (variant, g))
+        ts = m["shape"]["track_shape"]
+        want(all(ts[k] == 0 for k in ("off-grid", "staircase", "sharp", "crowded", "tiny", "arc-joint")) and ts["arcs"] == g["arcs"],
+             "%s: track_shape %r" % (variant, {k: ts.get(k) for k in ("off-grid", "staircase", "sharp", "crowded", "tiny", "arc-joint", "arcs")}))
+        if variant == "tune":
+            want(code == 0 and m["ok"] and not hard, "tune: exit %d, %r" % (code, [f["text"] for f in hard]))
+            want(all(gr["inside"] == gr["total"] for gr in tu["groups"].values()) and not tu["missing"],
+                 "tune: groups %r" % ({k: (v["inside"], v["total"], v["missing"]) for k, v in tu["groups"].items()},))
+        else:
+            gl = {n: (tu["natural"][n], v["length"]) for n, v in L["nets"].items()}
+            want(gl == TUNE_LEN, "short: lengths changed:\nTUNE_LEN = %r" % (gl,))
+            bl = [(x["net"], x["kind"], x["side"], x["humps"], x["amp"], x["pitch"]) for x in tu["blocks"]]
+            want(bl == TUNE_BLOCKS, "short: blocks changed:\nTUNE_BLOCKS = %r" % (bl,))
+            want(code == 1 and len(hard) == 1 and hard[0]["kind"] == "TUNE" and "FMC_A3: missing 9.145 mm" in hard[0]["text"],
+                 "short: exit %d, hard findings %r" % (code, [f["text"] for f in hard]))
+            hand = tu["groups"]["hand"]
+            miss = hand["target"] - L["drc"]["FMC_A3"]
+            want(abs(miss - tu["missing"]["FMC_A3"]) <= 0.001 and hand["inside"] == 3 and hand["total"] == 4,
+                 "short: missing %r against target - DRC length %.4f" % (tu["missing"], miss))
+    return time.time() - t0, budget_s
+
+
 def main(argv):
     t0 = time.time()
     tmp = tempfile.mkdtemp(prefix="busroute_")
-    fails = []
+    fails, times = [], {}
 
     def want(ok, text):
         if not ok:
@@ -216,6 +315,8 @@ def main(argv):
             l2 = r2.leads.get("L12")
             want((l2 is None and "L12" in r2.refused) or (l2 is not None and l2.via != l12.via),
                  "fan-out keep: the via of another net at %r did not move the dog-bone (%s)" % (l12.via, r2.text()))
+
+        times["tune"], times["budget"] = tuning(tmp, want)
     except StopIteration:
         pass
     finally:
@@ -225,7 +326,9 @@ def main(argv):
             print("\n".join("  " + f for f in fails))
         else:
             print("OK busroute: 12 nets (ring 0-3 fan-out, bundle with corner and per-leg gaps, join, via field), DRC clean, "
-                  "geometry = DRC lengths, 2 builds identical, 2 groups = 1 build, 4 negative cases, fan-out @layer and keep, a shared group of ties; %.0f s%s" % (time.time() - t0, "; kept " + tmp if keep else ""))
+                  "geometry = DRC lengths, 2 builds identical, 2 groups = 1 build, 4 negative cases, fan-out @layer and keep, a shared group of ties; "
+                  "tuning (bundle slots, bump, free site both-sided, raised amp, missing, budget %.1f s) %.0f s; %.0f s%s" % (
+                      times.get("budget", 0), times.get("tune", 0), time.time() - t0, "; kept " + tmp if keep else ""))
         if not keep:
             shutil.rmtree(tmp, ignore_errors=True)
     return 1 if fails else 0
