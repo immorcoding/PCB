@@ -26,7 +26,7 @@ NB = int(args[args.index("--bends") + 1]) if "--bends" in args else 3
 WITHIN = float(args[args.index("--within") + 1]) if "--within" in args else 2.0
 CHAMFER = float(args[args.index("--chamfer") + 1]) if "--chamfer" in args else 0.35
 b = pcbnew.LoadBoard(args[0]); mm = pcbnew.ToMM
-L = lambda v: (round(mm(v.x) - 100, 3), round(mm(v.y) - 100, 3))
+L = lambda v: (round(mm(v.x) - 100, 4), round(mm(v.y) - 100, 4))     # 0.1 um: the grid busroute draws on
 segs = collections.defaultdict(list)
 vias = collections.defaultdict(set)
 arcs = 0

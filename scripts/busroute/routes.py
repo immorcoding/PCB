@@ -10,6 +10,14 @@ Points are local mm on the 0.1 um grid; a string is a pad: "REF.PAD", or "REF" =
 that part. Each piece starts where the one before ended; layers change only at a via; segments are exactly
 0/45/90 degrees and corners exactly 45 degrees.
 
+A net may instead take a list of such chains, each from a pad to wherever it ends (short ties of power and
+ground pads to their vias; with OPEN_ENDS a chain may end in the open, e.g. at a via):
+
+    ROUTES = {"GND": [[("L1", ["C101.2", (4.0, 2.0)]), ("via", (4.0, 2.0), (0.45, 0.2))],
+                      [("L1", ["C102.2", (6.0, 2.0)], 0.2), ("via", (6.0, 2.0), (0.45, 0.2))]]}
+
+A track piece may carry a third element, its width outside the rule areas (default: the net class width).
+
 Track width and via size are NOT written (profile C): inside a rule area, and for `extend` (0.3 mm) of
 straight beyond its edge, a track is `w_area` (0.09); elsewhere it has its net class width. The cut is on
 the straight, never at a bend, and a thin piece always touches the area itself (a 0.09 piece that does not
@@ -27,71 +35,80 @@ def F(kind, text, net=None, at=None, **kw):
 
 
 def resolve(board, profile, routes, open_ok=False):
-    """-> ({net: [piece]}, findings). piece = ("L1", [(x, y), ...]) | ("via", (x, y), size or None).
+    """-> ({net: [piece]}, findings). piece = ("L1", [(x, y), ...][, width]) | ("via", (x, y), size or None).
+    A net given as several chains comes out as the chains' pieces one after the other.
     Raises RouteError for what cannot be read at all (unknown pad, unknown layer, off-grid coordinate)."""
     out, finds = {}, []
-    for net, pieces in routes.items():
+    for net, given in routes.items():
         if net not in board.nets:
             raise RouteError("%s: no such net on the board" % net)
-        res, where, layer, ends = [], None, None, []
-        for pc in pieces:
-            if pc[0] == "via":
-                xy = (float(pc[1][0]), float(pc[1][1])); ipt(xy)
-                if where is None or math.dist(where, xy) > 1e-7:
-                    finds.append(F("PATH", "via at %s is not at the end of the piece before it (%s)" % (xy, where), net, xy))
-                res.append(("via", xy, tuple(pc[2]) if len(pc) > 2 and pc[2] else None))
-                layer = None
-                continue
-            lay = pc[0]
-            if lay not in board.cu:
-                raise RouteError("%s: unknown layer %r (the board has %s)" % (net, lay, " ".join(board.layers)))
-            pts = []
-            for k, p in enumerate(pc[1]):
-                if isinstance(p, str):
-                    try:
-                        pad = board.pad(p, net)
-                    except KeyError as e:
-                        raise RouteError("%s: %s" % (net, e.args[0]))
-                    if pad.net != net:
-                        finds.append(F("PATH", "%s is a pad of net %s" % (pad.name, pad.net or "(none)"), net, pad.pos))
-                    if pad.layers is not None and lay not in pad.layers:
-                        finds.append(F("PATH", "pad %s is not on %s" % (pad.name, lay), net, pad.pos))
-                    ends.append((pad.name, len(res), k))
-                    p = pad.pos
-                pts.append((float(p[0]), float(p[1])))
-            ip = [ipt(p) for p in pts]
-            if where is not None and math.dist(where, pts[0]) > 1e-7:
-                finds.append(F("PATH", "piece on %s starts at %s but the net was at %s" % (lay, pts[0], where), net, pts[0], layer=lay))
-            if layer is not None:
-                finds.append(F("PATH", "two track pieces in a row without a via (%s then %s)" % (layer, lay), net, pts[0]))
-            for kind, text, at in shape_errors(ip, profile.min_seg) + sharp_errors(ip, profile.chamfer):
-                finds.append(F(kind, text, net, at, layer=lay))
-            res.append((lay, pts))
-            where, layer = pts[-1], lay
-        tr = [p for p in res if p[0] != "via"]
-        if not tr:
-            raise RouteError("%s: the route has no track piece" % net)
-        for k, pc in enumerate(res):                        # change of direction across a via (RTE-11)
-            if pc[0] == "via" and 0 < k < len(res) - 1 and res[k - 1][0] != "via" and res[k + 1][0] != "via":
-                d1 = dir_of(ipt(res[k - 1][1][-2]), ipt(res[k - 1][1][-1])) if len(res[k - 1][1]) > 1 else None
-                d2 = dir_of(ipt(res[k + 1][1][0]), ipt(res[k + 1][1][1])) if len(res[k + 1][1]) > 1 else None
-                if d1 and d2 and turn(d1, d2) >= 2:
-                    finds.append(F("VIATURN", "the track turns %d degrees across the via at %s" % (45 * turn(d1, d2), pc[1]), net, pc[1]))
-        first, last = tr[0][1][0], tr[-1][1][-1]
-        pads = board.net_pads(net)
-        at_pad = lambda p: [q.name for q in pads if math.dist(q.pos, p) < 1e-7]
-        a, b = at_pad(first), at_pad(last)
-        kind = "OPEN" if open_ok else "PATH"
-        if not a:
-            finds.append(F(kind, "the route does not start on a pad of the net (starts at %s)" % (first,), net, first))
-        if not b:
-            finds.append(F(kind, "the route does not end on a pad of the net (ends at %s)" % (last,), net, last))
-        if a and b and a == b:
-            finds.append(F("PATH", "the route starts and ends on the same pad %s" % a[0], net, first))
-        if len(pads) > 2 and not open_ok:
-            finds.append(F("PATH", "the net has %d pads, a route joins two of them" % len(pads), net, first))
-        out[net] = res
+        chains = given if given and isinstance(given[0], list) else [given]
+        out[net] = []
+        for pieces in chains:
+            out[net] += _chain(board, profile, net, pieces, finds, open_ok, len(chains) == 1)
     return out, finds
+
+
+def _chain(board, profile, net, pieces, finds, open_ok, single):
+    """The pieces of one chain of a net, resolved; findings are appended to `finds`."""
+    res, where, layer, ends = [], None, None, []
+    for pc in pieces:
+        if pc[0] == "via":
+            xy = (float(pc[1][0]), float(pc[1][1])); ipt(xy)
+            if where is None or math.dist(where, xy) > 1e-7:
+                finds.append(F("PATH", "via at %s is not at the end of the piece before it (%s)" % (xy, where), net, xy))
+            res.append(("via", xy, tuple(pc[2]) if len(pc) > 2 and pc[2] else None))
+            layer = None
+            continue
+        lay, width = pc[0], (pc[2] if len(pc) > 2 else None)
+        if lay not in board.cu:
+            raise RouteError("%s: unknown layer %r (the board has %s)" % (net, lay, " ".join(board.layers)))
+        pts = []
+        for k, p in enumerate(pc[1]):
+            if isinstance(p, str):
+                try:
+                    pad = board.pad(p, net)
+                except KeyError as e:
+                    raise RouteError("%s: %s" % (net, e.args[0]))
+                if pad.net != net:
+                    finds.append(F("PATH", "%s is a pad of net %s" % (pad.name, pad.net or "(none)"), net, pad.pos))
+                if pad.layers is not None and lay not in pad.layers:
+                    finds.append(F("PATH", "pad %s is not on %s" % (pad.name, lay), net, pad.pos))
+                ends.append((pad.name, len(res), k))
+                p = pad.pos
+            pts.append((float(p[0]), float(p[1])))
+        ip = [ipt(p) for p in pts]
+        if where is not None and math.dist(where, pts[0]) > 1e-7:
+            finds.append(F("PATH", "piece on %s starts at %s but the net was at %s" % (lay, pts[0], where), net, pts[0], layer=lay))
+        if layer is not None:
+            finds.append(F("PATH", "two track pieces in a row without a via (%s then %s)" % (layer, lay), net, pts[0]))
+        for kind, text, at in shape_errors(ip, profile.min_seg) + sharp_errors(ip, profile.chamfer):
+            finds.append(F(kind, text, net, at, layer=lay))
+        res.append((lay, pts) if width is None else (lay, pts, float(width)))
+        where, layer = pts[-1], lay
+    tr = [p for p in res if p[0] != "via"]
+    if not tr:
+        raise RouteError("%s: the route has no track piece" % net)
+    for k, pc in enumerate(res):                        # change of direction across a via (RTE-11)
+        if pc[0] == "via" and 0 < k < len(res) - 1 and res[k - 1][0] != "via" and res[k + 1][0] != "via":
+            d1 = dir_of(ipt(res[k - 1][1][-2]), ipt(res[k - 1][1][-1])) if len(res[k - 1][1]) > 1 else None
+            d2 = dir_of(ipt(res[k + 1][1][0]), ipt(res[k + 1][1][1])) if len(res[k + 1][1]) > 1 else None
+            if d1 and d2 and turn(d1, d2) >= 2:
+                finds.append(F("VIATURN", "the track turns %d degrees across the via at %s" % (45 * turn(d1, d2), pc[1]), net, pc[1]))
+    first, last = tr[0][1][0], tr[-1][1][-1]
+    pads = board.net_pads(net)
+    at_pad = lambda p: [q.name for q in pads if math.dist(q.pos, p) < 1e-7]
+    a, b = at_pad(first), at_pad(last)
+    kind = "OPEN" if open_ok else "PATH"
+    if not a:
+        finds.append(F(kind, "the route does not start on a pad of the net (starts at %s)" % (first,), net, first))
+    if not b:
+        finds.append(F(kind, "the route does not end on a pad of the net (ends at %s)" % (last,), net, last))
+    if a and b and a == b:
+        finds.append(F("PATH", "the route starts and ends on the same pad %s" % a[0], net, first))
+    if len(pads) > 2 and not open_ok and single:
+        finds.append(F("PATH", "the net has %d pads, a route joins two of them" % len(pads), net, first))
+    return res
 
 
 def split_widths(pts, areas, w_in, w_out, extend, min_seg):
@@ -158,7 +175,8 @@ def expand(board, profile, resolved, extras=()):
                 d, h = pc[2] or via_size(profile, areas, net, pc[1])
                 vias.append((net, pc[1], d, h, True))
             else:
-                segs += [(net, pc[0], a, c, w) for a, c, w in split_widths(pc[1], areas, profile.w_area, profile.width(net), profile.extend, profile.min_seg)]
+                w_out = pc[2] if len(pc) > 2 and pc[2] else profile.width(net)
+                segs += [(net, pc[0], a, c, w) for a, c, w in split_widths(pc[1], areas, min(profile.w_area, w_out), w_out, profile.extend, profile.min_seg)]
     for net, p in extras:
         d, h = via_size(profile, areas, net, p)
         vias.append((net, (float(p[0]), float(p[1])), d, h, False))

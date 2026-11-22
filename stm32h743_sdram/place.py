@@ -154,7 +154,7 @@ PLACE.update({
     }, LCD_SHIFT),
     # ---- backlight boost right of the LCD connector (L1_5V_BL, L1_SW_BL, L1_LED_A)
     "L701": (51.9, 53.0, 0), "U701": (55.6, 56.4, 0), "D701": (52.6, 59.3, 90), "C705": (55.0, 59.9, 90),
-    "C703": (56.3, 49.3, 0), "C704": (56.2, 54.6, 180), "R710": (53.0, 48.7, 0),
+    "C703": (56.3, 48.9, 0), "C704": (56.2, 54.6, 180), "R710": (53.0, 48.7, 0),
     "R708": (52.0, 63.8, 90), "R707": (55.2, 63.6, 0), "R706": (57.8, 55.4, 90), "TP701": (57.6, 58.9, 0),
     # ---- bottom side under the BGAs (SPEC 6, agreed exception to LAY-5): MCU decoupling, VCAP, VDDA filter, and
     # the SDRAM decoupling. Positions from decap_search.py on the SDRAM sketch board: pads clear of every L6

@@ -19,12 +19,16 @@ The routes file is a Python file in the board's folder:
     YIELD_NETS = ["GND"]    nets whose pours give way to tracks
     PROFILE = {...}         overrides of profile.Profile
     DRC_IGNORE = {"type": "why"}   DRC item types that do not count against this group
+    SHARED = True           the group owns no net: it replaces only what it wrote itself last time (found by
+                            position, recorded in <board>.busroute.json), so the copper other groups put on the
+                            same nets stays (ground and power ties next to the bus groups)
+    ALLOW_VIA_ON = ["U601.33"]     pads that may carry a via (approved via-in-pad exceptions)
     ROUND = 3               the optimisation round, for the metrics table (PROC-3)
     TUNING                  not yet: serpentines come with the tuning stage (Bus.tuning() lists the sites)
 """
 import importlib.util, json, os, shutil, sys, time
 from .geom import RouteError
-from .board import Board, write
+from .board import Board, write, old_items
 from .profile import Profile
 from .routes import F, resolve, expand, lengths
 from .checks import geometry, length_findings, is_hard, SHAPE_KINDS
@@ -70,6 +74,7 @@ def load(path):
 
 def compute(mod, board, profile, sketch, job=None):
     """The geometry stage. -> dict(resolved, segs, vias, lens, findings, job)."""
+    shared = bool(getattr(mod, "SHARED", False))
     job = job or Job(board, profile, sketch)
     R = mod.routes(job)
     extras = list(job.stitch) + [s for b in job.buses for s in b.stitch]
@@ -77,7 +82,9 @@ def compute(mod, board, profile, sketch, job=None):
     resolved, f1 = resolve(board, profile, R, open_ok)
     segs, vias = expand(board, profile, resolved, extras)
     lens = lengths(board, resolved)
-    opts = {"via_limit": getattr(mod, "VIA_LIMIT", None), "len_max": getattr(mod, "LEN_MAX", None), "yield_nets": getattr(mod, "YIELD_NETS", ())}
+    opts = {"via_limit": getattr(mod, "VIA_LIMIT", None), "len_max": getattr(mod, "LEN_MAX", None), "yield_nets": getattr(mod, "YIELD_NETS", ()),
+            "allow_via_on": getattr(mod, "ALLOW_VIA_ON", ()), "shared": shared,
+            "skip_items": old_items(board.path, mod.GROUP) if shared else None}
     f2, _ = geometry(board, profile, resolved, segs, vias, opts)
     for f in f2:                                            # a gap between two lanes of one bundle is a pitch problem: say which leg
         if f["kind"] == "GAP" and f.get("other") in resolved:
@@ -95,7 +102,7 @@ def compute(mod, board, profile, sketch, job=None):
     return {"resolved": resolved, "segs": segs, "vias": vias, "lens": lens, "findings": finds, "job": job, "missing": missing}
 
 
-def run(routes_file, fast=False, sketch=False, out=None, write_board=False, refill=True, pictures=True, log=print):
+def run(routes_file, fast=False, sketch=False, out=None, write_board=False, refill=True, pictures=True, log=print, ignore_lock=False):
     """-> (metrics dict, exit code). Exit code 0 = passed, 1 = findings, 2 = the description could not be built."""
     t0 = time.time()
     routes_file = os.path.abspath(routes_file)
@@ -133,9 +140,11 @@ def run(routes_file, fast=False, sketch=False, out=None, write_board=False, refi
         return m, 0 if m["ok"] else 1
     stem = os.path.splitext(os.path.basename(pcb))[0]
     if write_board:
-        if board.locked():
+        if board.locked() and not ignore_lock:
             log("ERROR KiCad has this project open (~*.lck next to the board): nothing was written")
             return {"error": "locked"}, 2
+        if board.locked():
+            log("warning: KiCad has this project open (~*.lck): reload the board there (File > Revert)")
         dst, out = pcb, out or os.path.join(os.path.dirname(pcb), "out", "busroute", mod.GROUP)
         os.makedirs(out, exist_ok=True)
     else:
@@ -150,7 +159,8 @@ def run(routes_file, fast=False, sketch=False, out=None, write_board=False, refi
                 shutil.copy(src, os.path.join(out, stem + ext))
             elif os.path.isfile(os.path.join(out, stem + ext)):
                 os.remove(os.path.join(out, stem + ext))
-    w = write(pcb, dst, mod.GROUP, segs, vias, nets, origin, board.cu)
+    shared = bool(getattr(mod, "SHARED", False))
+    w = write(pcb, dst, mod.GROUP, segs, vias, nets, origin, board.cu, shared=shared)
     ext = metrics.external(dst, nets, refill=refill and bool(board.zones))
     after = Board(dst, origin)                              # what is in the file now
     key = lambda n, l, a, c, wd: (n, l, round(a[0], 5), round(a[1], 5), round(c[0], 5), round(c[1], 5), round(wd, 5))
@@ -163,7 +173,11 @@ def run(routes_file, fast=False, sketch=False, out=None, write_board=False, refi
     ext["connectivity"] = {"nets": len(conn), "fully_connected": sum(1 for a, b in conn.values() if a == b and a > 1),
                            "open": sorted(n for n, (a, b) in conn.items() if a != b or a < 2),
                            "kicad_unconnected_before": board.kicad_unconnected, "kicad_unconnected_after": after.kicad_unconnected}
-    same = want == got and all(v in vhave for v in vwant) and sum(1 for v in after.vias if v[0] in resolved) == sum(1 for v in vias if v[4])
+    if shared:                                              # other groups' copper on the same nets is not ours to count
+        import collections
+        same = not (collections.Counter(want) - collections.Counter(got)) and all(v in vhave for v in vwant)
+    else:
+        same = want == got and all(v in vhave for v in vwant) and sum(1 for v in after.vias if v[0] in resolved) == sum(1 for v in vias if v[4])
     ignore = dict(getattr(mod, "DRC_IGNORE", {}) or {})
     m = metrics.collect(info, lens, finds, hard, ext, extra)
     open_ok = bool(getattr(mod, "OPEN_ENDS", False))
@@ -173,7 +187,7 @@ def run(routes_file, fast=False, sketch=False, out=None, write_board=False, refi
     diff = m["length"]["max_abs_geometry_minus_drc"]
     m.update(written=dict(w, file=dst, matches_model=same), drc_ignored=ignore, drc_counted_group=counted)
     m["ok"] = (hard == 0 and same and not counted and (open_ok or (ext["drc"]["unconnected_group"] == 0 and not ext["connectivity"]["open"]))
-               and (diff is None or diff <= 0.002) and (ext["canary"] is None or ext["canary"]["ok"]))
+               and (open_ok or diff is None or diff <= 0.002) and (ext["canary"] is None or ext["canary"]["ok"]))   # open routes have no pad-to-pad length
     json.dump(ext["drc"], open(os.path.join(out, "drc_summary.json"), "w", encoding="utf-8"), indent=1, ensure_ascii=False)
     if pictures:
         from . import render

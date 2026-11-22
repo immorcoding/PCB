@@ -164,6 +164,28 @@ def main(argv):
         want(mb.get("connectivity", {}).get("drc_by_type_board", {}).keys() <= IGNORE.keys() and mb["connectivity"]["drc_unconnected_board"] == 0,
              "DRC after the two group builds: %r" % (mb.get("connectivity", {}).get("drc_by_type_board"),))
 
+        # a shared group (SHARED, chains, piece width): GND ties on the single build's board, built twice in place
+        os_ = os.path.join(tmp, "outS")
+        os.makedirs(os_)
+        for ext in (".kicad_pcb", ".kicad_pro", ".kicad_dru", ".busroute.json"):
+            shutil.copy(os.path.join(o1, "bench" + ext), os.path.join(os_, "bench" + ext))
+        shutil.copy(os.path.join(HERE, "bench_ties.py"), os.path.join(os_, "bench_ties.py"))
+        spcb = os.path.join(os_, "bench.kicad_pcb")
+        before = copper(spcb)
+        r1 = job.run(os.path.join(os_, "bench_ties.py"), write_board=True, out=os.path.join(tmp, "outS_m"), pictures=False, log=lambda *a: None)
+        b1 = open(spcb, "rb").read()
+        r2 = job.run(os.path.join(os_, "bench_ties.py"), write_board=True, out=os.path.join(tmp, "outS_m"), pictures=False, log=lambda *a: None)
+        b2 = open(spcb, "rb").read()
+        after = copper(spcb)
+        gv = lambda c: sorted(v for v in c[1] if v[0] == "GND")
+        new_t = sorted(set(after[0]) - set(before[0]))
+        want(r1[1] == 0 and r2[1] == 0, "shared group: exit %d / %d, %r" % (r1[1], r2[1], [f["text"] for f in r1[0].get("findings", []) if f.get("hard")][:4]))
+        want(b1 == b2, "shared group: a second build in place changed the board")
+        want(set(before[0]) <= set(after[0]) and set(gv(before)) <= set(gv(after)) and len(gv(after)) == len(gv(before)) + 2,
+             "shared group: the main group's copper or its ground vias did not stay (GND vias %d -> %d)" % (len(gv(before)), len(gv(after))))
+        want(sorted(t[4] for t in new_t if t[1] == "L1") == [0.25, 0.3048] and len(new_t) == 4, "shared group: new tracks %r" % (new_t,))
+        want(r1[0].get("shape", {}).get("track_shape", {}).get("off-grid") == 0, "shared group: track_shape off-grid %r" % (r1[0].get("shape", {}).get("track_shape"),))
+
         neg = {}
         for v in ("order", "pitch", "viapad", "channel"):
             mv, cv, lv = run(tmp, v, fast=True)
@@ -202,7 +224,7 @@ def main(argv):
             print("\n".join("  " + f for f in fails))
         else:
             print("OK busroute: 12 nets (ring 0-3 fan-out, bundle with corner and per-leg gaps, join, via field), DRC clean, "
-                  "geometry = DRC lengths, 2 builds identical, 2 groups = 1 build, 4 negative cases, fan-out @layer and keep; %.0f s%s" % (time.time() - t0, "; kept " + tmp if keep else ""))
+                  "geometry = DRC lengths, 2 builds identical, 2 groups = 1 build, 4 negative cases, fan-out @layer and keep, a shared group of ties; %.0f s%s" % (time.time() - t0, "; kept " + tmp if keep else ""))
         if not keep:
             shutil.rmtree(tmp, ignore_errors=True)
     return 1 if fails else 0

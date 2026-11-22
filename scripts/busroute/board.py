@@ -224,7 +224,16 @@ def _q(s):
     return s.replace("\\", "\\\\").replace('"', '\\"')
 
 
-def write(src, dst, group, segs, vias, owned, origin=(0.0, 0.0), cu=None):
+def old_items(dst, group):
+    """What `group` wrote into `dst` last time, as recorded beside it: (set of segment keys (net, KiCad layer,
+    x0, y0, x1, y1) in local mm, set of via keys (net, x, y)). Only shared groups record their segments."""
+    side = os.path.splitext(dst)[0] + ".busroute.json"
+    rec = json.load(open(side, encoding="utf-8")) if os.path.isfile(side) else {"groups": {}}
+    old = rec["groups"].get(group, {})
+    return ({tuple(s) for s in old.get("segs", [])}, {tuple(v) for v in old.get("extras", [])})
+
+
+def write(src, dst, group, segs, vias, owned, origin=(0.0, 0.0), cu=None, shared=False):
     """Copy board file `src` to `dst` (may be the same path) with the group's copper replaced.
 
     segs   [(net, layer L-name, (x, y), (x, y), width)]   local mm
@@ -233,6 +242,8 @@ def write(src, dst, group, segs, vias, owned, origin=(0.0, 0.0), cu=None):
 
     Also removed: whatever the same group wrote last time (kept in <dst>.busroute.json), so a net that left
     the group and old stitching vias do not stay behind. Nothing else in the file is touched.
+    shared: the group owns no net (`owned` is ignored): it removes only its own copper of last time, found by
+    position, so other groups' copper on the same nets (ground, power) stays.
     Returns {"removed": n, "segments": n, "vias": n}."""
     text = open(src, encoding="utf-8", newline="").read()
     eol = "\r\n" if "\r\n" in text[:2000] else "\n"
@@ -240,8 +251,11 @@ def write(src, dst, group, segs, vias, owned, origin=(0.0, 0.0), cu=None):
     side = os.path.splitext(dst)[0] + ".busroute.json"
     rec = json.load(open(side, encoding="utf-8")) if os.path.isfile(side) else {"groups": {}}
     old = rec["groups"].get(group, {"nets": [], "extras": []})
+    if shared:
+        owned = []
     gone = set(owned) | set(old["nets"])
     old_extra = {(n, x, y) for n, x, y in old["extras"]}
+    old_segs = {tuple(k) for k in old.get("segs", [])}
     ox, oy = origin
     out, i, removed, last = [], 0, 0, None
     while i < len(lines):
@@ -260,6 +274,12 @@ def write(src, dst, group, segs, vias, owned, origin=(0.0, 0.0), cu=None):
         if not drop and m.group(1) == "via" and old_extra:
             at = next(re.match(r"^\t\t\(at ([-\d.]+) ([-\d.]+)", l) for l in blk if l.startswith("\t\t(at "))
             drop = (net, round(float(at.group(1)) - ox, 6), round(float(at.group(2)) - oy, 6)) in old_extra
+        if not drop and m.group(1) == "segment" and old_segs:
+            st = next(re.match(r"^\t\t\(start ([-\d.]+) ([-\d.]+)", l) for l in blk if l.startswith("\t\t(start "))
+            en = next(re.match(r"^\t\t\(end ([-\d.]+) ([-\d.]+)", l) for l in blk if l.startswith("\t\t(end "))
+            ly = next(re.match(r'^\t\t\(layer "([^"]+)"', l) for l in blk if l.startswith("\t\t(layer "))
+            drop = (net, ly.group(1), round(float(st.group(1)) - ox, 6), round(float(st.group(2)) - oy, 6),
+                    round(float(en.group(1)) - ox, 6), round(float(en.group(2)) - oy, 6)) in old_segs
         if drop:
             removed += 1
         else:
@@ -284,6 +304,8 @@ def write(src, dst, group, segs, vias, owned, origin=(0.0, 0.0), cu=None):
     out[last:last] = new
     os.makedirs(os.path.dirname(os.path.abspath(dst)), exist_ok=True)
     open(dst, "w", encoding="utf-8", newline="").write("\n".join(out))
-    rec["groups"][group] = {"nets": sorted(owned), "extras": [[n, round(p[0], 6), round(p[1], 6)] for n, p, d, h, own in vias if not own]}
+    rec["groups"][group] = {"nets": sorted(owned), "extras": [[n, round(p[0], 6), round(p[1], 6)] for n, p, d, h, own in vias if not own or shared]}
+    if shared:
+        rec["groups"][group]["segs"] = [[n, cu[lay], round(a[0], 6), round(a[1], 6), round(c[0], 6), round(c[1], 6)] for n, lay, a, c, w in segs]
     json.dump(rec, open(side, "w", encoding="utf-8", newline="\n"), indent=1, sort_keys=True)
     return {"removed": removed, "segments": len(segs), "vias": len(vias)}

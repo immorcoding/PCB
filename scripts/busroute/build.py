@@ -1,7 +1,7 @@
 """Build one routing group from its routes file.
 
     D:\\KiCad\\bin\\python.exe scripts\\busroute\\build.py <routes.py> [--fast] [--sketch] [--out DIR]
-                                                         [--write-board] [--no-refill] [--no-pictures]
+                                                         [--write-board [--ignore-lock]] [--no-refill] [--no-pictures]
 
     --fast          geometry only: resolve the description, check it (crossings, gaps, holes, paths, via
                     count, lengths by geometry) and print the table. No file is written, kicad-cli is not run.
@@ -13,6 +13,7 @@
     --write-board   write the tracks into the board file itself (PROC-13: only when the file is script-owned;
                     refused while KiCad has the project open). WITHOUT this flag the real board is never
                     touched: the build works on a copy of the .kicad_pcb / .kicad_pro / .kicad_dru in --out.
+    --ignore-lock   with --write-board: write even while KiCad has the project open (warns; reload it there)
     --no-refill     do not refill the pours for the DRC run (quick build of one group, PROC-6)
     --no-pictures   skip the PNGs
 
@@ -35,7 +36,7 @@ def main(argv):
         k = argv.index("--out")
         out = argv[k + 1]
         args.remove(out)
-    known = {"--fast", "--sketch", "--out", "--write-board", "--no-refill", "--no-pictures"}
+    known = {"--fast", "--sketch", "--out", "--write-board", "--ignore-lock", "--no-refill", "--no-pictures"}
     if len(args) != 1 or set(flags) - known:
         print(__doc__)
         return 2
@@ -45,7 +46,7 @@ def main(argv):
         pass
     from busroute import job
     _, code = job.run(args[0], fast="--fast" in flags, sketch="--sketch" in flags, out=out, write_board="--write-board" in flags,
-                      refill="--no-refill" not in flags, pictures="--no-pictures" not in flags)
+                      refill="--no-refill" not in flags, pictures="--no-pictures" not in flags, ignore_lock="--ignore-lock" in flags)
     return code
 
 

@@ -76,5 +76,47 @@ layout)
   $PY "$D/layout_probe.py" --json "$O/layout_probe.json" 2>&1 | quiet
   echo "layout step: $(( $(date +%s) - T0 )) s; sketch build exit $SB, place_check exit $PC"
   ;;
+copper)
+  # stop 5, power and copper (part A): placement, the pours of copper.sketch, the power group (routes_power.py:
+  # vias and short ties) on the real board, KiCad's own refill (PWR-6), then the copper table. The same group
+  # is built on the SDRAM line-order sketch copy to prove it legal next to the bus. One KiCad process at a time.
+  T0=$(date +%s)
+  BRD="$D/$N.kicad_pcb"; SK="$D/out/sketch/rot0/$N.kicad_pcb"
+  echo "== placement and pours"
+  $PY "$D/copper_report.py" unfill "$BRD" 2>&1 | quiet                  # no stale fill may decide a via's net
+  $PY "$D/place.py" 2>&1 | quiet
+  $PY "$R/scripts/cu_sketch.py" check "$D/copper.sketch" --board "$BRD" 2>&1 | quiet > "$O/sketch_check.txt" || { cat "$O/sketch_check.txt"; exit 1; }
+  head -1 "$O/sketch_check.txt"; grep -E "^\s+(ERROR|warning)" "$O/sketch_check.txt" || true
+  $PY "$R/scripts/cu_sketch.py" apply "$D/copper.sketch" "$BRD" 2>&1 | quiet | grep -v "^warning: a ~" || true
+  echo "== SDRAM line-order sketch on a copy of the board (the obstacles of the power group)"
+  $PY "$D/copper_report.py" unfill "$SK" 2>&1 | quiet
+  $PY "$R/scripts/busroute/build.py" "$D/routes_sdram.py" --sketch --out "$D/out/sketch/rot0" --no-refill --no-pictures > "$O/sketch_build.txt" 2>&1 && SB=0 || SB=$?
+  grep -E "^\[间距\]|^结论" "$O/sketch_build.txt" || tail -3 "$O/sketch_build.txt"
+  echo "== power group on the board"
+  POWER_LOG="$O/power_sites.txt" $PY "$R/scripts/busroute/build.py" "$D/routes_power.py" --write-board --ignore-lock --no-refill --no-pictures \
+    --out "$O/power" > "$O/power_build.txt" 2>&1 && PB=0 || PB=$?
+  grep -E "^写入|^\[间距\]|^结论|^ERROR" "$O/power_build.txt" || tail -5 "$O/power_build.txt"
+  grep -E "^(NO |feed .*SHORT)" "$O/power_sites.txt" || true
+  echo "== refill and save (kicad-cli), measure"
+  /d/KiCad/bin/kicad-cli.exe pcb drc --refill-zones --save-board --severity-all --units mm --format json -o "$O/drc.json" "$BRD" > /dev/null 2>&1 || true
+  $PY "$R/scripts/cu_sketch.py" measure "$BRD" --drc "$O/drc.json" --json "$O/measure.json" --skip-areas BGA_MCU,BGA_SDRAM > "$O/measure.txt" 2>&1 || true
+  $PY "$R/scripts/pour_islands.py" "$BRD" "cu-whole:L1_GND" "cu-whole:L6_GND" 2>&1 | quiet > "$O/pour_islands.txt" || true
+  grep -v " 0 without" "$O/pour_islands.txt" || true
+  echo "== power group on the line-order sketch copy (after routes_sdram.py)"
+  POWER_BOARD="$SK" POWER_LOG="$O/sketch_power/power_sites.txt" $PY "$R/scripts/busroute/build.py" "$D/routes_power.py" --write-board \
+    --out "$O/sketch_power" > "$O/sketch_power_build.txt" 2>&1 && SP=0 || SP=$?
+  grep -E "^\[间距\]|^结论|^ERROR" "$O/sketch_power_build.txt" || tail -5 "$O/sketch_power_build.txt"
+  $PY "$R/scripts/escape_check.py" "$SK" --ref U201 --ref U301 --window 27 25 66 51 --json "$O/escape_bga.json" 2>&1 | quiet > "$O/escape.txt"
+  $PY "$R/scripts/escape_check.py" "$SK" --ref U501 --ref U601 --ref U701 --ref J701 --ref U401 --json "$O/escape_parts.json" 2>&1 | quiet >> "$O/escape.txt"
+  echo "== escape check on the sketch copy (now | stop 4, out/layout/table.txt)"
+  grep -E "^U[0-9]|^J[0-9]" "$O/escape.txt" | while read -r line; do
+    ref=$(echo "$line" | cut -d' ' -f1); echo "$line"; grep -E "^$ref " "$D/out/layout/table.txt" | sed 's/^/  was: /'; done
+  echo "== pictures of the filled layers (qualitative review only)"
+  $PY "$D/copper_view.py" "$BRD" "$O" L1 L2 L3 L5 L6 2>&1 | quiet | tr '\n' ' '; echo
+  $PY "$D/make_project.py" > /dev/null 2>&1                               # SaveBoard rewrote the project file: its source is this script
+  echo "== copper table"
+  COPPER_SECONDS="$(( $(date +%s) - T0 )) s" $PY "$D/copper_report.py" table "$BRD" "$O" 2>&1 | quiet && CT=0 || CT=$?
+  echo "copper step: $(( $(date +%s) - T0 )) s; sketch build exit $SB, power build exit $PB, sketch-copy power build exit $SP, table exit $CT"
+  ;;
 *) echo "unknown step: $STEP"; exit 2 ;;
 esac

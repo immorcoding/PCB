@@ -61,11 +61,13 @@ def _dist(a, b):
 
 
 class Scene:
-    def __init__(self, board, profile, skip_nets=()):
+    def __init__(self, board, profile, skip_nets=(), skip_items=None):
         self.board, self.profile = board, profile
         self.areas = board.rule_areas(profile.area_names)
         self.items, self.grid = [], {}
         skip = set(skip_nets)
+        segs_old, vias_old = skip_items or (set(), set())       # a shared group's own copper of last time
+        r6 = lambda v: round(v, 6)
         for p in board.pads.values():
             layer = None if p.layers is None else (next(iter(p.layers)) if len(p.layers) == 1 else None)
             if p.shape == "circle":
@@ -73,10 +75,10 @@ class Scene:
             else:
                 self.add(Item("poly", p.net, layer, p.pos, p.pos, 0.0, "pad " + p.name, hole=p.hole, pth=p.hole > 0, poly=p.poly, pad=p))
         for n, lay, a, c, w, _ in board.tracks:
-            if n not in skip:
+            if n not in skip and (n, board.cu[lay], r6(a[0]), r6(a[1]), r6(c[0]), r6(c[1])) not in segs_old:
                 self.add(self.seg(n, lay, a, c, w, False))
         for n, p, d, h in board.vias:
-            if n not in skip:
+            if n not in skip and (n, r6(p[0]), r6(p[1])) not in vias_old:
                 self.add(self.via(n, p, d, h, False))
 
     def seg(self, net, layer, a, c, w, new=True):
@@ -172,8 +174,8 @@ def geometry(board, profile, resolved, segs, vias, opts=None):
     via count and length limits. `opts`: via_limit, via_target, len_max, yield_nets, allow_via_on."""
     opts = opts or {}
     finds = []
-    owned = set(resolved)
-    sc = Scene(board, profile, skip_nets=owned)
+    owned = set() if opts.get("shared") else set(resolved)
+    sc = Scene(board, profile, skip_nets=owned, skip_items=opts.get("skip_items"))
     new = [sc.seg(n, lay, a, c, w) for n, lay, a, c, w in segs] + [sc.via(n, p, d, h) for n, p, d, h, _ in vias]
     for it in new:
         sc.add(it)
@@ -197,7 +199,7 @@ def geometry(board, profile, resolved, segs, vias, opts=None):
         kind = "HOLE" if k[0].startswith("HOLE") else "GAP"
         finds.append(F(kind, "%s: %s %s (%.3f, %.3f)" % (it.net, it.desc.split(" of ")[0], describe(k[0], it, o, gap, need), q[0], q[1]), it.net, q,
                        other=o.net or o.desc, layer=k[3], gap=round(gap, 4), need=need))
-    allow = {tuple(p) for p in opts.get("allow_via_on", ())}
+    allow = set(opts.get("allow_via_on", ()))
     for it in new:
         if it.kind == "round":                              # a via: never on a pad
             for o in sc.near(it, 0.1):
