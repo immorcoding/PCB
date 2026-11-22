@@ -20,7 +20,7 @@ bench_routes.py and expects:
 Length tuning (tune.py), on the same board with other balls on the nets (TUNE_PADS) and bench_tune.py:
   plain             the routes without TUNING: DRC reports the lane's skew (rule sdram_lane1, 5 mm) -- the rule is live
   budget            --tuning-budget numbers of variant "short": targets, needs, RTE-2 capacities, the one short net
-  tune              a 5-lane bundle (3 slots, start on one line, one of them a bump), a hand-written route with a
+  tune              a 5-lane bundle (3 slots, two start on one line, a bump beside a lane 0.25 mm away), a hand-written route with a
                     double-sided free site, one whose site is short for amp 0.5 (amplitude raised): every group inside
                     its spread, DRC clean (skew included), geometry length = DRC length within 0.01 mm, no finding,
                     the arc checks (tangency, radius, pieces >= 0.1, equal heights, clr / area_gap / end) and
@@ -62,20 +62,22 @@ via field: 2 rows, step 0.70, via 0.3 / 0.15, ground vias [(22.3, 13.85), (23.0,
 TUNE_PADS = {"FMC_D8": ("R13", "R1"), "FMC_D9": ("R12", "P1"), "FMC_D10": ("R11", "R2"), "FMC_D11": ("R10", "P2"), "FMC_D12": ("R9", "R3"),
              "FMC_A0": ("A9", "A9"), "FMC_A1": ("A10", "A8"), "FMC_A2": ("A11", "A7"), "FMC_A3": ("A12", "A3")}
 # net: (natural length, length with serpentines) by geometry, variant "short" (A3 is tuned only there).
-# Targets: lane1 27.1585 - 4.7 + 0.3 = 22.7585, hand 30.1284 - 2 + 0.3 = 28.4284.
+# Targets: lane1 26.62 - 4.2 + 0.3 = 22.72, hand 30.1284 - 2 + 0.3 = 28.4284. D11 / D12 run 0.65 mm nearer D10 on the east
+# leg than before 2026-11-22 (D11 0.25 below D10: the lane-neighbour case of tune.py), hence shorter.
 TUNE_LEN = {'FMC_A0': (30.1284, 30.1284), 'FMC_A1': (26.2784, 28.4284), 'FMC_A2': (22.4284, 28.4284), 'FMC_A3': (16.1784, 19.2834),
-            'FMC_D8': (17.7971, 22.7585), 'FMC_D9': (21.1031, 22.7585), 'FMC_D10': (22.4778, 22.7585), 'FMC_D11': (25.7838, 25.7838),
-            'FMC_D12': (27.1585, 27.1585)}
+            'FMC_D8': (17.7971, 22.72), 'FMC_D9': (21.1031, 22.72), 'FMC_D10': (22.4778, 22.72), 'FMC_D11': (25.2454, 25.2454),
+            'FMC_D12': (26.62, 26.62)}
 # (net, kind, side, humps, height, pitch) of every block drawn in variant "short", in drawing order (neediest net first).
 # A3: 2 humps (its site holds no more), 0.905 high (0.910 comes closer than 0.19 to A2): adds 3.105 of 12.250.
 # A2: 8 humps at 0.504 would add its 6.000, the site holds 5: raised to (6 / 5 + 0.2575) / 2 = 0.7288.
-# D8: 6 x (2 x 0.5422 - 0.858 x 0.3) = 4.961. A1 both-sided, pitch 0.5: 3 humps would be 0.5014 high, an illegal
-# 0.0014 mm leg, so 2 humps of 0.6985. D10 needs 0.281, below one hump of 2r: a bump of radius 0.15.
-TUNE_BLOCKS = [('FMC_A3', 'single', 'L', 2, 0.905, 0.3), ('FMC_A2', 'single', 'L', 5, 0.7288, 0.3), ('FMC_D8', 'single', 'L', 6, 0.5422, 0.3),
-               ('FMC_A1', 'both', 'both', 2, 0.6985, 0.5), ('FMC_D9', 'single', 'L', 2, 0.5426, 0.3), ('FMC_D10', 'bump', 'L', 0, 0.2674, 0.3)]
+# D8: 6 x (2 x 0.539 - 0.858 x 0.3) = 4.923. A1 both-sided, pitch 0.5: 3 humps would be 0.5014 high, an illegal
+# 0.0014 mm leg, so 2 humps of 0.6985. D10 needs 0.242, below one hump of 2r: a bump of radius 0.15, drawn although D11
+# runs 0.25 mm below D10 there (0.148 edge to edge < clr): the bump comes no closer to D11 than D10's straight.
+TUNE_BLOCKS = [('FMC_A3', 'single', 'L', 2, 0.905, 0.3), ('FMC_A2', 'single', 'L', 5, 0.7288, 0.3), ('FMC_D8', 'single', 'L', 6, 0.539, 0.3),
+               ('FMC_A1', 'both', 'both', 2, 0.6985, 0.5), ('FMC_D9', 'single', 'L', 2, 0.533, 0.3), ('FMC_D10', 'bump', 'L', 0, 0.2451, 0.3)]
 # --tuning-budget of variant "short": group -> (target, {net: (need, [(humps, cap at amp, cap at amp_max) per site])})
-TUNE_BUDGET = {'lane1': (22.7585, {'FMC_D8': (4.9614, [(6, 4.4549, 22.4549)]), 'FMC_D9': (1.6554, [(2, 1.485, 7.485)]),
-                                   'FMC_D10': (0.2807, [(1, 0.7425, 3.7425)]), 'FMC_D11': (0.0, []), 'FMC_D12': (0.0, [])}),
+TUNE_BUDGET = {'lane1': (22.72, {'FMC_D8': (4.9229, [(6, 4.4549, 22.4549)]), 'FMC_D9': (1.6169, [(2, 1.485, 7.485)]),
+                                 'FMC_D10': (0.2422, [(1, 0.7425, 3.7425)]), 'FMC_D11': (0.0, []), 'FMC_D12': (0.0, [])}),
                'hand': (28.4284, {'FMC_A0': (0.0, []), 'FMC_A1': (2.15, [(3, 2.1416, 11.1416)]), 'FMC_A2': (6.0, [(5, 3.7124, 18.7124)]),
                                   'FMC_A3': (12.25, [(2, 1.485, 7.485)])})}
 # DRC item types that say nothing about the routes on this synthetic board.

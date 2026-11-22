@@ -41,6 +41,10 @@ is short of its target but inside the window [longest - spread, longest] all the
   other pieces; the net's own copper is ignored closer than r to the site's line), never below the DRC clearance of
   the place; via holes keep the hole clearance; `area_gap` from every rule-area edge; the board-edge clearance;
   outside keep-outs and other nets' pours (YIELD_NETS excepted). Tested on the centre line sampled every 0.01 mm.
+  A sample that is no closer to another net's copper than the straight it replaces (at the same station u, v = 0)
+  is not held to `clr`: the neighbours of a bundle lane at the lane pitch (0.25 here: 0.148 mm edge to edge, legal
+  for DRC, below clr) stay where they are on the side away from the humps (2026-11-22, stop 6 of the H743 board).
+  Only the obstacles and pours near each trial element are tested (bounding box + the largest clearance).
 
 Output: the group's segments with the serpentines cut in, PCB arcs (net, layer, start, mid, end, width), the new
 lengths, a report for the metrics table and the findings (TUNE, ARC). Points are rounded to 1 nm, as written.
@@ -226,6 +230,15 @@ def _r(p):
     return (round(p[0], NM), round(p[1], NM))
 
 
+def _dist(q, o):
+    """Distance from point q to the centre geometry of an obstacle item (its half width not taken off)."""
+    if o.kind == "seg":
+        return pt_seg(q, o.a, o.b)[0]
+    if o.kind == "round":
+        return math.dist(q, o.a)
+    return seg_poly_dist(q, q, o.poly)[0]
+
+
 # ---------------------------------------------------------------- settings
 class Settings:
     def __init__(self, d):
@@ -387,7 +400,7 @@ class Tuning:
         keep = [k for k in self.board.keepouts if k["tracks"] and layer in k["layers"]]
         zones = [z for z in self.board.zones if z["net"] != net and layer in z["layers"] and z["net"] not in self.opts.get("yield_nets", ())]
 
-        def test(q, v, rline):
+        def test(q, v, rline, base=None, obs=obs, zones=zones):
             for nm, R in rects:
                 dx = max(R[0] - q[0], 0.0, q[0] - R[2])
                 dy = max(R[1] - q[1], 0.0, q[1] - R[3])
@@ -413,32 +426,54 @@ class Tuning:
                     d = seg_poly_dist(q, q, o.poly)[0]
                 need = self._need(net, o)
                 if d - o.r - hw < need + 5e-4:
+                    if base is not None and o.net != net and d >= _dist(base, o) - 1e-6:
+                        continue                            # no closer than the straight it replaces (a lane neighbour)
                     who = o.desc if o.net != net else "its own " + o.desc
                     return "closer than %.3f to the %s" % (need, who), d - o.r - hw
                 if o.hole > 0 and math.dist(q, o.a) - o.hole - hw < pr.hole_clr + 5e-4:
                     return "closer than %.3f to the hole of the %s" % (pr.hole_clr, o.desc), None
             return None
+        test.obs, test.zones = obs, zones
+        test.reach = hw + max([S.clr, pr.clr_area, pr.hole_clr] + [pr.clr(o.net) for o in obs if o.net]) + 0.01
         return test
 
     def _fits(self, site, el, u0, sd, hw, test):
         """None when the element drawn at u0 on side sd keeps every limit, else the reason."""
         prims, _ = draw(el, u0, sd)
         rline = el[3] if el[0] != "bump" else min(el[1], 0.05)        # own copper is ignored this close to the line
+        pts = []
         for pr in prims:
             if pr[0] == "seg":
                 L = math.dist(pr[1], pr[2])
                 if L < self.profile.min_seg - 1e-7:
                     return "a straight piece of %.3f mm" % L
                 n = max(1, int(math.ceil(L / STEP)))
-                pts = [(pr[1][0] + (pr[2][0] - pr[1][0]) * i / n, pr[1][1] + (pr[2][1] - pr[1][1]) * i / n) for i in range(n + 1)]
+                pts += [(pr[1][0] + (pr[2][0] - pr[1][0]) * i / n, pr[1][1] + (pr[2][1] - pr[1][1]) * i / n) for i in range(n + 1)]
             else:
                 if arc_len(pr[1], pr[2], pr[3]) < self.profile.min_seg - 1e-7:
                     return "an arc of %.3f mm" % arc_len(pr[1], pr[2], pr[3])
-                pts = arc_points(pr[1], pr[2], pr[3], STEP)
-            for u, v in pts:
-                bad = test(site.world(u, v), v, rline)
-                if bad:
-                    return bad[0]
+                pts += arc_points(pr[1], pr[2], pr[3], STEP)
+        # only the obstacles and pours near this element (speed: the site's list covers the whole site + amp_max)
+        W = [site.world(u, v) for u, v in pts]
+        bx0, by0 = min(p[0] for p in W), min(p[1] for p in W)
+        bx1, by1 = max(p[0] for p in W), max(p[1] for p in W)
+        rr = test.reach
+        def close(o):
+            if o.kind == "round":
+                xs_, ys_ = (o.a[0],), (o.a[1],)
+            elif o.kind == "seg":
+                xs_, ys_ = (o.a[0], o.b[0]), (o.a[1], o.b[1])
+            else:
+                xs_, ys_ = [p[0] for p in o.poly], [p[1] for p in o.poly]
+            m = rr + o.r + max(o.hole, 0.0)
+            return min(xs_) - m <= bx1 and max(xs_) + m >= bx0 and min(ys_) - m <= by1 and max(ys_) + m >= by0
+        obs = [o for o in test.obs if close(o)]
+        zones = [z for z in test.zones if min(p[0] for p in z["poly"]) <= bx1 + rr and max(p[0] for p in z["poly"]) >= bx0 - rr
+                 and min(p[1] for p in z["poly"]) <= by1 + rr and max(p[1] for p in z["poly"]) >= by0 - rr]
+        for (u, v), q in zip(pts, W):
+            bad = test(q, v, rline, site.world(u, 0.0), obs, zones)
+            if bad:
+                return bad[0]
         return None
 
     # ---- where a block may go on a site
@@ -832,15 +867,14 @@ class Tuning:
         gmin, amin = None, None
         for q in pts:
             v = (q[0] - o[0]) * N[0] + (q[1] - o[1]) * N[1]
+            u = (q[0] - o[0]) * U[0] + (q[1] - o[1]) * U[1]
+            base = (o[0] + u * U[0], o[1] + u * U[1])
             for x in obs:
                 if x.net == net and abs(v) < rline - 1e-6:
                     continue
-                if x.kind == "seg":
-                    d = pt_seg(q, x.a, x.b)[0]
-                elif x.kind == "round":
-                    d = math.dist(q, x.a)
-                else:
-                    d = seg_poly_dist(q, q, x.poly)[0]
+                d = _dist(q, x)
+                if x.net != net and d - x.r - hw < self.S.clr and d >= _dist(base, x) - 1e-6:
+                    continue                                # no closer than the straight it replaces (_limits)
                 g = d - x.r - hw
                 gmin = g if gmin is None else min(gmin, g)
             for nm, a in self.areas.items():

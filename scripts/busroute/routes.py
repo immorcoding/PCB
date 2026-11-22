@@ -36,6 +36,13 @@ def F(kind, text, net=None, at=None, **kw):
     return d
 
 
+def _on_grid(p):
+    """A pad centre snapped to the 0.1 um grid when it is within 10 nm of it (KiCad leaves some pads of rotated
+    footprints 1 nm off, e.g. 132.649999 mm); farther off it is returned unchanged and ipt() refuses it."""
+    q = tuple(round(v, 4) for v in p)
+    return q if all(abs(a - b) < 1e-5 for a, b in zip(p, q)) else tuple(p)
+
+
 def resolve(board, profile, routes, open_ok=False):
     """-> ({net: [piece]}, findings). piece = ("L1", [(x, y), ...][, width]) | ("via", (x, y), size or None).
     A net given as several chains comes out as the chains' pieces one after the other.
@@ -77,7 +84,7 @@ def _chain(board, profile, net, pieces, finds, open_ok, single):
                 if pad.layers is not None and lay not in pad.layers:
                     finds.append(F("PATH", "pad %s is not on %s" % (pad.name, lay), net, pad.pos))
                 ends.append((pad.name, len(res), k))
-                p = pad.pos
+                p = _on_grid(pad.pos)
             pts.append((float(p[0]), float(p[1])))
         ip = [ipt(p) for p in pts]
         if where is not None and math.dist(where, pts[0]) > 1e-7:
@@ -99,7 +106,7 @@ def _chain(board, profile, net, pieces, finds, open_ok, single):
                 finds.append(F("VIATURN", "the track turns %d degrees across the via at %s" % (45 * turn(d1, d2), pc[1]), net, pc[1]))
     first, last = tr[0][1][0], tr[-1][1][-1]
     pads = board.net_pads(net)
-    at_pad = lambda p: [q.name for q in pads if math.dist(q.pos, p) < 1e-7]
+    at_pad = lambda p: [q.name for q in pads if math.dist(_on_grid(q.pos), p) < 1e-7]
     a, b = at_pad(first), at_pad(last)
     kind = "OPEN" if open_ok else "PATH"
     if not a:

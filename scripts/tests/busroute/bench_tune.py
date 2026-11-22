@@ -4,7 +4,9 @@
           areas (lane pitch 0.9) and up into the south row of U2 (R1, P1, R2, P2, R3; P1 / P2 through channels).
           The inner lanes are shorter (natural spread 9.4 mm); the three short ones have a site on the east leg
           (Bundle.slot, all starting at station 1.2, humps north): D8 six humps, D9 two humps under D8's, D10 a
-          bump. Spread 4.7: the project's skew rule sdram_lane1 (5 mm) covers exactly these five nets here.
+          bump. Spread 4.2: the project's skew rule sdram_lane1 (5 mm) covers exactly these five nets here.
+          On the east leg D11 runs 0.25 mm south of D10 (the lane pitch of the H743 board: 0.148 mm edge to edge, below
+          clr 0.19): D10's bump is drawn all the same, it comes no closer to D11 than the straight it replaces.
   hand    L1, FMC_A0..A3 written by hand (bus.keep) from the north row of U1 over the top to the north row
           of U2, nested; A0 is the longest. Free-standing sites (job.slot): A1 double-sided ("both", pitch 0.5),
           A2 on a straight too short for its need at amp 0.5 (the amplitude is raised), A3 (in the group in
@@ -26,7 +28,7 @@ DRC_IGNORE = {"isolated_copper": "the benchmark's ground pours have no pad of th
 
 if VARIANT != "plain":
     TUNING = {
-        "groups": {"lane1": {"nets": LANE1, "spread": 4.7},
+        "groups": {"lane1": {"nets": LANE1, "spread": 4.2},
                    "hand": {"nets": HAND if VARIANT == "short" else HAND[:3], "spread": 2.0}},
         "margin": 0.3, "radius": 0.25, "amp": 0.5, "amp_max": 2.0,
         "pitch": {"default": 0.3, "FMC_A1": 0.5},
@@ -47,10 +49,10 @@ def routes(job):
     bus.keep(hand)
     lane = Bundle("lane1", LANE1, "L1", anchor="FMC_D8",
                   path=[(16.25, 18.0), (16.25, 23.9), (16.85, 24.5), (23.2, 24.5), (23.8, 23.9), (23.8, 23.4)],
-                  pitch=0.9, gaps={0: 0.65, 1: 0.8, 3: 0.6, 4: 0.4})
+                  pitch=0.9, gaps={0: 0.65, 1: 0.8, 2: [0.9, 0.9, 0.25, 0.9], 3: 0.6, 4: 0.4})
     lane.slot("FMC_D8", 2, 1.2, 5.0, side="L")                  # all humps north, the three blocks start on one line:
     lane.slot("FMC_D9", 2, 1.2, 2.8, side="L")                  # D9's humps fit under D8's (0.9 lane pitch)
-    lane.slot("FMC_D10", 2, 1.2, 2.2, side="L")                # D10 needs less than one hump: a bump
+    lane.slot("FMC_D10", 2, 3.8, 2.2, side="L")                # D10 needs less than one hump: a bump, where D11 runs 0.25 below
     bus.add(lane, start={n: m[n] for n in LANE1}, end={n: r[n].reversed() for n in LANE1})
     job.slot("FMC_A1", "L1", (16.0, 2.7), (19.6, 2.7), side="both")
     job.slot("FMC_A2", "L1", (21.0, 3.9), (25.4, 3.9), side="L")

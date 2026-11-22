@@ -33,7 +33,7 @@ class Board:
         self.cu = {"L%d" % (i + 1): ("F.Cu" if i == 0 else "B.Cu" if i == len(ids) - 1 else "In%d.Cu" % i) for i in range(len(ids))}
         lname = {lid: "L%d" % (i + 1) for i, lid in enumerate(ids)}
         self.layers = list(self.cu)
-        self.pads, self.by_ref, self.fp = {}, {}, {}
+        self.pads, self.by_ref, self.fp, self.dup_pads = {}, {}, {}, []
         for f in b.GetFootprints():
             ref = f.GetReference()
             self.fp[ref] = {"pos": L(f.GetPosition()), "rot": f.GetOrientationDegrees(), "lib": f.GetFPID().GetUniStringLibId(), "pads": []}
@@ -60,6 +60,8 @@ class Board:
                         q.poly = [L(o.CPoint(i)) for i in range(o.PointCount())]
                     except Exception:
                         q.poly = [(q.box[0], q.box[1]), (q.box[2], q.box[1]), (q.box[2], q.box[3]), (q.box[0], q.box[3])]
+                if q.name in self.pads:                     # a second pad with the same number (shield tabs, mounting pads)
+                    self.dup_pads.append(self.pads[q.name])  # stays a pad of its net for routes and connectivity
                 self.pads[q.name] = q
                 self.by_ref.setdefault(ref, []).append(q)
                 self.fp[ref]["pads"].append(q.name)
@@ -118,7 +120,7 @@ class Board:
         file), and needed because kicad-cli's DRC lists at most 499 unconnected items per board."""
         out = {}
         for n in sorted(nets):
-            pads = [p for p in self.pads.values() if p.net == n]
+            pads = self.net_pads(n)
             parent = {}
 
             def find(x):
@@ -198,7 +200,9 @@ class Board:
         raise KeyError("no pad %r on the board" % (name,))
 
     def net_pads(self, net):
-        return [p for p in self.pads.values() if p.net == net]
+        """Every pad of the net, including pads that share their number with another pad of the footprint (which
+        self.pads, keyed by "REF.NUM", keeps only once: reach those by their coordinates in a route)."""
+        return [p for p in list(self.pads.values()) + self.dup_pads if p.net == net]
 
     def rule_areas(self, names=None):
         """{name: rectangle} of the rule areas that change track width and clearance."""

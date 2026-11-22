@@ -39,7 +39,17 @@ GROUPS = {"lane0": ["FMC_D%d" % i for i in range(8)] + ["FMC_NBL0"], "lane1": ["
           "lane2": ["FMC_D%d" % i for i in range(16, 24)] + ["FMC_NBL2"], "lane3": ["FMC_D%d" % i for i in range(24, 32)] + ["FMC_NBL3"],
           "addr": ADDR, "clock": ["FMC_SDCLK", "FMC_SDCLK_R"]}
 YIELD_NETS = ["GND"]
-DRC_IGNORE = {"skew_out_of_range": "byte-lane matching (sdram_lane0-3) is the tuning stage, not the line-order sketch (SPEC 9)"}
+DRC_IGNORE = {"skew_out_of_range": "stop 6 part B: no byte lane reaches the 5 mm of sdram_lane0-3; each lane's shortest net has no site outside the corridors reserved for stop 7 (reported per net in the route1 table and the stop-6 report)"}
+# ---- stop 6 part B: length tuning of the four byte lanes (RTE-2, RTE-7, RTE-15; SPEC 9: inside a lane longest -
+# shortest <= 5 mm). spread per lane = the window aimed at (5 where the room allows it, see the report for the others);
+# end / clr / area_gap / keep are the tool's defaults (not yet confirmed by the user, RTE open question).
+LANE_SPREAD = {"lane0": float(os.environ.get("SPREAD0", "11.34")), "lane1": float(os.environ.get("SPREAD1", "16.68")), "lane2": float(os.environ.get("SPREAD2", "18.6")), "lane3": float(os.environ.get("SPREAD3", "12.74"))}
+TUNING = {"groups": {g: {"nets": GROUPS[g], "spread": LANE_SPREAD[g]} for g in ("lane0", "lane1", "lane2", "lane3")},
+          "margin": 0.3, "radius": 0.25, "amp": 0.5, "amp_max": 2.0, "pitch": {"default": 0.3},
+          "end": 0.35, "clr": 0.19, "area_gap": 0.127, "keep": 0.7}
+# corridors the stop-7 escapes of the MCU's east side need (main session, 2026-11-22): no serpentine, no spread lane
+RESERVED = [("L1", 46.0, 35.6, 49.6, 36.45), ("L1", 47.5, 43.2, 49.0, 45.1), ("L1", 44.3, 46.6, 46.6, 50.0),
+            ("L4", 47.7, 38.8, 49.2, 43.4), ("L4", 47.5, 44.6, 49.6, 47.3), ("L6", 46.0, 37.2, 49.3, 38.45)]
 NETS = DATA + ADDR + ["FMC_SDCLK", "FMC_SDCLK_R"]
 LAYERS = os.environ.get("LAYERS", "L1 L4 L6").split()
 VIEWS = [("all", 29.0, 26.0, 66.0, 50.0, 40), ("strip", 44.0, 28.0, 54.0, 46.0, 100), ("sdram", 50.0, 28.0, 64.0, 47.0, 80),
@@ -102,7 +112,7 @@ def bund(name, nets, layer, legs, start, end, span=None, anchor=None):
                     vs[n] = vs[nets[after[0]]] - 0.3 * sc * (after[0] - i)
         full = {n: {"E": 1, "W": -1, "S": -1, "N": 1, "SE": -1, "NW": 1, "NE": 1, "SW": -1}[d] * vs[n] for n in nets}
         cs.append((d, full))
-        g = [round((vs[nets[i + 1]] - vs[nets[i]]) / sc, 6) for i in range(len(nets) - 1)]
+        g = [round((vs[nets[i + 1]] - vs[nets[i]]) / sc, 12) for i in range(len(nets) - 1)]
         if g and min(g) <= 0:
             raise ValueError("%s leg %d (%s): lanes not in order, gaps %s" % (name, k, d, g))
         gaps[k] = g
@@ -117,6 +127,7 @@ def bund(name, nets, layer, legs, start, end, span=None, anchor=None):
 
 def ext(lead, pts):
     """A lead whose last piece runs on through `pts`."""
+    lead = [tuple(pc) for pc in (lead.pieces if hasattr(lead, "pieces") else lead)]
     return list(lead[:-1]) + [(lead[-1][0], list(lead[-1][1]) + list(pts))]
 
 
@@ -256,6 +267,8 @@ def routes(job):
         span = {"FMC_A10": (0, 2), "FMC_A6": (0, 2), "FMC_A3": (0, 2), "FMC_D28": (0, 2), "FMC_D29": (0, 3),
                 "FMC_D30": (2, 3), "FMC_NBL3": (2, 4), "FMC_NBL0": (2, 4), "FMC_D2": (2, 4)}
         l1n = bund("l1n", n_all, "L1", legs, 33.2, 41.0, span, anchor="FMC_D29")
+        # stop 6 part B: D29 / D30 / NBL3 (lane 3) get no site: the room south of D2 down to D3 (y 32.775) is reserved for
+        # the stop-7 escapes of the MCU's east side (main session, 2026-11-22); the other sides are lanes or the SDRAM area
         # A6: L1 west below the MCU, up the west side to y 39.0, L4 past the crystal box, L1 again at (31.15, 31.9)
         a6 = [("L1", list(m["FMC_A6"].pieces[0][1]) + [(38.525, 43.5), (32.3, 43.5), (31.4, 42.6), (31.4, 39.0)]), ("via", (31.4, 39.0)),
               ("L4", [(31.4, 39.0), (31.4, 32.15), (31.15, 31.9)]), ("via", (31.15, 31.9)), ("L1", [(31.15, 31.9), (31.15, 31.6)])]
@@ -293,6 +306,9 @@ def routes(job):
         # legs: 0 E, 1 SE, 2 S, 3 SE, 4 E, 5 NE, 6 N
         legs = [("E", y0), ("SE", se), ("S", xs), ("SE", se2), ("E", yb), ("NE", ne), ("N", xn)]
         l1e = bund("l1e", e_n, "L1", legs, 46.5, 34.0, {"FMC_D3": (0, 2), "FMC_D24": (0, 4)})
+        # stop 6 part B: D13 (lane 1) humps north on its straight out of the MCU (station = x - 46.5), into the room
+        # below BA0 (y 38.625); its south side and every side of D14 are reserved for the stop-7 escapes
+        l1e.slot("FMC_D13", 0, 46.3 - 46.5, 49.15 - 46.3, side="L")
         bus.add(l1e, start={"FMC_D3": s_d3, "FMC_D24": m["FMC_D24"], "FMC_D20": s_d20, "FMC_BA0": m["FMC_BA0"],
                             "FMC_D13": m["FMC_D13"], "FMC_D14": m["FMC_D14"]},
                 end={"FMC_D3": [(50.45, 39.2), (51.05, 39.8), (54.2, 39.8), "U301.M2"],
@@ -329,10 +345,18 @@ def routes(job):
         xn = {"FMC_D23": 47.25, "FMC_D22": 47.5, "FMC_D21": 47.75, "FMC_D19": 48.0, "FMC_D18": 48.25}
         ye = {"FMC_D23": 29.0, "FMC_D22": 29.25, "FMC_D21": 29.5, "FMC_D19": 29.75, "FMC_D18": 30.0}
         xs = {"FMC_D23": 61.6, "FMC_D22": 61.35, "FMC_D21": 61.1}
+        # stop 6 part B: east of x 49 (the strip and the room north of the east leg west of x 49 are reserved for stop 7)
+        # the east leg steps north on one nested NE jog (leg 5): D23 D22 D21 D19 by J6 (D23 to y 27.75; limit 27.7), D18 by
+        # J18, out of the SDRAM area, so that D18 (lane 2's shortest) humps north into the gap D18 - D19. Sketch: no jog.
+        J6, J18 = float(os.environ.get("J6", "1.25")), float(os.environ.get("J18", "0.68"))
+        jj = {"FMC_D23": 49.75, "FMC_D22": 49.854, "FMC_D21": 49.958, "FMC_D19": 50.062, "FMC_D18": 50.166}   # jog starts (x), > 2 mm after the corners
+        ye2 = {n: ye[n] - (J18 if n == "FMC_D18" else J6) for n in ye}
         legs = [("E", y0), ("NE", {n: xn[n] + y0[n] - 0.4 for n in y0}), ("N", xn), ("NE", {n: xn[n] + ye[n] + 0.4 for n in xn}),
-                ("E", ye), ("SE", {n: xs[n] - ye[n] - 0.4 for n in xs}), ("S", xs)]
-        span = {"FMC_D19": (0, 4), "FMC_D18": (0, 4)}
+                ("E", ye), ("NE", {n: jj[n] + ye[n] for n in ye}), ("E", ye2), ("SE", {n: xs[n] - ye2[n] - 0.4 for n in xs}), ("S", xs)]
+        span = {"FMC_D19": (0, 6), "FMC_D18": (0, 6)}
         l6n = bund("l6n", n6, "L6", legs, 46.5, 40.0, span, anchor="FMC_D23")
+        l6n.slot("FMC_D18", 6, 51.0 - (49.75 + J6), 55.6 - 51.0, side="L")     # station = x - D23's jog end
+        l6n.slot("FMC_D19", 6, 55.2 - (49.75 + J6), 58.0 - 55.2, side="R")     # D19 humps south into the same gap, after D18's block
         bus.add(l6n, start={n: m[n] for n in n6},
                 end={"FMC_D18": via_end([(57.8, 30.4), (57.8, 32.2)], (58.2, 32.6), "C7"),
                      "FMC_D19": via_end([(59.35, 29.75)], (60.6, 31.0), "A9"),     # one SE step from the lane (sketch: SE, S, SE: `crowded`)
@@ -348,6 +372,8 @@ def routes(job):
                   + [("via", (55.8, 39.8)), ("L1", [(55.8, 39.8), "U301.M3"])],
                   "FMC_D0": m["FMC_D0"][:-1] + [("L6", [(44.225, 39.925), (44.55, 40.25), (50.2, 40.25), (50.55, 40.6), (54.2, 40.6)])]
                   + [("via", (54.2, 40.6)), ("L1", [(54.2, 40.6), "U301.N2"])]})
+        # stop 6 part B: lane 0 gets no site: D0, its shortest net, has its south side reserved for the stop-7 escapes
+        # and D1 0.65 mm to its north
         # l6ww: WE west, south down the west side, east (joins l6s as its outer lane)
         # stop 6: the SW leg starts at the lead's end (34.0, 38.3); sketch: a W leg and a 0.283 mm SW chamfer (SHARP)
         l6ww = bund("l6ww", ["FMC_SDNWE"], "L6", [("SW", {"FMC_SDNWE": 34.0 + 38.3}),
@@ -392,10 +418,20 @@ def routes(job):
                                   ("L4", [(48.75, 36.675), (49.3, 36.675), (51.225, 38.6), (53.0, 38.6), (53.4, 38.2)]),
                                   ("via", (53.4, 38.2)), ("L1", [(53.4, 38.2), "U301.J1"])]})
         # straight to the west face: D27 D25 D31 CKE0
-        bus.keep({"FMC_D27": ext(m["FMC_D27"], [(48.5, 33.75), (51.25, 31.0), (54.2, 31.0)]) + [("via", (54.2, 31.0)), ("L1", [(54.2, 31.0), "U301.A2"])],
-                  "FMC_D25": ext(m["FMC_D25"], [(49.4, 34.4), (51.2, 32.6), (54.2, 32.6)]) + [("via", (54.2, 32.6)), ("L1", [(54.2, 32.6), "U301.C2"])],
-                  "FMC_D31": ext(m["FMC_D31"], [(50.3, 35.05), (51.95, 33.4), (54.2, 33.4)]) + [("via", (54.2, 33.4)), ("L1", [(54.2, 33.4), "U301.D2"])],
+        # stop 6 part B: lane 3's tuning zone in the strip between the packages (x 47.45 - 51.7): D27 D25 D31 rise at
+        # x 47.05 / 47.3 / 47.3 to rows y27 / y25 / y31, stacked under D26's east leg (y 29.5), each humping south,
+        # and drop into their via rows inside the SDRAM area (sketch: one NE diagonal each, straight to the via row)
+        y27, y25, y31 = (float(os.environ.get(k, d)) for k, d in (("Y27", "30.35"), ("Y25", "32.1"), ("Y31", "34.55")))
+        bus.keep({"FMC_D27": ext(m["FMC_D27"], [(46.65, 33.75), (47.05, 33.35), (47.05, y27 + 0.4), (47.45, y27), (52.0, y27), (52.0 + 31.0 - y27, 31.0), (54.2, 31.0)])
+                  + [("via", (54.2, 31.0)), ("L1", [(54.2, 31.0), "U301.A2"])],
+                  "FMC_D25": ext(m["FMC_D25"], [(46.9, 34.4), (47.3, 34.0), (47.3, y25 + 0.4), (47.7, y25), (52.0, y25), (52.0 + 32.6 - y25, 32.6), (54.2, 32.6)])
+                  + [("via", (54.2, 32.6)), ("L1", [(54.2, 32.6), "U301.C2"])],
+                  "FMC_D31": ext(m["FMC_D31"], [(47.05, 35.05), (47.05 + 35.05 - y31, y31), (52.0, y31), (52.0 + y31 - 33.4, 33.4), (54.2, 33.4)])
+                  + [("via", (54.2, 33.4)), ("L1", [(54.2, 33.4), "U301.D2"])],
                   "FMC_SDCKE0": ext(m["FMC_SDCKE0"], [(49.9, 35.7), (52.0, 37.8), (53.8, 37.8), (54.2, 38.2)]) + [("via", (54.2, 38.2)), ("L1", [(54.2, 38.2), "U301.J2"])]})
+        job.slot("FMC_D27", "L4", (47.7, y27), (51.7, y27), side="R")      # all four blocks start at x 48.4 (RTE-7)
+        job.slot("FMC_D25", "L4", (47.7, y25), (51.7, y25), side="R")
+        job.slot("FMC_D31", "L4", (47.7, y31), (51.7, y31), side="R")
         # l4w + l4n: A1 A2 NE0 A0 (west) NBL1 NBL2 CAS (north) D26 (east, up the strip) to the aisle's north end.
         # In the aisle the lanes turn east in order (eastmost first); A0 and NBL2 reach their balls round the vias
         # of the nets outside them: A0 below NE0's J8, NBL2 below NBL1's K9 and back up east of column 9.
@@ -415,6 +451,10 @@ def routes(job):
         legs = [("E", {"FMC_D26": 33.1}), ("NE", {"FMC_D26": 46.8 + 33.1 - 0.4}), ("N", {"FMC_D26": 46.8}),
                 ("NE", {"FMC_D26": 46.8 + 29.5 + 0.4}), ("E", ye), ("SE", {n: xa[n] - ye[n] - 0.4 for n in n4}), ("S", xa)]
         l4n = bund("l4n", n4, "L4", legs, 46.3, 33.0, {n: (4, 6) for n in n4 if n != "FMC_D26"}, anchor="FMC_D26")
+        # stop 6 part B: D26 (lane 3) humps south on the east leg over lane 3's strip zone (station = x - 47.2), first
+        # site; west towards the MCU area on its north leg (station = 32.7 - y), second site
+        l4n.slot("FMC_D26", 4, 47.7 - 47.2, 51.7 - 47.7, side="R")
+        l4n.slot("FMC_D26", 2, 0.0, 2.8, side="L")
         bus.add(l4n, start={n: m[n] for n in ["FMC_NBL1", "FMC_NBL2", "FMC_SDNCAS", "FMC_D26"]},
                 end={"FMC_D26": via_end([(56.0, 33.8), (55.6, 34.2)], (54.2, 34.2), "E2", "L4"),
                      "FMC_SDNCAS": via_end([(56.87, 38.6), (57.27, 39.0)], (58.2, 39.0), "K7", "L4"),   # stop 6: SW site (sketch: SE (59.0, 39.0), 135 degrees)

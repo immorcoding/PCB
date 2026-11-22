@@ -143,7 +143,9 @@ def main(board_path, odir):
         bad.append("shape")
     # ---- lengths
     Ln = sd["length"]
-    A("[等长] 自然长度（没有蛇形，本步不画），基准 %s = %.3f mm" % (" + ".join(Ln["ref"]), Ln["ref_length"]))
+    tu = sd.get("tuning")
+    dl = Ln.get("drc") or {}
+    A("[等长] 长度（%s），基准 %s = %.3f mm" % ("含蛇形，DRC 量" if tu else "自然长度，没有蛇形", " + ".join(Ln["ref"]), Ln["ref_length"]))
     for g, gr in Ln["groups"].items():
         A("       组 %-6s %d 根：最短 %s %.3f，最长 %s %.3f，相差 %.3f；对基准 %+.3f .. %+.3f" % (
             g, gr["nets"], gr["shortest"][0], gr["shortest"][1], gr["longest"][0], gr["longest"][1], gr["spread"], gr["to_ref_range"][0], gr["to_ref_range"][1]))
@@ -151,7 +153,37 @@ def main(board_path, odir):
     A("       最长的网络 %s %.3f mm（上限 %s）；超过的 %d 根；DRC 量的长度对几何最大相差 %s mm" % (
         lon[0], lon[1]["length"], Ln["limit"], len(Ln["over_limit"]), Ln.get("max_abs_geometry_minus_drc")))
     lr = {k: n for k, n in by_all.items() if k in ("length_out_of_range", "skew_out_of_range")}
-    A("       DRC 的等长窗口项（本步不补线）：%s；蛇形 0 块" % (" ".join("%s %d" % kv for kv in sorted(lr.items())) or "0"))
+    if tu:
+        # the columns of docs/tools.md: per group inside window / total, worst net and by how much, blocks and added
+        # length, missing list; spread before (natural, geometry) -> after (DRC-measured lengths)
+        nat = tu.get("natural", {})
+        for g, x in tu["groups"].items():
+            nets_g = list(x["nets"])
+            after = {n: dl.get(n, Ln["nets"][n]["length"]) for n in nets_g}
+            before = {n: nat.get(n, Ln["nets"][n]["length"]) for n in nets_g}
+            A("       蛇形 组 %s：最长 - 最短 %.3f -> %.3f（DRC 量）；窗口 %.3f .. %.3f（最长 %s − %g），目标 %.3f；窗口内 %d / %d 根；"
+              "最差 %s 离窗口下沿 %+.3f；%d 块，补 %.3f mm；没补够：%s" % (
+                  g, max(before.values()) - min(before.values()), max(after.values()) - min(after.values()), x["window"][0], x["window"][1],
+                  x["ref"], x["spread"], x["target"], x["inside"], x["total"], x["worst"][0], x["worst"][1], x["blocks"], x["added"],
+                  "，".join("%s 差 %.3f" % kv for kv in x["missing"].items()) or "无"))
+        A("       蛇形块（层，起止，弯数 × 摆幅，朝向）：")
+        for k in tu["blocks"]:
+            A("         %-9s %s (%.3f, %.3f)-(%.3f, %.3f) %d × %.3f %s，补 %.3f" % (k["net"], k["layer"], k["from"][0], k["from"][1], k["to"][0], k["to"][1],
+                                                                            k["humps"] or k["bumps"], k["amp"], k["side"], k["gain"]))
+        # serpentines inside the corridors the main session reserved for stop 7 (routes file RESERVED): must be 0
+        import importlib.util
+        spec = importlib.util.spec_from_file_location("rs", os.path.join(HERE, "routes_sdram.py"))
+        rs = importlib.util.module_from_spec(spec); sys.path.insert(0, os.path.join(ROOT, "scripts")); spec.loader.exec_module(rs)
+        hits = []
+        for n, lay, s0, mid, e0, w in b.arc_items:
+            for L_, x0, y0, x1, y1 in getattr(rs, "RESERVED", []):
+                if lay == L_ and any(x0 - w / 2 <= p[0] <= x1 + w / 2 and y0 - w / 2 <= p[1] <= y1 + w / 2 for p in (s0, mid, e0)):
+                    hits.append("%s %s (%.2f, %.2f)" % (n, lay, mid[0], mid[1]))
+        A("       蛇形进保留通道（RESERVED 矩形）：%d%s" % (len(hits), "：" + "，".join(sorted(set(hits))[:10]) if hits else ""))
+        if hits:
+            bad.append("serpentine in a reserved corridor")
+    A("       DRC 的等长项：%s；蛇形 %d 块（圆弧 %d 段）" % (" ".join("%s %d" % kv for kv in sorted(lr.items())) or "0",
+                                                len(tu["blocks"]) if tu else 0, tu["arcs"] if tu else 0))
     if Ln["over_limit"]:
         bad.append("length")
     # straights >= 2.5 mm outside the rule areas on data / NBL nets (serpentine candidates)
@@ -221,10 +253,11 @@ def main(board_path, odir):
     A("")
     A("结论：%s" % ("通过" if not bad else "不通过：" + "，".join(bad)))
     A("")
-    A("网络         长度    过孔  各层长度")
+    A("网络         长度   DRC 量   蛇形   过孔  各层长度")
     for n in sorted(Ln["nets"], key=lambda s: [int(t) if t.isdigit() else t for t in re.split(r"(\d+)", s)]):
         x = Ln["nets"][n]
-        A("%-12s %7.3f  %3d   %s" % (n, x["length"], x["vias"], " ".join("%s %.2f" % kv for kv in x["layers"].items())))
+        A("%-12s %7.3f  %7s  %5.3f  %3d   %s" % (n, x["length"], "%.3f" % dl[n] if n in dl else "—", x.get("tuned", 0.0) or 0.0, x["vias"],
+                                             " ".join("%s %.2f" % kv for kv in x["layers"].items())))
     txt = "\n".join(L)
     open(os.path.join(odir, "table.txt"), "w", encoding="utf-8").write(txt + "\n")
     print(txt)
