@@ -35,6 +35,19 @@ if "--rot" in sys.argv:
     SDRAM_ROT = int(sys.argv[sys.argv.index("--rot") + 1])
 AREA_MARGIN = 1.0                     # rule area = package body + 1 mm on every side (approved 2026-11-16)
 
+# try/eth-west (user 2026-11-21: room for the MCU crystals, use the board edge). Four blocks moved as rigid bodies;
+# the tables below keep their stop-4 coordinates and the shift (dx, dy) is added where the block is listed.
+#   Ethernet  west until the RJ45's leftmost pad copper (LED pins) is 1.03 mm inside the left edge, so its body
+#             overhangs the edge; then down to use the edge, the user LEDs and key making room below it
+#   LCD       FPC body front on the bottom edge (it stood 3 mm in; J701 is listed on its own), its passives with it
+#   QSPI      down by the same 3 mm, out of the way of the Ethernet block's east end (R514, FB501)
+#   user      LEDs and key below the Ethernet block
+ETH_SHIFT, LCD_SHIFT, QSPI_SHIFT, USER_SHIFT = (-4.1, 6.0), (0.0, 3.0), (0.0, 3.0), (0.0, 4.0)
+
+
+def shifted(block, d):
+    return {ref: (round(x + d[0], 4), round(y + d[1], 4), *rest) for ref, (x, y, *rest) in block.items()}
+
 MCU_BODY = (10.0, 10.0)
 SDRAM_BODY = (8.0, 13.0)              # at rotation 0
 
@@ -60,12 +73,16 @@ PLACE = {
 # Stop 4: every other part, by block. Positions are absolute local coordinates (the two BGAs stay where the
 # line-order sketch put them). Comments name the copper region of copper.sketch each group sits on.
 PLACE.update({
-    # ---- MCU, top side. Crystals west of the MCU (round 3): HSE Y201 turned 270 degrees and centred on the
-    # FMC_A6 via at (31.4, 39.0), which sits in its row gap with the A6 track in its column gap; LSE Y202 stood
-    # vertical north-west of it. Each load capacitor on the far side of its crystal pad; trial routes in
-    # routes_probe_xtal.py (all four nets on L1, no via).
-    "Y201": (31.4, 39.0, 270), "C225": (28.9, 37.9, 270), "C226": (32.4, 41.65, 180),
-    "Y202": (29.2, 34.8, 90), "C227": (27.0, 33.55, 180), "C228": (27.0, 36.05, 180),
+    # ---- MCU, top side. Crystals west of the MCU: HSE Y201 turned 270 degrees and centred on the FMC_A6 via at
+    # (31.4, 39.0), which sits in its row gap with the A6 track in its column gap (the only place within ~5 mm of
+    # balls G1 / H1 where IN can face north and OUT south-east); LSE Y202 stood vertical north-west of it, as far
+    # east as the A10 via at (30.65, 32.8) and Y201's courtyard allow. Each load capacitor on the far side of its
+    # crystal pad: C225 west of HSE IN, C226 south-east of HSE OUT, C227 / C228 west of the LSE pads, ground pads
+    # outward to free board (try/eth-west: the PHY's passives no longer sit under the crystals). Y201's
+    # north-east ground pad, closed in by HSE_IN and HSE_OUT, reaches ground ball G2 by an L1 guard between them;
+    # trial routes in routes_probe_xtal.py (all four nets on L1, no via) and routes_probe_xtal_gnd.py (guards).
+    "Y201": (31.4, 39.0, 270), "C225": (28.65, 37.9, 180), "C226": (32.4, 41.65, 180),
+    "Y202": (29.5, 34.8, 90), "C227": (27.35, 33.55, 180), "C228": (27.35, 36.05, 180),
     # supply entry of the MCU block (L3_3V3_MCU reaches north under the SDRAM bands to these pads)
     "R203": (39.5, 26.2, 0), "C217": (42.8, 26.2, 0),
     # BOOT0 pull-down and test pad, reset key, SWD header on the top edge
@@ -102,29 +119,39 @@ PLACE.update({
     "U104": (20.0, 31.7, 0), "C603": (23.2, 29.75, 0), "C113": (23.7, 31.5, 0), "C604": (23.7, 33.1, 0),
     "C112": (16.9, 31.7, 270), "R113": (15.0, 31.7, 90), "R109": (13.4, 32.0, 270), "TP108": (9.9, 31.9, 0),
     "TP105": (26.6, 31.6, 0), "TP110": (4.0, 30.4, 0),
-    # ---- Ethernet: RJ45 on the left edge, PHY to its right (L1_VDDA_PHY, L1_3V3_PHY)
-    "J501": (17.24, 39.0, 270),
-    "U501": (26.5, 44.5, 90),
-    "C502": (22.81, 42.6, 0), "C510": (22.81, 41.5, 0), "C511": (22.81, 40.4, 0),
-    "R507": (22.81, 47.9, 0), "R508": (22.81, 49.0, 0), "R509": (22.81, 50.1, 0), "R510": (22.81, 51.2, 0),
-    "R505": (23.9, 46.9, 0, "B"), "C503": (24.6, 48.6, 270), "R504": (25.9, 49.4, 90),
-    "C507": (28.6, 48.6, 270), "C506": (30.1, 48.8, 90), "R506": (27.2, 49.4, 90),
-    "Y501": (26.6, 53.2, 180), "C508": (29.6, 52.8, 90), "C509": (23.6, 53.4, 90),
-    "C504": (30.0, 44.5, 90), "C505": (31.3, 45.3, 90), "R503": (30.0, 42.4, 0), "R502": (32.6, 46.0, 90),
-    "R501": (27.0, 40.9, 0),
-    "FB501": (32.0, 49.6, 270), "R514": (33.85, 49.4, 90), "C501": (21.5, 54.7, 180),
-    "R511": (8.6, 54.4, 0), "R512": (6.2, 54.4, 0), "R513": (13.9, 54.4, 0),
-    # ---- QSPI flash under the MCU's south-west corner (L1_3V3_QSPI)
-    "U401": (36.0, 55.0, 180), "C401": (30.7, 56.9, 90), "C402": (29.3, 56.9, 90), "R404": (30.4, 59.6, 0),
-    "R401": (38.6, 56.4, 90, "B"), "R402": (38.6, 54.2, 90, "B"), "R403": (27.8, 57.2, 90),
-    # ---- user LEDs and key south of the QSPI
-    "D802": (14.0, 59.0, 0), "R808": (14.0, 60.6, 0), "D803": (17.6, 59.0, 0), "R809": (17.6, 60.6, 0),
-    "SW801": (16.0, 63.6, 0), "R810": (19.6, 63.0, 90), "R811": (21.0, 63.0, 90), "C806": (22.4, 63.0, 90),
+    # ---- Ethernet: RJ45 on the left edge, its body overhanging it, PHY to its right (L1_VDDA_PHY, L1_3V3_PHY).
+    # Stop-4 coordinates, moved by ETH_SHIFT
+    **shifted({
+        "J501": (17.24, 39.0, 270),
+        "U501": (26.5, 44.5, 90),
+        "C502": (22.81, 42.6, 0), "C510": (22.81, 41.5, 0), "C511": (22.81, 40.4, 0),
+        "R507": (22.81, 47.9, 0), "R508": (22.81, 49.0, 0), "R509": (22.81, 50.1, 0), "R510": (22.81, 51.2, 0),
+        "R505": (23.9, 46.9, 0, "B"), "C503": (24.6, 48.6, 270), "R504": (25.9, 49.4, 90),
+        "C507": (28.6, 48.6, 270), "C506": (30.1, 48.8, 90), "R506": (27.2, 49.4, 90),
+        "Y501": (26.6, 53.2, 180), "C508": (29.6, 52.8, 90), "C509": (23.6, 53.4, 90),
+        "C504": (30.0, 44.5, 90), "C505": (31.3, 45.3, 90), "R503": (30.0, 42.4, 0), "R502": (32.6, 46.0, 90),
+        "R501": (27.0, 40.9, 0),
+        "FB501": (32.0, 49.6, 270), "R514": (33.85, 49.4, 90), "C501": (21.5, 54.7, 180),
+        "R511": (8.6, 54.4, 0), "R512": (6.2, 54.4, 0), "R513": (13.9, 54.4, 0),
+    }, ETH_SHIFT),
+    # ---- QSPI flash under the MCU's south-west corner (L1_3V3_QSPI), moved by QSPI_SHIFT
+    **shifted({
+        "U401": (36.0, 55.0, 180), "C401": (30.7, 56.9, 90), "C402": (29.3, 56.9, 90), "R404": (30.4, 59.6, 0),
+        "R401": (38.6, 56.4, 90, "B"), "R402": (38.6, 54.2, 90, "B"), "R403": (27.8, 57.2, 90),
+    }, QSPI_SHIFT),
+    # ---- user LEDs and key below the Ethernet block, moved by USER_SHIFT
+    **shifted({
+        "D802": (14.0, 59.0, 0), "R808": (14.0, 60.6, 0), "D803": (17.6, 59.0, 0), "R809": (17.6, 60.6, 0),
+        "SW801": (16.0, 63.6, 0), "R810": (19.6, 63.0, 90), "R811": (21.0, 63.0, 90), "C806": (22.4, 63.0, 90),
+    }, USER_SHIFT),
     "TP109": (60.4, 54.4, 0),
-    # ---- LCD connector on the bottom edge, opening out, 3 mm in (L1_3V3_LCD)
-    "J701": (41.0, 68.78, 0),
-    "R701": (29.25, 64.0, 90), "R702": (30.45, 64.0, 90), "R703": (31.65, 64.0, 90), "R704": (32.85, 64.0, 90),
-    "R705": (27.8, 64.0, 90), "C701": (48.6, 64.4, 90), "C702": (48.6, 61.5, 90), "R709": (48.6, 58.4, 90),
+    # ---- LCD connector on the bottom edge, opening out, body front (F.Fab) on the edge: 2.995 mm lower than at stop 4,
+    # pad copper 0.625 mm inside the edge (L1_3V3_LCD). Its passives moved by LCD_SHIFT
+    "J701": (41.0, 71.775, 0),
+    **shifted({
+        "R701": (29.25, 64.0, 90), "R702": (30.45, 64.0, 90), "R703": (31.65, 64.0, 90), "R704": (32.85, 64.0, 90),
+        "R705": (27.8, 64.0, 90), "C701": (48.6, 64.4, 90), "C702": (48.6, 61.5, 90), "R709": (48.6, 58.4, 90),
+    }, LCD_SHIFT),
     # ---- backlight boost right of the LCD connector (L1_5V_BL, L1_SW_BL, L1_LED_A)
     "L701": (51.9, 53.0, 0), "U701": (55.6, 56.4, 0), "D701": (52.6, 59.3, 90), "C705": (55.0, 59.9, 90),
     "C703": (56.3, 49.3, 0), "C704": (56.2, 54.6, 180), "R710": (53.0, 48.7, 0),

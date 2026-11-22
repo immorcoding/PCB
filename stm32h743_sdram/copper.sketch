@@ -3,7 +3,8 @@
 # into this file before anything else runs (PWR-7).
 #
 # Coordinates: mm from the board's top-left corner, x right, y down (board 85 x 75).
-# State: stop 4 (placement). Every part is placed (place.py); the regions below were redrawn around the real
+# State: stop 4 (placement), branch try/eth-west: the Ethernet block moved by (-4.1, +6), the QSPI block and the
+# LCD passives by (0, +3), and their regions with them. Every part is placed (place.py); the regions below were redrawn around the real
 # pads of their nets. They are still rough (rectangles and L-shapes on the 0/45/90 grid); the outlines are
 # tightened in the power-and-copper stage (stop 5). Pads of a net that a region does not reach are listed
 # next to the region: QFN pins (0.5 mm pitch: a pour cannot pass between the neighbouring pins), feedback
@@ -11,12 +12,13 @@
 #
 # Floor plan (stop 4, see place.py):
 #   top edge     headphone jack x 11-22, line-in jack x 23-34, SWD x 36-45, microSD x 47-63
-#   left edge    RJ45 y 34-53, PHY right of it at (26.5, 44.5), QSPI flash under the MCU's SW corner (36, 55)
+#   left edge    RJ45 y 40-59, its body 4.1 mm over the edge (try/eth-west); PHY right of it at (22.4, 50.5);
+#                QSPI flash under the MCU's SW corner (36, 58); user LEDs and key x 12-23, y 62-70
 #   centre       MCU body x 35-45, y 32-42; SDRAM at (57, 37), body x 53-61, y 30.5-43.5; decoupling under both
 #                BGAs on the bottom
 #   right        CAN terminal on the right edge y 12-23 with the transceiver left of it; 3.3 V buck y 29-37;
 #                5 V buck y 38-50; DC jack on the right edge y 52-64 with fuse, P-MOS, TVS and bulk left of it
-#   bottom edge  LCD FPC x 28-54, debug UART x 56-67; backlight boost x 48-58, y 50-63
+#   bottom edge  LCD FPC x 28-54 (body front on the edge), debug UART x 56-67; backlight boost x 48-58, y 50-63
 #   codec        under the jacks at (19, 26), LDOs north-east (3.3 V analog) and south (1.8 V) of it
 
 origin 100 100
@@ -110,23 +112,23 @@ region L6_VDDA_MCU VDDA_MCU L6
 # tracks. The bias resistor R505 moved to the bottom (under the PHY's south-west corner) to keep the column whole. FB501 sits east of the PHY next to +3V3_PHY: its VDDA side reaches the column by an L6 strip under
 # the PHY's south side (vias at both ends, stop 5).
 region L1_VDDA_PHY VDDA_PHY L1
-  21.9,40  22.75,40  22.75,55.2  21.9,55.2  21.9,43.91  18.34,43.91  18.34,45.18
-  16.14,45.18  16.14,42.98  18.68,42.98  18.68,41.71  20.88,41.71  20.88,42.98  21.9,42.98
+  17.8,46  18.65,46  18.65,61.2  17.8,61.2  17.8,49.91  14.24,49.91  14.24,51.18
+  12.04,51.18  12.04,48.98  14.58,48.98  14.58,47.71  16.78,47.71  16.78,48.98  17.8,48.98
 region L6_VDDA_PHY VDDA_PHY L6
-  22,50.2  33.1,50.2  33.1,50.8  22,50.8
+  17.9,56.2  29,56.2  29,56.8  17.9,56.8
 # +3V3_PHY behind R514: C504, C505, FB501; PHY pin 9 and the MDIO pull-up R503 by short tracks
 region L1_3V3_PHY +3V3_PHY L1
-  29.5,44.6  30.6,44.6  30.6,45.45  32,45.45  32,47.2  35.2,47.2  35.2,49.4  31.4,49.4  31.4,47.3  29.5,47.3
+  25.4,50.6  26.5,50.6  26.5,51.45  27.9,51.45  27.9,53.2  31.1,53.2  31.1,55.4  27.3,55.4  27.3,53.3  25.4,53.3
 # the remaining block rails
 # QSPI: the flash is turned 180 degrees so VCC (pin 8) is at its south-west corner, out of the LCD fan; C401,
 # C402, the link R404 and the IO3 pull-up R403 in a band west of it. The NCS and IO2 pull-ups R401 / R402 are on
 # the bottom under the flash's east pin row (vias, stop 5).
 region L1_3V3_QSPI +3V3_QSPI L1
-  27.5,57.2  31.9,57.2  31.9,56.9  32.6,56.9  32.6,58.2  31.9,58.2  31.9,60.4  30.7,60.4  30.7,58.2  27.5,58.2
+  27.5,60.2  31.9,60.2  31.9,59.9  32.6,59.9  32.6,61.2  31.9,61.2  31.9,63.4  30.7,63.4  30.7,61.2  27.5,61.2
 # LCD 3.3 V: link R709, C702, C701 in a column east of the LCD fan (x >= 47.8), straight down to connector pin 37
 region L1_3V3_LCD +3V3_LCD L1
-  48.4,57.2  49.85,57.2  49.85,65.6  49.4,65.6  49.4,66.6  49.1,66.6  49.1,65.1  48.4,65.1  48.4,64.65  49.3,64.65
-  49.3,62.6  48.4,62.6  48.4,61.9  49.3,61.9  49.3,57.9  48.4,57.9
+  48.4,60.2  49.85,60.2  49.85,68.6  49.4,68.6  49.4,69.6  49.1,69.6  49.1,68.1  48.4,68.1  48.4,67.65  49.3,67.65
+  49.3,65.6  48.4,65.6  48.4,64.9  49.3,64.9  49.3,60.9  48.4,60.9
 # microSD: link R812, C801, C802 in a band under the socket with a stub to contact 4, a strip between R802 and
 # R803 down to a second band under the five pull-ups and the card-detect pull-up
 region L1_3V3_SD +3V3_SD L1
@@ -148,4 +150,4 @@ region L1_SW_BL SW_BL L1
 # LED_A: diode cathode, C705, TP701, the dummy load R707 and a strip down to connector pin 39
 region L1_LED_A LED_A L1
   50.1,59.9  56.2,59.9  56.2,58.1  58.4,58.1  58.4,60.4  56.2,60.4  56.2,62  54.4,62  54.4,64.5  53.1,64.5
-  53.1,62  50.45,62  50.45,66.6  50.1,66.6
+  53.1,62  50.45,62  50.45,69.6  50.1,69.6

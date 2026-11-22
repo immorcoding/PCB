@@ -1,20 +1,27 @@
 """Trial routes of the two crystals, NOT a deliverable: proves that each ball reaches its crystal pad and its load
-capacitor on L1 without vias, next to the SDRAM sketch. The routes format takes one chain per net, so each chain runs ball - crystal pad -
-capacitor and the build reports "3 pads, a route joins two" for every net (the crystal pad is passed through
-mid-chain, which the PATH check does not count). Built on the sketch build's output board (never on the
-real board):
+capacitor on L1 without vias, next to the SDRAM sketch. The routes format takes one chain per net, so each chain
+runs ball - crystal pad - capacitor and the build reports "3 pads, a route joins two" for every net (the crystal
+pad is passed through mid-chain, which the PATH check does not count). Built on the sketch build's output board
+(never on the real board):
 
     D:\\KiCad\\bin\\python.exe scripts\\busroute\\build.py stm32h743_sdram\\routes_probe_xtal.py --sketch --out stm32h743_sdram\\out\\probe_xtal
+    D:\\KiCad\\bin\\python.exe scripts\\busroute\\build.py stm32h743_sdram\\routes_probe_xtal_gnd.py --sketch --out stm32h743_sdram\\out\\probe_xtal_gnd
 
-(build routes_sdram.py into out\\sketch\\rot0 first). One chain per net: ball - crystal pad - capacitor pad
-(stop 4 round 3 placement: LSE Y202 vertical at (29.2, 34.8), HSE Y201 at 270 degrees centred on the FMC_A6
-via at (31.4, 39.0), the via in its row gap and the A6 track in its column gap).
+(build routes_sdram.py into out\\sketch\\rot0 first; the second file adds the ground guards on top of this one's
+output). Placement of try/eth-west: LSE Y202 vertical at (29.5, 34.8), HSE Y201 at 270 degrees centred on the
+FMC_A6 via at (31.4, 39.0), the via in its row gap and the A6 track in its column gap. Every chain enters its
+crystal pad at the pad centre and goes on to the load capacitor beyond it.
 
-  LSE_IN   E1 west at y 35.05, 45 degrees up to the IN pad, on west to C227
-  LSE_OUT  F1 west at y 35.7 (between the LSE_IN and HSE_IN tracks) into the OUT pad, on west to C228
-  HSE_IN   G1 west at y 36.35 above the HSE, down at x 30.55 through the IN pad (NW) to C225 at y 37.42
-  HSE_OUT  H1 west then 45 degrees down past the HSE's NE (GND) pad, down at x 33.45 east of it, into the
-           OUT pad (SE) and on down to C226
+  LSE_IN   E1 west at y 35.05, 45 degrees up to y 33.55, west through the IN pad (N) to C227
+  LSE_OUT  F1 west at y 35.7, up to y 35.55 inside the rule area, west into the OUT pad (S) from its north-east,
+           west to C228
+  HSE_IN   G1 west at y 36.35, down to y 36.45 just outside the rule area, 45 degrees down into the IN pad (NW)
+           over the NE ground pad, west to C225
+  HSE_OUT  H1 west, 45 degrees down, south at x 33.15 east of the NE ground pad, 45 degrees into the OUT pad
+           (SE), south and 45 degrees to C226
+Between LSE_OUT and HSE_IN, and between HSE_IN and HSE_OUT, runs a ground guard (routes_probe_xtal_gnd.py); the
+two small steps of LSE_OUT and HSE_IN make room for it at GND's minimum width (0.1524 mm, rule pwr_width) outside
+the rule area.
 """
 BOARD = "out/sketch/rot0/stm32h743_sdram.kicad_pcb"
 ORIGIN = (100, 100)
@@ -26,8 +33,8 @@ VIEWS = [("xtal", 25.0, 32.0, 37.0, 43.0, 100)]
 
 def routes(job):
     return {
-        "LSE_IN": [("L1", ["U201.E1", (31.35, 35.05), (29.85, 33.55), (29.2, 33.55), "C227.1"])],
-        "LSE_OUT": [("L1", ["U201.F1", (29.55, 35.7), (29.2, 36.05), "C228.1"])],
-        "HSE_IN": [("L1", ["U201.G1", (30.9, 36.35), (30.55, 36.7), (30.55, 37.07), (30.2, 37.42), "C225.1"])],
-        "HSE_OUT": [("L1", ["U201.H1", (34.5, 37.0), (33.45, 38.05), (33.45, 39.75), (32.75, 40.45), (32.75, 41.52), "C226.1"])],
+        "LSE_IN": [("L1", ["U201.E1", (31.9, 35.05), (30.4, 33.55), "Y202.1", "C227.1"])],
+        "LSE_OUT": [("L1", ["U201.F1", (34.6, 35.7), (34.45, 35.55), (30.0, 35.55), "Y202.2", "C228.1"])],
+        "HSE_IN": [("L1", ["U201.G1", (34.0, 36.35), (33.9, 36.45), (32.0, 36.45), "Y201.1", "C225.1"])],
+        "HSE_OUT": [("L1", ["U201.H1", (34.6, 37.0), (33.15, 38.45), (33.15, 39.2), "Y201.3", (32.25, 41.02), "C226.1"])],
     }

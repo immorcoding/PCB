@@ -41,7 +41,13 @@ def draw(win=None, name="placement"):
     import matplotlib.pyplot as plt
     from matplotlib.patches import Rectangle
     d = json.load(open(JS))
-    x0, y0, x1, y1 = win or d["edge"]
+    if win:
+        x0, y0, x1, y1 = win
+    else:                       # the board, grown to the courtyards of placed parts that overhang its edge
+        e = d["edge"]
+        placed = [p["box"] for p in d["parts"] if e[0] <= p["pos"][0] <= e[2] and e[1] <= p["pos"][1] <= e[3]]
+        x0, y0 = min([e[0]] + [b[0] for b in placed]), min([e[1]] + [b[1] for b in placed])
+        x1, y1 = max([e[2]] + [b[2] for b in placed]), max([e[3]] + [b[3] for b in placed])
     scale = 14.0 / (x1 - x0)
     fig, ax = plt.subplots(figsize=(14, 14 * (y1 - y0) / (x1 - x0)))
     ax.add_patch(Rectangle((d["edge"][0], d["edge"][1]), d["edge"][2] - d["edge"][0], d["edge"][3] - d["edge"][1], fill=False, lw=1.5))
