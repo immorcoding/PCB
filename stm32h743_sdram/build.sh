@@ -3,6 +3,8 @@
 #   sh stm32h743_sdram/build.sh rules [out dir]     project file, rule fixture, canary and rule matching
 #   sh stm32h743_sdram/build.sh sch [out dir]       schematic: generate, ERC, netlist checks, review
 #   sh stm32h743_sdram/build.sh layout [out dir]    placement (place.py) and the stop-4 metrics table
+#   sh stm32h743_sdram/build.sh copper [out dir]    stop 5: pours, power groups on the board and on the sketch copy
+#   sh stm32h743_sdram/build.sh route1 [out dir]    stop 6 part A: SDRAM group on the board, power groups after it, table
 # Later stages add their steps here (schematic, sketches, placement, copper, routing).
 set -e
 D=$(cd "$(dirname "$0")" && pwd); R=$(dirname "$D"); N=stm32h743_sdram
@@ -135,6 +137,52 @@ copper)
   echo "== copper table"
   COPPER_SECONDS="$(( $(date +%s) - T0 )) s" $PY "$D/copper_report.py" table "$BRD" "$O" 2>&1 | quiet && CT=0 || CT=$?
   echo "copper step: $(( $(date +%s) - T0 )) s; sketch build exit $SB, power build exit $PB / $PG (BGA), sketch-copy power build exit $SP / $SG (BGA), table exit $CT"
+  ;;
+route1)
+  # stop 6 part A, routing one: the real board rebuilt from scripts in this order: placement, pours, the SDRAM group
+  # (routes_sdram.py), then the power group and the BGA power group against it (their vias see the bus as obstacles:
+  # SDRAM_OBSTACLES=the board itself), KiCad's refill (PWR-6), DRC, plane slots over the whole bus region (U31),
+  # escape check (U59), pictures, one metrics table (route1_report.py, PROC-4). One KiCad process at a time.
+  T0=$(date +%s)
+  BRD="$D/$N.kicad_pcb"
+  ls "$D"/~*.lck > /dev/null 2>&1 && { echo "KiCad has the project open (~*.lck): nothing written"; exit 2; }
+  echo "== placement and pours (the three groups are stripped first, then rebuilt in order)"
+  $PY "$D/copper_report.py" unfill "$BRD" 2>&1 | quiet
+  $PY "$D/copper_report.py" strip "$BRD" sdram power power_bga 2>&1 | quiet
+  $PY "$D/place.py" 2>&1 | quiet
+  $PY "$R/scripts/cu_sketch.py" check "$D/copper.sketch" --board "$BRD" 2>&1 | quiet > "$O/sketch_check.txt" || { cat "$O/sketch_check.txt"; exit 1; }
+  $PY "$R/scripts/cu_sketch.py" apply "$D/copper.sketch" "$BRD" 2>&1 | quiet | grep -v "^warning: a ~" || true
+  echo "== SDRAM group on the board"
+  $PY "$R/scripts/busroute/build.py" "$D/routes_sdram.py" --write-board --no-refill --no-pictures --out "$O/sdram" > "$O/sdram_build.txt" 2>&1 && SB=0 || SB=$?
+  grep -E "^写入|^\[间距\]|^结论|^ERROR|^  ! " "$O/sdram_build.txt" || tail -5 "$O/sdram_build.txt"
+  echo "== power group on the board (after the bus)"
+  SDRAM_OBSTACLES="$BRD" POWER_LOG="$O/power_sites.txt" $PY "$R/scripts/busroute/build.py" "$D/routes_power.py" --write-board --no-refill --no-pictures \
+    --out "$O/power" > "$O/power_build.txt" 2>&1 && PB=0 || PB=$?
+  grep -E "^写入|^\[间距\]|^结论|^ERROR|^  ! [A-Z]" "$O/power_build.txt" | grep -v "! DRC     unconnected" || tail -5 "$O/power_build.txt"
+  grep -E "^(NO |feed .*SHORT)" "$O/power_sites.txt" || true
+  echo "== BGA power group on the board (after the bus)"
+  SDRAM_OBSTACLES="$BRD" POWER_BGA_LOG="$O/power_bga_sites.txt" $PY "$R/scripts/busroute/build.py" "$D/routes_power_bga.py" --write-board --no-refill --no-pictures \
+    --out "$O/power_bga" > "$O/power_bga_build.txt" 2>&1 && PG=0 || PG=$?
+  grep -E "^写入|^\[间距\]|^结论|^ERROR|^  ! [A-Z]" "$O/power_bga_build.txt" | grep -v "! DRC     unconnected" || tail -5 "$O/power_bga_build.txt"
+  grep -E "^(NO |LOST)" "$O/power_bga_sites.txt" | cut -c1-300 || true
+  echo "== refill and save (kicad-cli), DRC, measure"
+  /d/KiCad/bin/kicad-cli.exe pcb drc --refill-zones --save-board --severity-all --units mm --format json -o "$O/drc.json" "$BRD" > /dev/null 2>&1 || true
+  $PY "$D/make_project.py" > /dev/null 2>&1                               # SaveBoard rewrote the project file: its source is this script
+  $PY "$R/scripts/cu_sketch.py" measure "$BRD" --drc "$O/drc.json" --json "$O/measure.json" --skip-areas BGA_MCU,BGA_SDRAM > "$O/measure.txt" 2>&1 || true
+  # plane slots over the whole bus region (both BGAs, the west layer changes, the strip between the packages)
+  $PY "$D/copper_report.py" slots "$BRD" "$O" --window BUS 27 25 66 51 --part-b "$O/power_bga_sites.json" 2>&1 | quiet | tail -8
+  $PY "$R/scripts/escape_check.py" "$BRD" --ref U201 --ref U301 --window 27 25 66 51 --json "$O/escape_bga.json" 2>&1 | quiet > "$O/escape.txt"
+  $PY "$R/scripts/dru_canary.py" "$BRD" 2>&1 | quiet > "$O/canary.txt" || true
+  $PY "$R/scripts/dru_match.py" "$BRD" --json "$O/dru_match.json" > "$O/dru_match.txt" 2>&1 || true
+  echo "== pictures (qualitative review only)"
+  $PY "$D/copper_view.py" "$BRD" "$O" L1 L4 L6 --scale 40 --window 29 26 66 50 --name bus 2>&1 | quiet | tr '\n' ' '; echo
+  $PY "$D/copper_view.py" "$BRD" "$O" L1 L2 L4 L6 --scale 90 --window 36 37 46 47 --name mcu_south --via-labels 2>&1 | quiet | tr '\n' ' '; echo
+  $PY "$D/copper_view.py" "$BRD" "$O" L1 L6 --scale 80 --window 51 28.5 63 45.5 --name sdram --via-labels 2>&1 | quiet | tr '\n' ' '; echo
+  $PY "$D/copper_view.py" "$BRD" "$O" L2 L3 L5 --scale 40 --window 27 25 66 51 --name planes --slots "$O/slots.json" 2>&1 | quiet | tr '\n' ' '; echo
+  echo "== route1 table"
+  ROUTE1_SECONDS="$(( $(date +%s) - T0 )) s" $PY "$D/route1_report.py" "$BRD" "$O" > "$O/table.log" 2>&1 && RT=0 || RT=$?
+  quiet < "$O/table.log"
+  echo "route1 step: $(( $(date +%s) - T0 )) s; sdram build exit $SB, power build exit $PB / $PG (BGA), table exit $RT"
   ;;
 *) echo "unknown step: $STEP"; exit 2 ;;
 esac

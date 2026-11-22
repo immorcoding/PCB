@@ -28,6 +28,9 @@ DRC_IGNORE = {"via_dangling": "this build does not refill the pours; build.sh co
               "solder_mask_bridge": "mask webs between fine-pitch pads of the footprints (QFN, FPC), there before this group"}
 HERE = os.path.dirname(os.path.abspath(__file__))
 SKETCH_BOARD = os.path.join(HERE, "out", "sketch", "rot0", "stm32h743_sdram.kicad_pcb")
+# the board whose FMC_ tracks and vias are the obstacles of this group: the line-order sketch copy (build.sh copper),
+# or, once the bus is on the real board (build.sh route1), that board itself: SDRAM_OBSTACLES=<board>
+OBSTACLES = os.environ.get("SDRAM_OBSTACLES", SKETCH_BOARD)
 POWER = {"U201": ["GND", "+3V3_MCU", "VDDA_MCU", "VCAP1", "VCAP2"], "U301": ["GND", "+3V3_SDRAM"]}
 PARTS = ["C%d" % i for i in range(201, 224) if i != 217] + ["FB201"] + ["C%d" % i for i in range(301, 309)]
 # ball-gap sites no via of this group may take: kept for a signal ball's way out (escape_check, stop 4 numbers)
@@ -39,7 +42,7 @@ PROTECT = [("+3V3_MCU", (40.0, 30.5, 43.2, 33.1))]
 
 def routes(job):
     b = job.board
-    ob = SKETCH_BOARD if os.path.isfile(SKETCH_BOARD) else None
+    ob = OBSTACLES if os.path.isfile(OBSTACLES) else None
     caps = [n for ref in PARTS for n in b.fp.get(ref, {}).get("pads", [])]
     P = BgaPlanner(b, job.profile, os.path.join(HERE, "copper.sketch"), POWER, caps, ob, skip_items=old_items(b.path, GROUP), forbid=FORBID,
                    protect=PROTECT)

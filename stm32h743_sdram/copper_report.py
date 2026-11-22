@@ -16,6 +16,9 @@ table    the copper group of the metrics table (PROC-4, docs/tools.md) after the
          sketch copy's DRC and slots.txt). Writes <out dir>/table.txt and prints it.
 slots    (D:\\KiCad\\bin\\python.exe stm32h743_sdram\\copper_report.py slots <refilled board> <out dir>) U31: plane slots
          under the BGAs, cut-off vias, the L3 blocks' strip from the feed vias into the ball field (slots.json / .txt).
+         Options: --window NAME X0 Y0 X1 Y1 (repeatable; instead of the two BGA windows), --part-b <power_bga_sites.json>.
+strip    (copper_report.py strip <board> GROUP ...) removes what those busroute groups wrote last time, so that
+         build.sh route1 can rebuild sdram, power and power_bga in that order.
 """
 import collections, json, os, re, sys
 
@@ -40,6 +43,25 @@ def unfill(path):
     if n:
         open(path, "w", encoding="utf-8", newline="").write("\n".join(out))
     print("unfill: %d filled polygons removed from %s" % (n, os.path.basename(path)))
+
+
+def strip(path, groups):
+    """Remove what the busroute groups `groups` wrote into the board last time (as recorded in <board>.busroute.json),
+    so that the groups can be rebuilt from scratch in their order (build.sh route1: the SDRAM bus first, the power
+    groups after it, against the bus)."""
+    from busroute.board import write, Board
+    side = os.path.splitext(path)[0] + ".busroute.json"
+    rec = json.load(open(side, encoding="utf-8")) if os.path.isfile(side) else {"groups": {}}
+    cu = None
+    for g in groups:
+        if g not in rec["groups"]:
+            print("strip: no group %s recorded in %s" % (g, os.path.basename(side)))
+            continue
+        if cu is None:
+            cu = Board(path, (100, 100)).cu
+        shared = "segs" in rec["groups"][g]
+        w = write(path, path, g, [], [], [], (100, 100), cu, shared=shared)
+        print("strip: group %s, %d items removed" % (g, w["removed"]))
 
 
 COPPER = """GND +3V3 +5V +3V3A +3V3_MCU +3V3_SDRAM +3V3_QSPI +3V3_PHY +3V3_AUD +3V3_LCD +3V3_SD +3V3_CAN +5V_BL +5V_CAN
@@ -278,12 +300,14 @@ SLOT_REPORT = 2.0                                                  # slots longe
 BLOCKS = {"+3V3_MCU": "BGA_MCU", "+3V3_SDRAM": "BGA_SDRAM"}
 
 
-def slots(board_path, odir):
+def slots(board_path, odir, windows=None, part_b=None):
     """U31 on a refilled board (the line-order sketch copy): per plane layer and BGA window, the voids of the plane
     fill that hold vias (antipads merged into slots), their length (farthest two points), the nets whose tracks
     on the neighbouring signal layer cross them, and whether the part-B vias make them longer; vias of the plane's
     own net that the fill does not hold on its main piece (cut off); the narrowest connection of the two BGA blocks
-    on L3 between their feed vias and the ball field. Writes <out dir>/slots.json and slots.txt."""
+    on L3 between their feed vias and the ball field. Writes <out dir>/slots.json and slots.txt.
+    windows: {name: (x0, y0, x1, y1)} instead of SLOT_WINDOWS (build.sh route1 measures the whole bus region);
+    part_b: the power_bga_sites.json whose vias are counted as part B (default <out dir>/sketch_power_bga/)."""
     import math
     import pcbnew
     import cu_sketch
@@ -295,7 +319,7 @@ def slots(board_path, odir):
     mm = lambda v: v / 1e6
     loc = lambda p: (round(mm(p.x) - 100, 3), round(mm(p.y) - 100, 3))
     V = lambda x, y: pcbnew.VECTOR2I(int(round((x + 100) * 1e6)), int(round((y + 100) * 1e6)))
-    sp = os.path.join(odir, "sketch_power_bga", "power_bga_sites.json")
+    sp = part_b or os.path.join(odir, "sketch_power_bga", "power_bga_sites.json")
     mine = set()
     if os.path.isfile(sp):
         mine = {(n, round(p[0], 3), round(p[1], 3)) for n, p, s, k in json.load(open(sp, encoding="utf-8"))["vias"]}
@@ -306,8 +330,10 @@ def slots(board_path, odir):
         elif t.Type() == pcbnew.PCB_TRACE_T:
             tracks[lname[t.GetLayer()]].append((t.GetNetname(), t.GetStart(), t.GetEnd()))
     areas = {z.GetZoneName(): z.Outline() for z in b.Zones() if z.GetIsRuleArea()}
-    out = {"board": board_path, "slots": [], "longest": {}, "cut_off": [], "necks": {}}
-    for wname, (x0, y0, x1, y1) in SLOT_WINDOWS.items():
+    windows = windows or SLOT_WINDOWS
+    out = {"board": board_path, "slots": [], "longest": {}, "cut_off": [], "necks": {},
+           "windows": ["%s (%g, %g)-(%g, %g)" % ((k,) + tuple(w)) for k, w in windows.items()]}
+    for wname, (x0, y0, x1, y1) in windows.items():
         win = pcbnew.SHAPE_POLY_SET()
         ch = pcbnew.SHAPE_LINE_CHAIN()
         for x, y in ((x0, y0), (x1, y0), (x1, y1), (x0, y1)):
@@ -411,7 +437,7 @@ def slots(board_path, odir):
 
 
 def slots_text(s):
-    L = ["平面开槽（U31，线序草图副本填充后；窗口 = 规则区外扩 2 mm）: 列出长于 %.1f mm 的" % SLOT_REPORT]
+    L = ["平面开槽（U31，填充后；窗口 %s）: 列出长于 %.1f mm 的" % (" ".join(s.get("windows", [])) or "规则区外扩 2 mm", SLOT_REPORT)]
     for r in s["slots"]:
         if r["length"] > SLOT_REPORT:
             L.append("  %-2s %-5s %-6.2f mm  (%.2f, %.2f)-(%.2f, %.2f)  过孔 %d（B 部分 %d，去掉它们后最长 %.2f）  过孔网络 %s  上方走线 %s" % (
@@ -432,10 +458,14 @@ if __name__ == "__main__":
         pass
     if sys.argv[1] == "unfill":
         unfill(sys.argv[2])
+    elif sys.argv[1] == "strip":
+        strip(sys.argv[2], sys.argv[3:])
     elif sys.argv[1] == "table":
         sys.exit(table(sys.argv[2], sys.argv[3]))
     elif sys.argv[1] == "slots":
-        slots(sys.argv[2], sys.argv[3])
+        a = sys.argv[4:]
+        win = {a[k + 1]: tuple(float(v) for v in a[k + 2:k + 6]) for k in range(len(a)) if a[k] == "--window"} or None
+        slots(sys.argv[2], sys.argv[3], win, a[a.index("--part-b") + 1] if "--part-b" in a else None)
     else:
         print(__doc__)
         sys.exit(2)

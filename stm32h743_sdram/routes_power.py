@@ -35,6 +35,9 @@ DRC_IGNORE = {"via_dangling": "this build does not refill the pours; build.sh co
 ALLOW_VIA_ON = ["U601.33"]    # codec exposed pad: thermal vias, approved like the PHY's (stop 4 round 2)
 HERE = os.path.dirname(os.path.abspath(__file__))
 SKETCH_BOARD = os.path.join(HERE, "out", "sketch", "rot0", "stm32h743_sdram.kicad_pcb")
+# the board whose FMC_ tracks and vias are the obstacles of this group: the line-order sketch copy (build.sh copper),
+# or, once the bus is on the real board (build.sh route1), that board itself: SDRAM_OBSTACLES=<board>
+OBSTACLES = os.environ.get("SDRAM_OBSTACLES", SKETCH_BOARD)
 VIA = (0.45, 0.2)
 
 PART_B = {"U201", "U301", "FB201"} | {"C%d" % i for i in range(201, 224)} - {"C217", "C224", "C225", "C226", "C227", "C228"} \
@@ -83,7 +86,7 @@ PROTECT = [("+5V", (33.5, 5.5, 64.0, 8.5)), ("+5V", (33.5, 8.5, 36.5, 22.5))]
 
 def routes(job):
     job.profile.classes["PWR"]["via"] = VIA                  # PWR class default is 0.6 / 0.3; this board uses 0.45 / 0.2
-    ob = SKETCH_BOARD if os.path.isfile(SKETCH_BOARD) else None
+    ob = OBSTACLES if os.path.isfile(OBSTACLES) else None
     nets = sorted(n for n in job.board.nets if n.startswith("FMC_")) if ob else []
     P = Planner(job.board, job.profile, os.path.join(HERE, "copper.sketch"), ob, nets, VIA, ALLOW_VIA_ON, PROTECT)
     b = job.board
