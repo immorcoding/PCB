@@ -60,6 +60,38 @@
     "VDDCR"
    ]
   },
+  "mcu_east": {
+   "extras": [],
+   "nets": [
+    "FDCAN1_RX",
+    "FDCAN1_TX",
+    "LCD_B3"
+   ]
+  },
+  "mcu_south": {
+   "extras": [],
+   "nets": [
+    "ETH_MDC",
+    "ETH_MDIO",
+    "I2C4_SCL",
+    "I2C4_SDA",
+    "LCD_DE",
+    "LCD_G4",
+    "LCD_G5",
+    "QSPI_BK1_IO0",
+    "QSPI_BK1_IO1",
+    "QSPI_BK1_IO2",
+    "QSPI_BK1_IO3",
+    "QSPI_CLK",
+    "RMII_CRS_DV",
+    "RMII_REF_CLK",
+    "RMII_RXD0",
+    "RMII_RXD1",
+    "TP_RST",
+    "USART1_RX",
+    "USART1_TX"
+   ]
+  },
   "power": {
    "extras": [
     [
@@ -2934,7 +2966,7 @@
     ],
     [
      "GND",
-     45.525,
+     44.875,
      36.025
     ],
     [
@@ -3905,15 +3937,15 @@
      "B.Cu",
      44.68,
      35.55,
-     45.155,
-     36.025
+     44.875,
+     35.745
     ],
     [
      "GND",
      "B.Cu",
-     45.155,
-     36.025,
-     45.525,
+     44.875,
+     35.745,
+     44.875,
      36.025
     ],
     [
@@ -4118,8 +4150,8 @@
     ],
     [
      "GND",
-     43.375,
-     32.025
+     45.3,
+     32.1
     ],
     [
      "GND",
@@ -4128,8 +4160,8 @@
     ],
     [
      "GND",
-     48.15,
-     37.375
+     49.35,
+     37.3
     ],
     [
      "GND",

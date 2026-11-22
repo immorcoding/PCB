@@ -61,9 +61,10 @@ GND_RETURN = [                             # (x, y): the layer changes they serv
     (34.15, 32.95),                        # D28 (33.3, 33.25) L4 -> L1, A3 (32.1, 31.6) has no site of its own
     (30.45, 39.0),                         # A6 (31.4, 39.0) L1 -> L4
     (35.45, 31.2),                         # D30 / NBL3 (36.1 / 36.75, 31.6) L4 -> L1, north of the MCU
-    (43.375, 32.025),                      # D3 (43.575, 32.775) L6 -> L1
+    (45.3, 32.1),                          # D3 (44.225, 32.775) L6 -> L1 (stop 7 part 2: was (43.375, 32.025), on B13's L6 way north)
     (45.85, 37.325),                       # D20 (45.4, 37.975) L4 -> L1
-    (48.15, 37.375),                       # SDCLK_R (48.75, 36.675) L1 -> L4 beside R201
+    (49.35, 37.3),                         # SDCLK_R (48.75, 36.675) L1 -> L4 beside R201 (stop 7 part 2: was (48.15, 37.375), in the
+                                           # L4 way from the pocket under the strip to the pocket south of SDCLK_R)
     (39.45, 46.45),                        # A11 (40.35, 46.3) L4 -> L1 south of the MCU
 ]
 
@@ -180,7 +181,12 @@ def routes(job):
         "FMC_A11": db("M7", (39.675, 39.925), "L4", [(40.0, 40.25), (40.0, 45.95), (40.35, 46.3)]) + [("via", (40.35, 46.3)), ("L1", [(40.35, 46.3), (40.65, 46.3)])],
         # round 3 (user): no SDRAM track on L1 beside the crystal pins E1-H1 (box x 29-34, y 33.5-38.5). A10, A3 and D28
         # pass the west side on L4 and come up to L1 north of the box; A6 goes down south of it (see l1n)
-        "FMC_A10": db("N7", (39.025, 39.925), "L4", [(31.15, 39.925), (30.9, 39.675), (30.9, 33.05), (30.65, 32.8)])
+        # stop 7 part 2: A10's west leg runs on the row-L line (y 38.95) instead of y 39.925 and steps down to y 39.5
+        # west of the ball field, below A6's via (31.4, 39.0): L4 south of row L is then free for the MCU's
+        # south-west signal balls (rows L-R), which have no other way out (L1 is closed by A6, L6 by WE and the VDDA
+        # filter). Same layer, side and order; 0.59 mm longer
+        "FMC_A10": db("N7", (39.025, 39.925), "L4", [(39.025, 39.275), (38.7, 38.95), (33.5, 38.95), (32.95, 39.5), (31.15, 39.5),
+                                                      (30.9, 39.25), (30.9, 33.05), (30.65, 32.8)])
                    + [("via", (30.65, 32.8)), ("L1", [(30.65, 32.8), (30.65, 32.5)])],
         "FMC_A3": db("J2", (35.775, 37.975), "L4", [(32.3, 37.975), (31.9, 37.575), (31.9, 31.8), (32.1, 31.6)])
                   + [("via", (32.1, 31.6)), ("L1", [(32.1, 31.6), (32.1, 31.3)])],
@@ -197,7 +203,10 @@ def routes(job):
         "FMC_BA1": db("K13", (43.575, 38.625), "L6", [(49.3, 38.625), (51.725, 36.2), (58.6, 36.2), (59.0, 36.6)])
                    + [("via", (59.0, 36.6)), ("L1", [(59.0, 36.6), "U301.H8"])],
         # east side, rows chosen so that every inner layer leaves in the river order
-        "FMC_D3": db("C12", (42.925, 33.425), "L6", [(43.575, 32.775)]) + [("via", (43.575, 32.775)), ("L1", [(43.575, 32.775), (46.0, 32.775)])],
+        # stop 7 part 2: D3 surfaces one column further east, after an L6 leg along the row-B line (sketch / stop 6:
+        # via at (43.575, 32.775), B13's north-east quadrant): SDMMC1_D3 (B13) can then take that site and go north on
+        # L6. Same layers, side and lane; length unchanged (0.65 mm more on L6, 0.65 mm less on L1)
+        "FMC_D3": db("C12", (42.925, 33.425), "L6", [(43.25, 33.1), (43.9, 33.1), (44.225, 32.775)]) + [("via", (44.225, 32.775)), ("L1", [(44.225, 32.775), (46.0, 32.775)])],
         "FMC_D20": db("K12", (42.275, 37.975), "L4", [(45.4, 37.975)]) + [("via", (45.4, 37.975)), ("L1", [(45.4, 37.975), (46.0, 37.975)])],
         "FMC_D23": db("D13", (43.575, 34.075), "L6", [(43.9, 33.75), (46.0, 33.75)]),
         "FMC_D22": db("E13", (43.575, 34.725), "L6", [(43.9, 34.4), (46.0, 34.4)]),

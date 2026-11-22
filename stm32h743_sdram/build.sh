@@ -18,6 +18,8 @@ quiet() { grep -v "image handler" || true; }
 ROUTE2_GROUPS="
 local routes_local.py
 local_eth routes_local_eth.py
+mcu_east routes_mcu_east.py
+mcu_south routes_mcu_south.py
 "
 
 case "$STEP" in

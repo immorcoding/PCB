@@ -34,7 +34,7 @@ OBSTACLES = os.environ.get("SDRAM_OBSTACLES", SKETCH_BOARD)
 POWER = {"U201": ["GND", "+3V3_MCU", "VDDA_MCU", "VCAP1", "VCAP2"], "U301": ["GND", "+3V3_SDRAM"]}
 PARTS = ["C%d" % i for i in range(201, 224) if i != 217] + ["FB201"] + ["C%d" % i for i in range(301, 309)]
 # ball-gap sites no via of this group may take: kept for a signal ball's way out (escape_check, stop 4 numbers)
-FORBID = []
+FORBID = [(45.525, 36.025)]   # stop 7 part 2: LCD_B3's via (C210.2's ground via moves to another site beside the pad)
 # no via of another net in these boxes: where the L3 tongue of +3V3_MCU (x 39.6-44.2) enters the MCU's ball field,
 # between the SDRAM sketch's vias, down to the first supply vias (row C)
 PROTECT = [("+3V3_MCU", (40.0, 30.5, 43.2, 33.1))]
