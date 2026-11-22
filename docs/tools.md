@@ -24,6 +24,7 @@
 | 布局指标（LAY-2、5、6、8） | `D:\KiCad\bin\python.exe scripts\place_check.py <板> [--edge J1=L ...] [--allow-under U1,U2] [--not-supply U3.5] [--json <输出>]`：摆进板框的个数、courtyard 重叠、安装孔周禁布、封装禁布区、连接器到板边、背面焊盘压顶面焊盘、每个电源脚到最近 100 nF 的距离、排针和测试点旁的丝印位置；几秒 |
 | 出线通道（LAY-2） | `D:\KiCad\bin\python.exe scripts\escape_check.py <板> --ref U1 [--ref ...] [--window x0 y0 x1 y1] [--debug U1.A1 <png>]`：每个焊盘单独查能否走出去（到窗口边、到同网络的别的器件、电源网络能否打孔），最多两个过孔；不算容量。两颗 BGA 加 40 mm 窗口约 15 秒 |
 | H743 板布局一步 | `sh stm32h743_sdram/build.sh layout`（摆位 → 线序草图重建 → 上面两个检查 → 铜皮草图检查 → `layout_probe.py` 的实测试走；约 70 秒） |
+| H743 板电源与铜皮一步 | `sh stm32h743_sdram/build.sh copper`（摆位 → 铺铜区 → `routes_power.py`（BGA 区外）和 `routes_power_bga.py`（两颗 BGA 的电源球、背面去耦）写真板 → 填充 → 同样两组写线序草图副本、填充、平面开槽（U31）→ 出线检查 → 图 → `out/copper/table.txt`；约 3.5 分钟） |
 | 原理图构建并检查 | `sh scripts/sch_build.sh <工程目录> <输出目录>`（生成 → 升级到 KiCad 10 格式 → ERC → 网表 → PDF） |
 | H743 板的原理图 | `sh stm32h743_sdram/build.sh sch`（上一行，加网表对意图、对 `pins.csv`、对 `swap.csv` 的检查和 kicad-happy 审查；约 15 秒）；单独试一页：`sh stm32h743_sdram/sch/try_page.sh <输出目录> <页名>` |
 | DRC | `kicad-cli pcb drc --refill-zones --severity-all`；收尾时加 `--schematic-parity` |
@@ -120,3 +121,7 @@
 - **布局阶段的出线检查要在线序草图的副本上跑**：SDRAM 的走线只在 `out/sketch/rot0/` 的副本里，真板文件里没有。
 - **Git Bash 会把 `/` 开头的网络名改写成路径**：传网络名的命令前 `export MSYS2_ARG_CONV_EXCL='*'`。
 - **Shell here-doc 会改写反斜杠和 `\n`**：补丁脚本用文件写，不用 here-doc。
+- **`busroute` 在规则区内默认把线宽改成 0.09**：电源类的狗骨线、背面短线要保留给定线宽，在走线描述里写 `PROFILE = {"area_free_classes": ["PWR"]}`（规则文件 `bga_width_inside` 本来就不管 PWR 类）。
+- **DRC 的 `corner_angle` 也查在过孔中心相交的两段线**：两个球共用一个过孔、两条狗骨线成 90° 时报 `track_angle`；`bga_power.py` 让第二条线停在过孔里、离中心每轴 0.05 mm（靠过孔铜连上，没有共同端点）。
+- **`escape_check.py` 允许单根线从 BGA 球阵内部穿过去**：电源球的狗骨线和过孔会把这些路堵上，外圈球的"不打孔出线"可能因此变成"打 1 个孔"；对比前先看路径是不是从球阵内部走的（`--debug`）。
+- **在铺铜板的副本上做实验，先 `copper_report.py unfill`**：旧填充会在读板时改过孔的网络（上一条 pcbnew 的坑），DRC 也会报一堆和旧填充的间距。

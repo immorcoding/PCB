@@ -16,7 +16,9 @@ ground pads to their vias; with OPEN_ENDS a chain may end in the open, e.g. at a
     ROUTES = {"GND": [[("L1", ["C101.2", (4.0, 2.0)]), ("via", (4.0, 2.0), (0.45, 0.2))],
                       [("L1", ["C102.2", (6.0, 2.0)], 0.2), ("via", (6.0, 2.0), (0.45, 0.2))]]}
 
-A track piece may carry a third element, its width outside the rule areas (default: the net class width).
+A track piece may carry a third element, its width outside the rule areas (default: the net class width); for
+a net of a class in Profile.area_free_classes (PROFILE = {"area_free_classes": ["PWR"]}) that width holds inside
+the rule areas too.
 
 Track width and via size are NOT written (profile C): inside a rule area, and for `extend` (0.3 mm) of
 straight beyond its edge, a track is `w_area` (0.09); elsewhere it has its net class width. The cut is on
@@ -175,8 +177,10 @@ def expand(board, profile, resolved, extras=()):
                 d, h = pc[2] or via_size(profile, areas, net, pc[1])
                 vias.append((net, pc[1], d, h, True))
             else:
-                w_out = pc[2] if len(pc) > 2 and pc[2] else profile.width(net)
-                segs += [(net, pc[0], a, c, w) for a, c, w in split_widths(pc[1], areas, min(profile.w_area, w_out), w_out, profile.extend, profile.min_seg)]
+                given = pc[2] if len(pc) > 2 and pc[2] else None
+                w_out = given or profile.width(net)
+                w_in = w_out if given and profile.net_class(net) in profile.area_free_classes else min(profile.w_area, w_out)
+                segs += [(net, pc[0], a, c, w) for a, c, w in split_widths(pc[1], areas, w_in, w_out, profile.extend, profile.min_seg)]
     for net, p in extras:
         d, h = via_size(profile, areas, net, p)
         vias.append((net, (float(p[0]), float(p[1])), d, h, False))

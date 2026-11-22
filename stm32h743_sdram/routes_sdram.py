@@ -32,6 +32,7 @@ ADDR = ["FMC_A%d" % i for i in range(13)] + ["FMC_BA0", "FMC_BA1", "FMC_SDNRAS",
 GROUPS = {"lane0": ["FMC_D%d" % i for i in range(8)] + ["FMC_NBL0"], "lane1": ["FMC_D%d" % i for i in range(8, 16)] + ["FMC_NBL1"],
           "lane2": ["FMC_D%d" % i for i in range(16, 24)] + ["FMC_NBL2"], "lane3": ["FMC_D%d" % i for i in range(24, 32)] + ["FMC_NBL3"],
           "addr": ADDR, "clock": ["FMC_SDCLK", "FMC_SDCLK_R"]}
+YIELD_NETS = ["GND"]
 DRC_IGNORE = {"skew_out_of_range": "byte-lane matching (sdram_lane0-3) is the tuning stage, not the line-order sketch (SPEC 9)"}
 NETS = DATA + ADDR + ["FMC_SDCLK", "FMC_SDCLK_R"]
 LAYERS = os.environ.get("LAYERS", "L1 L4 L6").split()

@@ -32,6 +32,8 @@ class Profile:
     plane_web = 0.1           # copper that must remain between two antipads
     slot_max = 1.5            # longest chain of merged antipads accepted in a via field, mm
     tracks_per_channel = 1    # tracks between two neighbouring pads / two neighbouring vias
+    area_free_classes = ()    # net classes whose pieces with a given width keep it inside rule areas (the .kicad_dru
+                              # lets them be wider there, e.g. PWR); every other track is w_area inside an area
 
     def __init__(self):
         self.classes = {"Default": {"width": 0.2, "clearance": 0.2, "via": (0.6, 0.3), "priority": 1 << 31}}
@@ -127,4 +129,5 @@ class Profile:
                 "hole_clr": self.hole_clr, "pth_hole_clr": self.pth_hole_clr, "hole_hole": self.hole_hole, "edge_clr": self.edge_clr,
                 "min_seg": self.min_seg, "lane_min_seg": self.lane_min_seg, "chamfer": self.chamfer, "plane_clr": self.plane_clr,
                 "plane_web": self.plane_web, "slot_max": self.slot_max, "tracks_per_channel": self.tracks_per_channel,
+                "area_free_classes": list(self.area_free_classes),
                 "area_names": self.area_names, "limits": self.limits, "sources": self.sources}

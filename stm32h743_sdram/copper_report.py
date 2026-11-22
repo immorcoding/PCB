@@ -12,7 +12,10 @@ table    the copper group of the metrics table (PROC-4, docs/tools.md) after the
          yet), split into this task and part B (BGA balls and the bottom parts under them); per rail the feed vias
          against the rule of routes_power.py; ground vias; the loop and crystal ground vias (U56, U54); DRC by type;
          the power group on the line-order sketch copy (<out dir>/sketch_power/metrics.json) and the escape check
-         there against out/layout. Writes <out dir>/table.txt and prints it.
+         there against out/layout; part B (routes_power_bga.py: balls, sharing, decoupling, VCAP / VDDA_MCU, the
+         sketch copy's DRC and slots.txt). Writes <out dir>/table.txt and prints it.
+slots    (D:\\KiCad\\bin\\python.exe stm32h743_sdram\\copper_report.py slots <refilled board> <out dir>) U31: plane slots
+         under the BGAs, cut-off vias, the L3 blocks' strip from the feed vias into the ball field (slots.json / .txt).
 """
 import collections, json, os, re, sys
 
@@ -144,11 +147,230 @@ def table(board_path, odir):
         cg = s.get("drc_counted_group", {})
         L.append("线序草图副本上的电源组: 拦住构建的发现 %d，本组的 DRC 项 %s" % (
             sum(1 for f in s.get("findings", []) if f.get("hard")), " ".join("%s %d" % kv for kv in sorted(cg.items())) or "0"))
+    L += part_b_text(b, odir)
     L.append("耗时 %s" % os.environ.get("COPPER_SECONDS", "-"))
     txt = "\n".join(L)
     open(os.path.join(odir, "table.txt"), "w", encoding="utf-8").write(txt + "\n")
     print(txt)
     return 1 if n_mine else 0
+
+
+def part_b_text(b, odir):
+    """Part B of stop 5 (routes_power_bga.py) on the real board: balls, vias, sharing, the bottom decoupling, VCAP and
+    VDDA_MCU, and the sketch copy's DRC and plane slots (U31)."""
+    import pcbnew
+    import routes_power_bga as RB
+    L = [""]
+    path = os.path.join(odir, "power_bga_sites.json")
+    if not os.path.isfile(path):
+        return L + ["B 部分: 没有 power_bga_sites.json"]
+    s = json.load(open(path, encoding="utf-8"))
+    kinds = collections.Counter(k for n, p, sz, k in s["vias"])
+    L.append("B 部分（routes_power_bga.py）: 过孔 %d 个（球的 %d：球间位 %d、封装外圈外侧 %d、空球位 %d；电容和磁珠自己的 %d）" % (
+        len(s["vias"]), kinds["ball"] + kinds["ball lane"] + kinds["ball edge"], kinds["ball"], kinds["ball lane"], kinds["ball edge"],
+        kinds["own"] + kinds["tie"]))
+    fps = {f.GetReference(): f for f in b.GetFootprints()}
+    for ref, nets in RB.POWER.items():
+        balls = [p for p in fps[ref].Pads() if p.GetNetname() in nets]
+        per = collections.Counter(p.GetNetname() for p in balls)
+        names = {"%s.%s" % (ref, p.GetNumber()) for p in balls}
+        sh = [x for x in s["shared"] if x[0] in names]
+        ns = [k for k in s["nosite"] if k in names]
+        vias = {tuple(v) for k, v in s["ball_via"].items() if k in names}
+        L.append("  %s: 球 %d（%s），过孔 %d；共用过孔 %d：%s；没有位置 %d%s" % (
+            ref, len(balls), " ".join("%s %d" % kv for kv in sorted(per.items())), len(vias), len(sh),
+            " ".join("%s->%s" % (x[0].split(".")[1], "+".join(o.split(".")[1] for o in x[2])) for x in sh) or "-", len(ns),
+            "".join("\n    %s: %s" % (k, s["nosite"][k][:230]) for k in ns)))
+    caps = s["caps"]
+    kc = collections.Counter(c["kind"] for c in caps.values())
+    stubs = [(c.get("stub") or 0.0, k) for k, c in caps.items() if "stub" in c["kind"]]
+    worst = max(stubs) if stubs else (0.0, "-")
+    L.append("背面去耦（焊盘 %d 个）: %s；最长短线（焊盘边外的长度）%.3f mm（%s）" % (
+        len(caps), "  ".join("%s %d" % kv for kv in sorted(kc.items())), worst[0], worst[1]))
+    gown = [c for c in caps.values() if c["net"] == "GND" and c["kind"] != "pour" and not c.get("balls")]
+    L.append("  电容地焊盘：和地球共用过孔 %d 个，自己的地过孔 %d 个（焊盘边到过孔中心最远 %.2f mm，超过 1.0 mm 的 %d）" % (
+        sum(1 for c in caps.values() if c["net"] == "GND" and c.get("balls")), len(gown),
+        max([c.get("edge", 0) for c in gown] or [0]), sum(1 for c in gown if c.get("edge", 0) > 1.0)))
+    supply_own = sorted(k for k, c in caps.items() if c["net"] != "GND" and c["kind"].startswith("own"))
+    L.append("  电源焊盘没有落到球的过孔、用自己的过孔到 L3 的 %d 个: %s" % (len(supply_own), " ".join(supply_own) or "-"))
+    small = [(f.GetReference(), p) for r, f in fps.items() if r.startswith("C") and f.GetValue().replace(" ", "").lower() in ("100n", "100nf", "0.1u", "0.1uf")
+             for p in f.Pads()]
+    rows = []
+    for ref, nets in RB.POWER.items():
+        for p in fps[ref].Pads():
+            n = p.GetNetname()
+            if n in nets and n not in ("GND", "VCAP1", "VCAP2"):
+                d = min((pcbnew.ToMM((q.GetPosition() - p.GetPosition()).EuclideanNorm()) for r, q in small if q.GetNetname() == n), default=99)
+                rows.append((round(d, 2), "%s.%s" % (ref, p.GetNumber())))
+    L.append("  每个电源球到最近 100 nF 的距离（LAY-2）: 最远 %.2f mm（%s），超过 2.5 mm 的 %d" % (max(rows)[0], max(rows)[1], sum(1 for r in rows if r[0] > 2.5)))
+    cl = clusters(b, ["VCAP1", "VCAP2", "VDDA_MCU"])
+    L.append("  VCAP1 / VCAP2 / VDDA_MCU 连通块: %s" % "  ".join("%s %d（%s）" % (n, len(g), " | ".join(" ".join(x) for x in g)[:110]) for n, g in cl.items()))
+    sd = os.path.join(odir, "sketch_drc.json")
+    if os.path.isfile(sd):
+        d = json.load(open(sd, encoding="utf-8"))
+        by = collections.Counter(v["type"] for v in d["violations"])
+        hard = {k: n for k, n in by.items() if k in ("clearance", "hole_clearance", "annular_width", "copper_edge_clearance", "hole_to_hole",
+                                                         "track_angle", "via_diameter", "track_width", "isolated_copper", "starved_thermal", "shorting_items")}
+        L.append("线序草图副本（两组电源 + SDRAM 草图，填充后）DRC: %s；其中间距/孔/焊环/板边/线宽/角度/孤铜类 %s" % (
+            " ".join("%s %d" % kv for kv in sorted(by.items())), " ".join("%s %d" % kv for kv in sorted(hard.items())) or "0"))
+    sp = os.path.join(odir, "slots.txt")
+    if os.path.isfile(sp):
+        L += open(sp, encoding="utf-8").read().rstrip("\n").split("\n")
+    return L
+
+
+SLOT_WINDOWS = {"MCU": (32.0, 29.0, 48.0, 45.0), "SDRAM": (50.0, 27.5, 64.0, 46.5)}   # rule area +- 2 mm (the via
+#                column at x 59-60, y 28.5-37 that the stop-3 review saw lies in the SDRAM window)
+REF_LAYERS = {"L2": ["L1"], "L3": ["L4"], "L5": ["L4", "L6"]}      # signal layers whose return current runs on the plane
+SLOT_REPORT = 2.0                                                  # slots longer than this are listed
+BLOCKS = {"+3V3_MCU": "BGA_MCU", "+3V3_SDRAM": "BGA_SDRAM"}
+
+
+def slots(board_path, odir):
+    """U31 on a refilled board (the line-order sketch copy): per plane layer and BGA window, the voids of the plane
+    fill that hold vias (antipads merged into slots), their length (farthest two points), the nets whose tracks
+    on the neighbouring signal layer cross them, and whether the part-B vias make them longer; vias of the plane's
+    own net that the fill does not hold on its main piece (cut off); the narrowest connection of the two BGA blocks
+    on L3 between their feed vias and the ball field. Writes <out dir>/slots.json and slots.txt."""
+    import math
+    import pcbnew
+    import cu_sketch
+    from bga_power import PLANE_CLR, MINWIDTH
+    b = pcbnew.LoadBoard(board_path)
+    ids = list(b.GetEnabledLayers().CuStack())
+    lname = {lid: "L%d" % (i + 1) for i, lid in enumerate(ids)}
+    lid = {v: k for k, v in lname.items()}
+    mm = lambda v: v / 1e6
+    loc = lambda p: (round(mm(p.x) - 100, 3), round(mm(p.y) - 100, 3))
+    V = lambda x, y: pcbnew.VECTOR2I(int(round((x + 100) * 1e6)), int(round((y + 100) * 1e6)))
+    sp = os.path.join(odir, "sketch_power_bga", "power_bga_sites.json")
+    mine = set()
+    if os.path.isfile(sp):
+        mine = {(n, round(p[0], 3), round(p[1], 3)) for n, p, s, k in json.load(open(sp, encoding="utf-8"))["vias"]}
+    vias, tracks = [], collections.defaultdict(list)
+    for t in b.GetTracks():
+        if t.Type() == pcbnew.PCB_VIA_T:
+            vias.append((t.GetNetname(), loc(t.GetPosition()), mm(t.GetWidth(pcbnew.F_Cu))))
+        elif t.Type() == pcbnew.PCB_TRACE_T:
+            tracks[lname[t.GetLayer()]].append((t.GetNetname(), t.GetStart(), t.GetEnd()))
+    areas = {z.GetZoneName(): z.Outline() for z in b.Zones() if z.GetIsRuleArea()}
+    out = {"board": board_path, "slots": [], "longest": {}, "cut_off": [], "necks": {}}
+    for wname, (x0, y0, x1, y1) in SLOT_WINDOWS.items():
+        win = pcbnew.SHAPE_POLY_SET()
+        ch = pcbnew.SHAPE_LINE_CHAIN()
+        for x, y in ((x0, y0), (x1, y0), (x1, y1), (x0, y1)):
+            ch.Append(V(x, y))
+        ch.SetClosed(True)
+        win.AddOutline(ch)
+        for z in b.Zones():
+            if z.GetIsRuleArea() or not z.IsOnCopperLayer():
+                continue
+            L = lname.get(z.GetLayer())
+            if L not in REF_LAYERS:
+                continue
+            net = z.GetNetname()
+            A = pcbnew.SHAPE_POLY_SET(z.Outline()); A.BooleanIntersection(win)
+            if not A.OutlineCount():
+                continue
+            fill = pcbnew.SHAPE_POLY_SET(z.GetFilledPolysList(z.GetLayer())); fill.Simplify()
+            F = pcbnew.SHAPE_POLY_SET(fill); F.BooleanIntersection(win)
+            void = pcbnew.SHAPE_POLY_SET(A); void.BooleanSubtract(F); void.Simplify()
+            for k in range(void.OutlineCount()):
+                o = void.Outline(k)
+                pts = [loc(o.CPoint(i)) for i in range(o.PointCount())]
+                one = pcbnew.SHAPE_POLY_SET(); one.AddOutline(o)
+                inside = [v for v in vias if v[0] != net and one.Contains(V(*v[1]))]
+                if not inside:
+                    continue
+                far = max(((math.dist(p, q), p, q) for i, p in enumerate(pts) for q in pts[i + 1:]), default=(0, None, None))
+                cross = set()
+                for rl in REF_LAYERS[L]:
+                    for n, a, c in tracks[rl]:
+                        if one.Collide(pcbnew.SEG(a, c), 0):
+                            cross.add(n)
+                own = [v for v in inside if (v[0], round(v[1][0], 3), round(v[1][1], 3)) in mine]
+                rest = [v for v in inside if v not in own]
+                span = 0.0                                  # longest chain of the other vias alone (antipads merging)
+                todo = list(range(len(rest)))
+                while todo:
+                    grp, st = set(), [todo.pop()]
+                    while st:
+                        i = st.pop(); grp.add(i)
+                        for j in list(todo):
+                            if math.dist(rest[i][1], rest[j][1]) < (rest[i][2] + rest[j][2]) / 2 + 2 * PLANE_CLR + MINWIDTH:
+                                todo.remove(j); st.append(j)
+                    m = [rest[i] for i in grp]
+                    span = max(span, max((math.dist(a[1], c[1]) for a in m for c in m), default=0) + max(v[2] for v in m) + 2 * PLANE_CLR)
+                row = {"window": wname, "layer": L, "zone": z.GetZoneName(), "net": net, "length": round(far[0], 3),
+                       "ends": [far[1], far[2]], "vias": len(inside), "part_b_vias": len(own),
+                       "without_part_b": round(span, 3), "via_nets": sorted({v[0] for v in inside}), "crossing": sorted(cross)}
+                out["slots"].append(row)
+            # vias of the plane's own net that are not on the main piece of its fill (cut off)
+            pieces = cu_sketch.split(fill)
+            if not pieces:
+                continue
+            main = max(range(len(pieces)), key=lambda i: pieces[i].Area())
+            for v in vias:
+                if v[0] == net and x0 <= v[1][0] <= x1 and y0 <= v[1][1] <= y1 and A.Contains(V(*v[1])):
+                    if not pieces[main].Contains(V(*v[1])):
+                        out["cut_off"].append({"layer": L, "zone": z.GetZoneName(), "net": net, "via": v[1], "part_b": (v[0], round(v[1][0], 3), round(v[1][1], 3)) in mine})
+    out["slots"].sort(key=lambda r: (r["layer"], -r["length"]))
+    for r in out["slots"]:
+        k = r["layer"]
+        if k not in out["longest"] or r["length"] > out["longest"][k]["length"]:
+            out["longest"][k] = r
+    # L3 blocks: narrowest connection between the feed vias (outside the rule area) and the ball field
+    for z in b.Zones():
+        if z.GetIsRuleArea() or z.GetNetname() not in BLOCKS or lname.get(z.GetLayer()) != "L3":
+            continue
+        net, area = z.GetNetname(), areas[BLOCKS[z.GetNetname()]]
+        fill = pcbnew.SHAPE_POLY_SET(z.GetFilledPolysList(z.GetLayer())); fill.Simplify()
+        pieces = cu_sketch.split(fill)
+        bb = area.BBox()
+        centre = bb.GetCenter()
+        feeds = [(t.GetPosition(), int(t.GetWidth(z.GetLayer()) / 2), "via", "feed via%s" % (loc(t.GetPosition()),), False) for t in b.GetTracks()
+                 if t.Type() == pcbnew.PCB_VIA_T and t.GetNetname() == net and not area.Contains(t.GetPosition())]
+        balls = [(t.GetPosition(), int(t.GetWidth(z.GetLayer()) / 2)) for t in b.GetTracks()
+                 if t.Type() == pcbnew.PCB_VIA_T and t.GetNetname() == net and area.Contains(t.GetPosition())]
+        main = max(pieces, key=lambda p: p.Area()) if pieces else None
+
+        def reach(w):
+            """Supply vias in the rule area that a strip of width w still joins to the feed vias."""
+            d = pcbnew.SHAPE_POLY_SET(main)
+            d.Deflate(int(w * 1e6 / 2), pcbnew.CORNER_STRATEGY_ROUND_ALL_CORNERS, 2000)
+            subs = cu_sketch.split(d)
+            fed = {k for k, s in enumerate(subs) for pt, r, *_ in feeds if s.Collide(pt, int(r + w * 1e6 / 2 + 20000))}
+            return sum(1 for pt, r in balls if any(subs[k].Collide(pt, int(r + w * 1e6 / 2 + 20000)) for k in fed))
+        lo, hi = 0.0, 5.0
+        if main is not None and feeds and balls and reach(0.02):
+            if reach(hi):
+                lo = hi
+            for _ in range(10):
+                mid = (lo + hi) / 2
+                lo, hi = (mid, hi) if reach(mid) else (lo, mid)
+        n2 = reach(2.0) if main is not None and feeds and balls else 0
+        out["necks"][net] = {"pieces": len(pieces), "neck_mm": round(lo, 3), "feeds": len(feeds), "field_vias": len(balls),
+                             "field_vias_at_2mm": n2,
+                             "note": "the widest strip from the feed vias that still reaches a supply via in the rule area"}
+    json.dump(out, open(os.path.join(odir, "slots.json"), "w", encoding="utf-8"), indent=1, ensure_ascii=False)
+    txt = slots_text(out)
+    open(os.path.join(odir, "slots.txt"), "w", encoding="utf-8").write(txt + "\n")
+    print(txt)
+
+
+def slots_text(s):
+    L = ["平面开槽（U31，线序草图副本填充后；窗口 = 规则区外扩 2 mm）: 列出长于 %.1f mm 的" % SLOT_REPORT]
+    for r in s["slots"]:
+        if r["length"] > SLOT_REPORT:
+            L.append("  %-2s %-5s %-6.2f mm  (%.2f, %.2f)-(%.2f, %.2f)  过孔 %d（B 部分 %d，去掉它们后最长 %.2f）  过孔网络 %s  上方走线 %s" % (
+                r["layer"], r["window"], r["length"], r["ends"][0][0], r["ends"][0][1], r["ends"][1][0], r["ends"][1][1], r["vias"], r["part_b_vias"],
+                r["without_part_b"], " ".join(r["via_nets"][:8]) + (" …" if len(r["via_nets"]) > 8 else ""), " ".join(r["crossing"]) or "-"))
+    L.append("  每层最长: " + "  ".join("%s %.2f mm (%s)" % (k, v["length"], v["window"]) for k, v in sorted(s["longest"].items())))
+    L.append("  被切断的本网络过孔: %d%s" % (len(s["cut_off"]), "".join("\n    %s %s %s (%.2f, %.2f)%s" % (c["layer"], c["zone"], c["net"], c["via"][0], c["via"][1], " B 部分" if c["part_b"] else "") for c in s["cut_off"])))
+    for net, n in s["necks"].items():
+        L.append("  L3 %-11s 块数 %d；供电过孔 %d 个到球区（区内 %d 个本网络过孔）的最窄连接 %.2f mm（能连到第一个的最宽铜带）；按 2.0 mm 宽的铜带能到的 %d 个" % (
+            net, n["pieces"], n["feeds"], n["field_vias"], n["neck_mm"], n["field_vias_at_2mm"]))
+    return "\n".join(L)
 
 
 if __name__ == "__main__":
@@ -160,6 +382,8 @@ if __name__ == "__main__":
         unfill(sys.argv[2])
     elif sys.argv[1] == "table":
         sys.exit(table(sys.argv[2], sys.argv[3]))
+    elif sys.argv[1] == "slots":
+        slots(sys.argv[2], sys.argv[3])
     else:
         print(__doc__)
         sys.exit(2)

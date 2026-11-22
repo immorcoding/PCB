@@ -183,7 +183,8 @@ def main(argv):
         want(b1 == b2, "shared group: a second build in place changed the board")
         want(set(before[0]) <= set(after[0]) and set(gv(before)) <= set(gv(after)) and len(gv(after)) == len(gv(before)) + 2,
              "shared group: the main group's copper or its ground vias did not stay (GND vias %d -> %d)" % (len(gv(before)), len(gv(after))))
-        want(sorted(t[4] for t in new_t if t[1] == "L1") == [0.25, 0.3048] and len(new_t) == 4, "shared group: new tracks %r" % (new_t,))
+        want(sorted(t[4] for t in new_t if t[1] == "L1") == [0.25, 0.3048] and len(new_t) == 5, "shared group: new tracks %r" % (new_t,))
+        want([t[4] for t in new_t if t[1] == "L6" and t[2][1] < 8.0] == [0.2], "shared group: the piece inside BGA_MCU is not 0.2 wide (area_free_classes) %r" % (new_t,))
         want(r1[0].get("shape", {}).get("track_shape", {}).get("off-grid") == 0, "shared group: track_shape off-grid %r" % (r1[0].get("shape", {}).get("track_shape"),))
 
         neg = {}

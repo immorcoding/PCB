@@ -77,9 +77,11 @@ layout)
   echo "layout step: $(( $(date +%s) - T0 )) s; sketch build exit $SB, place_check exit $PC"
   ;;
 copper)
-  # stop 5, power and copper (part A): placement, the pours of copper.sketch, the power group (routes_power.py:
-  # vias and short ties) on the real board, KiCad's own refill (PWR-6), then the copper table. The same group
-  # is built on the SDRAM line-order sketch copy to prove it legal next to the bus. One KiCad process at a time.
+  # stop 5, power and copper: placement, the pours of copper.sketch, the power group (routes_power.py, part A:
+  # vias and short ties outside the BGAs) and the BGA power group (routes_power_bga.py, part B: supply and ground
+  # balls, bottom decoupling) on the real board, KiCad's own refill (PWR-6), then the copper table. Both groups
+  # are built on the SDRAM line-order sketch copy too, to prove them legal next to the bus; that copy is refilled
+  # and the plane slots under the BGAs (U31) are measured there. One KiCad process at a time.
   T0=$(date +%s)
   BRD="$D/$N.kicad_pcb"; SK="$D/out/sketch/rot0/$N.kicad_pcb"
   echo "== placement and pours"
@@ -97,15 +99,25 @@ copper)
     --out "$O/power" > "$O/power_build.txt" 2>&1 && PB=0 || PB=$?
   grep -E "^写入|^\[间距\]|^结论|^ERROR" "$O/power_build.txt" || tail -5 "$O/power_build.txt"
   grep -E "^(NO |feed .*SHORT)" "$O/power_sites.txt" || true
+  echo "== BGA power group on the board (part B: supply and ground balls, bottom decoupling)"
+  POWER_BGA_LOG="$O/power_bga_sites.txt" $PY "$R/scripts/busroute/build.py" "$D/routes_power_bga.py" --write-board --ignore-lock --no-refill --no-pictures \
+    --out "$O/power_bga" > "$O/power_bga_build.txt" 2>&1 && PG=0 || PG=$?
+  grep -E "^写入|^\[间距\]|^结论|^ERROR" "$O/power_bga_build.txt" || tail -5 "$O/power_bga_build.txt"
+  grep -E "^(NO |LOST)" "$O/power_bga_sites.txt" | cut -c1-300 || true
   echo "== refill and save (kicad-cli), measure"
   /d/KiCad/bin/kicad-cli.exe pcb drc --refill-zones --save-board --severity-all --units mm --format json -o "$O/drc.json" "$BRD" > /dev/null 2>&1 || true
   $PY "$R/scripts/cu_sketch.py" measure "$BRD" --drc "$O/drc.json" --json "$O/measure.json" --skip-areas BGA_MCU,BGA_SDRAM > "$O/measure.txt" 2>&1 || true
   $PY "$R/scripts/pour_islands.py" "$BRD" "cu-whole:L1_GND" "cu-whole:L6_GND" 2>&1 | quiet > "$O/pour_islands.txt" || true
   grep -v " 0 without" "$O/pour_islands.txt" || true
-  echo "== power group on the line-order sketch copy (after routes_sdram.py)"
+  echo "== power groups on the line-order sketch copy (after routes_sdram.py), refill there, plane slots (U31)"
   POWER_BOARD="$SK" POWER_LOG="$O/sketch_power/power_sites.txt" $PY "$R/scripts/busroute/build.py" "$D/routes_power.py" --write-board \
-    --out "$O/sketch_power" > "$O/sketch_power_build.txt" 2>&1 && SP=0 || SP=$?
+    --no-refill --no-pictures --out "$O/sketch_power" > "$O/sketch_power_build.txt" 2>&1 && SP=0 || SP=$?
   grep -E "^\[间距\]|^结论|^ERROR" "$O/sketch_power_build.txt" || tail -5 "$O/sketch_power_build.txt"
+  POWER_BOARD="$SK" POWER_BGA_LOG="$O/sketch_power_bga/power_bga_sites.txt" $PY "$R/scripts/busroute/build.py" "$D/routes_power_bga.py" --write-board \
+    --no-refill --no-pictures --out "$O/sketch_power_bga" > "$O/sketch_power_bga_build.txt" 2>&1 && SG=0 || SG=$?
+  grep -E "^\[间距\]|^结论|^ERROR" "$O/sketch_power_bga_build.txt" || tail -5 "$O/sketch_power_bga_build.txt"
+  /d/KiCad/bin/kicad-cli.exe pcb drc --refill-zones --save-board --severity-all --units mm --format json -o "$O/sketch_drc.json" "$SK" > /dev/null 2>&1 || true
+  $PY "$D/copper_report.py" slots "$SK" "$O" 2>&1 | quiet | tail -12
   $PY "$R/scripts/escape_check.py" "$SK" --ref U201 --ref U301 --window 27 25 66 51 --json "$O/escape_bga.json" 2>&1 | quiet > "$O/escape.txt"
   $PY "$R/scripts/escape_check.py" "$SK" --ref U501 --ref U601 --ref U701 --ref J701 --ref U401 --json "$O/escape_parts.json" 2>&1 | quiet >> "$O/escape.txt"
   echo "== escape check on the sketch copy (now | stop 4, out/layout/table.txt)"
@@ -113,10 +125,13 @@ copper)
     ref=$(echo "$line" | cut -d' ' -f1); echo "$line"; grep -E "^$ref " "$D/out/layout/table.txt" | sed 's/^/  was: /'; done
   echo "== pictures of the filled layers (qualitative review only)"
   $PY "$D/copper_view.py" "$BRD" "$O" L1 L2 L3 L5 L6 2>&1 | quiet | tr '\n' ' '; echo
+  # close-ups of the two BGAs on the sketch copy (it carries the SDRAM sketch's tracks and vias, as U31 is measured)
+  $PY "$D/copper_view.py" "$SK" "$O" L1 L2 L3 L6 --scale 40 --window 33 30 47 45 --name mcu 2>&1 | quiet | tr '\n' ' '; echo
+  $PY "$D/copper_view.py" "$SK" "$O" L1 L2 L3 L6 --scale 40 --window 51 28.5 63 45.5 --name sdram 2>&1 | quiet | tr '\n' ' '; echo
   $PY "$D/make_project.py" > /dev/null 2>&1                               # SaveBoard rewrote the project file: its source is this script
   echo "== copper table"
   COPPER_SECONDS="$(( $(date +%s) - T0 )) s" $PY "$D/copper_report.py" table "$BRD" "$O" 2>&1 | quiet && CT=0 || CT=$?
-  echo "copper step: $(( $(date +%s) - T0 )) s; sketch build exit $SB, power build exit $PB, sketch-copy power build exit $SP, table exit $CT"
+  echo "copper step: $(( $(date +%s) - T0 )) s; sketch build exit $SB, power build exit $PB / $PG (BGA), sketch-copy power build exit $SP / $SG (BGA), table exit $CT"
   ;;
 *) echo "unknown step: $STEP"; exit 2 ;;
 esac

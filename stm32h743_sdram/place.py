@@ -160,14 +160,22 @@ PLACE.update({
     # the SDRAM decoupling. Positions from decap_search.py on the SDRAM sketch board: pads clear of every L6
     # track and foreign via, every ball keeps a free via site, every VDD ball has a 100 nF within 2.5 mm.
     # L3_3V3_MCU and L3_3V3_SDRAM under them; VDDA_MCU is an L6 pour here (the SW corner is closed on L1, L4, L6).
-    "C218": (42.15, 34.15, 90, "B"), "C219": (41.00, 38.45, 90, "B"), "C220": (35.45, 40.75, 90, "B"),
+    "C218": (42.15, 34.45, 90, "B"), "C219": (41.00, 38.45, 90, "B"), "C220": (35.45, 40.75, 90, "B"),
     "C222": (34.40, 40.95, 90, "B"), "C201": (39.60, 35.70, 0, "B"), "C202": (43.85, 37.90, 0, "B"),
-    "C203": (39.65, 38.85, 90, "B"), "C204": (36.40, 35.55, 90, "B"), "C205": (39.25, 34.00, 0, "B"),
-    "C206": (38.15, 38.00, 0, "B"), "C207": (35.35, 34.05, 0, "B"), "C208": (40.85, 33.80, 90, "B"),
-    "C209": (42.20, 40.55, 0, "B"), "C210": (44.20, 35.55, 0, "B"), "C211": (38.00, 39.20, 0, "B"),
+    "C203": (39.65, 38.85, 90, "B"), "C204": (36.40, 35.60, 270, "B"), "C205": (39.25, 34.00, 0, "B"),
+    "C206": (38.15, 38.00, 0, "B"), "C207": (35.35, 34.05, 0, "B"), "C208": (40.85, 33.80, 270, "B"),
+    "C209": (42.20, 40.55, 0, "B"), "C210": (44.20, 35.55, 0, "B"), "C211": (38.00, 39.25, 0, "B"),
     "C212": (38.15, 36.75, 0, "B"), "C213": (37.75, 33.00, 90, "B"), "C214": (39.05, 32.50, 90, "B"),
-    "C215": (35.20, 36.30, 90, "B"), "C221": (36.45, 42.50, 0, "B"), "C223": (32.90, 43.40, 90, "B"),
-    "C216": (42.70, 41.95, 0, "B"), "FB201": (36.60, 44.05, 0, "B"),
+    "C215": (35.20, 36.30, 90, "B"), "C221": (35.85, 43.45, 270, "B"), "C223": (34.30, 43.45, 270, "B"),
+    "C216": (42.70, 41.95, 0, "B"), "FB201": (37.40, 43.00, 270, "B"),
+    # stop 5 part B moved seven of them (decap_search's positions did not connect): C208 turned (+3V3 pad north
+    # over ball C9's via site, so the L3 tongue reaches a supply via in a strip >= 2 mm); C204 turned (+3V3 pad north over
+    # ball F3's via site, ground pad over ball G2's: F3's other site bridged two SDRAM-sketch via rows on L2 / L5);
+    # C218 0.3 mm south (VCAP1 pad within 0.5 mm of ball F13's only via site); C211 0.05 mm south so ball L4
+    # (GND) keeps a via site (hole to copper 0.195 -> 0.24); C221, C223 and FB201 into the corner west of
+    # FMC_SDNRAS on L6 (C223 was west of FMC_SDNWE, cut off from the VDDA_MCU pockets on L1 and L6): the 1 uF
+    # pair upright with VDDA north in the L6 pocket, ground south to their own vias; the bead upright with its
+    # +3V3_MCU pad north over a via in the rule area and its VDDA pad south in the pocket's east lobe.
     "C301": (58.80, 33.40, 90, "B"), "C302": (58.35, 41.10, 90, "B"), "C303": (54.80, 34.20, 90, "B"),
     "C304": (55.25, 39.80, 90, "B"), "C305": (56.30, 31.10, 90, "B"), "C306": (59.85, 40.25, 90, "B"),
     "C307": (58.75, 31.85, 0, "B"), "C308": (60.80, 37.20, 0, "B"),

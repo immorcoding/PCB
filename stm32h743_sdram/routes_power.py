@@ -8,7 +8,7 @@ The sites are searched by power_ties.py at build time against the pads, the copp
 SDRAM line-order sketch (tracks and vias of the `sdram` group on out/sketch/rot0), so the group comes out the
 same on the real board and on the sketch copy (POWER_BOARD=<that board> builds it there). Nothing is placed in
 the BGA rule areas; the supply and ground balls of U201 / U301, their dog-bones and the bottom decoupling
-under them (PART_B) are the next task.
+under them (PART_B) are routes_power_bga.py (part B, a second shared group).
 
 What is drawn, in this order (earlier items take the better sites):
   feeds     the vias that join a local pour or a link resistor to its L3 block or to the other outer layer:
