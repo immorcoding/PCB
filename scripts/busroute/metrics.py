@@ -109,6 +109,20 @@ def groups_table(lens, groups, ref):
     return {"ref": ref, "ref_length": ref_len, "ref_direct": ref_direct, "groups": out}
 
 
+LEN_TOL = 0.002              # geometry length vs DRC length, mm
+
+
+def length_check(geo_drc, ruled, tol=LEN_TOL):
+    """Geometry length minus DRC length, split by whether the net has a length rule (a length or skew limit of
+    its class, or a TUNING group). Only ruled nets decide a build: elsewhere a difference (a bend inside a pad,
+    a via DRC counts differently) changes no rule's verdict and is listed as a note.
+    -> {"max_ruled": mm or None, "notes": {net: diff} of unruled nets beyond tol, "ok": bool}"""
+    r = [abs(v) for n, v in geo_drc.items() if n in ruled]
+    notes = {n: v for n, v in sorted(geo_drc.items()) if n not in ruled and abs(v) > tol}
+    mx = max(r, default=None)
+    return {"max_ruled": mx, "notes": notes, "ok": mx is None or mx <= tol}
+
+
 def collect(info, lens, findings, hard, ext, extra):
     """info: group, board, routes file, mode, nets, limits. ext: external() or None in a fast build."""
     kinds = collections.Counter(f["kind"] for f in findings)
@@ -198,6 +212,11 @@ def table(m):
     A("       长度上限 %s：超过的 %d 根%s" % (L["limit"] if L["limit"] is not None else "按网络类", len(L["over_limit"]), "（" + " ".join(L["over_limit"]) + "）" if L["over_limit"] else ""))
     if "max_abs_geometry_minus_drc" in L:
         A("       几何长度对 DRC 实测长度：最大相差 %s mm（%d 根有 DRC 数）" % (L["max_abs_geometry_minus_drc"], len(L["geometry_minus_drc"])))
+        lc = L.get("check")
+        if lc:
+            A("         有长度规则的网络（长度、skew 上限或蛇形组）最大相差 %s mm（上限 %g，判通过与否）；没有长度规则、相差超过 %g 的只报告：%s" % (
+                "—" if lc["max_ruled"] is None else "%.4f" % lc["max_ruled"], LEN_TOL, LEN_TOL,
+                "，".join("%s %+.4f" % kv for kv in lc["notes"].items()) or "无"))
     A("[过孔] 每根最多 %d，合计 %d；超过上限 %s 的 %d 根%s；超过目标 %s 的 %d 根%s" % (
         v["max"], v["total"], v["limit"], len(v["over_limit"]), "（" + " ".join(v["over_limit"]) + "）" if v["over_limit"] else "",
         v["target"], len(v["above_target"]), "（" + " ".join(v["above_target"]) + "）" if v["above_target"] else ""))

@@ -248,10 +248,14 @@ def run(routes_file, fast=False, sketch=False, out=None, write_board=False, refi
     if open_ok:
         ignore.setdefault("track_dangling", "OPEN_ENDS: the routes end in the open on purpose")
     counted = {k: n for k, n in ext["drc"]["by_type_group"].items() if k not in ignore}
-    diff = m["length"]["max_abs_geometry_minus_drc"]
+    spec = getattr(mod, "TUNING", None) or {}
+    ruled = {n for n in lens if profile.limit(n, "length_max") is not None or profile.limit(n, "skew_max") is not None}
+    ruled |= {n for g in spec.get("groups", {}).values() for n in g.get("nets", [])}
+    lc = metrics.length_check(m["length"].get("geometry_minus_drc", {}), ruled)
+    m["length"]["check"] = lc
     m.update(written=dict(w, file=dst, matches_model=same), drc_ignored=ignore, drc_counted_group=counted)
     m["ok"] = (hard == 0 and same and not counted and (open_ok or (ext["drc"]["unconnected_group"] == 0 and not ext["connectivity"]["open"]))
-               and (open_ok or diff is None or diff <= 0.002) and (ext["canary"] is None or ext["canary"]["ok"]))   # open routes have no pad-to-pad length
+               and (open_ok or lc["ok"]) and (ext["canary"] is None or ext["canary"]["ok"]))   # open routes have no pad-to-pad length
     json.dump(ext["drc"], open(os.path.join(out, "drc_summary.json"), "w", encoding="utf-8"), indent=1, ensure_ascii=False)
     if pictures:
         from . import render

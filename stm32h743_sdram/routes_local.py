@@ -13,11 +13,12 @@ via and the far part is on L6 (L4 for the one long enable, EN_3V3A); 0 / 45 / 90
 at pad centres (a net with three or more pads is a list of pad-to-pad chains); ground never gets a track (the
 pads have their vias from stop 5 or rely on the L1 pour); widths are the net-class widths (Default 0.2032 mm).
 
-Why each net goes the way it does (one line each; the report lists the proposed part moves):
+Why each net goes the way it does (one line each). Stop 7 moved R807, D103, R102 / R103, R701-R704, R808 / R809
+and SW801 so that their links are straight (RTE-10; place.py):
   BOOT_5V    U101.6 45 degrees down to C101.1's column, straight down into it (1.7 mm)
-  FB_5V      the +12V column (x 65.55-67) stands between the divider and U101.4, and the divider's FB pads are
-             at its two ends (R102.2 north, R103.1 south): both links hop on L6 (4 vias). R103.2 (ground, no via)
-             keeps its L1 pour from the west, between the vias.
+  FB_5V      the divider's FB pads face each other (R102 / R103 turned): R103.1 - R102.2 straight on L1; the +12V
+             column (x 65.55-67) stands between the divider and U101.4, so that link hops on L6 (2 vias), south of
+             the +5V_REG hop of R102.1 (routes_power.py draws that one along y 39.9).
   FB_3V3     R105.2 - R106.1 one diagonal between the two resistors; R105.2 up to U102.6
   EN_3V3     U102.1 - R104.2 - TP106 on L1
   EN_3V3A    U102.5 sits between +5V (pin 4) and FB (pin 6) with EN_3V3 east of the IC: to R108.2 by a via under
@@ -26,16 +27,14 @@ Why each net goes the way it does (one line each; the report lists the proposed 
   EN_1V8     TP108 - R109.2 - U104.3 on L1, south of R113 / C112 and their vias
   RPP_GATE   D101.2 - Q101.1 inside the pocket of the +12V pour; R101 sits in the next pocket south of the +12V
              band (y 54.95-56.7): one hop on L6
-  LED_3V3    R107.2 round the east side of D103.1 (ground pad between them) to D103.2
-  CAN        CANH from D801.1 east, then L6 down into J802.1 (through-hole) under CANL; R807.1 - L6 - J802.1
-             (under CAN_TERM); CANL D801.2 - J802.2 on L1 (stepped under D801.3's ground via), J802.2 - JP801.2
-             east of J802.1; CAN_TERM R807.2 - JP801.1 on L1. (R807 has CAN_TERM on its north pad and CANH on its
-             south pad, the wrong way round for the terminal: two crossings, both on L6.)
-  LCD_P37-40 the link resistors are in the reverse order of the connector pins: P39 straight on L1 (0.1 mm step),
-             P37, P38, P40 drop to L6 below their resistor and come up south of their pin (6 vias)
+  LED_3V3    R107.2 straight up into D103.2 (D103 turned)
+  CAN        CANH from D801.1 east, then L6 down into J802.1 (through-hole) under CANL; R807.1 - J802.1 straight
+             east on L1 (R807 turned: CANH north, CAN_TERM south); CANL D801.2 - J802.2 on L1 (stepped under D801.3's
+             ground via), J802.2 - JP801.2 east of J802.1; CAN_TERM R807.2 45 degrees down into JP801.1 on L1
+  LCD_P37-40 the link resistors now in the order of the connector pins: four L1 fan lines, no via
   LED_K      U701.3 is boxed by SW_BL, C705 and the LED_A band: out west, down between SW_BL and C705, L6 under
              the band to R708.1 (Kelvin tap on its north side); J701.40 - R708.1 and R707.2 - R708.1 on L1
-  KEY_SW, LED1_A, LED2_A  short L1 links (a small step where the pads are not aligned)
+  KEY_SW, LED1_A, LED2_A  short straight L1 links (SW801, R808 / R809 aligned with their pads)
   HPROUT     west past the decoupling column (between C606's and C608's vias, y 26.4) into C614.1
   HPLOUT     its capacitor C613 is beyond C614: up the 0.5 mm lane between the C605 / C609 and C606 columns
              (x 14.33), west at y 22.1 under C614's body (between its pads), 45 degrees down into C613.1
@@ -73,12 +72,10 @@ def power():
     R = {}
     R["BOOT_5V"] = [("L1", ["U101.6", (68.52, 44.6075), "C101.1"])]
     R["FB_5V"] = [
-        [("L1", ["U101.4", (67.8625, 41.7), (67.5625, 41.4)]), V(67.5625, 41.4),
-         ("L6", [(67.5625, 41.4), (67.5625, 40.1), (67.1625, 39.7), (65.6, 39.7), (65.0, 40.3)]), V(65.0, 40.3),
-         ("L1", [(65.0, 40.3), "R102.2"])],
-        [("L1", ["R103.1", (64.3, 44.71)]), V(64.3, 44.71),
-         ("L6", [(64.3, 44.71), (63.6, 44.01), (63.6, 41.79), (64.3, 41.09)]), V(64.3, 41.09),
-         ("L1", [(64.3, 41.09), "R102.2"])],
+        [("L1", ["R103.1", "R102.2"])],
+        [("L1", ["U101.4", (67.8625, 41.45)]), V(67.8625, 41.45),
+         ("L6", [(67.8625, 41.45), (64.96, 41.45), (64.3, 42.11)]), V(64.3, 42.11),
+         ("L1", [(64.3, 42.11), "R102.2"])],
     ]
     R["FB_3V3"] = [
         [("L1", ["U102.6", (68.01, 33.7025), "R105.2"])],
@@ -110,7 +107,7 @@ def power():
          ("L6", [(63.6, 58.71), (63.1, 58.21), (63.1, 54.25), (63.6, 53.75)]), V(63.6, 53.75),
          ("L1", [(63.6, 53.75), "D101.2"])],
     ]
-    R["LED_3V3"] = [("L1", ["R107.2", (73.6, 12.2), (74.3875, 11.4125), (74.3875, 10.0), "D103.2"])]
+    R["LED_3V3"] = [("L1", ["R107.2", "D103.2"])]
     return R
 
 
@@ -120,15 +117,14 @@ def can():
         [("L1", ["U801.7", (70.4, 16.365), (70.715, 16.05), "D801.1"])],
         [("L1", ["D801.1", (76.5, 16.05)]), V(76.5, 16.05),
          ("L6", [(76.5, 16.05), (77.0, 16.55), (77.0, 18.95), "J802.1"])],
-        [("L1", ["R807.1", (72.9, 23.9125)]), V(72.9, 23.9125),
-         ("L6", [(72.9, 23.9125), (76.1375, 23.9125), "J802.1"])],
+        [("L1", ["R807.1", "J802.1"])],
     ]
     R["CANL"] = [
         [("L1", ["U801.6", (70.4, 17.635), (70.715, 17.95), "D801.2"])],
         [("L1", ["D801.2", (72.3, 17.95), (72.5, 18.15), (77.0, 18.15), (77.65, 17.5), "J802.2"])],
         [("L1", ["J802.2", (81.0, 19.45), (81.0, 23.74), "JP801.2"])],
     ]
-    R["CAN_TERM"] = [("L1", ["R807.2", (73.0, 21.0875), (76.0, 24.0875), "JP801.1"])]
+    R["CAN_TERM"] = [("L1", ["R807.2", (71.9, 23.4), (74.7, 26.2), "JP801.1"])]
     return R
 
 
@@ -136,12 +132,10 @@ def lcd():
     R = {}
     # P39 straight down (0.1 mm step right below its resistor); P40 hops over it on L6 between the two rows;
     # P38 and P37 go round the south ends of the pins of P40 / P39 (under the connector body, nested) and come up
-    R["LCD_P39"] = [("L1", ["R703.1", (31.65, 67.95), (31.75, 68.05), "J701.2"])]
-    R["LCD_P40"] = [("L1", ["R704.1", (32.85, 68.35)]), V(32.85, 68.35),
-                    ("L6", [(32.85, 68.35), (32.65, 68.55), (31.6, 68.55), (31.25, 68.9)]), V(31.25, 68.9),
-                    ("L1", [(31.25, 68.9), "J701.1"])]
-    R["LCD_P38"] = [("L1", ["R702.1", (30.45, 70.7), (30.95, 71.2), (31.75, 71.2), (32.25, 70.7), "J701.3"])]
-    R["LCD_P37"] = [("L1", ["R701.1", (29.25, 71.35), (29.75, 71.85), (32.25, 71.85), (32.75, 71.35), "J701.4"])]
+    R["LCD_P40"] = [("L1", ["R704.1", (30.25, 68.51), (30.25, 68.725), "J701.1"])]
+    R["LCD_P39"] = [("L1", ["R703.1", (31.75, 68.81), "J701.2"])]
+    R["LCD_P38"] = [("L1", ["R702.1", (31.65, 67.9), (32.25, 68.5), "J701.3"])]
+    R["LCD_P37"] = [("L1", ["R701.1", (32.85, 68.5), (32.75, 68.6), "J701.4"])]
     R["LED_K"] = [
         [("L1", ["U701.3", (54.15, 57.05), (53.65, 57.55), (53.65, 59.35)]), V(53.65, 59.35),
          ("L6", [(53.65, 59.35), (52.8, 60.2), (52.8, 63.0), (52.0, 63.8)]), V(52.0, 63.8),
@@ -150,11 +144,11 @@ def lcd():
         [("L1", ["R707.2", (56.6625, 64.925), (56.2625, 65.325), (52.7, 65.325), "R708.1"])],
     ]
     R["KEY_SW"] = [
-        [("L1", ["SW801.2", (19.4, 67.6), (19.49, 67.51), "R810.1"])],
+        [("L1", ["SW801.2", "R810.1"])],
         [("L1", ["R810.1", "R811.1"])],
     ]
-    R["LED1_A"] = [("L1", ["D802.2", (14.7875, 64.3225), "R808.2"])]
-    R["LED2_A"] = [("L1", ["D803.2", (18.3875, 64.3225), "R809.2"])]
+    R["LED1_A"] = [("L1", ["D802.2", "R808.2"])]
+    R["LED2_A"] = [("L1", ["D803.2", "R809.2"])]
     return R
 
 

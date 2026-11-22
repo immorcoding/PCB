@@ -75,7 +75,7 @@ class Planner:
         self.box = (min(xs), min(ys), max(xs), max(ys))
         self.board_poly = None
         self.own_vias = []                                   # (net, p) placed here
-        self.th = [(p.net, p.pos, p.hole) for p in board.pads.values() if p.hole > 0]
+        self.th = [(p.net, p.pos, p.hole) for p in board.all_pads() if p.hole > 0]
         self.chains, self.extras, self.log, self.done = {}, [], [], []
         self._pcache = {}
         self.own_segs = []                                   # (net, layer, a, c) placed here
@@ -440,6 +440,39 @@ class Planner:
         self.log.append("hop      %-9s %-11s %s - %s - via (%.3f, %.3f) in %s, %.2f mm" % (
             padname, net, "via (%.3f, %.3f)" % tuple(pa[-1]) if lmax_a else "pad", lay_mid, path[-1][0], path[-1][1], outer_to, L))
         return path[-1]
+
+    def fixed(self, padname, pieces):
+        """A chain given in full (routes format: ("L1", [pad or points], width?) and ("via", (x, y))), checked like
+        a searched one (via_why / seg_why for every via and segment) and placed only when all of it is legal.
+        For the few ties whose searched site would block a later group's route. -> True / False."""
+        pad = self.pad(padname)
+        net = pad.net
+        out, segs, vias, why = [], [], [], None
+        for pc in pieces:
+            if pc[0] == "via":
+                p = (r4(pc[1][0]), r4(pc[1][1]))
+                why = why or (lambda w: w and "via (%.3f, %.3f): %s" % (p[0], p[1], w))(self.via_why(net, p))
+                vias.append(p)
+                out.append(("via", p, self.via))
+                continue
+            lay, pts = pc[0], [self.centre(self.pad(q)) if isinstance(q, str) else (r4(q[0]), r4(q[1])) for q in pc[1]]
+            w = pc[2] if len(pc) > 2 else (self._width(pad, None) if isinstance(pc[1][0], str) else self.pr.width(net))
+            for a, c in zip(pts, pts[1:]):
+                why = why or (lambda y: y and "%s (%.3f, %.3f)-(%.3f, %.3f): %s" % (lay, a[0], a[1], c[0], c[1], y))(self.seg_why(net, lay, a, c, w))
+                segs.append((lay, a, c, w))
+            out.append((lay, [self.start(pad) if isinstance(pc[1][0], str) and k == 0 else q for k, q in enumerate(pts)], w))
+        if why:
+            self.log.append("NO FIXED %s %s: %s" % (padname, net, why))
+            return False
+        for lay, a, c, w in segs:
+            self._put_seg(net, lay, a, c, w)
+        for p in vias:
+            self._put_via(net, p)
+        self.chains.setdefault(net, []).append(out)
+        L = sum(math.dist(a, c) for _, a, c, _ in segs)
+        self.done.append({"kind": "fixed", "pad": padname, "net": net, "at": vias[-1] if vias else None, "len": round(L, 3)})
+        self.log.append("fixed    %-9s %-11s %d vias, %.2f mm" % (padname, net, len(vias), L))
+        return True
 
     def via_in_pad(self, padname, nx, ny, pitch):
         """An nx x ny array of vias on an approved exposed pad (ALLOW), centred on it."""

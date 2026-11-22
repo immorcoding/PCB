@@ -72,7 +72,9 @@ RAILS = [
     ("+5V -> 3.3 V buck input (U102, C108)", ["U102.4", "C108.1"], 2),
     ("+3V3A LDO output -> L3 block (U103, C111)", ["U103.5", "C111.1"], 2),
     ("+3V3_MCU R203 -> L3 tongue (+ C217)", ["R203.2", "C217.1"], 2), ("+3V3_SDRAM R301 -> L3 tongue (+ C309)", ["R301.2", "C309.1"], 2),
-    ("VDDA_PHY L1 column <-> L6 strip", ["column - L6 strip"], 2), ("VDDA_PHY FB501 <-> L6 strip", ["FB501.2"], 2),
+    ("VDDA_PHY L1 north piece <-> L6", ["L1_VDDA_PHY_N"], 1), ("VDDA_PHY L1 west piece <-> L6", ["L1_VDDA_PHY_W"], 1),
+    ("VDDA_PHY L1 south piece <-> L6", ["L1_VDDA_PHY_S"], 1), ("VDDA_PHY FB501 <-> L6", ["FB501.2"], 2),
+    ("+3V3_PHY L6 strip <-> L1 pour", ["L1_3V3_PHY - L6 strip"], 1),
 ] + [("+5V link %s" % p, [p], 2) for p in ("R112.1", "R710.1", "R814.1")] \
   + [("+3V3 link %s" % p, [p], 2) for p in ("R203.1", "R301.1", "R404.1", "R514.1", "R610.1", "R709.1", "R812.1", "R813.1", "R113.1")]
 LOOPS = ["C104.2", "U101.1", "C102.2", "C103.2", "C705.2", "U701.2", "C703.2", "C704.2", "C108.2", "U102.2"]

@@ -42,6 +42,7 @@ AREA_MARGIN = 1.0                     # rule area = package body + 1 mm on every
 #   LCD       FPC body front on the bottom edge (it stood 3 mm in; J701 is listed on its own), its passives with it
 #   QSPI      down by the same 3 mm, out of the way of the Ethernet block's east end (R514, FB501)
 #   user      LEDs and key below the Ethernet block
+# Stop 7 reworked the Ethernet block inside itself and writes it in absolute coordinates; ETH_SHIFT stays as the record.
 ETH_SHIFT, LCD_SHIFT, QSPI_SHIFT, USER_SHIFT = (-4.1, 6.0), (0.0, 3.0), (0.0, 3.0), (0.0, 4.0)
 
 
@@ -119,21 +120,30 @@ PLACE.update({
     "U104": (20.0, 31.7, 0), "C603": (23.2, 29.75, 0), "C113": (23.7, 31.5, 0), "C604": (23.7, 33.1, 0),
     "C112": (16.9, 31.7, 270), "R113": (15.0, 31.7, 90), "R109": (13.4, 32.0, 270), "TP108": (9.9, 31.9, 0),
     "TP105": (26.6, 31.6, 0), "TP110": (4.0, 30.4, 0),
-    # ---- Ethernet: RJ45 on the left edge, its body overhanging it, PHY to its right (L1_VDDA_PHY, L1_3V3_PHY).
-    # Stop-4 coordinates, moved by ETH_SHIFT
-    **shifted({
-        "J501": (17.24, 39.0, 270),
-        "U501": (26.5, 44.5, 90),
-        "C502": (22.81, 42.6, 0), "C510": (22.81, 41.5, 0), "C511": (22.81, 40.4, 0),
-        "R507": (22.81, 47.9, 0), "R508": (22.81, 49.0, 0), "R509": (22.81, 50.1, 0), "R510": (22.81, 51.2, 0),
-        "R505": (23.9, 46.9, 0, "B"), "C503": (24.6, 48.6, 270), "R504": (25.9, 49.4, 90),
-        "C507": (28.6, 48.6, 270), "C506": (30.1, 48.8, 90), "R506": (27.2, 49.4, 90),
-        "Y501": (26.6, 53.2, 180), "C508": (29.6, 52.8, 90), "C509": (23.6, 53.4, 90),
-        "C504": (30.0, 44.5, 90), "C505": (31.3, 45.3, 90), "R503": (30.0, 42.4, 0), "R502": (32.6, 46.0, 90),
-        "R501": (27.0, 40.9, 0),
-        "FB501": (32.0, 49.6, 270), "R514": (33.85, 49.4, 90), "C501": (21.5, 54.7, 180),
-        "R511": (8.6, 54.4, 0), "R512": (6.2, 54.4, 0), "R513": (13.9, 54.4, 0),
-    }, ETH_SHIFT),
+    # ---- Ethernet: RJ45 on the left edge, its body overhanging it (try/eth-west), PHY to its right. Stop 7 reworked the
+    # block inside itself (absolute coordinates; J501 and U501 kept their stop-5 places, 4.1 mm west and 6 mm down
+    # from stop 4). The pairs run on L1 only: TX west from pins 20 / 21 and up into the RJ45 between pins 2 and 4, RX
+    # down and round into the column gap from the south (LAN8742A p.55 Figure 3-23: each line 49.9 ohm to VDDA at the
+    # PHY side). Each termination sits IN its line (the line passes through its signal pad; RTE-11, junctions only at
+    # pad centres): R508 / R507 upright north / south of the TX lines where they are still 0.5 mm apart, R510 / R509 on
+    # the RX lines' south-going stretch, VDDA pads outward into three small L1 VDDA pieces (copper.sketch) that drop to
+    # the L6 VDDA region; the centre taps J501.4 / J501.5 are wrapped on L6 only. Centre-tap capacitors C510 / C511 and
+    # VDD1A's C502 in a row north of the TX resistors; VDD2A's C503 under pin 1. R505 (RBIAS) on the bottom by the RBIAS
+    # via; R504 (nINTSEL / LED2 pull-down) and R511 (LED1 cathode) moved to the RJ45's LED pins; R502 (RXER /
+    # PHYAD0 pull-down) on the bottom by the RXER via; R503 (MDIO pull-up) in the MDIO lane; C504 / C505 south-east
+    # so pins 7, 8, 10-12 leave east on L1 (L1_3V3_PHY, L6_3V3_PHY).
+    "J501": (13.14, 45.0, 270),
+    "U501": (22.4, 50.5, 90),
+    "R508": (19.16, 49.24, 270), "R507": (18.2, 50.76, 90),
+    "R510": (18.59, 52.3, 0), "R509": (20.11, 53.75, 180),
+    "C510": (18.35, 45.3, 90), "C511": (19.3, 45.3, 90), "C502": (20.1, 47.4, 0),
+    "C503": (20.85, 55.17, 270), "R505": (19.9525, 53.0, 180, "B"),
+    "R506": (22.65, 54.6, 270), "Y501": (22.5, 59.2, 180), "C508": (25.5, 58.8, 90), "C509": (19.9, 59.83, 270),
+    "C507": (24.5, 54.6, 270), "C506": (26.0, 55.3, 90),
+    "R503": (25.6, 48.74, 270), "R502": (26.3, 49.1, 90, "B"), "R501": (22.9, 46.9, 0),
+    "C504": (25.5, 52.85, 270), "C505": (27.75, 52.55, 0),
+    "FB501": (27.9, 55.6, 270), "R514": (29.75, 55.4, 90), "C501": (18.4, 57.75, 270),
+    "R511": (3.41, 39.06, 90), "R512": (2.1, 60.4, 0), "R513": (9.8, 60.4, 0), "R504": (4.5, 60.4, 0),
     # ---- QSPI flash under the MCU's south-west corner (L1_3V3_QSPI), moved by QSPI_SHIFT
     **shifted({
         "U401": (36.0, 55.0, 180), "C401": (30.7, 56.9, 90), "C402": (29.3, 56.9, 90), "R404": (30.4, 59.6, 0),
@@ -141,15 +151,15 @@ PLACE.update({
     }, QSPI_SHIFT),
     # ---- user LEDs and key below the Ethernet block, moved by USER_SHIFT
     **shifted({
-        "D802": (14.0, 59.0, 0), "R808": (14.0, 60.6, 0), "D803": (17.6, 59.0, 0), "R809": (17.6, 60.6, 0),
-        "SW801": (16.0, 63.6, 0), "R810": (19.6, 63.0, 90), "R811": (21.0, 63.0, 90), "C806": (22.4, 63.0, 90),
+        "D802": (14.0, 59.0, 0), "R808": (14.2775, 60.6, 0), "D803": (17.6, 59.0, 0), "R809": (17.8775, 60.6, 0),
+        "SW801": (16.0, 63.51, 0), "R810": (19.6, 63.0, 90), "R811": (21.0, 63.0, 90), "C806": (22.4, 63.0, 90),
     }, USER_SHIFT),
     "TP109": (60.4, 54.4, 0),
     # ---- LCD connector on the bottom edge, opening out, body front (F.Fab) on the edge: 2.995 mm lower than at stop 4,
     # pad copper 0.625 mm inside the edge (L1_3V3_LCD). Its passives moved by LCD_SHIFT
     "J701": (41.0, 71.775, 0),
     **shifted({
-        "R701": (29.25, 64.0, 90), "R702": (30.45, 64.0, 90), "R703": (31.65, 64.0, 90), "R704": (32.85, 64.0, 90),
+        "R704": (29.25, 64.0, 90), "R703": (30.45, 64.0, 90), "R702": (31.65, 64.0, 90), "R701": (32.85, 64.0, 90),
         "R705": (27.8, 64.0, 90), "C701": (48.6, 64.4, 90), "C702": (48.6, 61.5, 90), "R709": (48.6, 58.4, 90),
     }, LCD_SHIFT),
     # ---- backlight boost right of the LCD connector (L1_5V_BL, L1_SW_BL, L1_LED_A)
@@ -186,16 +196,16 @@ PLACE.update({
     "U801": (66.62, 17.0, 0), "D801": (72.4, 17.0, 0),
     "C803": (61.9, 18.0, 180), "C804": (61.3, 20.6, 180), "R814": (62.2, 23.9, 90),
     "C805": (68.6, 20.75, 90), "R813": (68.9, 22.6, 0),
-    "R807": (71.9, 22.0, 90), "JP801": (76.0, 26.2, 90),
+    "R807": (71.9, 21.9125, 270), "JP801": (76.0, 26.2, 90),
     # ---- 3.3 V buck (L1_SW_3V3, L1_3V3_REG; input from the L3 +5V band)
     "U102": (69.5, 32.4, 180), "L102": (75.3, 31.45, 0), "C108": (69.5, 29.6, 0), "C109": (79.8, 31.9, 90),
     "R111": (79.5, 36.7, 270), "R105": (67.5, 35.2, 0), "R106": (67.5, 36.4, 0), "R104": (71.0, 35.2, 0),
     "R108": (73.6, 34.3, 0), "TP106": (74.4, 36.2, 0), "TP103": (83.0, 33.6, 0),
-    "D103": (73.6, 10.0, 90), "R107": (73.6, 13.2, 90),
+    "D103": (73.6, 10.0, 270), "R107": (73.6, 13.2, 90),
     # ---- 5 V buck (L1_12V, L1_SW_5V, L1_5V_REG)
     "U101": (69.0, 43.0, 180), "L101": (76.3, 43.0, 0), "C101": (69.0, 45.4, 0), "C104": (69.9, 40.45, 180),
     "C102": (65.6, 38.8, 180), "C103": (66.4, 47.4, 0), "C105": (82.4, 40.0, 90), "C106": (82.4, 44.8, 270),
-    "C107": (77.0, 48.4, 0), "R102": (65.0, 41.6, 90), "R103": (65.0, 44.2, 90), "R110": (72.0, 49.0, 180),
+    "C107": (77.0, 48.4, 0), "R102": (65.0, 41.6, 270), "R103": (65.0, 44.2, 270), "R110": (72.0, 49.0, 180),
     "TP102": (68.3, 51.35, 0),
     # ---- 12 V input: DC jack on the right edge, fuse, reverse-polarity P-MOS, TVS, bulk (L1_12V_JACK,
     # L1_12V_IN, L1_12V)

@@ -191,7 +191,7 @@ class Fanout:
                 what, "y" if side in "EW" else "x", lat / G, lay, side, used[key])
         if v is not None:
             vf = fpt(v)
-            for p in self.board.pads.values():
+            for p in self.board.all_pads():
                 if math.dist(p.pos, vf) < p.r:
                     return "VIAPAD the via at (%.4f, %.4f) would sit on pad %s" % (vf[0], vf[1], p.name)
         items = []

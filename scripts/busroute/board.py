@@ -66,11 +66,18 @@ class Board:
                 self.by_ref.setdefault(ref, []).append(q)
                 self.fp[ref]["pads"].append(q.name)
         self.areas, self.keepouts, self.zones = {}, [], []
-        for z in b.Zones():
+        # board zones, then the keep-outs that footprints carry (an RJ45's "shield contact area"): those count as
+        # keep-outs only, named "REF:name"
+        fzones = [(f.GetReference(), z) for f in b.GetFootprints() for z in f.Zones() if z.GetIsRuleArea()]
+        for owner, z in [(None, z) for z in b.Zones()] + fzones:
             o = z.Outline()
             polys = [[L(o.Outline(k).CPoint(i)) for i in range(o.Outline(k).PointCount())] for k in range(o.OutlineCount())]
             lays = [lname[l] for l in z.GetLayerSet().Seq() if l in lname]
-            if z.GetIsRuleArea():
+            if owner is not None:
+                if z.GetDoNotAllowTracks() or z.GetDoNotAllowVias():
+                    self.keepouts += [{"name": "%s:%s" % (owner, z.GetZoneName() or "keep-out"), "layers": lays, "poly": pl,
+                                       "tracks": z.GetDoNotAllowTracks(), "vias": z.GetDoNotAllowVias()} for pl in polys]
+            elif z.GetIsRuleArea():
                 if z.GetDoNotAllowTracks() or z.GetDoNotAllowVias():
                     self.keepouts += [{"name": z.GetZoneName(), "layers": lays, "poly": pl, "tracks": z.GetDoNotAllowTracks(), "vias": z.GetDoNotAllowVias()} for pl in polys]
                 elif z.GetZoneName():
@@ -199,10 +206,15 @@ class Board:
             raise KeyError("%s has %d pads on net %s" % (name, len(hit), net))
         raise KeyError("no pad %r on the board" % (name,))
 
+    def all_pads(self):
+        """Every pad, including those that share their number with another pad of the footprint (self.pads, keyed
+        by "REF.NUM", keeps only the last of them): obstacles and connectivity must see them all."""
+        return list(self.pads.values()) + self.dup_pads
+
     def net_pads(self, net):
         """Every pad of the net, including pads that share their number with another pad of the footprint (which
         self.pads, keyed by "REF.NUM", keeps only once: reach those by their coordinates in a route)."""
-        return [p for p in list(self.pads.values()) + self.dup_pads if p.net == net]
+        return [p for p in self.all_pads() if p.net == net]
 
     def rule_areas(self, names=None):
         """{name: rectangle} of the rule areas that change track width and clearance."""

@@ -16,6 +16,9 @@ bench_routes.py and expects:
                     the same copper as the single build (a group build does not disturb other nets)
   negative cases    two lanes that must cross (ORDER), a pitch below the clearance (PitchError with the
                     missing 0.0286 mm), a via on a ball pad (VIAPAD), a channel used twice (CHANNEL)
+  obstacles         part X1 with two plated pads numbered SH and an F.Cu keep-out inside the footprint
+                    (bench_obstacles.py): the fast check reports the track over the first SH pad and in the keep-out
+  length verdict    metrics.length_check: a geometry-vs-DRC difference fails only nets with a length rule
 
 Length tuning (tune.py), on the same board with other balls on the nets (TUNE_PADS) and bench_tune.py:
   plain             the routes without TUNING: DRC reports the lane's skew (rule sdram_lane1, 5 mm) -- the rule is live
@@ -136,6 +139,29 @@ def make_board(tmp, pads=None):
     shutil.copy(os.path.join(PROJ, make_project.NAME + ".kicad_dru"), os.path.join(tmp, "bench.kicad_dru"))
     shutil.copy(os.path.join(HERE, "bench_routes.py"), os.path.join(tmp, "bench_routes.py"))
     return pcb
+
+
+def obst_board(src, dst):
+    """A copy of the benchmark board with part X1 (bench_obstacles.py): two plated pads numbered SH at (19.0, 12.4)
+    and (19.0, 15.0), and an F.Cu keep-out "contact" (tracks and vias) at x 20.2-20.8, y 10.6-11.4 inside it."""
+    b = pcbnew.LoadBoard(src)
+    mm = pcbnew.FromMM
+    V = lambda x, y: pcbnew.VECTOR2I(mm(OX + x), mm(OY + y))
+    fp = pcbnew.FOOTPRINT(b); fp.SetReference("X1"); fp.SetPosition(V(19.0, 13.5))
+    for y in (12.4, 15.0):
+        p = pcbnew.PAD(fp); p.SetNumber("SH"); p.SetAttribute(pcbnew.PAD_ATTRIB_PTH)
+        p.SetShape(pcbnew.PADSTACK.ALL_LAYERS, pcbnew.PAD_SHAPE_CIRCLE)
+        p.SetSize(pcbnew.PADSTACK.ALL_LAYERS, pcbnew.VECTOR2I(mm(1.0), mm(1.0))); p.SetDrillSize(pcbnew.VECTOR2I(mm(0.6), mm(0.6)))
+        p.SetLayerSet(pcbnew.PAD.PTHMask()); p.SetPosition(V(19.0, y)); fp.Add(p)
+    z = pcbnew.ZONE(fp); z.SetIsRuleArea(True); z.SetZoneName("contact")
+    ls = pcbnew.LSET(); ls.AddLayer(pcbnew.F_Cu); z.SetLayerSet(ls)
+    z.SetDoNotAllowTracks(True); z.SetDoNotAllowVias(True); z.SetDoNotAllowZoneFills(True); z.SetDoNotAllowPads(False); z.SetDoNotAllowFootprints(False)
+    ch = pcbnew.SHAPE_LINE_CHAIN()
+    for x, y in ((20.2, 10.6), (20.8, 10.6), (20.8, 11.4), (20.2, 11.4)):
+        ch.Append(mm(OX + x), mm(OY + y))
+    ch.SetClosed(True); z.Outline().AddOutline(ch); fp.Add(z); b.Add(fp)
+    pcbnew.SaveBoard(dst, b)
+    make_project.make_pro(os.path.splitext(dst)[0] + ".kicad_pro")       # SaveBoard wrote a default one
 
 
 def run(folder, variant, out=None, fast=False, pictures=False):
@@ -304,6 +330,26 @@ def main(argv):
         want(cv == 2 and any(f["kind"] == "CHANNEL" and "U1.P14" in f["text"] and "already carries FMC_D1 (N14)" in f["text"] for f in mv.get("findings", [])),
              "negative case channel: exit %d\n%s" % (cv, lv[-1500:]))
 
+        # obstacles of the fast check: a second pad with the same number (shield tabs) and a keep-out inside a footprint
+        oo = os.path.join(tmp, "outO")
+        os.makedirs(oo)
+        for ext in (".kicad_pro", ".kicad_dru"):
+            shutil.copy(os.path.join(tmp, "bench" + ext), os.path.join(oo, "bench" + ext))
+        obst_board(pcb, os.path.join(oo, "bench.kicad_pcb"))
+        shutil.copy(os.path.join(HERE, "bench_obstacles.py"), os.path.join(oo, "bench_obstacles.py"))
+        lo = []
+        mo, co = job.run(os.path.join(oo, "bench_obstacles.py"), fast=True, log=lo.append)
+        fo_ = [f for f in mo.get("findings", []) if f["hard"]]
+        want(co == 1 and any(f["kind"] in ("GAP", "HOLE") and "pad X1.SH" in f["text"] and f["at"] and abs(f["at"][1] - 12.4) < 0.6 for f in fo_)
+             and any(f["kind"] == "KEEPOUT" and "X1:contact" in f["text"] for f in fo_),
+             "obstacles: exit %d, findings %r" % (co, [f["text"] for f in fo_]))
+        # the length verdict: only nets with a length rule decide; the others are notes
+        from busroute import metrics as bm
+        lcv = bm.length_check({"FMC_D0": 0.001, "CANH": 1.65, "VDDCR": -0.033}, {"FMC_D0"})
+        lcf = bm.length_check({"FMC_D0": 0.01, "CANH": 0.0}, {"FMC_D0"})
+        want(lcv["ok"] and list(lcv["notes"]) == ["CANH", "VDDCR"] and not lcf["ok"] and lcf["max_ruled"] == 0.01,
+             "length verdict: %r / %r" % (lcv, lcf))
+
         # fan-out options: a per-ball inner layer ("@L6") and routes drawn before as obstacles (keep)
         from busroute import Fanout, Profile
         bb = Board(pcb, (OX, OY))
@@ -328,7 +374,8 @@ def main(argv):
             print("\n".join("  " + f for f in fails))
         else:
             print("OK busroute: 12 nets (ring 0-3 fan-out, bundle with corner and per-leg gaps, join, via field), DRC clean, "
-                  "geometry = DRC lengths, 2 builds identical, 2 groups = 1 build, 4 negative cases, fan-out @layer and keep, a shared group of ties; "
+                  "geometry = DRC lengths, 2 builds identical, 2 groups = 1 build, 4 negative cases, obstacles (shield tab, footprint keep-out), "
+                  "length verdict, fan-out @layer and keep, a shared group of ties; "
                   "tuning (bundle slots, bump, free site both-sided, raised amp, missing, budget %.1f s) %.0f s; %.0f s%s" % (
                       times.get("budget", 0), times.get("tune", 0), time.time() - t0, "; kept " + tmp if keep else ""))
         if not keep:

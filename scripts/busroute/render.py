@@ -61,7 +61,7 @@ def draw(board, show, view, out, nets):
             for i in range(0, n, 2):
                 d.line([X((p[0] + (q[0] - p[0]) * i / n, p[1] + (q[1] - p[1]) * i / n)), X((p[0] + (q[0] - p[0]) * (i + 1) / n, p[1] + (q[1] - p[1]) * (i + 1) / n))],
                        fill=(0, 130, 90, 255), width=SS)
-    for p in board.pads.values():
+    for p in board.all_pads():
         if not vis(p.pos):
             continue
         on = p.layers is None or any(l in p.layers for l in show)

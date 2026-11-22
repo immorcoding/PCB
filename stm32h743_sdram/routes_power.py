@@ -65,13 +65,21 @@ TIES = [   # (kind, pad, target, options)
     ("pour", "C101.2", "L1_SW_5V", {"lmax": 3.5}),                  # bootstrap capacitor to the switch node
     ("pour", "U101.5", "L1_12V", {}),                                  # enable tied to the input
     ("pour", "U601.32", "L1_1V8", {}), ("pour", "U601.7", "L1_3V3_AUD", {}),
-    ("pour", "U501.9", "L1_3V3_PHY", {}), ("pour", "R503.1", "L1_3V3_PHY", {"w": 0.2}),
-    ("pour", "U501.19", "L1_VDDA_PHY", {}), ("pour", "C503.1", "L1_VDDA_PHY", {}), ("pad", "U501.1", "C503.1", {}),
-    ("hop", "R102.1", "L1_5V_REG", {}), ("hop", "R105.1", "L1_3V3_REG", {}),          # feedback dividers' tops
+    ("pour", "U501.19", "L1_VDDA_PHY_N", {}), ("pour", "U501.1", "L1_VDDA_PHY_S", {}),
+    ("hop", "R105.1", "L1_3V3_REG", {}),          # feedback divider's top (R102.1's is FIXED below)
     ("pad", "R402.1", "R401.1", {}), ("reach", "R401.1", "L1_3V3_QSPI", {}),       # pull-ups on the bottom
 ]
-# VDDA_PHY: the L6 strip under the PHY joins the L1 column (west end) and FB501's VDDA pad (east end)
-VDDA_PHY_WEST = (18.2, 56.4)
+# VDDA_PHY (stop 7): each L1 piece drops to the L6 region by a via near these points (copper.sketch)
+VDDA_PHY_FEEDS = [("L1_VDDA_PHY_N", (19.35, 48.1), 1), ("L1_VDDA_PHY_W", (18.1, 53.1), 1), ("L1_VDDA_PHY_S", (20.2, 54.75), 1)]
+# +3V3_PHY (stop 7): PHY pin 9 (VDDIO) and the MDIO pull-up R503 by a via each into L6_3V3_PHY, which feeds the L1 pour
+# by two vias between C504 and C505
+PHY_3V3_VIAS = ["U501.9", "R503.1"]
+PHY_3V3_FEED = ((26.15, 52.45), 1)              # one site between C504 and C505 (pin 9 and R503 draw a few mA)
+# ---- fixed chains, written as given (checked like every other site): R102.1, the 5 V divider's top (R102 turned at
+# stop 7: R102.1 north), hops on L6 along y 39.9 (north of C104's ground via) into L1_5V_REG, so that FB_5V's own L6 hop from
+# U101.4 to the divider (routes_local.py, y 41.45) stays south of it
+FIXED = [("R102.1", [("L1", ["R102.1", (65.0, 39.9)]), ("via", (65.0, 39.9)),
+                     ("L6", [(65.0, 39.9), (77.5, 39.9), (78.4, 40.8)]), ("via", (78.4, 40.8))])]
 # ---- ground
 GND_REG = ["U101.1", "U102.2", "U103.2", "U104.2", "U701.2"]                  # regulator / switcher ground pins
 GND_TIGHT = {"U101.1": 0.5, "C104.2": 0.5, "U701.2": 0.5, "C705.2": 0.5, "C102.2": 0.6}    # loop closures (U56)
@@ -81,7 +89,10 @@ GND_CONN = ("J601", "J602", "J701", "J801", "J803")
 GND_ISLAND = ["R101.2", "R708.2"]     # pads whose L1 ground pour piece KiCad's refill leaves on its own (pour_islands.py)
 # L3 +5V: the strip under the top connectors and the leg down to R112 are 3 mm wide; no via of another net may cut
 # them (a ground via of J801 left 1.7 mm at the strip's east end in the first build)
-PROTECT = [("+5V", (33.5, 5.5, 64.0, 8.5)), ("+5V", (33.5, 8.5, 36.5, 22.5))]
+PROTECT = [("+5V", (33.5, 5.5, 64.0, 8.5)), ("+5V", (33.5, 8.5, 36.5, 22.5)),
+           # stop 7: the escape lanes of the PHY's MCU-bound pins (13-18 north, 7 / 8 / 11 / 12 east) take no via of the
+           # power group except the +3V3_PHY vias of pin 9 and R503 that the east lanes pass
+           ("-", (20.95, 44.0, 23.9, 48.1)), ("+3V3_PHY", (24.8, 48.9, 27.0, 52.0))]
 
 
 def routes(job):
@@ -96,24 +107,32 @@ def routes(job):
         for _ in range(n):
             P.tie_via(pad, plane=True, lmax=1.8)
         done.add(pad)
-    # the VDDA_PHY strip on L6
-    P.feed("VDDA_PHY", VDDA_PHY_WEST, 2, outer=("L1", "L6"), radius=1.5, label="column - L6 strip")
+    # VDDA_PHY: the three L1 pieces down to the L6 region, the bead and the bulk capacitor into it
+    for region, near, n in VDDA_PHY_FEEDS:
+        P.feed("VDDA_PHY", near, n, outer=("L1", "L6"), radius=0.8, spacing=0.6, label=region)
     for _ in range(2):
         P.tie_via("FB501.2", outer=("L6",), lmax=1.8)
-    done.add("FB501.2")
+    P.tie_via("C501.1", outer=("L6",), lmax=1.2)
+    done |= {"FB501.2", "C501.1"}
+    # +3V3_PHY: pin 9 and R503 by their own via into the L6 strip; the strip into the L1 pour
+    for pad in PHY_3V3_VIAS:
+        P.tie_via(pad, outer=("L6",), lmax=1.2)
+    P.feed("+3V3_PHY", PHY_3V3_FEED[0], PHY_3V3_FEED[1], outer=("L1", "L6"), radius=1.2, spacing=0.6, label="L1_3V3_PHY - L6 strip")
     # ground of the hot loops first (U56), then the ties, then every other ground and supply via
     P.via_in_pad("U601.33", 3, 3, 1.0)
     gnd = [p for ref in sorted(b.by_ref) if ref not in PART_B for p in b.by_ref[ref] if p.net == "GND" and p.hole <= 0]
     for p in gnd:
         if p.name in GND_TIGHT or p.name in GND_REG:
             P.tie_via(p, lmax=1.6, pad_edge_max=GND_TIGHT.get(p.name, 1.0))
+    for pad, pieces in FIXED:
+        P.fixed(pad, pieces)
     for kind, pad, to, kw in TIES:
         if kind == "pour":
             P.tie_pour(pad, to, **kw)
         elif kind == "pad":
             P.tie_pad(pad, to, **kw)
         elif kind == "hop":
-            P.hop(pad, to, "L6", lmax_a=1.5, lmax_mid=14.0, **kw)
+            P.hop(pad, to, "L6", **dict({"lmax_a": 1.5, "lmax_mid": 14.0}, **kw))
         else:
             P.hop(pad, to, "L6", lmax_a=0, lmax_mid=10.0, **kw)
     for p in gnd:

@@ -121,6 +121,8 @@ class Profile:
                     lim["length_max"] = cons["length"]["max"]
                 if "max" in cons.get("via_count", {}):
                     lim["via_max"] = int(cons["via_count"]["max"])
+                if "max" in cons.get("skew", {}):              # within-pair or group skew: a length rule too
+                    lim["skew_max"] = cons["skew"]["max"]
         if names and self.area_names is None:
             self.area_names = sorted(set(names))
 

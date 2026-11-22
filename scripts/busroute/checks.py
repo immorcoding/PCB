@@ -70,7 +70,7 @@ class Scene:
         skip = set(skip_nets)
         segs_old, vias_old = skip_items or (set(), set())       # a shared group's own copper of last time
         r6 = lambda v: round(v, 6)
-        for p in board.pads.values():
+        for p in board.all_pads():                          # shield tabs that share one number are obstacles too
             layer = None if p.layers is None else (next(iter(p.layers)) if len(p.layers) == 1 else None)
             if p.shape == "circle":
                 self.add(Item("round", p.net, layer, p.pos, p.pos, p.r, "pad " + p.name, hole=p.hole, pth=p.hole > 0, pad=p))

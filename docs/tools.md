@@ -25,6 +25,7 @@
 | 布局指标（LAY-2、5、6、8） | `D:\KiCad\bin\python.exe scripts\place_check.py <板> [--edge J1=L ...] [--allow-under U1,U2] [--not-supply U3.5] [--json <输出>]`：摆进板框的个数、courtyard 重叠、安装孔周禁布、封装禁布区、连接器到板边、背面焊盘压顶面焊盘、每个电源脚到最近 100 nF 的距离、排针和测试点旁的丝印位置；几秒 |
 | 出线通道（LAY-2） | `D:\KiCad\bin\python.exe scripts\escape_check.py <板> --ref U1 [--ref ...] [--window x0 y0 x1 y1] [--debug U1.A1 <png>]`：每个焊盘单独查能否走出去（到窗口边、到同网络的别的器件、电源网络能否打孔），最多两个过孔；不算容量。两颗 BGA 加 40 mm 窗口约 15 秒 |
 | H743 板布局一步 | `sh stm32h743_sdram/build.sh layout`（摆位 → 线序草图重建 → 上面两个检查 → 铜皮草图检查 → `layout_probe.py` 的实测试走；约 70 秒） |
+| H743 板走线二一步 | `sh stm32h743_sdram/build.sh route2`（route1 的全部，再按 `build.sh` 里 `ROUTE2_GROUPS` 的顺序把各组局部走线写入真板（`LOCAL_BOARD`=真板，`--write-board`），填充、DRC、布局检查，`route2_report.py` 出一张表 `out/route2/table.txt`：每个走线描述文件一行、以太网差分对、布局和铜皮草图，后面接 route1 的 SDRAM 表；约 4–5 分钟）。加一组 = 在 `ROUTE2_GROUPS` 加一行“组名 文件名”，描述文件从 `LOCAL_BOARD` 读板 |
 | H743 板电源与铜皮一步 | `sh stm32h743_sdram/build.sh copper`（摆位 → 铺铜区 → `routes_power.py`（BGA 区外）和 `routes_power_bga.py`（两颗 BGA 的电源球、背面去耦）写真板 → 填充 → 同样两组写线序草图副本、填充、平面开槽（U31）→ 出线检查 → 图 → `out/copper/table.txt`；约 3.5 分钟） |
 | 原理图构建并检查 | `sh scripts/sch_build.sh <工程目录> <输出目录>`（生成 → 升级到 KiCad 10 格式 → ERC → 网表 → PDF） |
 | H743 板的原理图 | `sh stm32h743_sdram/build.sh sch`（上一行，加网表对意图、对 `pins.csv`、对 `swap.csv` 的检查和 kicad-happy 审查；约 15 秒）；单独试一页：`sh stm32h743_sdram/sch/try_page.sh <输出目录> <页名>` |
@@ -131,4 +132,9 @@
 - **腿间距 0.5（半径 0.25）时摆幅 0.5–0.605 画不出**：腿长 a − 2r 落在 0 和 0.105 mm 之间，短于 `min_segment`（0.1 整在斜线上会被 DRC 量成 0.0999999）。`tune.py` 跳过这些高度，改用少一个弯、高一点的块（基准板上 3 个 0.5014 改成 2 个 0.6985）。
 - **`Bundle.slot(free=…)` 让位的折线要离下一个拐角够远**：外侧的线在 s1 之后再走 dV 加嵌套量才折回，离拐角近时报 `runs backwards` 或短于 0.1 的线段（蛇形基准板第一次 s1 离拐角约 0.6 mm 就报了）；折回段和拐角挤在 2 mm 内时 `track_shape.py` 报 crowded。
 - **蛇形和线束的线距**（2026-11-22，H743 板停点 6）：线束里 0.25 mm 线距的两根线边到边 0.148 mm，低于 `TUNING` 的 `clr` 0.19。`tune.py` 以前因此拒绝任何紧挨邻线的补线位置（弯朝另一侧也不行）；现在某个采样点离别的网络不比同一位置的原直线更近时不按 `clr` 查，所以弯这一侧仍要让出 `clr`（`Bundle.slot(free=…)` / `widen`），背面的邻线可以留在原线距。`tune.py` 不画规则区里的蛇形（`area_gap` 对区内一律不过）；线束里一根线的 jog 离前一个拐角不到 2 mm 时 `track_shape.py` 报 crowded（圆弧不算折弯）。
+- **挪了器件之后，压在新焊盘上的旧走线会被 pcbnew 改成那个焊盘的网络**（2026-11-22，停点 7：R102 转向后，`+5V_REG` 的旧线和过孔存出来成了 `FB_5V`，`SHARED` 组按网络和位置找自己的旧铜，找不到就留在板上造成短路）。改了 `place.py` 的构建先 `copper_report.py strip` 各组、再摆位（`build.sh route1 / route2` 就是这个顺序）。
+- **DRC 量网络长度时，拐点落在焊盘里的那一段算短了**：线在焊盘里折一下再到中心，DRC 量出来比几何短 0.01–0.07 mm（停点 7：`ETH_TX_N` 0.064、`PHY_XO_R` 0.063、`CAN_TERM` 0.043）。有长度规则的线（差分对、等长组）把拐点放到焊盘外；`busroute` 的长度判定只对有长度规则的网络卡 0.002 mm，其余列为备注。
+- **差分对间隙检查把平行而不相邻的两段也当成耦合段**：`ETH_TX_P` 绕 RJ45 2 脚的 45° 小段和 `ETH_TX_N` 进 2 脚的 45° 斜线在投影上重叠 0.35 mm、相距 1.66 mm，报 `diff_pair_gap_out_of_range`（最大 0.8）。让两段的投影不重叠即可。
+- **两个封装的 courtyard 正好贴边，DRC 报 `courtyards_overlap`，`place_check.py` 不报**（它按面积 > 0.001 mm² 算）：摆件留 0.02 mm 以上。
+- **`busroute` 的快速检查读封装里的禁布区，也把同号的第二个焊盘当障碍**（2026-11-22 起；以前 RJ45 的屏蔽片只认一个、`Shield-board contact area` 不读）。封装里的禁布区在发现里叫 `位号:区名`。
 - **`track_shape.py` 以前遇到圆弧就断开走线**：拐点后 0.1 mm 接同向圆弧的地方报 0 处（RTE-8 的信号）。现在跟着圆弧走；四层板（有圆弧）只多一行 `arc-joint: 0`，其余各项不变，两块没有圆弧的板输出逐字相同（2026-11-22 对比）。
