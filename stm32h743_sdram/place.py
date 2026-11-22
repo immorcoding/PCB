@@ -6,8 +6,8 @@
 
 Local frame (mm): origin at the board's top-left corner, x right, y down; board-file mm = local + 100.
 Rotations are KiCad footprint orientations in degrees (counter-clockwise seen from the top).
-Re-running moves every part listed in PLACE back to its table position, redraws Edge.Cuts and the two
-rule areas, and parks every part that is not listed in rows below the board. A fourth element "B" puts
+Re-running moves every part listed in PLACE back to its table position, redraws Edge.Cuts, the two
+rule areas and their F.Cu no-pour keep-outs, and parks every part that is not listed in rows below the board. A fourth element "B" puts
 a part on the bottom. Stop 3 placed the two BGAs; stop 4 placed the rest around copper.sketch (LAY-1),
 keeping the SDRAM line-order sketch valid; the bottom decoupling positions come from decap_search.py.
 Measure with `sh stm32h743_sdram/build.sh layout`.
@@ -207,6 +207,11 @@ RULE_AREAS = {
     "BGA_MCU": (MCU, MCU_BODY),
     "BGA_SDRAM": (sdram_centre(), sdram_size()),
 }
+# No pour on F.Cu under the two BGAs (user 2026-11-22: "a BGA is not suited to taking power from copper pours; just
+# track and via"): an F.Cu-only keep-out over the same rectangle as each rule area above that forbids zone fills
+# and nothing else. Own names (not BGA_*: the rule file, busroute and escape_check read the BGA_* areas); the
+# all-layer areas above keep every flag off, so the L2 / L3 / L5 planes and the L6 fill under the BGAs stay.
+NOPOUR_AREAS = {"NOPOUR_L1_MCU": "BGA_MCU", "NOPOUR_L1_SDRAM": "BGA_SDRAM"}
 BGA_REFS = ("U201", "U301")           # ball pads: solder-mask opening equal to the pad (approved exception)
 
 V = lambda x, y: VECTOR2I(mm(OX + x), mm(OY + y))
@@ -227,11 +232,16 @@ def outline(board):
 
 
 def rule_areas(board):
-    for name, ((cx, cy), (bw, bh)) in RULE_AREAS.items():
+    nopour = {v: k for k, v in NOPOUR_AREAS.items()}
+    areas = [(name, rect, pcbnew.LSET.AllCuMask(), False) for name, rect in RULE_AREAS.items()]
+    f_cu = pcbnew.LSET(); f_cu.AddLayer(pcbnew.F_Cu)
+    areas += [(nopour[name], rect, f_cu, True) for name, rect in RULE_AREAS.items() if name in nopour]
+    for name, ((cx, cy), (bw, bh)), layers, no_fill in areas:
         z = pcbnew.ZONE(board)
-        z.SetIsRuleArea(True); z.SetZoneName(name); z.SetLayerSet(pcbnew.LSET.AllCuMask())
-        for f in ("SetDoNotAllowTracks", "SetDoNotAllowVias", "SetDoNotAllowPads", "SetDoNotAllowZoneFills", "SetDoNotAllowFootprints"):
+        z.SetIsRuleArea(True); z.SetZoneName(name); z.SetLayerSet(layers)
+        for f in ("SetDoNotAllowTracks", "SetDoNotAllowVias", "SetDoNotAllowPads", "SetDoNotAllowFootprints"):
             getattr(z, f)(False)
+        z.SetDoNotAllowZoneFills(no_fill)
         hx, hy = bw / 2 + AREA_MARGIN, bh / 2 + AREA_MARGIN
         ch = pcbnew.SHAPE_LINE_CHAIN()
         for x, y in ((cx - hx, cy - hy), (cx + hx, cy - hy), (cx + hx, cy + hy), (cx - hx, cy + hy)):
@@ -276,7 +286,7 @@ def main():
     # collections are unusable in this process (docs/tools.md), so the old outline and rule areas are
     # listed first, removed together, and only then are the new ones added.
     old = [d for d in board.GetDrawings() if d.GetLayer() == pcbnew.Edge_Cuts]
-    old += [z for z in board.Zones() if z.GetIsRuleArea() and z.GetZoneName() in RULE_AREAS]
+    old += [z for z in board.Zones() if z.GetIsRuleArea() and (z.GetZoneName() in RULE_AREAS or z.GetZoneName() in NOPOUR_AREAS)]
     for item in old:
         board.Remove(item)
     outline(board)

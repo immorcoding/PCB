@@ -205,6 +205,7 @@ def part_b_text(b, odir):
     L.append("  每个电源球到最近 100 nF 的距离（LAY-2）: 最远 %.2f mm（%s），超过 2.5 mm 的 %d" % (max(rows)[0], max(rows)[1], sum(1 for r in rows if r[0] > 2.5)))
     cl = clusters(b, ["VCAP1", "VCAP2", "VDDA_MCU"])
     L.append("  VCAP1 / VCAP2 / VDDA_MCU 连通块: %s" % "  ".join("%s %d（%s）" % (n, len(g), " | ".join(" ".join(x) for x in g)[:110]) for n, g in cl.items()))
+    L += pours_in_areas(b)
     sd = os.path.join(odir, "sketch_drc.json")
     if os.path.isfile(sd):
         d = json.load(open(sd, encoding="utf-8"))
@@ -217,6 +218,57 @@ def part_b_text(b, odir):
     if os.path.isfile(sp):
         L += open(sp, encoding="utf-8").read().rstrip("\n").split("\n")
     return L
+
+
+def pours_in_areas(b, areas=("BGA_MCU", "BGA_SDRAM")):
+    """Zone fills inside the two BGA rule areas, from the saved fills: L1 must have none (user 2026-11-22, the F.Cu
+    keep-outs NOPOUR_L1_* of place.py); L6 is listed per fill piece with the pads and vias of its net it joins
+    there (left as it is, for the user to decide). Also the supply and ground balls of the two packages that are
+    not on the main connected piece of their net."""
+    import pcbnew
+    import routes_power_bga as RB
+    ids = list(b.GetEnabledLayers().CuStack())
+    rect = {z.GetZoneName(): z.Outline() for z in b.Zones() if z.GetIsRuleArea() and z.GetZoneName() in areas}
+    mm2 = lambda s: s.Area() / 1e12
+    pads = [("%s.%s" % (f.GetReference(), p.GetNumber()), p) for f in b.GetFootprints() for p in f.Pads()]
+    vias = [t for t in b.GetTracks() if t.Type() == pcbnew.PCB_VIA_T]
+    l1, l6 = {}, []
+    for z in b.Zones():
+        if z.GetIsRuleArea() or not z.IsOnCopperLayer() or z.GetLayer() not in (ids[0], ids[-1]):
+            continue
+        lay = z.GetLayer()
+        fill = pcbnew.SHAPE_POLY_SET(z.GetFilledPolysList(lay)); fill.Simplify()
+        for an, R in rect.items():
+            F = pcbnew.SHAPE_POLY_SET(fill); F.BooleanIntersection(R); F.Simplify()
+            if lay == ids[0]:
+                l1[an] = l1.get(an, 0.0) + mm2(F)
+                continue
+            for k in range(F.OutlineCount()):
+                one = pcbnew.SHAPE_POLY_SET(); one.AddOutline(F.Outline(k))
+                for h in range(F.HoleCount(k)):
+                    one.AddHole(F.Hole(k, h))
+                if mm2(one) < 0.01:
+                    continue
+                joined = []
+                for name, p in pads:
+                    if p.GetNetname() != z.GetNetname() or not p.IsOnLayer(lay):
+                        continue
+                    o = p.GetEffectivePolygon(lay, pcbnew.ERROR_INSIDE).Outline(0)
+                    if any(one.Contains(o.CPoint(i)) for i in range(o.PointCount())) or one.Contains(p.GetPosition()):
+                        joined.append(name)
+                nv = sum(1 for v in vias if v.GetNetname() == z.GetNetname() and one.Collide(v.GetPosition(), int(v.GetWidth(lay) / 2)))
+                l6.append((an, z.GetZoneName(), z.GetNetname(), mm2(one), joined, nv))
+    out = ["  BGA 区内的 L1 铺铜（place.py 的 F.Cu 禁铺区 NOPOUR_L1_*，填充后）: %s" % "  ".join("%s %.3f mm2" % kv for kv in sorted(l1.items()))]
+    out.append("  BGA 区内的 L6 铺铜（保留；每块: 面积、连到的本网络焊盘、本网络过孔数）:")
+    for an, zn, net, a, joined, nv in sorted(l6, key=lambda r: (r[0], r[1], -r[3])):
+        out.append("    %-9s %-20s %-9s %7.2f mm2  焊盘 %s  过孔 %d" % (an, zn, net, a, " ".join(sorted(joined)) or "-", nv))
+    # supply and ground balls off the main piece of their net
+    lost = []
+    for net, groups in clusters(b, sorted({n for ns in RB.POWER.values() for n in ns})).items():
+        main = max(groups, key=len)
+        lost += ["%s(%s)" % (x, net) for g in groups if g is not main for x in g if x.split(".")[0] in RB.POWER and len(groups) > 1]
+    out.append("  电源和地球不在本网络主连通块上的: %d %s" % (len(lost), " ".join(lost)))
+    return out
 
 
 SLOT_WINDOWS = {"MCU": (32.0, 29.0, 48.0, 45.0), "SDRAM": (50.0, 27.5, 64.0, 46.5)}   # rule area +- 2 mm (the via

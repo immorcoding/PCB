@@ -128,6 +128,9 @@ copper)
   # close-ups of the two BGAs on the sketch copy (it carries the SDRAM sketch's tracks and vias, as U31 is measured)
   $PY "$D/copper_view.py" "$SK" "$O" L1 L2 L3 L6 --scale 40 --window 33 30 47 45 --name mcu 2>&1 | quiet | tr '\n' ' '; echo
   $PY "$D/copper_view.py" "$SK" "$O" L1 L2 L3 L6 --scale 40 --window 51 28.5 63 45.5 --name sdram 2>&1 | quiet | tr '\n' ' '; echo
+  # the longest L2 slot under the MCU marked, every via labelled with its net (for the reviewer)
+  $PY "$D/copper_view.py" "$SK" "$O" L2 --scale 90 --window 36 36 46 45 --name slot_mcu --slots "$O/slots.json" --via-labels 2>&1 | quiet | tr '\n' ' '; echo
+  mv -f "$O/L2_slot_mcu.png" "$O/slot_L2_mcu.png"
   $PY "$D/make_project.py" > /dev/null 2>&1                               # SaveBoard rewrote the project file: its source is this script
   echo "== copper table"
   COPPER_SECONDS="$(( $(date +%s) - T0 )) s" $PY "$D/copper_report.py" table "$BRD" "$O" 2>&1 | quiet && CT=0 || CT=$?
