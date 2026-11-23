@@ -79,7 +79,18 @@ PHY_3V3_FEED = ((26.15, 52.45), 1)              # one site between C504 and C505
 # stop 7: R102.1 north), hops on L6 along y 39.9 (north of C104's ground via) into L1_5V_REG, so that FB_5V's own L6 hop from
 # U101.4 to the divider (routes_local.py, y 41.45) stays south of it
 FIXED = [("R102.1", [("L1", ["R102.1", (65.0, 39.9)]), ("via", (65.0, 39.9)),
-                     ("L6", [(65.0, 39.9), (77.5, 39.9), (78.4, 40.8)]), ("via", (78.4, 40.8))])]
+                     ("L6", [(65.0, 39.9), (77.5, 39.9), (78.4, 40.8)]), ("via", (78.4, 40.8))]),
+         # stop 7 compose: the bead's VDDA_PHY via west of it (one: the PHY's analog supply draws tens of mA; a second
+         # one has no site off the lanes without a 90-degree turn at a via), south of C506 (into the L6 block's widened east
+         # end); C506's and C508's ground vias where they stood at stop 7 (with the lanes box the search put them on
+         # VDDCR's / PHY_XI's L1 ties); the searched sites stood on the L4 lanes of LCD_B6 / B7 / DISP (x 27.14-27.6)
+         # and USER_KEY (x 28.4)
+         ("FB501.2", [("L1", ["FB501.2", (27.9, 56.9), (27.5, 57.3), (26.45, 57.3)]), ("via", (26.45, 57.3))]),
+         ("C506.2", [("L1", ["C506.2", (26.725, 54.525)]), ("via", (26.725, 54.525))]),
+         ("C508.2", [("L1", ["C508.2", (25.5, 57.795)]), ("via", (25.5, 57.795))]),
+         # R501.2 (PHY_NRST pull-down's ground pad): PHY_NRST, REF_CLK and MDC box its L1 ground piece in; a via in it
+         ("R501.2", [("L1", ["R501.2", (23.41, 46.1)]), ("via", (23.41, 46.1))])]
+FIXED_PADS = {pad for pad, _ in FIXED}
 # ---- ground
 GND_REG = ["U101.1", "U102.2", "U103.2", "U104.2", "U701.2"]                  # regulator / switcher ground pins
 GND_TIGHT = {"U101.1": 0.5, "C104.2": 0.5, "U701.2": 0.5, "C705.2": 0.5, "C102.2": 0.6}    # loop closures (U56)
@@ -92,7 +103,10 @@ GND_ISLAND = ["R101.2", "R708.2"]     # pads whose L1 ground pour piece KiCad's 
 PROTECT = [("+5V", (33.5, 5.5, 64.0, 8.5)), ("+5V", (33.5, 8.5, 36.5, 22.5)),
            # stop 7: the escape lanes of the PHY's MCU-bound pins (13-18 north, 7 / 8 / 11 / 12 east) take no via of the
            # power group except the +3V3_PHY vias of pin 9 and R503 that the east lanes pass
-           ("-", (20.95, 44.0, 23.9, 48.1)), ("+3V3_PHY", (24.8, 48.9, 27.0, 52.0))]
+           ("-", (20.95, 44.0, 22.6, 48.1)), ("+3V3_PHY", (24.8, 48.9, 27.0, 52.0)),
+           # stop 7 compose: the L4 lanes of LCD_B6 / B7 / DISP down the strip between the PHY and USER_KEY
+           # (routes_mcu_west.py, x 27.14-27.6) take no via (FB501's VDDA_PHY vias and a ground via stood there)
+           ("-", (27.16, 44.3, 27.6, 66.0))]
 
 
 def routes(job):
@@ -110,9 +124,7 @@ def routes(job):
     # VDDA_PHY: the three L1 pieces down to the L6 region, the bead and the bulk capacitor into it
     for region, near, n in VDDA_PHY_FEEDS:
         P.feed("VDDA_PHY", near, n, outer=("L1", "L6"), radius=0.8, spacing=0.6, label=region)
-    for _ in range(2):
-        P.tie_via("FB501.2", outer=("L6",), lmax=1.8)
-    P.tie_via("C501.1", outer=("L6",), lmax=1.2)
+    P.tie_via("C501.1", outer=("L6",), lmax=1.2)      # FB501.2: FIXED (its via)
     done |= {"FB501.2", "C501.1"}
     # +3V3_PHY: pin 9 and R503 by their own via into the L6 strip; the strip into the L1 pour
     for pad in PHY_3V3_VIAS:
@@ -136,7 +148,7 @@ def routes(job):
         else:
             P.hop(pad, to, "L6", lmax_a=0, lmax_mid=10.0, **kw)
     for p in gnd:
-        if p.ref.startswith("C") and p.name not in GND_TIGHT:
+        if p.ref.startswith("C") and p.name not in GND_TIGHT and p.name not in FIXED_PADS:
             P.tie_via(p, lmax=1.6, pad_edge_max=1.0)
     for name, p in sorted(b.pads.items()):
         if p.net in PLANE_NETS and name not in done and p.ref not in PART_B and p.hole <= 0:

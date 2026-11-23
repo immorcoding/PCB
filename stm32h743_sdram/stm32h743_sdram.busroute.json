@@ -65,15 +65,6 @@
    "nets": [
     "FDCAN1_RX",
     "FDCAN1_TX",
-    "I2C4_SDA",
-    "LCD_B3",
-    "LCD_B4",
-    "LCD_CLK",
-    "LCD_G6",
-    "LCD_HSYNC",
-    "LCD_R5",
-    "TP_INT",
-    "TP_RST",
     "USART1_RX"
    ]
   },
@@ -85,25 +76,15 @@
     "CODEC_NRST",
     "HSE_IN",
     "HSE_OUT",
-    "LCD_B6",
-    "LCD_B7",
-    "LCD_BL_PWM",
-    "LCD_DISP",
-    "LCD_G3",
-    "LCD_G7",
     "LSE_IN",
     "LSE_OUT",
     "NRST",
-    "PHY_NRST",
-    "QSPI_BK1_NCS",
-    "RMII_TXD0",
-    "RMII_TXD1",
-    "RMII_TX_EN",
     "SAI1_FS_A",
     "SAI1_MCLK_A",
     "SAI1_SCK_A",
     "SAI1_SD_A",
     "SAI1_SD_B",
+    "SDMMC1_CK",
     "SDMMC1_CMD",
     "SDMMC1_D1",
     "SDMMC1_D3",
@@ -116,16 +97,32 @@
   "mcu_south": {
    "extras": [],
    "nets": [
+    "USART1_TX"
+   ]
+  },
+  "mcu_sw": {
+   "extras": [],
+   "nets": [
     "ETH_MDC",
     "ETH_MDIO",
     "I2C4_SCL",
+    "I2C4_SDA",
+    "LCD_B3",
+    "LCD_B4",
     "LCD_B5",
+    "LCD_BL_PWM",
+    "LCD_CLK",
     "LCD_DE",
     "LCD_G2",
+    "LCD_G3",
     "LCD_G4",
     "LCD_G5",
+    "LCD_G6",
+    "LCD_G7",
+    "LCD_HSYNC",
     "LCD_R3",
     "LCD_R4",
+    "LCD_R5",
     "LCD_R6",
     "LCD_VSYNC",
     "LED1",
@@ -134,13 +131,27 @@
     "QSPI_BK1_IO1",
     "QSPI_BK1_IO2",
     "QSPI_BK1_IO3",
+    "QSPI_BK1_NCS",
     "QSPI_CLK",
     "RMII_CRS_DV",
     "RMII_REF_CLK",
     "RMII_RXD0",
     "RMII_RXD1",
-    "USART1_TX",
+    "RMII_TXD1",
+    "TP_INT",
+    "TP_RST",
     "USER_KEY"
+   ]
+  },
+  "mcu_w": {
+   "extras": [],
+   "nets": [
+    "LCD_B6",
+    "LCD_B7",
+    "LCD_DISP",
+    "PHY_NRST",
+    "RMII_TXD0",
+    "RMII_TX_EN"
    ]
   },
   "power": {
@@ -532,6 +543,21 @@
     ],
     [
      "GND",
+     26.725,
+     54.525
+    ],
+    [
+     "GND",
+     25.5,
+     57.795
+    ],
+    [
+     "GND",
+     23.41,
+     46.1
+    ],
+    [
+     "GND",
      68.7,
      47.4
     ],
@@ -657,18 +683,8 @@
     ],
     [
      "GND",
-     26.725,
-     54.525
-    ],
-    [
-     "GND",
      24.5,
      55.605
-    ],
-    [
-     "GND",
-     25.5,
-     57.795
     ],
     [
      "GND",
@@ -992,18 +1008,13 @@
     ],
     [
      "VDDA_PHY",
-     27.9,
-     57.0625
-    ],
-    [
-     "VDDA_PHY",
-     27.175,
-     56.3875
-    ],
-    [
-     "VDDA_PHY",
      18.4,
      56.275
+    ],
+    [
+     "VDDA_PHY",
+     26.45,
+     57.3
     ],
     [
      "VDDA_PHY",
@@ -1828,6 +1839,30 @@
     [
      "GND",
      "F.Cu",
+     26.0,
+     54.525,
+     26.725,
+     54.525
+    ],
+    [
+     "GND",
+     "F.Cu",
+     25.5,
+     58.32,
+     25.5,
+     57.795
+    ],
+    [
+     "GND",
+     "F.Cu",
+     23.41,
+     46.9,
+     23.41,
+     46.1
+    ],
+    [
+     "GND",
+     "F.Cu",
      67.875,
      47.4,
      68.7,
@@ -2036,26 +2071,10 @@
     [
      "GND",
      "F.Cu",
-     26.0,
-     54.525,
-     26.725,
-     54.525
-    ],
-    [
-     "GND",
-     "F.Cu",
      24.5,
      55.08,
      24.5,
      55.605
-    ],
-    [
-     "GND",
-     "F.Cu",
-     25.5,
-     58.32,
-     25.5,
-     57.795
     ],
     [
      "GND",
@@ -2588,26 +2607,34 @@
     [
      "VDDA_PHY",
      "F.Cu",
-     27.9,
-     56.3875,
-     27.9,
-     57.0625
-    ],
-    [
-     "VDDA_PHY",
-     "F.Cu",
-     27.9,
-     56.3875,
-     27.175,
-     56.3875
-    ],
-    [
-     "VDDA_PHY",
-     "F.Cu",
      18.4,
      56.975,
      18.4,
      56.275
+    ],
+    [
+     "VDDA_PHY",
+     "F.Cu",
+     27.9,
+     56.3875,
+     27.9,
+     56.9
+    ],
+    [
+     "VDDA_PHY",
+     "F.Cu",
+     27.9,
+     56.9,
+     27.5,
+     57.3
+    ],
+    [
+     "VDDA_PHY",
+     "F.Cu",
+     27.5,
+     57.3,
+     26.45,
+     57.3
     ],
     [
      "VDDA_PHY",

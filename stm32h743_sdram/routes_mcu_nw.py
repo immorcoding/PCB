@@ -41,7 +41,7 @@ VIEWS = [("nw", 28.0, 25.0, 47.0, 44.0, 60), ("north", 36.0, 0.0, 63.0, 29.0, 30
          ("gates", 38.0, 23.0, 47.5, 28.5, 90), ("codec", 18.0, 22.0, 35.0, 31.0, 60), ("can", 58.0, 12.0, 71.0, 18.0, 60),
          ("west", 22.0, 24.0, 35.0, 40.0, 50), ("swd", 37.0, 1.0, 47.0, 16.0, 60)]
 NETS_NW = ["SAI1_SD_B", "SAI1_MCLK_A", "SAI1_FS_A", "SAI1_SCK_A", "SAI1_SD_A", "SWO", "SWCLK", "SWDIO", "SDMMC1_CMD",
-           "SDMMC1_D3", "SDMMC1_D1", "SD_CD", "CODEC_NRST", "NRST", "BOOT0", "CAN_STB"]
+           "SDMMC1_D3", "SDMMC1_D1", "SD_CD", "CODEC_NRST", "NRST", "BOOT0", "CAN_STB", "SDMMC1_CK"]
 GATE_N, GATE_W = 27.6, 30.0
 THIN = 0.1016
 
@@ -114,6 +114,12 @@ def north():
     for net, arr in (("SDMMC1_CMD", cmd), ("SDMMC1_D1", d1), ("SDMMC1_D3", d3), ("SD_CD", cd)):
         a, b = sd_tail(net)
         R[net] = [arr + a, b]
+    # ---- SDMMC1_CK (A12, fanned out at stop 7 compose: FMC_D2 moved to x 42.275): L3 north between CMD and SWCLK, a
+    # step east between D1's via and C217 (y 25.3), via to L6, north west of the CAN lanes, east along y 15.4 under
+    # the socket, south into its contact via (56.625, 17.39) (no pull-up; reachable only from the north)
+    R["SDMMC1_CK"] = out("SDMMC1_CK", [(42.925, 25.75), (43.375, 25.3), (44.0, 25.3)]) + [
+        V(44.0, 25.3), ("L6", [(44.0, 25.3), (44.0, 15.75), (44.35, 15.4), (56.275, 15.4), (56.625, 15.75), (56.625, 17.39)]),
+        V(56.625, 17.39), ("L1", [(56.625, 17.39), "J801.5"])]
     # ---- CAN_STB: north, east along y 14.3, via north of U801.8
     R["CAN_STB"] = out("CAN_STB", [gate("CAN_STB"), (42.6, 16.0), (44.0, 14.6), (44.3, 14.3), (69.095, 14.3)]) + [
         V(69.095, 14.3), ("L1", [(69.095, 14.3), "U801.8"])]

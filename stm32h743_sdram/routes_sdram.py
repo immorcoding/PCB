@@ -266,6 +266,10 @@ def routes(job):
             for l in sorted(res.leads.values(), key=lambda l: (l.side, l.layer, l.lat)):
                 f.write("%s %s %s %s %s %s\n" % (l.side, l.layer, l.net, l.ball, l.kind, [pc[1] if pc[0] == "via" else pc[1][-1] for pc in l.pieces][-2:]))
     m.update(hand)
+    # stop 7 compose: D2 (B12) leaves north between A11 (unconnected) and A12 (x 42.275, over the +3V3_MCU feed column
+    # on L1, no via there) instead of between A12 and A13 (x 42.925): SDMMC1_CK (A12) takes the site (42.925, 32.125)
+    # and runs north on L3. Set after the rule-based escape so that no other lead changes; same layer, lane and order
+    m["FMC_D2"] = [("L1", ["U201.B12", (42.275, 32.775), (42.275, 31.0)])]
     bus = job.bus()
     R = {}
 

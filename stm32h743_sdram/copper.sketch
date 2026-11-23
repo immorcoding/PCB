@@ -127,7 +127,8 @@ region L6_VDDA_MCU VDDA_MCU L6
 # and 4, RX up the column gap from the south), so VDDA_PHY has no L1 copper between them: three small L1 pieces
 # take the VDDA pads around the pairs and each drops by a via to the L6 region, which wraps the two centre-tap pins
 # (through-hole, pad + 0.5 mm all round, PWR-9) and runs as a band north of the TX pair, down a west arm (x 17.7-18.7)
-# and east along y 55.95-56.95 to the bead FB501 (two vias there) and C501.
+# and east along y 55.95-56.95 to the bead FB501 (two vias there, routes_power.py FIXED; the block's east end
+# reaches west to x 26.1 for them since stop 7) and C501.
 #   north  C510 / C511 (centre taps) in a row, C502 (VDD1A) below them, a leg down to R508's VDDA pad; PHY pin 19
 #          by a tie. The corner west of the leg is kept free for TX_N's serpentine
 #   west   the VDDA pads of R507 and R510 (TX_P and RX_N terminations)
@@ -139,8 +140,8 @@ region L1_VDDA_PHY_W VDDA_PHY L1
 region L1_VDDA_PHY_S VDDA_PHY L1
   20.2,52.95  21.35,52.95  21.35,54.0  21.15,54.0  21.15,55.05  19.9,55.05  19.9,54.3  20.2,54.3
 region L6_VDDA_PHY VDDA_PHY L6
-  14.38,47.51  20.1,47.51  20.1,48.65  18.7,48.65  18.7,54.2  20.5,54.2  20.5,55.95  28.9,55.95  28.9,58  26.9,58
-  26.9,56.95  17.7,56.95  17.7,48.65  16.98,48.65  16.98,50.11  14.44,50.11  14.44,51.38  11.84,51.38  11.84,48.78
+  14.38,47.51  20.1,47.51  20.1,48.65  18.7,48.65  18.7,54.2  20.5,54.2  20.5,55.95  28.9,55.95  28.9,58  26.1,58
+  26.1,56.95  17.7,56.95  17.7,48.65  16.98,48.65  16.98,50.11  14.44,50.11  14.44,51.38  11.84,51.38  11.84,48.78
   14.38,48.78
 # +3V3_PHY behind R514: FB501, C505 and C504 (VDDIO) south-east of the PHY, below the east pins' lanes (pins 7, 8 and
 # 10-12 leave east on L1 for the MCU). PHY pin 9 (VDDIO, between those lanes) and the MDIO pull-up R503 reach it by a

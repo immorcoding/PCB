@@ -256,7 +256,8 @@ def west():
     pts, x, y = lanes(2, 40.9)
     vk = (31.35, r4(y + 0.4))
     R["USER_KEY"] = [go("USER_KEY", pts + [(31.75, y), vk], V(*vk),
-                        Lp("L4", [vk, (31.35, 44.3), (28.4, 47.25), (28.4, 58.2), (21.0, 65.6)]), V(21.0, 65.6),
+                        Lp("L4", [vk, (31.35, 44.3), (28.4, 47.25), (28.4, 58.2)]), V(28.4, 58.2),
+                        Lp("L3", [(28.4, 58.2), (21.0, 65.6)]), V(21.0, 65.6),
                         Lp("L1", [(21.0, 65.6), "R811.2"])),
                      [Lp("L1", ["R811.2", (21.99, 67.48), "C806.1"])]]
     # G2: one SW diagonal from its run (x 34.31) to the via (31.96, 43.9), parallel to the lanes' corners; L3 down, east
@@ -283,23 +284,21 @@ def west():
 # ---------------------------------------------------------------- the x 30 gates down the corridor on L4
 def corridor():
     R = {}
-    # PHY_NRST: L6 gate (30.0, 34.4) -> via (30.0, 35.0) (CODEC_NRST's L3 gate ends at (30.0, 34.4)) -> L4 down the
-    # corridor -> via (28.75, 42.9) -> L1 west and SW into R501.1, R501.1 down into pin 15
-    R["PHY_NRST"] = [go("PHY_NRST", [(30.4, 34.4), (30.0, 34.8), (30.0, 35.0)], V(30.0, 35.0),
-                        Lp("L4", [(30.0, 35.0), (28.75, 36.25), (28.75, 42.5), (28.35, 42.9)]), V(28.35, 42.9),
-                        Lp("L1", [(28.35, 42.9), (25.49, 42.9), (22.39, 46.0), "R501.1"])),
-                     [Lp("L1", ["R501.1", (22.39, 47.91), (22.65, 48.17), "U501.15"])]]
-    # TXD1: no via spot within reach of its gate (30.0, 33.75): Y202.1 (LSE crystal) covers it -> open
-    R["RMII_TXD1"] = go("RMII_TXD1", [(30.0, 33.75)])
+    # PHY_NRST: routes_mcu_west.py (stop 7 compose). TXD1: no exit (open): west of the rule area its L3 row (y 33.75) is
+    # boxed by the SAI lanes and the vias of FMC_A6 / A10 / ground to the north, CODEC_NRST's L3 row (y 34.4) to the
+    # south, the L4 rivers (x 30.9-33.7, no via) and the LSE crystal Y202 to the west; the stub stops east of the crystal
+    R["RMII_TXD1"] = go("RMII_TXD1", [(31.3, 33.75)])
     return R
 
 
 # ---------------------------------------------------------------- open nets: lead and gate only
 def open_nets():
     R = {}
-    for net in ("LCD_B6", "LCD_B7", "LCD_DISP", "QSPI_BK1_NCS", "RMII_TX_EN", "RMII_TXD0", "LCD_G7", "LCD_G3", "LCD_BL_PWM"):
+    # B6, B7, DISP, TX_EN, TXD0 and PHY_NRST: routes_mcu_west.py. NCS stops south of that group's L3 rows (y 27.75-28.75)
+    for net in ("LCD_G7", "LCD_G3", "LCD_BL_PWM"):
         x = exit_of(net)[0]
         R[net] = go(net, [(x, 27.6)])
+    R["QSPI_BK1_NCS"] = go("QSPI_BK1_NCS", [(exit_of("QSPI_BK1_NCS")[0], 29.5)])
     for net in ("QSPI_BK1_IO2", "QSPI_BK1_IO3"):
         y = exit_of(net)[1]
         R[net] = go(net, [(32.8, y)])
@@ -309,8 +308,39 @@ def open_nets():
 NETS = []
 
 
+def codec_i2c():
+    """I2C4 codec side (stop 7 compose): from the link resistors' MCU pads R703.2 / R704.2 by a via each (between
+    R704 and R703 / NW of R704), L6 west along y 65.25 / 65.84, a via, L4 north in two lanes at x 22.83 / 22.6
+    (west of the PHY block's vias, east of the codec's LDOs) to vias at the codec's north-east corner and L1 into
+    U601.8 (SCL, from the north-east: C601 stands east of it) and U601.9 (SDA, from the north); R602 from U601.9's
+    second way in. R601 is not reached: U601.8 has this one way in (C601's ground pad east of it, pin 7's tie south)."""
+    # lanes x 22.83 / 22.6, east to 24.09 / 23.86 past the PHY's thermal via array (y 49-52) and back west below it (the
+    # jogs staggered 0.0933 so the parallel diagonals keep the pitch)
+    a1, b1 = 59.2, 48.9
+    a2, b2 = r4(a1 + 0.0933), r4(b1 - 0.0933)
+    scl = [Lp("L1", ["R703.2", (29.85, 65.89), (29.85, 65.7)]), V(29.85, 65.7),
+           Lp("L6", [(29.85, 65.7), (29.4, 65.25), (23.25, 65.25)]), V(23.25, 65.25),
+           Lp("L4", [(23.25, 65.25), (22.83, 64.83), (22.83, a2), (24.09, a2 - 1.26), (24.09, b2), (22.83, b2 - 1.26),
+                     (22.83, 24.1425), (22.1875, 23.5)]), V(22.1875, 23.5),
+           Lp("L1", [(22.1875, 23.5), "U601.8"])]
+    sda = [Lp("L1", ["R704.2", (28.6, 65.84)]), V(28.6, 65.84),
+           Lp("L6", [(28.6, 65.84), (23.0, 65.84)]), V(23.0, 65.84),
+           Lp("L4", [(23.0, 65.84), (22.6, 65.44), (22.6, a1), (23.86, a1 - 1.26), (23.86, b1), (22.6, b1 - 1.26),
+                     (22.6, 24.5), (20.75, 22.65)]), V(20.75, 22.65),
+           Lp("L1", [(20.75, 22.65), "U601.9"])]
+    # SDA's pull-up R602 from U601.9 (its second way in, from the north-east): via, L6 north of the codec's ground via,
+    # east along y 22.01 (between the +3V3A / +3V3 vias and the ground via), via north of R602.2
+    sda_pu = [Lp("L1", ["U601.9", (21.4, 22.9125)]), V(21.4, 22.9125),
+              Lp("L6", [(21.4, 22.9125), (22.6, 21.7125), (24.95, 21.7125), (25.25, 22.0125), (38.1375, 22.0125),
+                        (38.4, 21.75)]), V(38.4, 21.75),
+              Lp("L1", [(38.4, 21.75), "R602.2"])]
+    return {"I2C4_SCL": [scl], "I2C4_SDA": [sda, sda_pu]}
+
+
 def routes(job):
     R = {}
     for part in (east_bundle, south, qspi, west, corridor, open_nets):
         R.update(part())
+    for net, chains in codec_i2c().items():
+        R[net] = [R[net]] + chains
     return R
