@@ -143,4 +143,5 @@
 - **差分对间隙检查把平行而不相邻的两段也当成耦合段**：`ETH_TX_P` 绕 RJ45 2 脚的 45° 小段和 `ETH_TX_N` 进 2 脚的 45° 斜线在投影上重叠 0.35 mm、相距 1.66 mm，报 `diff_pair_gap_out_of_range`（最大 0.8）。让两段的投影不重叠即可。
 - **两个封装的 courtyard 正好贴边，DRC 报 `courtyards_overlap`，`place_check.py` 不报**（它按面积 > 0.001 mm² 算）：摆件留 0.02 mm 以上。
 - **`busroute` 的快速检查读封装里的禁布区，也把同号的第二个焊盘当障碍**（2026-11-22 起；以前 RJ45 的屏蔽片只认一个、`Shield-board contact area` 不读）。封装里的禁布区在发现里叫 `位号:区名`。
+- **基准板拷真板的 `.kicad_dru` 时要清掉 `len_rules.py` 的生成段**（2026-11-23）：生成段的窗口是按真板量出的长度算的（`sdram_addr_window` 按真板 SDCLK 39.34 mm 卡 `FMC_A*` ≥ 19.34），基准板上同名的网络落在窗口外，busroute 基准的蛇形各例因此报 `length_out_of_range: 1`（`FMC_A3`）。`tests/busroute/check.py` 的 `bench_dru()` 和 `rules_fixture.py` 的静态阶段都只留手写规则、生成段置空；基准要窗口就自己写。
 - **`track_shape.py` 以前遇到圆弧就断开走线**：拐点后 0.1 mm 接同向圆弧的地方报 0 处（RTE-8 的信号）。现在跟着圆弧走；四层板（有圆弧）只多一行 `arc-joint: 0`，其余各项不变，两块没有圆弧的板输出逐字相同（2026-11-22 对比）。

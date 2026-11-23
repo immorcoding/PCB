@@ -3,7 +3,8 @@
     D:\\KiCad\\bin\\python.exe scripts\\tests\\busroute\\check.py [--keep]
 
 Builds a 40 x 30 mm six-layer board in a temp folder from the H743 project's own files (stackup and empty
-board from stm32h743_sdram/make_project.py, its .kicad_pro, its .kicad_dru): U1 = the stock
+board from stm32h743_sdram/make_project.py, its .kicad_pro, its .kicad_dru without the block len_rules.py
+generates from the real board's lengths, see bench_dru): U1 = the stock
 UFBGA-201 0.65 mm footprint, U2 = the project's 90-ball 0.8 mm footprint (0.33 mm pads), one rule area round
 each (BGA_MCU, BGA_SDRAM: package + 1 mm), ground pours on L2 and L5. Then routes the twelve nets of
 bench_routes.py and expects:
@@ -47,7 +48,8 @@ sys.path.insert(0, SCRIPTS)
 sys.path.insert(0, PROJ)
 import pcbnew                                               # noqa: E402
 import make_project                                         # noqa: E402
-from busroute import job, Board                             # noqa: E402
+import len_rules                                            # noqa: E402
+from busroute import job, Board                            # noqa: E402
 
 OX = OY = 100.0
 MCU, RAM = (13.0, 12.0), (27.0, 15.9)
@@ -145,9 +147,18 @@ def make_board(tmp, pads=None):
         ch.SetClosed(True); z.Outline().AddOutline(ch); b.Add(z)
     pcbnew.SaveBoard(pcb, b)
     make_project.make_pro(os.path.join(tmp, "bench.kicad_pro"))      # after SaveBoard (it writes a default .kicad_pro)
-    shutil.copy(os.path.join(PROJ, make_project.NAME + ".kicad_dru"), os.path.join(tmp, "bench.kicad_dru"))
+    bench_dru(os.path.join(tmp, "bench.kicad_dru"))
     shutil.copy(os.path.join(HERE, "bench_routes.py"), os.path.join(tmp, "bench_routes.py"))
     return pcb
+
+
+def bench_dru(dst):
+    """The project's rule file, hand-written rules only: the block scripts/len_rules.py generates at its end holds
+    windows measured on the real board (sdram_addr_window: FMC_A* within 20 mm of the real SDCLK, ...), which the
+    bench nets of the same names would fall outside of; it is emptied, as stm32h743_sdram/rules_fixture.py does."""
+    dru = open(os.path.join(PROJ, make_project.NAME + ".kicad_dru"), encoding="utf-8").read()
+    i, j = dru.index(len_rules.BEGIN), dru.index(len_rules.END)
+    open(dst, "w", encoding="utf-8", newline="\n").write(dru[:i] + len_rules.BEGIN + "\n" + dru[j:])
 
 
 def obst_board(src, dst):
