@@ -195,11 +195,11 @@ class Sheet:
     def R(self, ref, val, i, j, a, b, fp=None, **kw):
         return self.two("Device:R", ref, val, i, j, fp or FP["R0402"], a, b, **kw)
 
-    def caps(self, first, values, i, j, net, bot="GND", step=4):
+    def caps(self, first, values, i, j, net, bot="GND", step=4, fp=None):
         """A row of decoupling capacitors from grid (i, j) to the right: C<first>, C<first+1> ...
-        values: list of value strings."""
+        values: list of value strings; fp: one footprint for the whole row (default: by value, cap_fp)."""
         for k, v in enumerate(values):
-            self.C("C%d" % (first + k), v, i + k * step, j, net, bot)
+            self.C("C%d" % (first + k), v, i + k * step, j, net, bot, fp=fp)
 
     def tp(self, ref, net, i, j, kind="TP_1.5"):
         """A test point on `net` (pad pointing down from (i, j))."""

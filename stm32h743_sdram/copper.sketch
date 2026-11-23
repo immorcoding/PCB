@@ -60,8 +60,10 @@ region L5_3V3A +3V3A L5
 # above the bands; the tongue starts 0.5 mm east of the link's +3V3 pad.
 # islands=remove (stop 5 part B): rings of dog-bone antipads box in crumbs of the block at ball positions, where no
 # via can stand (a ball pad is above); KiCad drops them, the block itself is fed and kept.
+# try/sgsps (BGA block): a lobe south-west of the ball field (x 30.5-36.4, y 44.8-48.2) for the VDDA bead's supply
+# via, the VDDA filter having left the ball field
 region L5_3V3_MCU +3V3_MCU L5 islands=remove
-  34,31  39.6,31  39.6,25  44.2,25  44.2,31  46,31  46,44.8  34,44.8
+  34,31  39.6,31  39.6,25  44.2,25  44.2,31  46,31  46,44.8  36.4,44.8  36.4,48.2  30.5,48.2  30.5,44.8  34,44.8
 region L5_3V3_SDRAM +3V3_SDRAM L5 islands=remove
   52,29.5  55.6,29.5  55.6,25  61,25  61,29.5  62,29.5  62,44.5  52,44.5
 
@@ -117,8 +119,10 @@ region L1_3V3_AUD +3V3_AUD L1
 # (x 33.6, y 45.6) and FMC_SDNRAS (x 38.375): the L6 pocket reaches down to y 43.5 over the VDDA pads of the two
 # upright 1 uF capacitors, and an east lobe (x 36.55-37.2) takes the bead's VDDA pad, 0.2 mm below its
 # +3V3_MCU pad.
+# try/sgsps (BGA block): the VDDA filter (FB201, C220-C223, all 0402 but the bead) sits on the bottom south-west of the
+# MCU's rule area, its VDDA pads in this band; the balls P1 / R1 reach it on L3 and a via at (34.95, 44.25)
 region L6_VDDA_MCU VDDA_MCU L6
-  34,40.95  36,40.95  36,42.85  37.2,42.85  37.2,43.7  36.55,43.7  36.55,43.5  34,43.5
+  30.4,44.55  34.6,44.55  34.6,44.0  35.3,44.0  35.3,44.55  35.65,44.55  35.65,45.35  30.4,45.35
 # Ethernet PHY (stop 7 rework). The 100 ohm pairs run on L1 from the PHY's west pins into the RJ45 (TX between pins 2
 # and 4, RX up the column gap from the south), so VDDA_PHY has no L1 copper between them: three small L1 pieces
 # take the VDDA pads around the pairs and each drops by a via to the L6 region, which wraps the two centre-tap pins

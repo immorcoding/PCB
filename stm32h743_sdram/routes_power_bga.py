@@ -44,6 +44,18 @@ def routes(job):
         r = plan[ref]
         for num, v in sorted(r["supply"].items(), key=lambda kv: (kv[1]["ball"][1], kv[1]["ball"][0])):
             ball = b.pads["%s.%s" % (ref, num)]
+            if not v["via"] and num in r.get("share", {}):
+                # a ball the plan could not give a site of its own (the caps and signal fan-out took them): it shares
+                # the neighbouring ball's via of the same net; the dog-bone stops 0.05 mm short of the via centre on
+                # each axis (two dog-bones meeting at 90 degrees break the corner rule, docs/tools.md)
+                other = r["supply"][r["share"][num]]
+                s = (r4(other["via"][0]), r4(other["via"][1]))
+                sx, sy = (ball.pos[0] > s[0]) - (ball.pos[0] < s[0]), (ball.pos[1] > s[1]) - (ball.pos[1] < s[1])
+                end = (r4(s[0] + 0.05 * sx), r4(s[1] + 0.05 * sy))
+                P.chains.setdefault(ball.net, []).append([("L1", [ball.name, end], 0.15)])
+                P.shared.append((ball.name, list(s), "%s.%s" % (ref, r["share"][num])))
+                P.log.append("shared   %-9s %-11s via (%.3f, %.3f) of %s.%s" % (ball.name, ball.net, s[0], s[1], ref, r["share"][num]))
+                continue
             if not v["via"]:
                 P.log.append("NO SITE  %s %s: the plan has no via for it" % (ball.name, ball.net))
                 P.nosite[ball.name] = "no site in the plan"
@@ -65,6 +77,12 @@ def routes(job):
             P._put_via(net, p, VIA_IN, "own")
             P.extras.append((net, p))
             P.log.append("own      %-11s via (%.3f, %.3f) under a capacitor pad" % (net, p[0], p[1]))
+    # VDDA_MCU: the filter left the ball field (bottom, south-west of the rule area, L6 band L6_VDDA_MCU); the balls'
+    # vias P1 / R1 reach it on L3 (next to the ground plane) and a via into the band
+    vp1, vr1 = (tuple(plan["U201"]["supply"][k]["via"]) for k in ("P1", "R1"))
+    if vp1[0] == vr1[0] == 35.125:
+        P.chains.setdefault("VDDA_MCU", []).append([("L3", [vp1, vr1, (35.125, 44.075), (34.95, 44.25)], 0.2), ("via", (34.95, 44.25), (0.45, 0.2))])
+        P.log.append("VDDA     L3 link P1 / R1 vias -> via (34.950, 44.250) into the L6 band")
     P.connect_caps(widths_for={"VCAP1": WIDE_W, "VCAP2": WIDE_W})
     ALLOW_VIA_ON[:] = sorted(P.allow)
     job.stitch += P.extras

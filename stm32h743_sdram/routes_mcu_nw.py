@@ -26,7 +26,8 @@ VIEWS = [("nw", 28.0, 25.0, 47.0, 44.0, 60)]
 GATE_N, GATE_W = 27.6, 30.0          # north: clear of the +3V3 / +3V3_MCU vias at y 26.2-27.15
 NETS_NW = ["SAI1_SD_B", "SAI1_MCLK_A", "SAI1_FS_A", "SAI1_SCK_A", "SAI1_SD_A", "SWO", "SWCLK", "SWDIO", "SDMMC1_CK",
            "SDMMC1_CMD", "SDMMC1_D2", "SDMMC1_D3", "SD_CD", "RMII_TXD0", "RMII_TXD1", "RMII_TX_EN", "CODEC_NRST", "PHY_NRST",
-           "NRST", "BOOT0", "CAN_STB", "LCD_B6", "LCD_B7", "LCD_G3", "LCD_G7", "LCD_BL_PWM", "LCD_DISP", "QSPI_BK1_NCS"]
+           "NRST", "BOOT0", "CAN_STB", "LCD_B6", "LCD_B7", "LCD_G3", "LCD_G7", "LCD_BL_PWM", "LCD_DISP", "QSPI_BK1_NCS",
+           "SDMMC1_D1"]      # SDMMC1_D1 (east-side group) leaves north: gate here until its route to the card is drawn
 THIN = 0.1016
 
 
@@ -39,7 +40,7 @@ def gates():
         e = tuple(v["exit"])
         if v["side"] == "N":
             g = (e[0], GATE_N)
-        elif v["side"] == "W" and e[1] in NW_TURN:
+        elif v["side"] == "W" and e[1] in NW_TURN and v["net"] in NW_NETS:
             g = (NW_TURN[e[1]][-1][0], GATE_N)
         elif v["side"] == "W":
             g = (GATE_W, e[1])
@@ -64,8 +65,11 @@ def thin(pieces):
 NW_TURN = {31.8: [(33.6, 31.4)], 32.45: [(33.35, 31.8)], 33.75: [(32.85, 33.75), (32.6, 33.5)]}
 
 
-def path_to_gate(side, exit_, g):
-    if side == "W" and exit_[1] in NW_TURN:
+NW_NETS = ("SAI1_SD_B", "SAI1_MCLK_A", "SAI1_FS_A", "SAI1_SCK_A", "SAI1_SD_A")     # the codec's lines: north-west
+
+
+def path_to_gate(side, exit_, g, net=None):
+    if side == "W" and exit_[1] in NW_TURN and net in NW_NETS:
         pts = NW_TURN[exit_[1]]
         return pts + [(pts[-1][0], GATE_N)]
     return [g]
@@ -75,7 +79,7 @@ def routes(job):
     R = {}
     for net, (num, side, layer, g) in gates().items():
         e = tuple(plan()["U201"]["signal"][num]["exit"])
-        R[net] = thin(ext(lead(num), path_to_gate(side, e, g)))
+        R[net] = thin(ext(lead(num), path_to_gate(side, e, g, net)))
     # crystals: L1 only, 0.254, ball - crystal pad - load capacitor (routes_probe_xtal.py)
     R.update({
         "LSE_IN": [("L1", ["U201.E1", (31.9, 35.05), (30.4, 33.55), "Y202.1", "C227.1"], 0.254)],

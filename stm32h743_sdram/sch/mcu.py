@@ -81,17 +81,18 @@ def build(sh):
     x = x0
     sh.title("VDD decoupling: 100 nF per VDD ball (13) + VBAT + VDD33USB, bulk 4.7 uF, 1 uF at VDD33USB", x, 10)
     sh.caps(201, ["100nF"] * 8, x + 2, 18, "+3V3", step=6)
-    sh.caps(209, ["100nF"] * 7 + ["1uF"], x + 2, 30, "+3V3", step=6)
+    # every capacitor under the BGA is 0402 (user 2026-11-23, try/sgsps: 0603 pads do not fit between the ball vias)
+    sh.caps(209, ["100nF"] * 7 + ["1uF"], x + 2, 30, "+3V3", step=6, fp=FP["C0402"])
     sh.caps(217, ["4.7uF"], x + 50, 18, "+3V3")
 
     sh.title("VCAP: 2.2 uF each, ESR < 0.1 Ohm", x, 40)
-    sh.C("C218", "2.2uF", x + 2, 48, "VCAP1")
-    sh.C("C219", "2.2uF", x + 12, 48, "VCAP2")
+    sh.C("C218", "2.2uF", x + 2, 48, "VCAP1", fp=FP["C0402"])
+    sh.C("C219", "2.2uF", x + 12, 48, "VCAP2", fp=FP["C0402"])
 
     sh.title("Analog supply: VDDA and VREF+ from +3V3 through a bead", x + 30, 40)
     sh.two("Device:FerriteBead", "FB201", BEAD["value"], x + 32, 48, "Inductor_SMD:L_0603_1608Metric", "+3V3", "VDDA_MCU",
            fields={"MPN": BEAD["mpn"], "Manufacturer": BEAD["mfr"]})
-    sh.caps(220, ["100nF", "1uF", "100nF", "1uF"], x + 42, 48, "VDDA_MCU", step=6)
+    sh.caps(220, ["100nF", "1uF", "100nF", "1uF"], x + 42, 48, "VDDA_MCU", step=6, fp=FP["C0402"])
     sh.flag("VDDA_MCU", x + 68, 48)
 
     sh.title("Reset and boot", x, 60)

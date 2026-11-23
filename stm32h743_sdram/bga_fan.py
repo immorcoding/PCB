@@ -39,12 +39,19 @@ SUPPLY33 = ("+3V3_MCU", "+3V3_SDRAM")
 WINDOW = (29.0, 26.0, 66.0, 48.0)
 MCU_CAPS = ["C2%02d" % k for k in range(1, 20)]               # C201-C215 100 nF 0402, C216 1 uF 0603, C218 / C219 VCAP 0603
 SD_CAPS = ["C3%02d" % k for k in range(1, 9)]                 # 100 nF 0402
-CAP_KINDS = {MCU: [("100n", "0402", "+3V3_MCU", 15), ("C216", "0603", "+3V3_MCU", 1), ("C218", "0603", "VCAP1", 1), ("C219", "0603", "VCAP2", 1)],
+CAP_KINDS = {MCU: [("100n", "0402", "+3V3_MCU", 15), ("C216", "0402", "+3V3_MCU", 1), ("C218", "0402", "VCAP1", 1), ("C219", "0402", "VCAP2", 1)],
              SDRAM: [("100n", "0402", "+3V3_SDRAM", 8)]}
 for _k in os.environ.get("FAN_DROP", "").split():
     CAP_KINDS[MCU] = [c for c in CAP_KINDS[MCU] if c[0] != _k]
 CAP_REF = {MCU: {"100n": ["C2%02d" % k for k in range(1, 16)], "C216": ["C216"], "C218": ["C218"], "C219": ["C219"]}, SDRAM: {"100n": SD_CAPS}}
-TIED = ("VCAP1", "VCAP2")                                     # their capacitor sits on the ball's own via (no via of its own)
+TIED = ("VCAP1", "VCAP2")
+# the +3V3_MCU block's feed (user 2026-11-23: no slot limit, but the L5 tongue must reach the ball field wide): the
+# site column pair either side of ball column 11 (x 41.625 / 42.275, rows A-C, where balls A11 / B11 are unconnected)
+# holds no via of another net, so the tongue (x 39.6-44.2) enters the field in a 1.4 mm channel
+# sites where a via of that net ends up on an island of its L5 block (ringed by the antipads round it; found on the
+# refilled board, copper_report.py slots: "cut-off own-net vias")
+ISLAND = [((36.425, 38.625), "+3V3_MCU")]
+FEED = [] if os.environ.get("FAN_NOFEED") else [(x, y) for x in (41.625, 42.275) for y in (31.475, 32.125, 32.775, 33.425)]                                     # their capacitor sits on the ball's own via (no via of its own)
 # off-lattice vias for balls whose four gap sites the bus takes: ball -> [(via, L1 points between ball and via, layer,
 # run from the via to the area edge, side)]
 EXTRA = {"J1": [((34.65, 37.65), [], "L3", [(34.0, 37.65)], "W"), ((34.65, 37.65), [], "L6", [(34.0, 37.65)], "W")],
@@ -80,11 +87,12 @@ for n in ("QSPI_BK1_IO0", "QSPI_BK1_IO1", "QSPI_BK1_IO2", "QSPI_BK1_IO3", "QSPI_
 for n in ("USART1_TX", "USART1_RX", "LCD_BL_PWM"):
     TARGET[n] = SE
 IMPORTANT = ("RMII_", "ETH_", "QSPI_", "SDMMC1_")
+FREE_SIDES = os.environ.get("FAN_SIDES_FREE", "").split()
 # (north-west: the SDRAM's west vias at x 29.9-34.2, y 31.2-33.3 close the west exits above row D, so the codec's
 # lines leave north)
 # the sides of the MCU a net may leave through (the side its destination lies on, or the way round to it that does
 # not cross the SDRAM bands on its layer); nets not listed: any side
-SIDES = {"SAI1_SD_B": "N", "SAI1_MCLK_A": "N", "SAI1_FS_A": "N", "SAI1_SCK_A": "N", "SAI1_SD_A": "N", "CODEC_NRST": "N",
+SIDES = {"SAI1_SD_B": "NW", "SAI1_MCLK_A": "NW", "SAI1_FS_A": "NW", "SAI1_SCK_A": "NW", "SAI1_SD_A": "NW", "CODEC_NRST": "NW",
          "SWO": "N", "SWCLK": "N", "SWDIO": "N", "BOOT0": "N", "NRST": "W",
          "SDMMC1_CK": "NE", "SDMMC1_CMD": "NE", "SDMMC1_D2": "NE", "SDMMC1_D3": "NE", "SD_CD": "NE", "CAN_STB": "NE",
          "SDMMC1_D0": "NE", "SDMMC1_D1": "NE", "FDCAN1_TX": "NE", "FDCAN1_RX": "NE",
@@ -96,7 +104,7 @@ SIDES = {"SAI1_SD_B": "N", "SAI1_MCLK_A": "N", "SAI1_FS_A": "N", "SAI1_SCK_A": "
          "LCD_B5": "WS", "LCD_R6": "WS", "LCD_R3": "WS", "LCD_G4": "SE", "LCD_G5": "SE", "USART1_TX": "SE", "USART1_RX": "SE",
          "TP_RST": "SE", "I2C4_SCL": "SE", "I2C4_SDA": "SE", "TP_INT": "SE",
          "LCD_B4": "SE", "LCD_R5": "SE", "LCD_B3": "SE", "LCD_G6": "SE", "LCD_HSYNC": "SE", "LCD_R7": "SE", "LCD_CLK": "SE"}
-UNALLOC, W_OUT, W_IN = 400.0, 0.25, 0.15
+UNALLOC, W_OUT, W_IN = float(os.environ.get("FAN_UNALLOC", "400")), 0.25, 0.15
 DONE = set()                                          # signal balls fixed by an earlier pass (with_fixed)
 NOSIGSLOT = bool(os.environ.get("FAN_NOSIGSLOT"))     # signal vias left out of the slot rule (stage A of the staged run)
 
@@ -276,7 +284,7 @@ class Fan:
                 continue
             opts = []
             for o in ball_options(lat, f, masks, via_ok, uv, inner=("L3", "L4", "L6")):
-                if o["via"] is None or not self.exit_ok(o["side"], o["layer"], o["exit"]) or o["side"] not in SIDES.get(net, "NESW"):
+                if o["via"] is None or not self.exit_ok(o["side"], o["layer"], o["exit"]) or (o["side"] not in SIDES.get(net, "NESW") and net not in FREE_SIDES):
                     continue
                 tgt = TARGET.get(net, (40.0, 37.0))
                 o["cost"] = (W_IN * o["len"] + W_OUT * (abs(o["exit"][0] - tgt[0]) + abs(o["exit"][1] - tgt[1]))
@@ -284,6 +292,35 @@ class Fan:
                              + (0.4 if not net.startswith(IMPORTANT) and o["layer"] == "L3" else 0.0)
                              + 0.3 * turn(o["l1"][0], o["l1"][-1], o["run"][1]))
                 opts.append(o)
+            # a via on the empty ball position next to the ball (outside the array, the ball-free ring), straight
+            # out along the ball's own line on L1, and on along that line on an inner layer to the area edge
+            for dn, d in DIRS.items():
+                q = (uv[0] + 2 * d[0], uv[1] + 2 * d[1])
+                if q in lat.balls or not lat.inside(*q):
+                    continue
+                p = lat.xy(*q)
+                if not (f.is_area(p, f.via_in[0] / 2) and f.via_ok(p) and sample_ok(f, masks["L1"], [tuple(pad["pos"]), p], lat.pad_r + 0.17)):
+                    continue
+                e, side = lat.edge_point(q[0], q[1], d)
+                for layer in ("L3", "L4", "L6"):
+                    if side not in SIDES.get(net, "NESW") or not self.exit_ok(side, layer, e) or not sample_ok(f, masks[layer], [p, e]):
+                        continue
+                    tgt = TARGET.get(net, (40.0, 37.0))
+                    ln = 0.65 + math.dist(p, e)
+                    opts.append({"layer": layer, "via": ("xy", p), "l1": [tuple(pad["pos"]), p], "run": [p, e], "side": side, "exit": e, "len": ln,
+                                 "nodes": {layer: lat.run(q[0], q[1], d)},
+                                 "cost": W_IN * ln + W_OUT * (abs(e[0] - tgt[0]) + abs(e[1] - tgt[1])) + 0.2
+                                 + (0.6 if net.startswith(IMPORTANT) and layer != "L3" else 0.0)})
+            # an east-edge ball (column 15): L1 straight east along its row out of the rule area to a 0.45 via just
+            # outside it (between the SDRAM's L1 lanes leaving east), then L6 (free of the bus outside the fields)
+            if uv[0] == max(u for u, v in lat.balls):
+                p = (r4(lat.area[2] + 0.45), r4(pad["pos"][1]))
+                if f.via_ok(p) and sample_ok(f, masks["L1"], [tuple(pad["pos"]), p], lat.pad_r + 0.17) and "E" in SIDES.get(net, "NESW"):
+                    tgt = TARGET.get(net, (40.0, 37.0))
+                    ln = math.dist(pad["pos"], p)
+                    opts.append({"layer": "L6", "via": ("xy", p), "l1": [tuple(pad["pos"]), p], "run": [p, p], "side": "E", "exit": p, "len": ln,
+                                 "nodes": {"L1": [q for q in lat.run(uv[0], uv[1], (1, 0))[1:]]},
+                                 "cost": W_IN * ln + W_OUT * (abs(p[0] - tgt[0]) + abs(p[1] - tgt[1])) + 0.3})
             for via, mid, layer, run, side in EXTRA.get(pad["num"], []):
                 bx = tuple(pad["pos"])
                 if not (f.via_ok(via) and sample_ok(f, masks["L1"], [bx] + list(mid) + [via], lat.pad_r + 0.17)
@@ -339,7 +376,8 @@ class Fan:
             if uv[0] % 2 and uv[1] % 2 and math.dist(lat.xy(*uv), p) < 1e-3:
                 fixed_at[uv] = n
         reach = (self.slot_max - f.via_in[0] - 2 * G.PLANE_CLR) / lat.pitch
-        paths = staircases(reach * reach + 1e-9) if G.merge_dist(f.via_in[0], f.via_in[0]) > lat.pitch and not os.environ.get("FAN_NOSTAIR") else []
+        paths = (staircases(reach * reach + 1e-9) if G.merge_dist(f.via_in[0], f.via_in[0]) > lat.pitch and not os.environ.get("FAN_NOSTAIR")
+                 and self.slot_max < 10 else [])        # no slot limit (user 2026-11-23): --slot-max 0 or large
         all_pts = [(uu, vv) for uu in range(lat.u0, lat.u1 + 1) for vv in range(lat.v0, lat.v1 + 1)]
         cuts = []
         for rnd in range(int(os.environ.get("FAN_ROUNDS", "30"))):
@@ -359,7 +397,7 @@ class Fan:
                     vs.append(v)
                     if s_[0] == "xy":
                         q = lat.uv(s_[1])
-                        for l in ("L3", "L4", "L6"):
+                        for l in ("L1", "L3", "L4", "L6"):
                             pts.setdefault((l, q), []).append(v)
                         near_extra.append((v, [q2 for q2 in lat.via_sites() if math.dist(lat.xy(*q2), s_[1]) < 0.44]))
                 sl = lp.var(2 * UNALLOC, name="nosupply")
@@ -422,6 +460,16 @@ class Fan:
                     lp.row(vs, [1.0] * len(vs), 0.0, 0.0)
                 else:
                     lp.row(vs, [1.0] * len(vs), -np.inf, 1.0)
+            if ref == MCU:
+                for q, bad_net in ISLAND:
+                    vs = [v for v, n_ in at_site.get(lat.uv(q), []) if n_ == bad_net]
+                    if vs:
+                        lp.row(vs, [1.0] * len(vs), -np.inf, 0.0)
+                for q in FEED:
+                    key = lat.uv(q)
+                    vs = [v for v, n_ in at_site.get(key, []) if n_ != "+3V3_MCU"]
+                    if vs:
+                        lp.row(vs, [1.0] * len(vs), -np.inf, 0.0)
             for v, qs in near_extra:
                 for q in qs:
                     vs = [w for w, n_ in at_site.get(q, [])]
