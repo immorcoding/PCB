@@ -434,6 +434,10 @@ class LP:
         self.R.extend([r] * len(cols)); self.C.extend(cols); self.V.extend(vals); self.lo.append(lo); self.hi.append(hi)
 
     def solve(self, time_limit=120.0, gap=0.01):
+        if os.environ.get("PLAN_SOLVER") == "highspy":
+            return self._solve_highspy(time_limit, gap)
+        if os.environ.get("PLAN_SOLVER") == "cpsat":
+            return self._solve_cpsat(time_limit, gap)
         import numpy as np
         from scipy.optimize import milp, LinearConstraint, Bounds
         from scipy.sparse import coo_matrix
@@ -441,6 +445,75 @@ class LP:
         res = milp(np.array(self.c), constraints=LinearConstraint(A, np.array(self.lo), np.array(self.hi)), integrality=np.array(self.int_) * (0 if os.environ.get('PLAN_RELAX') else 1),
                    bounds=Bounds(np.array(self.lb), np.array(self.ub)), options={"time_limit": time_limit, "mip_rel_gap": gap, "disp": bool(os.environ.get("PLAN_DISP"))})
         return res
+
+    def _solve_cpsat(self, time_limit, gap):
+        """The same program through OR-tools CP-SAT (pip package ortools). CP-SAT is integer only: coefficients and
+        costs are scaled by 1000 and rounded, continuous variables are counted in steps of 0.01.
+        PLAN_SOLVER=cpsat, PLAN_THREADS (default 6), PLAN_DISP."""
+        import numpy as np, types
+        from ortools.sat.python import cp_model
+        S, STEP = 1000, 0.01
+        m = cp_model.CpModel()
+        BIG = 10 ** 9
+        xs, unit = [], []
+        for j in range(len(self.c)):
+            u = 1.0 if self.int_[j] else STEP
+            lb = -BIG if self.lb[j] == -np.inf else int(math.ceil(self.lb[j] / u - 1e-9))
+            ub = BIG if self.ub[j] == np.inf else int(math.floor(self.ub[j] / u + 1e-9))
+            xs.append(m.NewIntVar(lb, ub, "x%d" % j)); unit.append(u)
+        rows = {}
+        for r, c_, v in zip(self.R, self.C, self.V):
+            d = rows.setdefault(r, {})
+            d[c_] = d.get(c_, 0.0) + v
+        for r, d in rows.items():
+            expr = sum(int(round(v * unit[c_] * S)) * xs[c_] for c_, v in d.items())
+            if self.lo[r] != -np.inf:
+                m.Add(expr >= int(math.ceil(self.lo[r] * S - 1e-6)))
+            if self.hi[r] != np.inf:
+                m.Add(expr <= int(math.floor(self.hi[r] * S + 1e-6)))
+        m.Minimize(sum(int(round(self.c[j] * unit[j] * S)) * xs[j] for j in range(len(self.c)) if self.c[j]))
+        sv = cp_model.CpSolver()
+        sv.parameters.max_time_in_seconds = float(time_limit)
+        sv.parameters.relative_gap_limit = float(gap)
+        sv.parameters.num_workers = int(os.environ.get("PLAN_THREADS", "6"))
+        sv.parameters.log_search_progress = bool(os.environ.get("PLAN_DISP"))
+        st = sv.Solve(m)
+        ok = st in (cp_model.OPTIMAL, cp_model.FEASIBLE)
+        x = np.array([sv.Value(xs[j]) * unit[j] for j in range(len(xs))]) if ok else None
+        return types.SimpleNamespace(x=x, fun=sv.ObjectiveValue() / S if ok else None, status=0 if st == cp_model.OPTIMAL else 2 if st == cp_model.INFEASIBLE else 1,
+                                     success=st == cp_model.OPTIMAL, message="cp-sat %s, bound %.6g" % (sv.StatusName(st), sv.BestObjectiveBound() / S))
+
+    def _solve_highspy(self, time_limit, gap):
+        """The same program through a current HiGHS (pip package highspy; scipy 1.13 ships HiGHS 1.2.0 of 2021).
+        PLAN_SOLVER=highspy, PLAN_THREADS (default 4: this PC must not be loaded with many threads), PLAN_DISP."""
+        import numpy as np, highspy, types
+        from scipy.sparse import coo_matrix
+        n, m = len(self.c), len(self.lo)
+        A = coo_matrix((self.V, (self.R, self.C)), shape=(m, n)).tocsc()
+        A.sum_duplicates()
+        lp = highspy.HighsLp()
+        lp.num_col_, lp.num_row_ = n, m
+        lp.col_cost_ = np.array(self.c, dtype=float)
+        lp.col_lower_, lp.col_upper_ = np.array(self.lb, dtype=float), np.array(self.ub, dtype=float)
+        lp.row_lower_, lp.row_upper_ = np.array(self.lo, dtype=float), np.array(self.hi, dtype=float)
+        lp.a_matrix_.format_ = highspy.MatrixFormat.kColwise
+        lp.a_matrix_.start_, lp.a_matrix_.index_, lp.a_matrix_.value_ = A.indptr, A.indices, A.data
+        if not os.environ.get("PLAN_RELAX"):
+            lp.integrality_ = [highspy.HighsVarType.kInteger if i else highspy.HighsVarType.kContinuous for i in self.int_]
+        h = highspy.Highs()
+        h.setOptionValue("output_flag", bool(os.environ.get("PLAN_DISP")))
+        h.setOptionValue("time_limit", float(time_limit))
+        h.setOptionValue("mip_rel_gap", float(gap))
+        h.setOptionValue("threads", int(os.environ.get("PLAN_THREADS", "4")))
+        h.passModel(lp)
+        h.run()
+        ms, info = h.getModelStatus(), h.getInfo()
+        feasible = info.primal_solution_status == 2          # kSolutionStatusFeasible
+        status = 0 if ms == highspy.HighsModelStatus.kOptimal else 2 if ms == highspy.HighsModelStatus.kInfeasible else 1
+        x = np.array(h.getSolution().col_value) if feasible else None
+        return types.SimpleNamespace(x=x, fun=info.objective_function_value if feasible else None, status=status, success=status == 0,
+                                     message="highspy %s, gap %.4g, bound %.6g" % (h.modelStatusToString(ms), info.mip_gap, info.mip_dual_bound),
+                                     mip_gap=info.mip_gap, mip_dual_bound=info.mip_dual_bound)
 
 
 CAP_GEOM = {"0402": (0.48, 0.28, 0.31), "0603": (0.775, 0.45, 0.475)}     # pad centre offset, pad half length, pad half width
