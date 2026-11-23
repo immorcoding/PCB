@@ -151,12 +151,14 @@ NW_TURN = {31.8: [(33.6, 31.4)], 32.45: [(33.35, 31.8)], 33.75: [(32.85, 33.75),
 # (vias at y 24.7, west -> east in pin order; SD_B, which is east of SCK on L3, hooks round north to the westmost
 # via at (31.0, 24.05)), and run west on L1 straight into the pins at 0.5 mm pitch, next to the L2 ground (no via in
 # the band or the corridor; the codec's analog pins are on its other three sides)
+# c9: the four vias at y 24.7 moved 0.4 north (y 24.3): the west loop's seventh L4 row (RMII_TXD0, y 24.8) runs west under
+# them (the lanes cross it on L3 / L6)
 SAI_IN = {   # net: (points after the gate, via)
-    "SAI1_SD_B": ([(33.6, 24.4), (33.25, 24.05)], (31.0, 24.05)),
-    "SAI1_SD_A": ([(32.6, 25.85), (31.65, 24.9)], (31.65, 24.7)),
-    "SAI1_FS_A": ([(33.35, 25.95), (32.3, 24.9)], (32.3, 24.7)),
-    "SAI1_SCK_A": ([(33.35, 25.5), (32.95, 25.1)], (32.95, 24.7)),
-    "SAI1_MCLK_A": ([(33.6, 25.6), (34.25, 24.95)], (34.25, 24.7)),
+    "SAI1_SD_B": ([(33.6, 23.95), (33.25, 23.6)], (31.0, 23.6)),
+    "SAI1_SD_A": ([(32.6, 25.85), (31.65, 24.9)], (31.65, 24.3)),
+    "SAI1_FS_A": ([(33.35, 25.95), (32.3, 24.9)], (32.3, 24.3)),
+    "SAI1_SCK_A": ([(33.35, 25.5), (32.95, 25.1)], (32.95, 24.3)),
+    "SAI1_MCLK_A": ([(33.6, 25.6), (34.25, 24.95)], (34.25, 24.3)),
 }
 SAI_L1 = {   # net: L1 points from the via to the pin
     "SAI1_SD_B": [(31.0, 25.25), (30.5, 25.75), "U601.5"],

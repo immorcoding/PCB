@@ -24,13 +24,11 @@ L1 stub into the pad (the R group comes on L1 and needs none). The field: the we
 x 32.65-33.11 and west at y 42.63-43.09; with REF_CLK / MDIO (L4) and PHY_NRST (L4, corridor) their vias sit at
 x 28.35-32.55, y 42.9-44.3 (south of the crystals' L1 box) in the order the PHY's pins need.
 
-Open (lead and gate only; stop 7 c8 state, the reasons in the c8 report):
-  G3, BL_PWM, G7, NCS         no lane west of the north gates: north of the staircase vias of the west loop one L4 row
-                              (y 25.22) is left below the SAI vias (y 24.7), and a new westmost corridor lane would have
-                              to cross TXD0 / TX_EN's turns at y 41.5 / 41.95 (the westmost lane x 28.1 is TXD1's now)
-  QSPI IO2 / IO3              no south exit through the field (L4: A10 y 38.95, REF_CLK / MDIO corners at x 35.45; L3:
-                              the SDRAM river y 43.4-45.6); west of the field L6 is closed by the ground via (32.25, 38.85)
-                              and the DE / MDC / KEY lanes, L3 by G2's row y 45.88 and the LED rows
+Stop 7 c9 (the seven nets left open at c8, all connected): LCD_G7 south through the ball field (g7()); LCD_R7 into
+the east bundle between TP_INT and HSYNC and out of it by a via on its SW diagonal; QSPI IO2 / IO3 out of the field on
+L1 to the west and down L4 west of the QSPI wall; LCD_BL_PWM east round the north and down x 62.0 (open_nets()); LCD_G3
+and QSPI_BK1_NCS in the west loop (routes_mcu_west.py), their last stretch on L3 rows y 66.6 / 66.9 south of the
+I2C4 / touch rows (G7 and G4 leave L3 at y 65.65 / 64.9 for it)
 """
 import os
 from fan_leads import plan, info
@@ -61,6 +59,14 @@ PATCH = {
     # than REF_CLK, and the L6 row y 42.2 west of the field is no longer needed
     "R3": {"net": "RMII_CRS_DV", "via": [36.425, 41.875], "layer": "L6", "side": "S",
            "run": [[36.425, 41.875], [36.1, 42.2], [36.1, 43.0]], "exit": [36.1, 43.0], "len": 1.719},
+    # c9: LCD_R7 (J15, no site in the plan) takes the free site south-west of its ball (FMC_D20 now crosses that row on
+    # L3 and surfaces south-east of it, routes_sdram.py), L6 north-east to row J and east between HSYNC and TP_INT;
+    # HSYNC (H15) leaves its via straight east along the gap row y 37.325 (the SDRAM group's ground via that stood there
+    # is dropped, routes_sdram.py)
+    "J15": {"net": "LCD_R7", "ball": [44.55, 37.65], "via": [44.225, 37.975], "layer": "L6", "side": "E",
+            "run": [[44.225, 37.975], [44.55, 37.65], [46.0, 37.65]], "exit": [46.0, 37.65]},
+    "H15": {"net": "LCD_HSYNC", "via": [44.875, 37.325], "layer": "L6", "side": "E",
+            "run": [[44.875, 37.325], [46.0, 37.325]], "exit": [46.0, 37.325]},
 }
 
 
@@ -81,13 +87,16 @@ def V(x, y):
 
 
 def rec(ball):
-    s = dict(info(ball))
+    s = dict(info(ball)) if ball in plan()["U201"]["signal"] else {}
     s.update(PATCH.get(ball, {}))
     return s
 
 
 def ball_of(net):
     for num, v in plan()["U201"]["signal"].items():
+        if v["net"] == net:
+            return num
+    for num, v in PATCH.items():
         if v["net"] == net:
             return num
     return None
@@ -121,7 +130,11 @@ def to_fpc(x, y, pin):
 
 
 # ---------------------------------------------------------------- the east bundle (L6)
-EAST = ["TP_RST", "I2C4_SDA", "TP_INT", "LCD_HSYNC", "LCD_CLK", "LCD_B3", "LCD_G6", "LCD_B4", "LCD_R5"]   # lanes k = 1..9
+EAST = ["TP_RST", "I2C4_SDA", "TP_INT", "LCD_R7", "LCD_HSYNC", "LCD_CLK", "LCD_B3", "LCD_G6", "LCD_B4", "LCD_R5"]   # lanes k = 1..10
+# the SW turns: each lane's diagonal x + y = c; neighbours 0.3233 apart in c (0.2286 perpendicular), except on both sides
+# of R7 (c9), which leaves the bundle by a via on its diagonal: 0.575 there (the via 0.127 clear of TP_INT and HSYNC)
+C_STEP = [0.3233, 0.3233, 0.575, 0.575, 0.3233, 0.3233, 0.3233, 0.3233]
+ROW = {"TP_RST": 0, "I2C4_SDA": 1, "TP_INT": 2, "LCD_HSYNC": 3, "LCD_CLK": 4, "LCD_B3": 5, "LCD_G6": 6, "LCD_B4": 7}
 JOG = 0.25                     # the bundle steps east right below the exits: off the gap of the +3V3_MCU block's east
                                # edge (x 46-46.5 on L5) and past the USART1_RX via (46.25, 51.25)
 
@@ -130,24 +143,36 @@ def east_lane(net):
     k = EAST.index(net) + 1
     xk = r4(46.25 + P * k)
     ye = exit_of(net)[1]
-    a = r4(41.5 + (9 - k) * 0.0947)                     # the eastmost lane jogs first
+    a = r4(41.5 + (10 - k) * 0.0947)                    # the eastmost lane jogs first
     return k, xk, [(xk, ye + xk - 46.0), (xk, a), (xk + JOG, a + JOG)]
 
 
 def east_bundle():
     R = {}
-    for j, net in enumerate(EAST[:8]):                  # j = 0 .. 7: TP_RST .. B4
+    c = r4(46.25 + P + JOG + 53.5)                      # TP_RST's diagonal
+    for j, net in enumerate(EAST[:9]):                  # j = 0 .. 8: TP_RST .. B4
+        if j:
+            c = r4(c + C_STEP[j - 1])
         k, xk, pts = east_lane(net)
         x1 = r4(xk + JOG)
-        t = r4(53.5 + 0.0947 * j)                       # SW turn
-        c = x1 + t                                      # the diagonal x + y = c
-        w = r4(60.8 + P * j)                            # westward run
+        t = r4(c - x1)                                  # SW turn
+        if net == "LCD_R7":
+            # c9: down the strip between TP_INT and HSYNC, SW at its turn to a via on its diagonal between R6's and R4's
+            # L1 lanes (x 46.25, south of USART1_TX's L4 diagonal), L3 SW and straight down x 45.25 (between G3 / G4 and
+            # G2's turn), a via north of G2's L3 row and L1 straight into pin 29
+            yv = r4(c - 46.25)
+            R[net] = go(net, pts + [(x1, t), (46.25, yv)], V(46.25, yv),
+                        Lp("L3", [(46.25, yv), (45.25, yv + 1.0), (45.25, 64.6)]), V(45.25, 64.6),
+                        Lp("L1", [(45.25, 64.6), "J701.29"]))
+            continue
+        w = r4(60.8 + P * ROW[net])                     # westward run
         s = r4(c - w)
         if net == "LCD_G6":                             # leaves the diagonal straight down to its via
             R[net] = go(net, pts + [(x1, t), (41.75, c - 41.75), (41.75, YN)], *to_fpc(41.75, YN, 22))
         elif net == "LCD_B4":                           # leaves the diagonal at x 42.25, via to L4, west to 38.75
-            R[net] = go(net, pts + [(x1, t), (42.25, c - 42.25), (42.25, 60.6)], V(42.25, 60.6),
-                        Lp("L4", [(42.25, 60.6), (41.85, 61.0), (39.15, 61.0), (38.75, 61.4), (38.75, YN)]), *to_fpc(38.75, YN, 16))
+            yb = r4(c - 42.25 + 0.45)                     # c9: 0.9 mm further south (the diagonals moved east for R7)
+            R[net] = go(net, pts + [(x1, t), (42.25, c - 42.25), (42.25, yb)], V(42.25, yb),
+                        Lp("L4", [(42.25, yb), (41.85, yb + 0.4), (39.15, yb + 0.4), (38.75, yb + 0.8), (38.75, YN)]), *to_fpc(38.75, YN, 16))
         elif net == "LCD_B3":
             R[net] = go(net, pts + [(x1, t), (39.25, c - 39.25), (39.25, YS)], *to_fpc(39.25, YS, 17))
         elif net == "LCD_CLK":
@@ -191,8 +216,10 @@ def south():
     # B5: L4 down x 35.45 (west of the QSPI wall), east at y 59 south of the flash's L4 run, down into its via
     R["LCD_B5"] = go("LCD_B5", [(35.45, 58.6), (35.85, 59.0), (37.85, 59.0), (38.25, 59.4), (38.25, YS)], *to_fpc(38.25, YS, 15))
     # G4: L6 down, via to L3, straight down x 42.75
+    # c9: G4 leaves L3 at y 65.9 (was its FPC via at y 68.2) and runs on L1 straight into pin 24: LCD_G3's L3 row from
+    # the west loop (y 66.65) passes under it to G3's pin 25
     R["LCD_G4"] = go("LCD_G4", [(42.6, 49.4), (42.75, 49.55), (42.75, 51.8)], V(42.75, 51.8),
-                     Lp("L3", [(42.75, 51.8), (42.75, YN)]), *to_fpc(42.75, YN, 24))
+                     Lp("L3", [(42.75, 51.8), (42.75, 64.9)]), V(42.75, 64.9), Lp("L1", [(42.75, 64.9), "J701.24"]))
     # G5: L6 down, via to L4, down x 43.9, SW to 42.25
     R["LCD_G5"] = go("LCD_G5", [(43.9, 51.8)], V(43.9, 51.8),
                      Lp("L4", [(43.9, 51.8), (43.9, 64.6), (42.25, 66.25), (42.25, YS)]), *to_fpc(42.25, YS, 23))
@@ -225,6 +252,21 @@ def qspi():
                            Lp("L1", [(37.4, 54.6), (32.6, 54.6), (32.25, 54.95), "U401.5"]))
     R["QSPI_BK1_IO1"] = go("QSPI_BK1_IO1", [(36.1, 55.6), (36.5, 56.0), (40.6, 56.0), (41.0, 56.4), (41.0, 58.635)],
                            V(41.0, 58.635), Lp("L1", [(41.0, 58.635), "U401.2"]))
+    # IO2 / IO3 (c9): K1 / K2 leave the field on L1 straight west (K1 in the outer ring; K2 between K1 and L1 at y
+    # 38.625, its planned dog-bone site unused), turn south in two L1 lanes (x 34.01 / 34.43) between the field's west
+    # vias and the HSE crystal's tracks (0.56 mm from C226's pads, clear of the crystal box), and drop to L4 above
+    # FMC_A6's L1 row (y 43.5). L4 down west of the QSPI wall (x 34.01 / 34.43, between FMC_SDNWE's L3 lane and the
+    # VDDA_MCU / ground vias). IO2 (to the flash's east pin 3) goes to L6 at y 51.3, east under the wall and down into
+    # its pull-up R402.2 (bottom), then a via and L1 into U401.3; IO3 (west pin 7) runs on to a via east of the pin and
+    # L1 into U401.7, its pull-up R403.2 on L1 between the decoupling capacitors' ground and supply pads (y 59.9)
+    R["QSPI_BK1_IO2"] = [[Lp("L1", ["U201.K1", (34.36, 38.3), (34.01, 38.65), (34.01, 42.8)]), V(34.01, 42.8),
+                          Lp("L4", [(34.01, 42.8), (34.01, 51.3)]), V(34.01, 51.3),
+                          Lp("L6", [(34.01, 51.3), (36.3, 51.3), (38.6, 53.6), "R402.2"])],
+                         [Lp("L6", ["R402.2", (39.275, 57.365), (40.55, 57.365)]), V(40.55, 57.365), Lp("L1", [(40.55, 57.365), "U401.3"])]]
+    R["QSPI_BK1_IO3"] = [[Lp("L1", ["U201.K2", (35.775, 38.625), (35.3, 38.625), (34.43, 39.495), (34.43, 42.2)]), V(34.43, 42.2),
+                          Lp("L4", [(34.43, 42.2), (34.43, 56.455), (33.0, 57.885)]), V(33.0, 57.885),
+                          Lp("L1", [(33.0, 57.885), "U401.7"])],
+                         [Lp("L1", ["U401.7", (32.25, 58.755), (31.105, 59.9), (28.29, 59.9), "R403.2"])]]
     return R
 
 
@@ -255,9 +297,9 @@ def west():
     pts, x, y = lanes(2, 40.9)
     vk = (31.35, r4(y + 0.4))
     R["USER_KEY"] = [go("USER_KEY", pts + [(31.75, y), vk], V(*vk),
-                        Lp("L4", [vk, (31.35, 44.3), (28.4, 47.25), (28.4, 58.2)]), V(28.4, 58.2),
-                        Lp("L3", [(28.4, 58.2), (21.0, 65.6)]), V(21.0, 65.6),
-                        Lp("L1", [(21.0, 65.6), "R811.2"])),
+                        Lp("L4", [vk, (31.35, 44.3), (28.5, 47.15), (28.5, 58.2)]), V(28.5, 58.2),
+                        Lp("L3", [(28.5, 58.2), (21.0, 65.7)]), V(21.0, 65.7),
+                        Lp("L1", [(21.0, 65.7), "R811.2"])),
                      [Lp("L1", ["R811.2", (21.99, 67.48), "C806.1"])]]
     # G2: one SW diagonal from its run (x 34.31) to the via (31.96, 43.9), parallel to the lanes' corners; L3 down, east
     # at y 45.88 (south of the SDRAM band), down x 49.1, west at 65.2, down into its FPC via
@@ -290,8 +332,9 @@ def corridor():
     # lanes and clear of the crystal pads, L4 down the corridor as the westmost lane
     # (x 28.1, next to TXD0), west at y 41.05 north of TXD0's turn, a via (24.8, 41.05) and L1 parallel to TXD0's
     # diagonal into pin 18 (the PHY's north escape lanes, routes_power.py keeps them free)
-    R["RMII_TXD1"] = go("RMII_TXD1", [(30.9, 33.75), (27.9, 30.75)], V(27.9, 30.75),
-                        Lp("L4", [(27.9, 30.75), (28.1, 30.95), (28.1, 40.7), (27.75, 41.05), (24.8, 41.05)]), V(24.8, 41.05),
+    # c9: one lane further west (x 27.65; the loop took G3 and NCS)
+    R["RMII_TXD1"] = go("RMII_TXD1", [(30.9, 33.75), (27.45, 30.3), (27.45, 29.0)], V(27.45, 29.0),
+                        Lp("L4", [(27.45, 29.0), (27.649, 29.199), (27.649, 40.7), (27.299, 41.05), (24.8, 41.05)]), V(24.8, 41.05),
                         Lp("L1", [(24.8, 41.05), (21.15, 44.7), "U501.18"]))
     return R
 
@@ -300,14 +343,34 @@ def corridor():
 def open_nets():
     R = {}
     # B6, B7, DISP, TX_EN, TXD0 and PHY_NRST: routes_mcu_west.py. NCS stops south of that group's L3 rows (y 27.75-28.75)
-    for net in ("LCD_G7", "LCD_G3", "LCD_BL_PWM"):
-        x = exit_of(net)[0]
-        R[net] = go(net, [(x, 27.6)])
-    R["QSPI_BK1_NCS"] = go("QSPI_BK1_NCS", [(exit_of("QSPI_BK1_NCS")[0], 29.5)])
-    for net in ("QSPI_BK1_IO2", "QSPI_BK1_IO3"):
-        y = exit_of(net)[1]
-        R[net] = go(net, [(32.8, y)])
+    # c9: G3 and NCS joined the west loop (routes_mcu_west.py). LCD_BL_PWM (slow: the backlight PWM) goes east round the
+    # north: its L6 gate up to a via south of R203 (the feeds moved north of it), L4 east in the gap rows north of the
+    # SDRAM's L4 river (y 26.88 past G3's via, 27.4 past C217's / the SWD vias), a via east of the FDCAN lanes, L1 east
+    # in the free band north of the SDRAM's L1 river (y 27.8), a via east of the SDRAM, L6 straight down x 62.0 (the only
+    # straight lane past the power area's vias; it follows the gap between the +3V3_SDRAM and +5V blocks of L5) and
+    # west at y 56.25 to a via east of R706, L1 into R706.1 and on to U701.4
+    R["LCD_BL_PWM"] = [go("LCD_BL_PWM", [(38.05, 27.33)], V(38.05, 27.33),
+                          Lp("L4", [(38.05, 27.33), (38.5, 26.88), (41.15, 26.88), (41.67, 27.4), (47.0, 27.4), (47.2, 27.2)]),
+                          V(47.2, 27.2), Lp("L1", [(47.2, 27.2), (47.8, 27.8), (61.8, 27.8), (62.0, 28.0)]), V(62.0, 28.0),
+                          Lp("L6", [(62.0, 28.0), (62.0, 55.75), (61.5, 56.25), (58.5, 56.25)]), V(58.5, 56.25),
+                          Lp("L1", [(58.5, 56.25), (58.16, 55.91), "R706.1"])),
+                       [Lp("L1", ["R706.1", (57.8, 56.55), (57.3, 57.05), "U701.4"])]]
     return R
+
+
+def g7():
+    """LCD_G7 (c9): south through the ball field instead of the north gate. From its dog-bone via (42.275, 34.725) on
+    L3 along the free channels of the via lattice (row y 35.05, column x 40.65) to the unused site (40.975, 39.925);
+    L6 down column x 40.65 past the bottom decoupling (C213 east of it) and out of the field at x 40.975 between the
+    SDRAM's L1 lanes (no via there), down under the SDRAM's L3 river and L4 band and the L3 rows of G2 / LED / SCL
+    (between FMC_A11's and the LED vias); a via at y 49.5 (north of LCD_R3's L1 row), L3 straight down x 41.5 (east of
+    QSPI_BK1_IO1's flash via), a jog west and a via at y 65.65 (north of G3's / NCS's L3 rows), L1 straight into pin 21"""
+    return {"LCD_G7": [Lp("L1", ["U201.D11", (42.275, 34.725)]), V(42.275, 34.725),
+                       Lp("L3", [(42.275, 34.725), (41.95, 35.05), (41.3, 35.05), (40.65, 35.7), (40.65, 39.6), (40.975, 39.925)]),
+                       V(40.975, 39.925),
+                       Lp("L6", [(40.975, 39.925), (40.65, 40.25), (40.65, 41.55), (40.975, 41.875), (40.975, 49.5)]), V(40.975, 49.5),
+                       Lp("L3", [(40.975, 49.5), (41.5, 50.025), (41.5, 65.4), (41.25, 65.65)]), V(41.25, 65.65),
+                       Lp("L1", [(41.25, 65.65), "J701.21"])]}
 
 
 NETS = []
@@ -350,7 +413,7 @@ def codec_i2c():
 
 def routes(job):
     R = {}
-    for part in (east_bundle, south, qspi, west, corridor, open_nets):
+    for part in (east_bundle, south, qspi, west, corridor, open_nets, g7):
         R.update(part())
     for net, chains in codec_i2c().items():
         R[net] = [R[net]] + chains

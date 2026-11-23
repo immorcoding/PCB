@@ -247,7 +247,10 @@ def geometry(board, profile, resolved, segs, vias, opts=None, arcs=()):
 def length_findings(profile, lens, opts=None):
     out = []
     for n in sorted(lens):
-        lim = (opts or {}).get("len_max") or profile.limit(n, "length_max")
+        lim = (opts or {}).get("len_max")
+        if isinstance(lim, dict):                       # LEN_MAX = {net: mm}: per-net caps, the class limit for the rest
+            lim = lim.get(n)
+        lim = lim or profile.limit(n, "length_max")
         if lim is not None and lens[n]["length"] > lim + 1e-9:
             out.append(F("LEN", "%s is %.3f mm long, the limit is %g" % (n, lens[n]["length"], lim), n))
     return out

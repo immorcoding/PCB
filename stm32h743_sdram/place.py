@@ -153,7 +153,7 @@ PLACE.update({
     # ---- QSPI flash under the MCU's south-west corner (L1_3V3_QSPI), moved by QSPI_SHIFT
     **shifted({
         "U401": (36.0, 55.0, 180), "C401": (30.7, 56.9, 90), "C402": (29.3, 56.9, 90), "R404": (30.4, 59.6, 0),
-        "R401": (38.6, 56.4, 90, "B"), "R402": (38.6, 54.2, 90, "B"), "R403": (27.8, 57.2, 90),
+        "R401": (38.6, 56.4, 90, "B"), "R402": (38.6, 54.2, 90, "B"), "R403": (28.08, 57.2, 90),   # c9: 0.28 east (IO3 pull-up stub, QSPI length cap)
     }, QSPI_SHIFT),
     # ---- user LEDs and key below the Ethernet block, moved by USER_SHIFT
     **shifted({

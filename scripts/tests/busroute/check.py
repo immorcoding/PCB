@@ -251,6 +251,16 @@ def main(argv):
         if not ok:
             fails.append(text)
     try:
+        # LEN_MAX as a dict (per-net caps, the class limit for the others; stop 7 c9)
+        from busroute.checks import length_findings
+
+        class _P:
+            def limit(self, n, key):
+                return 30.0
+        lf = length_findings(_P(), {"A": {"length": 40.0}, "B": {"length": 40.0}, "C": {"length": 20.0}}, {"len_max": {"A": 100.0}})
+        want([f["net"] for f in lf] == ["B"], "LEN_MAX dict: %r" % (lf,))
+        lf = length_findings(_P(), {"A": {"length": 40.0}}, {"len_max": 50.0})
+        want(lf == [], "LEN_MAX number: %r" % (lf,))
         pcb = make_board(tmp)
         o1, o2, oa, ob = (os.path.join(tmp, d) for d in ("out1", "out2", "outA", "outB"))
         m, code, log = run(tmp, "ok", o1, pictures=True)

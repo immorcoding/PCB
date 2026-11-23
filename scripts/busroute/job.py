@@ -13,6 +13,7 @@ The routes file is a Python file in the board's folder:
     REF = ["FMC_SDCLK", "FMC_SDCLK_R"]        reference of the length table (pieces summed)
     GROUPS = {"data": [...], "addr": [...]}   length groups (default: one group with every net)
     LEN_MAX, VIA_LIMIT, VIA_TARGET            default: the limits of the net class in the .kicad_dru; target none
+                            (LEN_MAX may be a dict {net: mm}: those nets get their own cap, the rest the class limit)
     VIEWS = [("name", x0, y0, x1, y1, px_per_mm)]
     SKETCH = True           line-order sketch: shape findings are listed but do not fail the build
     OPEN_ENDS = True        routes may end in the open (a fan-out on its own)
@@ -191,7 +192,8 @@ def run(routes_file, fast=False, sketch=False, out=None, write_board=False, refi
         info["built"]["arcs"] = len(arcs)
         extra["tuning"] = c["tuning"]
         extra["tuning"]["natural"] = {n: v["length"] for n, v in c["natural"].items()}
-        extra["tuning"]["caps"] = {n: getattr(mod, "LEN_MAX", None) or profile.limit(n, "length_max") for n in nets}
+        _lm = getattr(mod, "LEN_MAX", None)
+        extra["tuning"]["caps"] = {n: (_lm.get(n) if isinstance(_lm, dict) else _lm) or profile.limit(n, "length_max") for n in nets}
     if fast:
         m = metrics.collect(info, lens, finds, hard, None, extra)
         m["build_seconds"] = round(time.time() - t0, 2)

@@ -52,7 +52,7 @@ FEEDS = [
     ("R112.1", 2, "plane"),        # links from the plane to local pours
     ("R710.1", 2, "plane"),
     ("R814.1", 2, "plane"),
-    ("R203.1", 2, "plane"), ("R203.2", 2, "plane"), ("C217.1", 1, "plane"),
+    # R203.1 / R203.2 / C217.1: FIXED below (c9)
     ("R301.1", 2, "plane"), ("R301.2", 2, "plane"), ("C309.1", 1, "plane"),
     ("R404.1", 2, "plane"), ("R514.1", 2, "plane"), ("R610.1", 2, "plane"), ("R709.1", 2, "plane"),
     ("R812.1", 2, "plane"), ("R813.1", 2, "plane"), ("R113.1", 2, "plane"),
@@ -92,7 +92,19 @@ FIXED = [("R102.1", [("L1", ["R102.1", (65.0, 39.9)]), ("via", (65.0, 39.9)),
          ("R501.2", [("L1", ["R501.2", (23.41, 46.1)]), ("via", (23.41, 46.1))]),
          # stop 7 c8: C217's ground via east of its pad, where it stood at stop 7 (the searched site moved south of the
          # pad onto the SD lanes' window between the R203 / C217 vias)
-         ("C217.2", [("L1", ["C217.2", (44.275, 26.2)]), ("via", (44.275, 26.2))])]
+         ("C217.2", [("L1", ["C217.2", (44.275, 26.2)]), ("via", (44.275, 26.2))]),
+         # c9: the feeds of R203 / C217 north of their pads (were searched south / west of them): the north gates' layer
+         # changes (LCD_G3 at (40.65, 27.6), LCD_BL_PWM at (38.05, 27.33)), RMII_TXD0's L3 leg (x 37.45) and BL_PWM's L4
+         # row east (y 27.17) need the band y 26.9 - 27.6 and x 37.2 - 38.0 free. +3V3 in the whole L5 block north of the
+         # +3V3_MCU tongue (y < 25), +3V3_MCU inside the tongue (x 39.6 - 44.2, y >= 25)
+         ("R203.1", [("L1", ["R203.1", (38.5875, 25.15)]), ("via", (38.5875, 25.15))]),
+         ("R203.1", [("L1", ["R203.1", (38.05, 25.6625), (38.05, 25.15)]), ("via", (38.05, 25.15))]),
+         ("R203.2", [("L1", ["R203.2", (41.163, 26.2)]), ("via", (41.163, 26.2))]),
+         ("R203.2", [("L1", ["R203.2", (40.4125, 25.25)]), ("via", (40.4125, 25.25))]),
+         ("C217.1", [("L1", ["C217.1", (42.025, 26.925)]), ("via", (42.025, 26.925))]),
+         # c9: C225's ground via 0.445 west of where the search put it (27.645, 37.9): the west loop's corridor took one
+         # more lane (RMII_TXD1 at x 27.65)
+         ("C225.2", [("L1", ["C225.2", (27.2, 37.9)]), ("via", (27.2, 37.9))])]
 FIXED_PADS = {pad for pad, _ in FIXED}
 # ---- ground
 GND_REG = ["U101.1", "U102.2", "U103.2", "U104.2", "U701.2"]                  # regulator / switcher ground pins
@@ -110,6 +122,8 @@ PROTECT = [("+5V", (33.5, 5.5, 64.0, 8.5)), ("+5V", (33.5, 8.5, 36.5, 22.5)),
            # stop 7 compose: the L4 lanes of LCD_B6 / B7 / DISP down the strip between the PHY and USER_KEY
            # (routes_mcu_west.py, x 27.14-27.6) take no via (FB501's VDDA_PHY vias and a ground via stood there)
            ("-", (27.16, 44.3, 27.6, 66.0)),
+           # c9: the loop took G3 and NCS (lanes x 27.14 - 28.06 below the jog, x 27.65 - 29.25 in the corridor)
+           ("-", (27.16, 43.3, 28.11, 67.0)), ("-", (27.64, 24.6, 29.35, 41.3)),
            # stop 7 c8: the SD lanes north of the R203 / C217 vias (L3 / L6, x 42.6-44.3, routes_mcu_nw.py), their rows
            # east under the pull-up row (y 18.0-18.75), the pull-ups' vias and the L1 lines into the socket, and the
            # card-detect line's L3 descent (x 60.025) take no via of the power group
@@ -150,6 +164,7 @@ def routes(job):
             P.tie_via(p, lmax=1.6, pad_edge_max=GND_TIGHT.get(p.name, 1.0))
     for pad, pieces in FIXED:
         P.fixed(pad, pieces)
+        done.add(pad)
     for kind, pad, to, kw in TIES:
         if kind == "pour":
             P.tie_pour(pad, to, **kw)

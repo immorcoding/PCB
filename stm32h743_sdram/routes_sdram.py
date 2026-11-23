@@ -72,8 +72,9 @@ GND_RETURN = [                             # (x, y): the layer changes they serv
     (35.45, 31.2),                         # D30 / NBL3 (36.1 / 36.75, 31.6) L4 -> L1, north of the MCU
     (45.45, 32.1),                         # D3 (45.525, 32.775) L3 -> L1 (stop 7 part 2: was (43.375, 32.025), on B13's L6 way north;
                                            # c8: 0.15 east, off SWDIO's L6 step from its via (44.875, 32.125))
-    (45.85, 37.325),                       # D20 (45.4, 37.975) L4 -> L1
-    (49.35, 37.3),                         # SDCLK_R (48.75, 36.675) L1 -> L4 beside R201 (stop 7 part 2: was (48.15, 37.375), in the
+    # (45.85, 37.325) D20 L4 -> L1 dropped (c9): D20 now changes layer inside the ball field (L4 -> L3 at (43.575, 37.975),
+    # L3 -> L1 at (44.875, 37.975)) among the field's ground ball vias; LCD_HSYNC runs on L6 along that row
+    (49.35, 37.3),                         # SDCLK_R (49.0, 36.675; 48.75 until c9) L1 -> L4 beside R201 (stop 7 part 2: was (48.15, 37.375), in the
                                            # L4 way from the pocket under the strip to the pocket south of SDCLK_R)
     (39.45, 46.45),                        # A11 (40.35, 46.3) L4 -> L1 south of the MCU
 ]
@@ -222,7 +223,12 @@ def routes(job):
         # (45.525, 32.775) off the lattice: SDMMC1_D2 (B14) takes (44.225, 32.775). Same layers, side and lane; length
         # unchanged (1.3 mm more on L3, 1.3 mm less on L1)
         "FMC_D3": db("C12", (42.925, 33.425), SEC, [(43.25, 33.1), (45.2, 33.1), (45.525, 32.775)]) + [("via", (45.525, 32.775)), ("L1", [(45.525, 32.775), (46.0, 32.775)])],
-        "FMC_D20": db("K12", (42.275, 37.975), "L4", [(45.4, 37.975)]) + [("via", (45.4, 37.975)), ("L1", [(45.4, 37.975), (46.0, 37.975)])],
+        # c9: D20 leaves row J/K's gap line before J15's south-west site (LCD_R7's dog-bone via now): a via at (43.575,
+        # 37.975), L3 along row K (between the vias of the gap rows) and up into the site south-east of J15, L1 east as
+        # before. Same side, way round, lane; +0.27 mm, the via heights add up as before (L1-L4-L3-L1 = 2 x L1-L4)
+        "FMC_D20": db("K12", (42.275, 37.975), "L4", [(43.575, 37.975)]) + [("via", (43.575, 37.975)),
+                   ("L3", [(43.575, 37.975), (43.9, 38.3), (44.55, 38.3), (44.875, 37.975)]), ("via", (44.875, 37.975)),
+                   ("L1", [(44.875, 37.975), (46.0, 37.975)])],
         "FMC_D23": db("D13", (43.575, 34.075), SEC, [(43.9, 33.75), (46.0, 33.75)]),
         "FMC_D22": db("E13", (43.575, 34.725), SEC, [(43.9, 34.4), (46.0, 34.4)]),
         "FMC_D21": db("E12", (42.925, 35.375), SEC, [(43.25, 35.05), (46.0, 35.05)]),
@@ -449,8 +455,9 @@ def routes(job):
     # ---------------------------------------------------------------- clock: H14 -> R201 on L1, R201 -> L4 -> J1
     R["FMC_SDCLK"] = [("L1", list(m["FMC_SDCLK"].pieces[0][1]) + ["R201.1"])]
     if "L4" in LAYERS:
-        bus.keep({"FMC_SDCLK_R": [("L1", ["R201.2", (48.75, 36.675)]), ("via", (48.75, 36.675)),
-                                  ("L4", [(48.75, 36.675), (49.3, 36.675), (51.225, 38.6), (53.0, 38.6), (53.4, 38.2)]),
+        # c9: the via 0.25 east (49.0, was 48.75): LCD_R5's L6 lane moved one pitch east (LCD_R7 joined the east bundle)
+        bus.keep({"FMC_SDCLK_R": [("L1", ["R201.2", (49.0, 36.675)]), ("via", (49.0, 36.675)),
+                                  ("L4", [(49.0, 36.675), (49.3, 36.675), (51.225, 38.6), (53.0, 38.6), (53.4, 38.2)]),
                                   ("via", (53.4, 38.2)), ("L1", [(53.4, 38.2), "U301.J1"])]})
         # straight to the west face: D27 D25 D31 CKE0
         # stop 6 part B: lane 3's tuning zone in the strip between the packages (x 47.45 - 51.7): D27 D25 D31 rise at
