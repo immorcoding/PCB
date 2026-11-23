@@ -1,28 +1,33 @@
-"""MCU east side (stop 7 part 2): the balls of column 14-15 between the SDRAM's east escapes. Written by hand
-(coordinates from the board); no autorouter.
+"""MCU east side (the BGA block, SPEC 14 stop 3.4 - 3.6): the balls of columns 14-15 that the BGA block plan
+(bga_fan.json) fans out east on L6 (dog-bone, L6 run along a ball row to the rule-area edge at x 46). L6 carries no
+SDRAM track outside the ball fields, so every lane is clear of the bus as soon as it leaves the MCU's rule area.
 
-    D:\KiCad\bin\python.exe scripts\busroute\build.py stm32h743_sdram\routes_mcu_east.py --fast
-    LOCAL_BOARD=<board> ... (build.sh route2 builds it on the real board, before routes_mcu_south.py)
+    LOCAL_BOARD=<board> D:\\KiCad\\bin\\python.exe scripts\\busroute\\build.py stm32h743_sdram\\routes_mcu_east.py --fast
+    (build.sh route2 builds it on the real board after routes_local_eth.py)
 
-On every layer the strip between the MCU and the SDRAM is closed by the bus: L1 by the lanes D3 / D24 / SDCLK /
-D20 / BA0 / D13 / D14 leaving east and turning south at x 49-50.5, L4 by D26 / D27 / D25 / D31 / SDCKE0 / A4 / A5 /
-D10 / D15, L6 by D23 / D22 / D21 / D19 / D18 (turning north at x 47.25-48.25) and BA1 / A12 / D1 / D0. The ways out:
-  north   L6 west of D23's north leg (x 47.25): the CAN pair, from vias just south of D3's L1 lane
-  south   L1 pocket between D24 and SDCLK -> L4 pocket between SDCKE0 and A4 -> past the SDCLK_R via (its return
-          via moved) -> L4 pocket south of SDCLK_R -> up to the L1 pocket above the SDRAM's south bands -> down
-          into S4 (L4 between D17 and D15) -> below D17's leg to L1: LCD_B3 (4 vias); S4 is shared with
-          routes_mcu_south.py and holds no further lane
+  north   the CAN pair up the strip between the packages (L6, x 46.5 / 46.75) to y 22.0 / 22.4, east to the
+          transceiver, a via to L1 into U801.1 / U801.4 (complete)
+  south   the other ten lanes turn south in the strip as one bundle (L6, 0.2286 mm pitch from x 46.25, the
+          outermost 0.44 mm west of the SDCLK_R via at (48.75, 36.675)); USART1_RX goes on below the SDRAM's south
+          bands, a via to L4 at y 51.25 and south-east on L4 to the debug header (complete); the LCD, touch and
+          I2C4 lanes end at GATES at y = GATE_S (open ends: their way to the FPC / link resistors is the next step,
+          see the report)
 """
 import os
+from fan_leads import plan, lead, ext
 
 BOARD = os.environ.get("LOCAL_BOARD", "stm32h743_sdram.kicad_pcb")
 ORIGIN = (100, 100)
 GROUP = "mcu_east"
+OPEN_ENDS = True
 YIELD_NETS = ["GND"]
 DRC_IGNORE = {"solder_mask_bridge": "mask webs between fine-pitch pads of the footprints (QFN, FPC), there before this group"}
 VIA_LIMIT = 6
-VIEWS = [("east", 42.5, 30.5, 51.0, 49.0, 90), ("north", 43.0, 12.0, 66.0, 34.0, 30)]
+VIEWS = [("east", 42.5, 30.5, 52.0, 50.0, 60), ("north", 43.0, 12.0, 66.0, 34.0, 30)]
 THIN = 0.1016
+GATE_S = 46.8
+X0, PITCH = 46.25, 0.2286
+SOUTH = ["USART1_RX", "TP_RST", "I2C4_SDA", "TP_INT", "LCD_HSYNC", "LCD_CLK", "LCD_B3", "LCD_G6", "LCD_B4", "LCD_R5"]   # west -> east
 
 
 def V(x, y):
@@ -33,20 +38,38 @@ def thin(pieces):
     return [pc if pc[0] == "via" or len(pc) > 2 else (pc[0], pc[1], THIN) for pc in pieces]
 
 
+def by_net():
+    return {v["net"]: num for num, v in plan()["U201"]["signal"].items() if v["side"] == "E"}
+
+
+def south_lane(net, k):
+    """Points after the exit (46.0, y): a diagonal to x_k and straight south."""
+    num = by_net()[net]
+    y = plan()["U201"]["signal"][num]["exit"][1]
+    xk = round(X0 + PITCH * k, 4)
+    return num, [(xk, round(y + xk - 46.0, 4))]
+
+
 def routes(job):
     R = {}
-    # ---- CAN: south of D3's L1 lane to vias, L6 north west of the SDRAM's L6 river, east at y 22, up to the
-    # transceiver's west pins (TX pin 1 from the west, RX pin 4 from the south past the +5V_CAN strip)
-    R["FDCAN1_TX"] = [("L1", ["U201.B15", (44.875, 33.425)]), V(44.875, 33.425),
-                      ("L6", [(44.875, 33.425), (44.875, 22.4), (45.275, 22.0), (62.1, 22.0), (62.6, 21.5), (62.6, 15.095)]), V(62.6, 15.095),
-                      ("L1", [(62.6, 15.095), "U801.1"])]
-    R["FDCAN1_RX"] = [("L1", ["U201.C15", (45.425, 33.75), (45.75, 33.425)]), V(45.75, 33.425),
-                      ("L6", [(45.75, 33.425), (45.75, 22.8), (46.15, 22.4), (63.15, 22.4), (63.6, 21.95), (63.6, 20.0)]), V(63.6, 20.0),
-                      ("L1", [(63.6, 20.0), (63.6, 19.45), "U801.4"])]
-    # ---- LCD_B3 (F15): see the module text
-    R["LCD_B3"] = [("L1", ["U201.F15", (45.2, 35.7), (45.525, 36.025)]), V(45.525, 36.025),
-                   ("L4", [(45.525, 36.025), (45.85, 36.35), (47.7, 36.35), (48.05, 36.7), (48.05, 41.45), (48.5, 41.9)]), V(48.5, 41.9),
-                   ("L1", [(48.5, 41.9), (45.6, 41.9)]), V(45.6, 41.9),
-                   ("L4", [(45.6, 41.9), (45.9, 42.2), (45.9, 43.75), (49.05, 46.9)]), V(49.05, 46.9),
-                   ("L1", [(49.05, 46.9), (45.6, 50.35), (45.6, 61.0), (39.25, 67.35), "J701.17"])]
+    E = by_net()
+    # ---- CAN: north up the strip, east along y 22.0 / 22.4, via to L1 at the transceiver
+    if "FDCAN1_TX" in E:
+        R["FDCAN1_TX"] = ext(lead(E["FDCAN1_TX"]), [(46.5, 32.6), (46.5, 22.4), (46.9, 22.0), (62.1, 22.0), (62.6, 21.5), (62.6, 15.095)]) + [
+            V(62.6, 15.095), ("L1", [(62.6, 15.095), "U801.1"])]
+    if "FDCAN1_RX" in E:
+        R["FDCAN1_RX"] = ext(lead(E["FDCAN1_RX"]), [(46.75, 33.0), (46.75, 22.8), (47.15, 22.4), (63.15, 22.4), (63.6, 21.95), (63.6, 20.0)]) + [
+            V(63.6, 20.0), ("L1", [(63.6, 20.0), (63.6, 19.45), "U801.4"])]
+    # ---- the south bundle
+    for k, net in enumerate(SOUTH):
+        if net not in E:
+            continue
+        num, pts = south_lane(net, k)
+        x = pts[-1][0]
+        if net == "USART1_RX":
+            # below the SDRAM's L4 band (D16 / D17 east legs at y 47.5 / 47.75): L4 south-east to the header
+            # (the line x - y = -5.0 keeps clear of the ground vias at (47.525, 51.575), (54.775, 57.825), (55.125, 57.475))
+            R[net] = ext(lead(num), pts + [(x, 51.25)]) + [V(x, 51.25), ("L4", [(x, 51.25), (62.88, 67.88), "J804.3"])]
+        else:
+            R[net] = ext(lead(num), pts + [(x, GATE_S)])
     return {n: thin(p) for n, p in R.items()}

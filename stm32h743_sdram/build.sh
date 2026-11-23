@@ -20,6 +20,7 @@ local routes_local.py
 local_eth routes_local_eth.py
 mcu_east routes_mcu_east.py
 mcu_south routes_mcu_south.py
+mcu_nw routes_mcu_nw.py
 "
 
 case "$STEP" in

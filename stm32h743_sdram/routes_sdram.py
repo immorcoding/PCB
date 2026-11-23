@@ -52,9 +52,11 @@ LANE_SPREAD = {"lane0": float(os.environ.get("SPREAD0", "13.6")), "lane1": float
 TUNING = {"groups": {g: {"nets": GROUPS[g], "spread": LANE_SPREAD[g]} for g in ("lane0", "lane1", "lane2", "lane3")},
           "margin": 0.3, "radius": 0.25, "amp": 0.5, "amp_max": 2.0, "pitch": {"default": 0.3},
           "end": 0.35, "clr": 0.19, "area_gap": 0.127, "keep": 0.7}
-# corridors the stop-7 escapes of the MCU's east side need (main session, 2026-11-22): no serpentine, no spread lane
-RESERVED = [("L1", 46.0, 35.6, 49.6, 36.45), ("L1", 47.5, 43.2, 49.0, 45.1), ("L1", 44.3, 46.6, 46.6, 50.0),
-            ("L4", 47.7, 38.8, 49.2, 43.4), ("L4", 47.5, 44.6, 49.6, 47.3), ("L6", 46.0, 37.2, 49.3, 38.45)]
+# corridors the MCU's other signals use on the SDRAM's layers (no serpentine, no spread lane). try/sgsps (BGA block):
+# the stop-7 corridors on L1 / L4 / L6 east of the MCU are given back (the east escapes now run on L6, which the bus
+# does not use); what stays is where the MCU's north lanes run on L3 (to the gates at y 27.6) and its south lanes on L4
+# (to the gates at y 48.4)
+RESERVED = [("L3", 33.2, 27.4, 44.3, 31.0), ("L4", 35.9, 43.0, 43.0, 48.6)]
 NETS = DATA + ADDR + ["FMC_SDCLK", "FMC_SDCLK_R"]
 SEC = "L3"                                 # the bus's second inner layer (L6 until 2026-11-23, then L3: an inner layer next to
                                            # the ground plane L2; the bottom layer keeps the decoupling and the other groups)
@@ -203,7 +205,9 @@ def routes(job):
         "FMC_D31": db("E3", (37.075, 35.375), "L4", [(37.4, 35.05), (46.0, 35.05)]),
         "FMC_SDCKE0": db("F4", (37.725, 36.025), "L4", [(38.05, 35.7), (46.0, 35.7)]),
         "FMC_A4": db("J3", (37.075, 37.325), "L4", [(37.4, 37.65), (46.0, 37.65)]),
-        "FMC_A5": db("K3", (37.075, 38.625), "L4", [(37.4, 38.3), (46.0, 38.3)]),
+        # try/sgsps (BGA block): A5 steps from row K (y 38.3) to the gap row y 38.625 before the area edge, so that TP_INT
+        # (K15) can take a via at (45.8, 38.3) between D20's and BA0's L1 lanes (stop 7: K15 had no way out)
+        "FMC_A5": db("K3", (37.075, 38.625), "L4", [(37.4, 38.3), (44.9, 38.3), (45.225, 38.625), (46.0, 38.625)]),
         "FMC_D10": db("N11", (41.625, 39.925), "L4", [(41.625, 39.275), (41.95, 38.95), (46.0, 38.95)]),
         # BA1 on L6 (plan: L4): on L4 its ball H8, entered from the aisle's south end, sits between the balls of
         # NE0 / CAS / NBL1 entered from the north end (J8, K7, K9): no way through without a crossing
@@ -230,6 +234,9 @@ def routes(job):
         # A1 leaves on row K, south of A2, as the outer lane of the L4 north river
         "FMC_A1": db("H3", (36.425, 37.325), "L4", [(36.425, 37.975), (36.1, 38.3), (34.0, 38.3)]),
         "FMC_A0": db("E2", (35.775, 35.375), "L4", [(35.45, 35.7), (34.0, 35.7)]),
+        # try/sgsps (BGA block): A2 leaves its via west along the gap row y 37.325 (rule-based lead: row J, y 37.65), so
+        # that NRST (J1) can take a via at (34.65, 37.65) between A2 and A3 on L4 (its four gap sites are taken)
+        "FMC_A2": db("H2", (35.775, 37.325), "L4", [(34.0, 37.325)]),
         "FMC_NBL2": db("D4", (37.725, 34.075), "L4", [(38.05, 33.75), (38.05, 31.0)]),
     }
     fo = job.fanout("U201")
@@ -243,7 +250,7 @@ def routes(job):
         # inner rivers
         "N15": "E:via@L4",
         "A3": "N:via@L4", "B7": "N:via@L4",
-        "H2": "W:via@L4", "G4": "W:via@L4", "J4": "W:via@" + SEC,
+        "G4": "W:via@L4", "J4": "W:via@" + SEC,
         "M13": "S:via@L4", "M12": "S:via@L4",
     }
     for k, v in list(req.items()):
@@ -377,7 +384,9 @@ def routes(job):
                 end={"FMC_D18": via_end([(57.8, 30.4), (57.8, 32.2)], (58.2, 32.6), "C7"),
                      "FMC_D19": via_end([(59.35, 29.75)], (60.6, 31.0), "A9"),     # one SE step from the lane (sketch: SE, S, SE: `crowded`)
                      "FMC_D21": via_end([(61.1, 33.0), (60.7, 33.4)], (59.8, 33.4), "C8"),
-                     "FMC_D22": via_end([(61.35, 33.8), (60.95, 34.2)], (59.8, 34.2), "D8"),
+                     # try/sgsps (BGA block): D22 crosses to its via along ball row D (y 33.8), not the gap row y 34.2,
+                     # so that the supply ball D9 gets the gap site (60.6, 34.2) as its own via (stop 5: it shared C9's)
+                     "FMC_D22": via_end([(61.35, 33.4), (60.95, 33.8), (60.2, 33.8)], (59.8, 34.2), "D8"),
                      "FMC_D23": via_end([(61.6, 34.6), (61.2, 35.0)], (59.8, 35.0), "E8")})
         # l6e: A12 D1 D0 straight to the west face (D1 enters M3 from the west face, not through the aisle)
         # stop 6: A12 leaves its via along the gap row y 39.275 (sketch: NE step to y 38.95 and E: a 90 degree turn across
@@ -419,7 +428,9 @@ def routes(job):
         l6sa = bund("l6sa", a6, SEC, [("E", {n: ye[n] for n in a6}), ("NE", {n: xa[n] + ye[n] - 0.4 for n in a6}), ("N", xa)], 50.0, 40.0)
         # stop 6: D5 turns off the aisle 0.3 mm lower and A8 takes one NW diagonal to row 37.4 (sketch: D5 (55.6, 42.6),
         # (55.2, 42.2); A8 NW, W along y 37.8, NW: three bends in under 2 mm each, `crowded`)
-        bus.add(l6sa, end={"FMC_D5": via_end([(55.6, 42.9), (54.9, 42.2)], (54.2, 42.2), "P1"),
+        # try/sgsps (BGA block): D5 leaves the aisle at y 43.6 on one diagonal straight to its via (was: on to y 42.9, a
+        # diagonal and a W stub), so that the ground ball R3 gets the gap site (55.8, 43.0) beside P3's
+        bus.add(l6sa, end={"FMC_D5": via_end([(55.6, 43.6)], (54.2, 42.2), "P1"),
                            "FMC_A8": via_end([(56.2, 38.6), (55.0, 37.4)], (54.2, 37.4), "H2"),
                            "FMC_A9": via_end([(56.6, 37.8), (56.2, 37.4)], (55.8, 37.4), "J3"),
                            "FMC_A7": via_end([(57.0, 37.4), (56.6, 37.0), (53.8, 37.0)], (53.4, 37.4), "H1"),
@@ -452,7 +463,7 @@ def routes(job):
         # In the aisle the lanes turn east in order (eastmost first); A0 and NBL2 reach their balls round the vias
         # of the nets outside them: A0 below NE0's J8, NBL2 below NBL1's K9 and back up east of column 9.
         w4 = ["FMC_A1", "FMC_A2", "FMC_SDNE0", "FMC_A0"]
-        yw = {"FMC_A1": 38.3, "FMC_A2": 37.65, "FMC_SDNE0": 37.0, "FMC_A0": 35.7}
+        yw = {"FMC_A1": 38.3, "FMC_A2": 37.325, "FMC_SDNE0": 37.0, "FMC_A0": 35.7}     # try/sgsps: A2 37.65 -> 37.325
         xw = {"FMC_A1": 31.65, "FMC_A2": 32.15, "FMC_SDNE0": 32.4, "FMC_A0": 32.65}     # round 3: A3 runs between A1 and A2
         xw2 = dict(xw, FMC_A2=32.55, FMC_SDNE0=32.8, FMC_A0=33.05)                         # after the step north of the box
         ye = {"FMC_A1": 27.75, "FMC_A2": 28.0, "FMC_SDNE0": 28.25, "FMC_A0": 28.5, "FMC_NBL1": 28.75, "FMC_NBL2": 29.0,
@@ -482,7 +493,7 @@ def routes(job):
                      "FMC_A1": via_end([(58.85, 35.85), (59.2, 36.2), (60.2, 36.2)], (60.6, 36.6), "G9", "L4")})
         # l4s: A4 A5 D10 D15 south through the strip, east under the SDRAM, north into the aisle's south end
         s4 = ["FMC_A4", "FMC_A5", "FMC_D10", "FMC_D15"]
-        y0 = {"FMC_A4": 37.65, "FMC_A5": 38.3, "FMC_D10": 38.95, "FMC_D15": 40.9}
+        y0 = {"FMC_A4": 37.65, "FMC_A5": 38.625, "FMC_D10": 38.95, "FMC_D15": 40.9}   # try/sgsps: A5 38.3 -> 38.625
         xs = {"FMC_A4": 47.5, "FMC_A5": 47.25, "FMC_D10": 47.0, "FMC_D15": 46.75}
         yb = {"FMC_A4": 43.6, "FMC_A5": 43.85, "FMC_D10": 44.1, "FMC_D15": 44.35}
         xn = {"FMC_A4": 56.4, "FMC_A5": 56.65, "FMC_D10": 57.0, "FMC_D15": 57.25}

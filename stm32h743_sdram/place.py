@@ -213,6 +213,17 @@ PLACE.update({
     "F101": (68.0, 58.5, 90), "Q101": (67.0, 54.4, 0), "D101": (63.6, 54.4, 90), "R101": (64.4, 58.2, 90),
     "D102": (70.8, 68.0, 270), "C114": (62.6, 64.5, 0), "TP101": (64.0, 50.6, 0),
 })
+# try/sgsps, the BGA block (SPEC 14 stop 3.3): the bottom decoupling under both BGAs sits where the BGA block plan put
+# it (bga_fan.json, written by bga_fan.py: each pad over a via of its net, every 3.3 V ball with a 100 nF close by);
+# the parts the plan does not place keep the positions above (VCAP and VDDA parts when they are not in the plan).
+_FAN = os.path.join(HERE, "bga_fan.json")
+if os.path.isfile(_FAN):
+    import json as _json
+    for _ref, _r in _json.load(open(_FAN, encoding="utf-8")).items():
+        for _c in (_r or {}).get("caps", []):
+            PLACE[_c["ref"]] = (_c["pos"][0], _c["pos"][1], _c["rot"] % 360, "B")
+        for _ref2, _v in (_r or {}).get("placed", {}).items():
+            PLACE[_ref2] = tuple(_v)
 RULE_AREAS = {
     "BGA_MCU": (MCU, MCU_BODY),
     "BGA_SDRAM": (sdram_centre(), sdram_size()),
