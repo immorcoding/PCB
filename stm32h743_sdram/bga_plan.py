@@ -35,22 +35,37 @@ The model (plan), in the order the user set (issue #22, 2026-11-22). Every step 
             each of its nets under its pads (the ball vias of step 2, else a via of its own); pads may not
             overlap, every 3.3 V ball needs a 100 nF within CAP_REACH; the L6 points and via sites under the pads
             are closed for the signals. The VDDA parts (C220 - C223, FB201) stay where they are.
-  step 4    solve_mcu: every MCU signal ball picks one option and a way round the MCU to its target (an SDRAM
-            net: east; any other net: a gate on the planning window, N / NE / SE / S / SW / NW; the crystals:
-            straight west on L1). One thing per lattice point and layer, the slot cuts again with the supply
-            vias as constants, byte-lane spread in the objective. The order outside the field ("on each layer
-            the targets rise clockwise with the exits, by at most one turn", which is exactly "no two nets
-            cross between the MCU and the window") is written three ways: --order rows (exact, order_rows),
-            rivers (each half side of the outline carries one target direction per layer), none (left out).
-            KNOWN GAP: with the order in, HiGHS 1.2.0 (scipy 1.13) does not reach a complete allocation within
-            minutes; without it the step is optimal in about 20 s but the nets cross. See docs/tools.md.
+  step 4    The fan-out of every MCU signal ball: one option per ball, one thing per lattice point and layer, the
+            slot cuts again with the supply vias as constants, no two neighbouring L1 lanes at a Default-class or
+            crystal width, byte-lane spread in the objective. Targets: an SDRAM net goes east (either way round
+            the MCU), any other net to a gate on the planning window (N / NE / SE / S / SW / NW), the crystals
+            straight west on L1 at 0.254. What ties the nets together outside the field, by --order:
+            fence   (default; user decision 2026-11-22: the SDRAM may use L1, L4 and L6, the other buses change
+                    layer as often as they need, but no section of the outline may be closed on all three layers)
+                    solve_mcu_fence: the outline is cut into 12 sections (3 a side). 1. the fan-out with no limit;
+                    2. per section the SDRAM keeps the one or two layers that answer used most there, the rest
+                    is free (L1 always free along the crystals); 3. the fan-out inside that pattern: an SDRAM
+                    lane keeps off the free layers of every section it leaves in or passes, another ball leaves
+                    on a free layer of its section (so it crosses the bands without a via); 4. while balls are
+                    left without a place, the section with most of them gets every other choice tried (one
+                    fan-out each, PLAN_TRIALS in all). Only the SDRAM nets carry order rows (which way round,
+                    and the stretch of the SDRAM's outline their balls can be entered on). What is left is
+                    the report: plan.txt SECTIONS lists per section the free layers, the SDRAM lanes per layer
+                    and the balls that lost their way. Each fan-out is optimal in 5 - 40 s.
+            planA   layer plan A (SDRAM on L1 + L4 only, superseded), order rows on L1 and L6.
+            rows / rivers / fence-mip / none   the order as one program: exact rows on every layer, one target
+                    per half side, the fence rule with pass variables, or left out. HiGHS 1.2.0 (scipy 1.13)
+                    does not finish the first three in minutes; they are kept for a newer solver (LP.solve is
+                    the one place that calls it).
   step 5    solve_sdram: per layer (L1 first), which SDRAM ball each net ends on (bits free inside a byte lane,
             lanes as wholes by --lanes, NBL with its lane, the rest fixed: SPEC 9) and how it comes in, the
             entries in the order of the exits (order_rows), one thing per lattice point and layer.
   step 6    the other buses end at their gates in the same program as step 4.
 Drawing (the proof, not the allocation): the lattice parts are written as they are; between the exit and the
-target each net is drawn by the grid verifier on its allocated layer, outside the rule areas, in the order of
-the exits, against everything drawn before it. A net the verifier cannot draw is reported as a failure of the
+target each SDRAM net and crystal is drawn by the grid verifier on its allocated layer, outside the rule areas, in
+the order of the exits, against everything drawn before it; the other buses are then drawn one by one over all
+three layers with 0.45 / 0.2 vias on a 0.5 mm grid outside the rule areas (slot limit kept; vias counted per
+net). A net the verifier cannot draw is reported as a failure of the
 plan (never re-allocated here). A second pass reserves a tuning zone (RTE-2) beside the longest straight of
 each byte-lane net that needs length. bga_plan_proof.py then builds the plan with scripts/busroute on a copy.
 """
@@ -858,6 +873,69 @@ def order_rows(lp, seq, wrap=True):
     return n
 
 
+def plan_a(net, is_sd, o, th, cy):
+    """Layer plan A (main session, 2026-11-22). -> None when the option is outside the plan, else the penalty
+    (0 inside the plan; SOFT_L6 for an SDRAM net that leaves the MCU on L6, the plan's one soft point).
+      SDRAM nets  leave on L1 or L4: east side straight across, north side clockwise (north-about), south side
+                  anticlockwise (south-about), west side on L4 only, north-about above the MCU's centre line
+                  and south-about below it.
+      other nets  on L1 only straight outwards (within 60 degrees of their gate), else on L6 any way round; L4
+                  outside the field is the SDRAM's."""
+    lay, side, d = o["layer"], o["side"], th - o["t"]
+    if is_sd:
+        if side == "E":
+            ok = abs(d) <= 60.0
+        elif side == "N":
+            ok = 0.0 < d <= 185.0
+        elif side == "S":
+            ok = -185.0 <= d < 0.0
+        else:
+            ok = lay != "L1" and ((d > 0) == (o["exit"][1] < cy))
+        if not ok:
+            return None
+        return 0.0 if lay in ("L1", "L4") else SOFT_L6
+    if lay == "L4":
+        return None
+    if lay == "L1":
+        return 0.0 if abs(d) <= 60.0 else None
+    return 0.0
+
+
+FENCE_COST = 300.0                     # a section of the MCU outline with SDRAM lanes on all three layers
+SEC_PER_SIDE = 3
+
+
+def section_of(t, per_side=SEC_PER_SIDE):
+    """Section of the MCU outline an angle lies in: sections start at the north-east corner (45 degrees) and count
+    clockwise, per_side to a side (east 0 .., south, west, north)."""
+    return int((((t - 45.0) % 360.0) / 90.0) * per_side + 1e-9) % (4 * per_side)
+
+
+def section_name(s, per_side=SEC_PER_SIDE):
+    side = "ESWN"[s // per_side]
+    part = s % per_side
+    ends = {"E": ("north", "south"), "S": ("east", "west"), "W": ("south", "north"), "N": ("west", "east")}[side]
+    return "%s side %s" % (side, ends[0] if part == 0 else ends[1] if part == per_side - 1 else "middle")
+
+
+def swept(t, th, per_side=SEC_PER_SIDE):
+    """The sections a river from the exit angle t to the (lifted) target angle th passes or starts in."""
+    lo, hi = min(t, th), max(t, th)
+    out, a = [], lo
+    while a <= hi + 1e-9:
+        s = section_of(a, per_side)
+        if s not in out:
+            out.append(s)
+        a += 2.0
+    s = section_of(hi, per_side)
+    if s not in out:
+        out.append(s)
+    return out
+
+
+SOFT_L6, SOFT_SEG = 60.0, 150.0        # an SDRAM net on L6 outside the field; each stretch of the outline where that happens
+
+
 def segment_of(t, per_side):
     """Index of the stretch of the MCU outline an exit at clockwise angle t lies on: each side is cut into
     per_side stretches of equal angle; stretch 0 starts at north (t = 0) and they count clockwise."""
@@ -865,10 +943,11 @@ def segment_of(t, per_side):
     return int(((t % 360.0) / 360.0) * n + 1e-9) % n
 
 
-def solve_mcu(self, time_limit=90.0, prune=float(os.environ.get('PLAN_PRUNE', 30.0)), steps=None, order=None, per_side=2, sd_cap=24):
-    # order: "rows" = the exact order rows (order_rows), "rivers" = one target per stretch of the outline, "none" = no
-    # order at all (the fan-out alone; the drawing then shows which nets cross)
-    mode = order or getattr(self, "order_mode", "rows")
+def solve_mcu(self, time_limit=90.0, prune=float(os.environ.get('PLAN_PRUNE', 30.0)), steps=None, order=None, per_side=2, sd_cap=24, free=None):
+    # free: {section: set of layers} - the layers kept free of SDRAM lanes in each section of the outline (mode "fence")
+    # order: "planA" = inside layer plan A (plan_a), the order rows only on L1 and L6; "rows" = the exact order rows
+    # on every layer; "rivers" = one target per stretch of the outline; "none" = no order at all
+    mode = order or getattr(self, "order_mode", "fence")
     order = mode == "rows"
     if mode == "none":
         steps = {}
@@ -900,7 +979,7 @@ def solve_mcu(self, time_limit=90.0, prune=float(os.environ.get('PLAN_PRUNE', 30
     X, U, info = {}, {}, {}
     node, vias_at, sigvia, slot_x, lane_len = {}, {}, {}, {}, {}
     self.support, self.cands = {}, {}
-    seg_use, sd_layer = {}, {}
+    seg_use, sd_layer, soft, sweeps, leaves = {}, {}, {}, {}, {}
 
     def reg(o, v):
         if o["via"]:
@@ -923,12 +1002,28 @@ def solve_mcu(self, time_limit=90.0, prune=float(os.environ.get('PLAN_PRUNE', 30
                 continue
             if is_sd and (net, o["layer"]) not in span:
                 continue
-            for th in lifts(90.0 if is_sd else GATES[gate], o["t"], REACH):
+            ths = lifts(90.0 if is_sd else GATES[gate], o["t"], REACH)
+            if mode == "fence" and not is_sd and ths:          # the other balls change layer as they need: one variant, the near way
+                ths = [min(ths, key=lambda v_: abs(v_ - o["t"]))]
+            for th in ths:
                 arc = abs(th - o["t"])
                 est = (max(0.0, arc - 45.0) / 360.0 * PERIM + gap_mm / 2) if is_sd else (arc / 360.0 * PERIM + max(0.0, ddist - 6.5))
                 cost = o["len"] + est + (VIA_COST if o["via"] else 0.0) + (0.5 if o["layer"] == "L6" else 0.0)
                 # the order is kept between the four directions only (the gates of one direction share a value)
                 tho = th if is_sd else th - GATES[gate] + ORDER_OF[gate]
+                if mode == "fence" and free is not None:
+                    if is_sd:
+                        if any(o["layer"] in free.get(s_, ()) for s_ in swept(o["t"], th)):
+                            continue
+                    elif o["layer"] not in free.get(section_of(o["t"]), LAYERS):
+                        continue
+                if mode == "planA":
+                    pen = plan_a(net, is_sd, o, th, mc[1])
+                    if pen is None:
+                        continue
+                    cost, tho = cost + pen, th
+                    if pen > 0:
+                        soft.setdefault((num, k, th), segment_of(o["t"], per_side))
                 cand.append((cost, k, th, o["len"] + est, tho))
         best = min((c[0] for c in cand), default=0.0)
         vs = []
@@ -953,9 +1048,16 @@ def solve_mcu(self, time_limit=90.0, prune=float(os.environ.get('PLAN_PRUNE', 30
                 sd_layer.setdefault(o["layer"], []).append(v)
             if is_sd:
                 lo_, hi_ = span[(net, o["layer"])]
-                lo_, hi_ = 90.0, 90.0                   # the order among the SDRAM's entries is stage Y's
+                if mode == "fence":                    # where on the SDRAM's outline the net can come in at all (5 degree buckets)
+                    lo_, hi_ = math.floor(lo_ / 5.0) * 5.0, math.ceil(hi_ / 5.0) * 5.0
+                else:
+                    lo_, hi_ = 90.0, 90.0               # the order among the SDRAM's entries is stage Y's
                 slot_x.setdefault((o["layer"], o["exit"]), []).append((v, (th - 90.0 + lo_, th - 90.0 + hi_)))
                 lane_len.setdefault(net, []).append((v, ln))
+                for s_ in swept(o["t"], th):
+                    sweeps.setdefault((o["layer"], s_), []).append(v)
+            elif mode == "fence":
+                leaves.setdefault((o["layer"], section_of(o["t"])), []).append(v)
             else:
                 slot_x.setdefault((o["layer"], o["exit"]), []).append((v, (tho, tho)))
             vs.append(v)
@@ -981,6 +1083,20 @@ def solve_mcu(self, time_limit=90.0, prune=float(os.environ.get('PLAN_PRUNE', 30
             seg_use.setdefault(("L1", segment_of(o["t"], per_side), 270.0), []).append(v)
             slot_x.setdefault(("L1", o["exit"]), []).append((v, (270.0, 270.0)))
     node_rows(lp, node, vias_at)
+    # two neighbouring L1 lanes (0.325 mm) cannot both leave the area at a Default-class or crystal width
+    # (0.2032 + 0.127 > 0.325): at most one of the two carries such a net
+    wide = {}
+    for (num, k, th), v in X.items():
+        net = self.pads[(MCU, num)]["net"]
+        o = self.opts[(MCU, num)][k] if k >= 0 else self.xtal_opts[num]
+        if o["layer"] == "L1" and net_width(self.geo, net) > 0.15:
+            wide.setdefault((o["side"], round(o["exit"][0] if o["side"] in "NS" else o["exit"][1], 3)), []).append(v)
+    for side in "NESW":
+        cs = sorted(cc for (s2, cc) in wide if s2 == side)
+        for a_, b_ in zip(cs, cs[1:]):
+            if b_ - a_ < m_lat.h + 0.01:
+                vs = wide[(side, a_)] + wide[(side, b_)]
+                lp.row(vs, [1.0] * len(vs), -np.inf, 1.0)
     # plane slots: the fixed supply vias are constants, signal vias variables
     FA, FB = {}, {}
     for s in sorted(self.sites[MCU]):
@@ -1038,7 +1154,39 @@ def solve_mcu(self, time_limit=90.0, prune=float(os.environ.get('PLAN_PRUNE', 30
         for l, vs in sorted(sd_layer.items()):
             lp.row(vs, [1.0] * len(vs), -np.inf, float(sd_cap))
     nord = 0
-    for l in (LAYERS if order else ()):
+    if mode == "planA":                   # the soft point: SDRAM nets on L6, counted per stretch of the outline
+        segv = {}
+        for key, sg in sorted(soft.items()):
+            if key in X:
+                if sg not in segv:
+                    segv[sg] = lp.var(SOFT_SEG, name="softseg")
+                lp.row([X[key], segv[sg]], [1.0, -1.0], -np.inf, 0.0)
+    self.fence_vars = {}
+    if mode == "fence-mip":
+        # no three-layer fence: in every section of the outline the SDRAM's lanes (leaving there or passing on their
+        # way round) keep to two layers at most; a ball of another bus leaves the field on a layer that is free
+        # of them in its section (it then crosses the bands without a via). A section that needs all three
+        # layers costs FENCE_COST and is reported. The crystal strip: no SDRAM lane on L1 along the west side.
+        PASS = {}
+        for (l, s_), vs in sorted(sweeps.items()):
+            pv_ = lp.var(0.0, name="pass")
+            PASS[(l, s_)] = pv_
+            for v in vs:
+                lp.row([v, pv_], [1.0, -1.0], -np.inf, 0.0)
+            if l == "L1" and s_ // SEC_PER_SIDE == 2 and SEC_PER_SIDE > 1 and s_ % SEC_PER_SIDE != 0:
+                lp.ub[pv_] = 0.0
+        for s_ in range(4 * SEC_PER_SIDE):
+            ps = [PASS[(l, s_)] for l in LAYERS if (l, s_) in PASS]
+            if len(ps) == 3:
+                fv = lp.var(FENCE_COST, name="fence")
+                self.fence_vars[s_] = fv
+                lp.row(ps + [fv], [1.0, 1.0, 1.0, -1.0], -np.inf, 2.0)
+        for (l, s_), vs in sorted(leaves.items()):
+            if (l, s_) in PASS:
+                for v in vs:
+                    lp.row([v, PASS[(l, s_)]], [1.0, 1.0], -np.inf, 1.0)
+        self.PASS = PASS
+    for l in (LAYERS if (order or mode == "fence") else ("L1", "L6") if mode == "planA" else ()):
         sl = sorted((cw_angle(e, mc), e) for (ll, e) in slot_x if ll == l)
         nord += order_rows(lp, [[(v, tv[0], tv[1]) for v, tv in slot_x[(l, e)]] for t, e in sl])
     # byte-lane spreads (the MCU half of the estimate)
@@ -1063,8 +1211,97 @@ def solve_mcu(self, time_limit=90.0, prune=float(os.environ.get('PLAN_PRUNE', 30
             self.xsel[num] = (k, th)
             self.xlen[self.pads[(MCU, num)]["net"]] = info[v][4]
     self.x_unalloc = sorted(num for num, u in U.items() if x[u] > 0.5)
-    self.x_tho = {num: round(next(tv[0] for (l, e), ent in slot_x.items() for v, tv in ent if v == X[(num, k, th)]), 3) for num, (k, th) in self.xsel.items()}
+    self.x_tho = {num: round(th, 3) for num, (k, th) in self.xsel.items()}
     self.x_obj = res.fun
+    self.soft_l6 = sorted((self.pads[(MCU, num)]["net"], num, soft[(num, k, th)]) for (num, k, th), v in X.items() if x[v] > 0.5 and (num, k, th) in soft)
+    self.x_status = res.status
+    self.fences = sorted(s_ for s_, fv in self.fence_vars.items() if x[fv] > 0.5)
+    self.passes = sorted((l, s_) for (l, s_), pv_ in getattr(self, "PASS", {}).items() if x[pv_] > 0.5) if mode == "fence-mip" else []
+    # what the answer uses: SDRAM lanes per (layer, section), other balls leaving per (layer, section)
+    self.use_sd, self.use_other = {}, {}
+    for num, (k, th) in self.xsel.items():
+        o = self.opts[(MCU, num)][k] if k >= 0 else self.xtal_opts[num]
+        if self.pads[(MCU, num)]["net"].startswith("FMC_"):
+            for s_ in swept(o["t"], th):
+                self.use_sd[(o["layer"], s_)] = self.use_sd.get((o["layer"], s_), 0) + 1
+        else:
+            key = (o["layer"], section_of(o["t"]))
+            self.use_other[key] = self.use_other.get(key, 0) + 1
+    return self.xsel
+
+
+def ball_section(self, num):
+    return section_of(cw_angle(self.pads[(MCU, num)]["pos"], self.mc))
+
+
+def solve_mcu_fence(self, time_limit=60.0, trials=int(os.environ.get("PLAN_TRIALS", 8))):
+    """Stage X without a three-layer fence, constructively (no big program for the order):
+    1. the fan-out with no limit on where the SDRAM's lanes go;
+    2. per section of the outline the layers that answer leaves free of SDRAM lanes stay free (at least one: the
+       layer with most other balls leaving and fewest SDRAM lanes); west of the crystals L1 is always free;
+    3. the fan-out again inside that pattern: an SDRAM lane keeps off the free layers of every section it leaves in
+       or passes, another ball leaves on a free layer of its section;
+    4. while balls are left without a place: for the section with most of them, each other choice of free layers
+       is tried (a fan-out each) and the best kept. What is left is the report: the sections that would need a
+       fence, and the balls that lose their way there."""
+    log = self.log
+    solve_mcu(self, time_limit, free=None)
+    nsec = 4 * SEC_PER_SIDE
+    free = {}
+    subsets = [{"L1"}, {"L4"}, {"L6"}, {"L1", "L4"}, {"L1", "L6"}, {"L4", "L6"}]
+    for s_ in range(nsec):
+        crystal = s_ // SEC_PER_SIDE == 2 and s_ % SEC_PER_SIDE != 0
+        # the SDRAM keeps one or two layers of the section: the choice that keeps most of what the free answer did
+        # there (its SDRAM lanes on the kept layers, the other balls' exits on the free ones)
+        def keep_score(sd):
+            return (sum(self.use_sd.get((l, s_), 0) for l in sd) + sum(self.use_other.get((l, s_), 0) for l in LAYERS if l not in sd), len(sd), sorted(sd))
+        sd = max((x_ for x_ in subsets if not (crystal and "L1" in x_)), key=keep_score)
+        free[s_] = set(LAYERS) - sd
+    def run(fr):
+        solve_mcu(self, time_limit, free=fr)
+        return (len(self.x_unalloc), self.x_obj), dict(self.xsel), dict(self.xlen), list(self.x_unalloc), dict(self.use_sd), dict(self.use_other)
+    best = run(free)
+    log("  free layers per section: %s -> %d balls without a place" % ({section_name(s_): "".join(sorted(v)) for s_, v in free.items()}, best[0][0]))
+    # two whole patterns that put the SDRAM on three layers (the section rule above tends to end on two): the
+    # SDRAM's layers per section, east 0-2 (north to south), south 3-5 (east to west), west 6-8 (south to north),
+    # north 9-11 (west to east). Only for 3 sections a side.
+    if SEC_PER_SIDE == 3:
+        seeds = {"north-about L4+L6, south-about L1+L6": ["L4L6", "L1L4", "L1L6", "L1L6", "L1L6", "L1L6", "L6", "L4L6", "L4L6", "L4L6", "L4L6", "L4L6"],
+                 "north-about L4+L6, south-about L1+L4": ["L4L6", "L1L4", "L1L4", "L1L4", "L1L4", "L1L4", "L4", "L4L6", "L4L6", "L4L6", "L4L6", "L4L6"],
+                 "north-about L1+L6, south-about L4+L6": ["L1L6", "L1L4", "L4L6", "L4L6", "L4L6", "L4L6", "L4L6", "L4L6", "L6", "L1L6", "L1L6", "L1L6"]}
+        for name_, pat in seeds.items():
+            fr = {s_: set(LAYERS) - {pat[s_][k_:k_ + 2] for k_ in range(0, len(pat[s_]), 2)} for s_ in range(nsec)}
+            for s_ in range(nsec):
+                if s_ // SEC_PER_SIDE == 2 and s_ % SEC_PER_SIDE != 0:
+                    fr[s_].add("L1")
+            got = run(fr)
+            log("  pattern %s -> %d balls without a place" % (name_, got[0][0]))
+            if got[0] < best[0]:
+                best, free = got, fr
+    tried = set()
+    n = 0
+    while best[3] and n < trials:
+        cnt = {}
+        for num in best[3]:
+            cnt[ball_section(self, num)] = cnt.get(ball_section(self, num), 0) + 1
+        todo = [s_ for s_ in sorted(cnt, key=lambda s_: (-cnt[s_], s_)) if s_ not in tried]
+        if not todo:
+            break
+        s_ = todo[0]
+        tried.add(s_)
+        crystal = s_ // SEC_PER_SIDE == 2 and s_ % SEC_PER_SIDE != 0
+        for alt in subsets:
+            if alt == free[s_] or (crystal and "L1" not in alt) or n >= trials:
+                continue
+            fr = dict(free); fr[s_] = alt
+            got = run(fr)
+            n += 1
+            if got[0] < best[0]:
+                best, free = got, fr
+                log("  %s free on %s -> %d balls without a place" % (section_name(s_), "".join(sorted(alt)), best[0][0]))
+    (key, self.xsel, self.xlen, self.x_unalloc, self.use_sd, self.use_other) = best
+    self.free = free
+    self.x_tho = {num: round(th, 3) for num, (k, th) in self.xsel.items()}
     return self.xsel
 
 
@@ -1139,7 +1376,7 @@ def solve_mcu_rounds(self, time_limit=45.0, rounds=4):
     return self.xsel
 
 
-def solve_sdram(self, time_limit=40.0, prune=14.0):
+def solve_sdram(self, time_limit=75.0, prune=9.0):
     """Stage Y: which SDRAM ball each net ends on and how it comes in, for the exits of stage X. One program per
     layer, L1 first (its entries are the scarce ones), each with what the layers before it left: on a layer the
     entries follow the exits round the MCU (order_rows), one thing per lattice point and layer, one net per ball."""
@@ -1244,7 +1481,7 @@ def sd_balls_of(self, net):
 
 Model.sd_balls_of = sd_balls_of
 Model.solve_power = solve_power
-Model.solve_mcu = solve_mcu
+Model.solve_mcu = lambda self, t=60.0: (solve_mcu_fence(self, min(t, 60.0)) if getattr(self, "order_mode", "fence") == "fence" else solve_mcu(self, t))
 Model.solve_sdram = solve_sdram
 
 
@@ -1287,8 +1524,15 @@ def layer_z(geo):
     return out
 
 
-def piece_items(G, field, net, pieces, width=W_SIG):
+def net_width(geo, net):
+    """The width a net is drawn with outside the rule areas: its class width (crystals 0.254 everywhere)."""
+    return 0.254 if net.startswith(("HSE_", "LSE_")) else geo["width"].get(net, 0.2032)
+
+
+def piece_items(G, field, net, pieces, width=None):
     out = []
+    width = width or net_width(field.geo, net)
+    xtal = net.startswith(("HSE_", "LSE_"))
     for pc in pieces:
         if pc[0] == "via":
             d, h = field.via_size(pc[1])
@@ -1297,7 +1541,7 @@ def piece_items(G, field, net, pieces, width=W_SIG):
             w = pc[2] if len(pc) > 2 else None
             for p, q in zip(pc[1], pc[1][1:]):
                 inside = field.is_area(p) and field.is_area(q)
-                out.append(G.Item(net, (pc[0],), "seg", a=tuple(p), b=tuple(q), r=(w or (field.w_area if inside else width)) / 2, tag="track"))
+                out.append(G.Item(net, (pc[0],), "seg", a=tuple(p), b=tuple(q), r=(w or (field.w_area if (inside and not xtal) else width)) / 2, tag="track"))
     return out
 
 
@@ -1394,10 +1638,23 @@ def draw(self, zones=None):
     gates = {g: gate_points(f, mc, g) for g in GATE_SECTOR}
     self.zone_boxes = {}
     fails = []
+    hop = getattr(self, "order_mode", "") == "fence"       # the other buses change layer as they need (drawn after the SDRAM)
+    later = []
+    def nest_key(rec):
+        """Nested rivers: nets that go straight out first; of those going clockwise round the MCU the one nearest
+        its target first (it takes the inside lane, the ones from farther back pass outside it); the same,
+        mirrored, anticlockwise."""
+        d = rec["theta"] - rec["t"]
+        if abs(d) <= 30.0:
+            return (0, rec["t"])
+        return (1, -rec["t"]) if d > 0 else (2, rec["t"])
     for layer in LAYERS:
-        order = sorted((rec["t"], net) for net, rec in nets.items() if rec["layer"] == layer and not rec["fail"])
+        order = sorted((nest_key(rec), net) for net, rec in nets.items() if rec["layer"] == layer and not rec["fail"])
         for t, net in order:
             rec = nets[net]
+            if hop and rec["target"] != "SDRAM" and net not in XTAL:
+                later.append((t, net))
+                continue
             own = "FMC_SDCLK_R" if net == "FMC_SDCLK" else net
             start = rec["exit"]
             if net == "FMC_SDCLK":
@@ -1418,7 +1675,7 @@ def draw(self, zones=None):
                 for l in LAYERS:
                     D[l] = np.maximum(D[l], D2[l])
                 H = np.maximum(H, H2)
-            mask = f.track_free(layer, 0.254 if net in XTAL else W_SIG, D, H) & ~interior
+            mask = f.track_free(layer, net_width(geo, own), D, H) & ~interior
             xs = [start[0]] + [e[0] for e in ends]; ys = [start[1]] + [e[1] for e in ends]
             j0, j1, i0, i1 = f._win((min(xs), min(ys), max(xs), max(ys)), 9.0)
             sub = np.where(mask[j0:j1, i0:i1], 1.0, np.inf)
@@ -1439,7 +1696,7 @@ def draw(self, zones=None):
                 continue
             pts = G.tidy(f, path, mask)
             rec["outside"] = [(layer, pts)]
-            new = piece_items(G, f, own, rec["outside"], 0.254 if net in XTAL else W_SIG)
+            new = piece_items(G, f, own, rec["outside"])
             # a reserved tuning zone beside the longest straight of a byte-lane net that will need length
             if zones and zones.get(net, 0.0) > 0.0:
                 zb = tuning_zone(self, f, D, layer, pts, zones[net])
@@ -1448,6 +1705,44 @@ def draw(self, zones=None):
                     b = zb["box"]
                     new.append(G.Item(own, (layer,), "poly", poly=[(b[0], b[1]), (b[2], b[1]), (b[2], b[3]), (b[0], b[3])], tag="tuning zone"))
             add_items(f, new)
+    if later:
+        import bga_check as C
+        from scipy.spatial import cKDTree
+        sites = []
+        x_ = math.ceil(f.x0 + 0.5)
+        while x_ <= f.x1 - 0.5:
+            y_ = math.ceil(f.y0 + 0.5)
+            while y_ <= f.y1 - 0.5:
+                if not f.is_area((x_, y_), -0.3):
+                    sites.append((r4(x_), r4(y_)))
+                y_ += 0.5
+            x_ += 0.5
+        allv = [(it.net, it.a, it.r * 2) for it in f.items if it.tag == "via"]
+        slots = G.Slots(geo, allv)
+        S = C.Sites(geo, f, sites, slots)
+        maze = G.Maze(f)
+        for t, net in sorted((nest_key(nets[n_]), n_) for t_, n_ in later):
+            rec = nets[net]
+            D, H = f.opened(net)
+            w = net_width(geo, net)
+            masks = {l: f.track_free(l, w, D, H) & ~interior for l in LAYERS}
+            sel = S.within(S.legal(D, H), self.slot_max)
+            vol = maze.volume(masks, S, sel)
+            ends = [(l, p) for p in gates[rec["target"]] for l in LAYERS]
+            got = maze.route(vol, [(rec["layer"], rec["exit"])], ends)
+            if not got:
+                rec["fail"] = "no way from %s (%s) to gate %s on any layer" % (rec["exit"], rec["layer"], rec["target"])
+                fails.append(net)
+                continue
+            pcs, length, nv = G.path_pieces(got[1])
+            pcs = [pc if pc[0] == "via" else (pc[0], G.tidy(f, pc[1], masks[pc[0]])) for pc in pcs]
+            rec["outside"] = pcs
+            add_items(f, piece_items(G, f, net, pcs))
+            for pc in pcs:
+                if pc[0] == "via":
+                    slots.add(net, pc[1], f.via_size(pc[1])[0])
+            S.chain.clear()
+            S.tree = cKDTree(np.array([v_[1] for v_ in slots.vias]))
     self.draw_field = f
     self.log("  drawn in %.1f s: %d nets, %d not drawn" % (time.time() - t0, len(nets), len(fails) + sum(1 for r in nets.values() if r["fail"] and r["net"] not in fails)))
     return nets, power
@@ -1584,7 +1879,7 @@ def lane_table(nets):
     return out
 
 
-def run_plan(geo, sd_pos, sd_rot, slot_max=3.0, lane_map=(0, 1, 2, 3), name=None, out_dir=None, log=print, do_draw=True, tx=150.0, order="rows"):
+def run_plan(geo, sd_pos, sd_rot, slot_max=3.0, lane_map=(0, 1, 2, 3), name=None, out_dir=None, log=print, do_draw=True, tx=150.0, order="fence"):
     t0 = time.time()
     m = Model(geo, sd_pos, sd_rot, slot_max, lane_map, log)
     m.order_mode = order
@@ -1706,6 +2001,13 @@ def plan_dict(m, nets, power, lanes, name, t_alloc, t_all):
     for lane, t in tuning.items():
         for n, v in t["shortfall"].items():
             unmet.append("lane %s %s: tuning short by %.2f mm" % (lane, n, v))
+    sections = []
+    if getattr(m, "free", None):
+        for s_ in range(4 * SEC_PER_SIDE):
+            lost = sorted("%s (%s)" % (m.pads[(MCU, num)]["net"], num) for num in m.x_unalloc if ball_section(m, num) == s_)
+            sections.append({"section": section_name(s_), "free": sorted(m.free[s_]),
+                             "sdram_lanes": {l: m.use_sd.get((l, s_), 0) for l in LAYERS}, "others_leaving": {l: m.use_other.get((l, s_), 0) for l in LAYERS},
+                             "without_place": lost})
     n_sig = len(m.xsel) + len(m.x_unalloc)
     drawn = sum(1 for d in sig.values() if d["drawn"])
     score = {"signal_balls": n_sig, "allocated": len(m.xsel), "drawn": drawn,
@@ -1719,7 +2021,7 @@ def plan_dict(m, nets, power, lanes, name, t_alloc, t_all):
     return {"name": name, "geo": geo.get("board"), "sdram": {"pos": list(m.sd_pos), "rot": m.sd_rot, "area": list(slat.area)}, "slot_max": m.slot_max,
             "lane_map": list(m.lane_map), "window": list(WINDOW), "supply": supply, "caps": caps, "signals": sig, "rivers": rivers,
             "gates": {g: {"angle": GATES[g], "sector": list(GATE_SECTOR[g])} for g in GATES}, "tuning": tuning, "estimates": est, "slots": slots,
-            "ground_return_far": far, "power_routes": power, "unmet": unmet, "score": score}
+            "ground_return_far": far, "power_routes": power, "sections": sections, "unmet": unmet, "score": score}
 
 
 def estimates(m, sig, lanes):
@@ -1802,6 +2104,12 @@ def plan_text(P):
     L.append("")
     L.append("NOT MET (%d)" % len(P["unmet"]))
     L += ["  " + u for u in P["unmet"]] or ["  nothing"]
+    if P.get("sections"):
+        L.append("")
+        L.append("SECTIONS of the MCU outline (clockwise from the north-east corner): layers kept free of SDRAM lanes; SDRAM lanes leaving or passing per layer; other balls leaving per layer; balls of the section without a place")
+        for s in P["sections"]:
+            L.append("  %-16s free %-8s SDRAM %s  others %s  %s" % (s["section"], "+".join(s["free"]), " ".join("%s %d" % kv for kv in s["sdram_lanes"].items()),
+                     " ".join("%s %d" % kv for kv in s["others_leaving"].items()), ("LOST: " + ", ".join(s["without_place"])) if s["without_place"] else ""))
     L.append("")
     L.append("RIVERS: per layer and MCU side, lanes in order (lane coordinate on the rule-area edge, net, target)")
     for l, sides in P["rivers"].items():
@@ -1868,17 +2176,22 @@ def main(argv):
         lanes = tuple(int(ch) for ch in opt("--lanes", "0123"))
         out = os.path.join(os.path.dirname(os.path.abspath(opt("--geo"))), name)
         plan, m = run_plan(geo, pos, rot, float(opt("--slot-max", 3.0)), lanes, name, out, do_draw="--no-draw" not in argv, tx=float(opt("--time", 150.0)),
-                           order=opt("--order", "rows"))
+                           order=opt("--order", "fence"))
         print(plan_text(plan).split("\n\nRIVERS")[0])
         print("wrote", os.path.join(out, "plan.txt"))
         return 0
     import bga_check
     if "--board" in argv:
         import bga_plan_dump, tempfile
+        import shutil, subprocess
         gp = os.path.join(tempfile.mkdtemp(prefix="bga_plan_"), "geo.json")
         bga_plan_dump.dump(opt("--board"), gp)
-        print("dumped to %s; run the check with the system Python:  python %s check --geo %s" % (gp, os.path.abspath(__file__), gp))
-        return 0
+        py = shutil.which("python") or shutil.which("python3")       # the model needs numpy / scipy / scikit-image: not KiCad's Python
+        if not py or os.path.normcase(os.path.dirname(py)) == os.path.normcase(os.path.dirname(sys.executable)):
+            print("no system Python on PATH; run:  python %s check --geo %s" % (os.path.abspath(__file__), gp))
+            return 2
+        rest = [a for i, a in enumerate(argv[1:]) if a != "--board" and argv[i] != "--board"]
+        return subprocess.run([py, os.path.abspath(__file__), "check", "--geo", gp] + rest).returncode
     geo = json.load(open(opt("--geo"), encoding="utf-8"))
     if "--plan" in argv:
         return check_plan(geo, json.load(open(opt("--plan"), encoding="utf-8")))
@@ -1930,7 +2243,7 @@ def check_plan(geo, plan):
                 if not f.via_ok(pc[1], D, H):
                     why = "via at %s is not legal" % (pc[1],)
             else:
-                mask = f.track_free(pc[0], W_SIG, D, H)
+                mask = f.track_free(pc[0], net_width(g, net), D, H)
                 if not sample_ok(f, mask, pc[1]):
                     why = "track on %s is not clear" % pc[0]
             if why:

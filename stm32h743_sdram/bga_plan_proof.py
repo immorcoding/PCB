@@ -145,7 +145,7 @@ YIELD_NETS = ["GND"]
 NETS = %(nets)r
 GROUPS = %(groups)r
 VIEWS = %(views)r
-W = 0.1016
+PROFILE = {"area_free_classes": ["XTAL"]}        # the crystal tracks keep 0.254 inside the rule area (no exception: SPEC 7)
 
 
 def routes(job):
@@ -155,8 +155,7 @@ def routes(job):
         if not d["drawn"]:
             continue
         for n2, pcs in d["routes"].items():
-            wide = n2.startswith(("HSE_", "LSE_"))
-            out[n2] = [("via", tuple(pc[1])) if pc[0] == "via" else ((pc[0], [q if isinstance(q, str) else tuple(q) for q in pc[1]]) + (() if wide else (W,))) for pc in pcs]
+            out[n2] = [("via", tuple(pc[1])) if pc[0] == "via" else (pc[0], [q if isinstance(q, str) else tuple(q) for q in pc[1]]) for pc in pcs]
     return out
 '''
 
