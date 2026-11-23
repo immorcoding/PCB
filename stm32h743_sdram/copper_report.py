@@ -20,6 +20,8 @@ slots    (D:\\KiCad\\bin\\python.exe stm32h743_sdram\\copper_report.py slots <re
          --part-b <power_bga_sites.json>, --layers L5 (only these plane layers), --stem NAME (NAME.json / .txt).
 strip    (copper_report.py strip <board> GROUP ...) removes what those busroute groups wrote last time, so that
          build.sh route1 can rebuild sdram, power and power_bga in that order.
+orphans  (copper_report.py orphans <board>) removes every track, arc and via left on the board; build.sh route2 runs it
+         right after stripping all its groups, when what is left belongs to no script.
 """
 import collections, json, os, re, sys
 
@@ -63,6 +65,35 @@ def strip(path, groups):
         shared = "segs" in rec["groups"][g]
         w = write(path, path, g, [], [], [], (100, 100), cu, shared=shared)
         print("strip: group %s, %d items removed" % (g, w["removed"]))
+
+
+def orphans(path):
+    """Remove the tracks, arcs and vias no script writes. build.sh route2 runs it right after stripping every group, so
+    whatever copper is left is owned by no group record and would never be rebuilt (2026-11-23: a +3V3_MCU via at
+    (40.325, 33.425) and its 0.57 mm L6 stub, left from stop 5 (commit 21a8970), one dangling track end). Text edit
+    of the board file; every removed item is listed."""
+    text = open(path, encoding="utf-8", newline="").read()
+    lines = text.split("\n")
+    out, i, gone = [], 0, []
+    while i < len(lines):
+        m = re.match(r"^\t\((segment|arc|via)\r?$", lines[i])
+        if m:
+            j = i + 1
+            while not re.match(r"^\t\)\r?$", lines[j]):
+                j += 1
+            body = " ".join(l.strip() for l in lines[i:j + 1])
+            pos = re.search(r"\((?:start|at) ([-\d.]+) ([-\d.]+)\)", body)
+            net = re.search(r'\(net "([^"]*)"\)', body)
+            lay = re.search(r'\(layers? "([^"]+)"', body)
+            gone.append("%s %s %s (%.3f, %.3f)" % (m.group(1), net.group(1) if net else "?", lay.group(1) if lay else "?",
+                                                   float(pos.group(1)) - 100, float(pos.group(2)) - 100))
+            i = j + 1
+            continue
+        out.append(lines[i])
+        i += 1
+    if gone:
+        open(path, "w", encoding="utf-8", newline="").write("\n".join(out))
+    print("orphans: %d item(s) owned by no group removed%s" % (len(gone), "".join("\n  " + g for g in gone)))
 
 
 COPPER = """GND +3V3 +5V +3V3A +3V3_MCU +3V3_SDRAM +3V3_QSPI +3V3_PHY +3V3_AUD +3V3_LCD +3V3_SD +3V3_CAN +5V_BL +5V_CAN
@@ -479,6 +510,8 @@ if __name__ == "__main__":
         unfill(sys.argv[2])
     elif sys.argv[1] == "strip":
         strip(sys.argv[2], sys.argv[3:])
+    elif sys.argv[1] == "orphans":
+        orphans(sys.argv[2])
     elif sys.argv[1] == "table":
         sys.exit(table(sys.argv[2], sys.argv[3]))
     elif sys.argv[1] == "slots":

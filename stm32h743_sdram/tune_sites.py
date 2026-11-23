@@ -1,13 +1,22 @@
-"""Survey of serpentine sites for the SDRAM byte lanes (stop 6, RTE-2): for every net that has to be lengthened,
-its straight pieces outside the rule areas and the room beside them, read from the board file.
+"""Survey of serpentine sites for the SDRAM bus (RTE-2): for every net that has to be lengthened, its straight pieces
+outside the rule areas and the room beside them, read from the board file.
 
-    D:\\KiCad\\bin\\python.exe stm32h743_sdram\\tune_sites.py [board] [--spread 5] [--margin 0.3] [--json out.json]
+    D:\\KiCad\\bin\\python.exe stm32h743_sdram\\tune_sites.py [board] [--spread 5] [--margin 0.3] [--window 20]
+                                                               [--natural <metrics.json>] [--json out.json]
 
-need(net) = (longest of its lane - spread + margin) - its length. For each straight of 2.5 mm or more at the outside
-width: per side, the largest gain of ONE block of equal humps (pitch 0.3, 0.7 mm kept at both ends, amplitude 0.5 to
-2.0, RTE-2: n * (2a - 0.858 p)) that fits between the foreign copper found there (0.19 mm kept), and the nets that
-limit it. Neighbours that also need length compete for the same room: the table is a budget, not a plan.
-Coordinates are local mm (board mm - 100).
+Layers: L1, L3, L4 (the SDRAM's; via heights L1-L3 0.2572, L1-L4 1.3932, L3-L4 1.1360 mm, make_project's stackup:
+KiCad 10's Python does not expose the stackup list, so these are used). Lengths: track (arcs by their true length) plus the height between the
+layers a via joins; --natural takes the lengths from a busroute metrics.json instead (its tuning "natural", i.e.
+without the serpentines; e.g. out/route2/sdram/metrics.json).
+Needs:
+  byte lane k (FMC_D8k..D8k+7, NBLk): (longest of the lane - spread + margin) - length
+  address / command (A0-A12, BA0/1, SDNRAS, SDNCAS, SDNWE, SDCKE0, SDNE0) against the clock C = FMC_SDCLK +
+  FMC_SDCLK_R: the clock is aimed at (longest address - window + margin), each address at (that clock - window +
+  margin); the clock's row is its pieces' straights (pitch 0.5 there).
+For each straight of 2.5 mm or more at the outside width: per side, the largest gain of ONE block of equal humps
+(pitch 0.3, clock 0.5; 0.7 mm kept at both ends, amplitude 0.5 to 2.0, RTE-2: n * (2a - 0.858 p)) that fits between
+the foreign copper found there (0.19 mm kept), and the nets that limit it. Neighbours that also need length compete
+for the same room: the table is a budget, not a plan. Coordinates are local mm (board mm - 100).
 """
 import sys, math, json, re, os
 import pcbnew
@@ -16,26 +25,37 @@ A = [a for a in sys.argv[1:] if a.endswith(".kicad_pcb")]
 def opt(name, d):
     return float(sys.argv[sys.argv.index(name) + 1]) if name in sys.argv else d
 BOARD = A[0] if A else "stm32h743_sdram/stm32h743_sdram.kicad_pcb"
-SPREAD, MARGIN = opt("--spread", 5.0), opt("--margin", 0.3)
-P, KEEP, CLR, AMAX, REACH = 0.3, 0.7, 0.19, 2.0, 2.3
+SPREAD, MARGIN, WINDOW = opt("--spread", 5.0), opt("--margin", 0.3), opt("--window", 20.0)
+KEEP, CLR, AMAX, REACH = 0.7, 0.19, 2.0, 2.3
+CLOCK = ["FMC_SDCLK", "FMC_SDCLK_R"]
+ADDR = ["FMC_A%d" % i for i in range(13)] + ["FMC_BA0", "FMC_BA1", "FMC_SDNRAS", "FMC_SDNCAS", "FMC_SDNWE", "FMC_SDCKE0", "FMC_SDNE0"]
 mm = pcbnew.ToMM
 b = pcbnew.LoadBoard(os.path.abspath(BOARD))
-LAY = {pcbnew.F_Cu: "L1", pcbnew.In2_Cu: "L3", pcbnew.In3_Cu: "L4", pcbnew.B_Cu: "L6"}
+LAY = {pcbnew.F_Cu: "L1", pcbnew.In2_Cu: "L3", pcbnew.In3_Cu: "L4"}
 loc = lambda v: (mm(v.x) - 100, mm(v.y) - 100)
 
 segs, circ, rect, zones = {l: [] for l in LAY.values()}, {l: [] for l in LAY.values()}, {l: [] for l in LAY.values()}, {l: [] for l in LAY.values()}
-length = {}
+LEN, ends = {}, {}
 for t in b.GetTracks():
     n = t.GetNetname()
     if t.Type() == pcbnew.PCB_VIA_T:
         x, y = loc(t.GetPosition())
         for l in LAY.values():
             circ[l].append((x, y, mm(t.GetWidth(pcbnew.F_Cu)) / 2, n))
-    else:
-        l = LAY.get(t.GetLayer())
-        if l:
-            (x1, y1), (x2, y2) = loc(t.GetStart()), loc(t.GetEnd())
-            segs[l].append((x1, y1, x2, y2, mm(t.GetWidth()), n))
+        continue
+    l = LAY.get(t.GetLayer())
+    if t.GetLayer() not in LAY and t.GetLayer() != pcbnew.B_Cu:
+        continue
+    LEN[n] = LEN.get(n, 0.0) + mm(t.GetLength())
+    for p in (loc(t.GetStart()), loc(t.GetEnd())):
+        ends.setdefault((n, round(p[0], 3), round(p[1], 3)), set()).add(l or "L6")
+    if l and t.Type() != pcbnew.PCB_ARC_T:                  # arcs: length only; their room is not a site
+        (x1, y1), (x2, y2) = loc(t.GetStart()), loc(t.GetEnd())
+        segs[l].append((x1, y1, x2, y2, mm(t.GetWidth()), n))
+    elif l:
+        (x1, y1), (x2, y2) = loc(t.GetStart()), loc(t.GetEnd())
+        mx, my = loc(t.GetMid())
+        segs[l] += [(x1, y1, mx, my, mm(t.GetWidth()), n), (mx, my, x2, y2, mm(t.GetWidth()), n)]
 for fp in b.GetFootprints():
     for p in fp.Pads():
         bb = p.GetBoundingBox()
@@ -56,48 +76,53 @@ for z in b.Zones():
         if z.IsOnLayer(lid):
             zones[l].append((z.Outline(), z.GetNetname()))
 
-# lengths as the project counts them: read from the last route1 table if present, else track length only
-def net_lengths():
-    L = {}
-    for l in LAY.values():
-        for s in segs[l]:
-            L[s[5]] = L.get(s[5], 0) + math.hypot(s[2] - s[0], s[3] - s[1])
-    return L
-LEN = net_lengths()
-VIAH = 1.3932 * 0 + 0.0            # via height is added below from the stackup spans actually crossed
-# vias: add the height between the layers the net's tracks use at that via
-Z = {"L1": 0.0, "L3": 0.2572, "L4": 1.3932, "L6": 1.6154}       # L3 since 2026-11-23 (make_project.via_height)
+# via heights from the stackup (copper layer centre heights), fallback the 2026-11-23 values
+Z = {"L1": 0.0, "L3": 0.2572, "L4": 1.3932, "L6": 1.6504}
 try:
     st = b.GetDesignSettings().GetStackupDescriptor()
-    z, zs, cu = 0.0, {}, 0
+    z, zs = 0.0, {}
     for it in st.GetList():
         if it.GetType() == pcbnew.BS_ITEM_TYPE_COPPER:
             zs[it.GetBrdLayerId()] = z + mm(it.GetThickness()) / 2
         if it.GetType() in (pcbnew.BS_ITEM_TYPE_COPPER, pcbnew.BS_ITEM_TYPE_DIELECTRIC):
             z += sum(mm(it.GetThickness(i)) for i in range(it.GetSublayersCount()))
-    Z = {l: zs[lid] for lid, l in LAY.items()}
-except Exception as e:
-    print("stackup not read (%s): default layer heights" % e)
-for l0 in LAY.values():
+    z0 = zs[pcbnew.F_Cu]
+    Z = {"L1": 0.0, "L3": zs[pcbnew.In2_Cu] - z0, "L4": zs[pcbnew.In3_Cu] - z0, "L6": zs[pcbnew.B_Cu] - z0}
+except Exception:                                       # KiCad 10's Python does not expose the stackup list
     pass
-ends = {}
-for l in LAY.values():
-    for s in segs[l]:
-        for p in ((s[0], s[1]), (s[2], s[3])):
-            ends.setdefault((s[5], round(p[0], 3), round(p[1], 3)), set()).add(l)
+vias = {(round(c[0], 3), round(c[1], 3)) for c in circ["L1"]}
 for (n, x, y), ls in ends.items():
-    if len(ls) > 1 and any(abs(c[0] - x) < 1e-3 and abs(c[1] - y) < 1e-3 for c in circ["L1"]):
+    if len(ls) > 1 and (x, y) in vias:
         zz = [Z[l] for l in ls]
         LEN[n] = LEN.get(n, 0) + max(zz) - min(zz)
+src = "board (tracks, arcs, via heights)"
+if "--natural" in sys.argv:
+    m = json.load(open(sys.argv[sys.argv.index("--natural") + 1], encoding="utf-8"))
+    nat = (m.get("tuning") or {}).get("natural") or {n: v["length"] for n, v in m["length"]["nets"].items()}
+    LEN.update(nat)
+    src = "natural lengths of " + sys.argv[sys.argv.index("--natural") + 1]
 
-lanes = {k: ["FMC_D%d" % i for i in range(8 * k, 8 * k + 8)] + ["FMC_NBL%d" % k] for k in range(4)}
-need, target = {}, {}
-for k, ns in lanes.items():
+lanes = {"lane%d" % k: ["FMC_D%d" % i for i in range(8 * k, 8 * k + 8)] + ["FMC_NBL%d" % k] for k in range(4)}
+need, target, group = {}, {}, {}
+for g, ns in lanes.items():
     mx = max(LEN[n] for n in ns)
-    target[k] = mx - SPREAD + MARGIN
+    target[g] = mx - SPREAD + MARGIN
     for n in ns:
-        if LEN[n] < target[k] - 1e-6:
-            need[n] = target[k] - LEN[n]
+        group[n] = g
+        if LEN[n] < target[g] - 1e-6:
+            need[n] = target[g] - LEN[n]
+clk = sum(LEN[n] for n in CLOCK)
+amax = max(ADDR, key=lambda n: LEN[n])
+clk_t = max(clk, LEN[amax] - WINDOW + MARGIN)
+target["clock"], target["addr"] = clk_t, clk_t - WINDOW + MARGIN
+for n in CLOCK:
+    group[n] = "clock"
+    if clk_t > clk + 1e-6:
+        need[n] = clk_t - clk                               # shared by the two pieces
+for n in ADDR:
+    group[n] = "addr"
+    if LEN[n] < target["addr"] - 1e-6:
+        need[n] = target["addr"] - LEN[n]
 
 
 def dseg(px, py, s):
@@ -145,7 +170,7 @@ def room(layer, net, px, py, nx, ny, obs):
     return REACH, None
 
 
-def block_gain(prof):
+def block_gain(prof, P):
     """prof = [(station, amax)] every 0.2 mm. Best single block: (gain, s0, s1, a, n)."""
     best = (0, 0, 0, 0, 0)
     for h in (0.5, 0.6, 0.75, 1.0, 1.25, 1.5, 1.75, 2.0):
@@ -166,8 +191,14 @@ def block_gain(prof):
     return best
 
 
+def in_area(x, y):
+    return any(r[0] <= x <= r[2] and r[1] <= y <= r[3] for r in areas)
+
+
+ORDER = list(lanes) + ["clock", "addr"]
 out = []
-for net in sorted(need, key=lambda n: (int(re.sub(r"\D", "", n) or 0) // 8 if "NBL" not in n else int(n[-1]), n)):
+for net in sorted(need, key=lambda n: (ORDER.index(group[n]), [int(t) if t.isdigit() else t for t in re.split(r"(\d+)", n)])):
+    P = 0.5 if net in CLOCK else 0.3
     rows = []
     for l in LAY.values():
         for s in segs[l]:
@@ -175,7 +206,7 @@ for net in sorted(need, key=lambda n: (int(re.sub(r"\D", "", n) or 0) // 8 if "N
                 continue
             x1, y1, x2, y2 = s[:4]
             L = math.hypot(x2 - x1, y2 - y1)
-            if L < 2.5:
+            if L < 2.5 or (in_area(x1, y1) and in_area(x2, y2) and in_area((x1 + x2) / 2, (y1 + y2) / 2)):
                 continue
             ux, uy = (x2 - x1) / L, (y2 - y1) / L
             bx0, by0, bx1, by1 = min(x1, x2) - 3, min(y1, y2) - 3, max(x1, x2) + 3, max(y1, y2) + 3
@@ -194,17 +225,19 @@ for net in sorted(need, key=lambda n: (int(re.sub(r"\D", "", n) or 0) // 8 if "N
                     if h:
                         blk[h] = blk.get(h, 0) + 1
                     st += 0.2
-                g = block_gain(prof)
+                g = block_gain(prof, P)
                 res[side] = (g, sorted(blk, key=lambda k: -blk[k])[:3])
             rows.append((l, (round(x1, 2), round(y1, 2)), (round(x2, 2), round(y2, 2)), round(L, 2), res))
     cap = sum(max(r[4]["R"][0][0], r[4]["L"][0][0]) for r in rows)
-    out.append(dict(net=net, length=round(LEN[net], 3), need=round(need[net], 2), cap_alone=round(cap, 1), straights=[
+    out.append(dict(net=net, group=group[net], length=round(LEN[net], 3), need=round(need[net], 2), cap_alone=round(cap, 1), straights=[
         dict(layer=r[0], a=r[1], b=r[2], len=r[3], **{sd: dict(gain=round(r[4][sd][0][0], 1), s0=round(r[4][sd][0][1], 1), s1=round(r[4][sd][0][2], 1),
              amp=r[4][sd][0][3], n=r[4][sd][0][4], limits=r[4][sd][1]) for sd in "RL"}) for r in rows]))
 
-print("targets: " + "  ".join("lane%d %.2f" % (k, target[k]) for k in target) + "   total need %.1f mm, %d nets" % (sum(need.values()), len(need)))
+print("lengths: %s; via heights L1-L3 %.4f, L1-L4 %.4f, L3-L4 %.4f" % (src, Z["L3"], Z["L4"], Z["L4"] - Z["L3"]))
+print("targets: " + "  ".join("%s %.2f" % (k, target[k]) for k in ORDER) + "   (clock now %.3f, longest address %s %.3f)" % (clk, amax, LEN[amax]))
+print("total need %.1f mm, %d nets (the clock's need counted once)" % (sum(v for n, v in need.items() if n != "FMC_SDCLK"), len(need)))
 for o in out:
-    print("%-9s len %.2f need %5.2f  capacity alone %5.1f %s" % (o["net"], o["length"], o["need"], o["cap_alone"], "" if o["cap_alone"] >= o["need"] else "  << SHORT"))
+    print("%-11s %-5s len %6.2f need %5.2f  capacity alone %5.1f %s" % (o["net"], o["group"], o["length"], o["need"], o["cap_alone"], "" if o["cap_alone"] >= o["need"] else "  << SHORT"))
     for s in o["straights"]:
         print("    %s %s-%s %.2f mm | R +%.1f (%dx%.2f @%.1f-%.1f) %s | L +%.1f (%dx%.2f @%.1f-%.1f) %s" % (
             s["layer"], s["a"], s["b"], s["len"], s["R"]["gain"], s["R"]["n"], s["R"]["amp"], s["R"]["s0"], s["R"]["s1"], ",".join(s["R"]["limits"]),

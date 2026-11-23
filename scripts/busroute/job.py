@@ -33,6 +33,9 @@ The routes file is a Python file in the board's folder:
         "end": 0.35, "clr": 0.19, "area_gap": 0.127,                # straight between a corner and the first arc; copper to
                                                                     # other copper; copper to a rule-area edge
         "keep": 0.7}        # (optional) straight left at both ends of a block inside its site (RTE-2)
+                            A group may instead be {"nets": [...], "ref": [nets summed], "lo": -20, "hi": 20}: every
+                            member within lo..hi of the summed reference; the reference is lengthened first (tune.py).
+    TUNE_OBSTACLES = path   a board whose other nets' copper the serpentines also keep clear of (groups built later)
                             Sites: Bundle.slot(net, leg, s0, length, side, free, pitch) on a bundle lane, and
                             job.slot(net, layer, p0, p1, side="R"|"L"|"both", pitch=None) on any straight piece of a
                             net's route (hand-written ones too). A net's sites are used in the order they were written.
@@ -118,6 +121,11 @@ def compute(mod, board, profile, sketch, job=None, budget=False):
             raise RouteError("%s has no TUNING: nothing to budget" % mod.GROUP)
         if shared:
             raise RouteError("TUNING cannot be used in a SHARED group")
+        ob = getattr(mod, "TUNE_OBSTACLES", None)
+        if ob:
+            if not os.path.isfile(ob):
+                raise RouteError("TUNE_OBSTACLES: no board %s" % ob)
+            opts = dict(opts, obstacles=Board(ob, getattr(mod, "ORIGIN", (0.0, 0.0))))
         T = tune.Tuning(spec, board, profile, resolved, segs, vias, lens, job.all_sites(), opts)
         if budget:
             return {"budget": T.budget(), "natural": natural, "job": job}
@@ -252,7 +260,7 @@ def run(routes_file, fast=False, sketch=False, out=None, write_board=False, refi
     counted = {k: n for k, n in ext["drc"]["by_type_group"].items() if k not in ignore}
     spec = getattr(mod, "TUNING", None) or {}
     ruled = {n for n in lens if profile.limit(n, "length_max") is not None or profile.limit(n, "skew_max") is not None}
-    ruled |= {n for g in spec.get("groups", {}).values() for n in g.get("nets", [])}
+    ruled |= {n for g in spec.get("groups", {}).values() for n in g.get("nets", []) + g.get("ref", [])}
     lc = metrics.length_check(m["length"].get("geometry_minus_drc", {}), ruled)
     m["length"]["check"] = lc
     m.update(written=dict(w, file=dst, matches_model=same), drc_ignored=ignore, drc_counted_group=counted)

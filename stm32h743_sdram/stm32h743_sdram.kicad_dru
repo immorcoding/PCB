@@ -195,6 +195,10 @@
 (rule "rmii_rx_min"
   (condition "A.NetName == 'RMII_RXD*' || A.NetName == 'RMII_CRS_DV'")
   (constraint length (min 20.5576mm) (opt 20.5576mm) (max 60.0000mm)))
+# sdram_addr_window: reference FMC_SDCLK + FMC_SDCLK_R = 39.3375 mm
+(rule "sdram_addr_window"
+  (condition "A.NetName == 'FMC_A*' || A.NetName == 'FMC_BA*' || A.NetName == 'FMC_SDNRAS' || A.NetName == 'FMC_SDNCAS' || A.NetName == 'FMC_SDNWE' || A.NetName == 'FMC_SDCKE0' || A.NetName == 'FMC_SDNE0'")
+  (constraint length (min 19.3375mm) (opt 39.3375mm) (max 59.3375mm)))
 # ltdc_spread_45: fixed (user 2026-11-23: LTDC longest minus shortest relaxed from 30 to a working target of 45 mm, replaces ltdc_spread)
 (rule "ltdc_spread_45"
   (condition "A.NetClass == 'LTDC'")

@@ -30,6 +30,10 @@ Length tuning (tune.py), on the same board with other balls on the nets (TUNE_PA
                     track_shape.py (arc joints, sharp, crowded) clean, the pinned lengths and blocks
   short             one more net whose site is far too short: drawn what fits (DRC clean, arc checks clean), the
                     only finding is TUNE "missing 9.145 mm", which equals target - its DRC-measured length
+  ref               a reference group (A0 A1 against the sum A3 + A2, as SDRAM address lines against the clock split
+                    by its series resistor): the sum reaches its target over the sites of both pieces (DRC-measured),
+                    A1 is aimed at the reached sum; built again with TUNE_OBSTACLES (a copy of the board with one more
+                    track): A2's block moves past that track, which is not on the built board
 
 Prints one line, `OK ...` or `FAIL ...`; exit code 0 = pass. --keep leaves the temp folder.
 """
@@ -83,6 +87,11 @@ TUNE_BUDGET = {'lane1': (22.72, {'FMC_D8': (4.9229, [(6, 4.4549, 22.4549)]), 'FM
                                  'FMC_D10': (0.2422, [(1, 0.7425, 3.7425)]), 'FMC_D11': (0.0, []), 'FMC_D12': (0.0, [])}),
                'hand': (28.4284, {'FMC_A0': (0.0, []), 'FMC_A1': (2.15, [(3, 2.1416, 11.1416)]), 'FMC_A2': (6.0, [(5, 3.7124, 18.7124)]),
                                   'FMC_A3': (12.25, [(2, 1.485, 7.485)])})}
+# variant "ref": (net, humps, height, block start x) of the A-net blocks without / with the obstacle board; the obstacle
+# is a GND track on L1 from OBST[0] to OBST[1] (0.1 wide), 0.7 mm north of A2's site
+OBST = ((21.8, 3.2), (22.6, 3.2))
+TUNE_REF = {'ref': [('FMC_A3', 2, 0.905, 18.3), ('FMC_A2', 1, 0.7371, 21.7), ('FMC_A1', 1, 0.6896, 16.7)],
+            'ref+obstacle': [('FMC_A3', 2, 0.905, 18.3), ('FMC_A2', 1, 0.7371, 22.75), ('FMC_A1', 1, 0.6896, 16.7)]}
 # DRC item types that say nothing about the routes on this synthetic board.
 IGNORE = {"lib_footprint_issues": "the two footprints are loaded from library folders, the board has no fp-lib-table",
           "lib_footprint_mismatch": "the BGA pads get solder-mask margin 0 as on the real board, which differs from the library",
@@ -239,6 +248,47 @@ def tuning(tmp, want):
             miss = hand["target"] - L["drc"]["FMC_A3"]
             want(abs(miss - tu["missing"]["FMC_A3"]) <= 0.001 and hand["inside"] == 3 and hand["total"] == 4,
                  "short: missing %r against target - DRC length %.4f" % (tu["missing"], miss))
+
+    # a reference group (the reference summed over two nets, lengthened first; then the members) and an obstacle
+    # board (TUNE_OBSTACLES): built without and with the obstacle, which moves A2's block
+    od = os.path.join(tt, "obst")
+    os.makedirs(od)
+    ob = pcbnew.LoadBoard(os.path.join(tt, "bench.kicad_pcb"))
+    tr = pcbnew.PCB_TRACK(ob)
+    tr.SetStart(pcbnew.VECTOR2I(pcbnew.FromMM(OX + OBST[0][0]), pcbnew.FromMM(OY + OBST[0][1])))
+    tr.SetEnd(pcbnew.VECTOR2I(pcbnew.FromMM(OX + OBST[1][0]), pcbnew.FromMM(OY + OBST[1][1])))
+    tr.SetWidth(pcbnew.FromMM(0.1)); tr.SetLayer(pcbnew.F_Cu); tr.SetNet(ob.FindNet("GND")); ob.Add(tr)
+    pcbnew.SaveBoard(os.path.join(od, "obst.kicad_pcb"), ob)
+    got = {}
+    for key, obst in (("ref", None), ("ref+obstacle", os.path.join(od, "obst.kicad_pcb"))):
+        if obst:
+            os.environ["BENCH_TUNE_OBSTACLES"] = obst
+        else:
+            os.environ.pop("BENCH_TUNE_OBSTACLES", None)
+        m, code = build("ref", "out_" + key.replace("+", "_"))
+        os.environ.pop("BENCH_TUNE_OBSTACLES", None)
+        if "error" in m:
+            want(False, "%s: could not be built: %s" % (key, m["error"]))
+            continue
+        hard = [f for f in m["findings"] if f["hard"]]
+        c, tu, L = m["connectivity"], m["tuning"], m["length"]
+        other = {k: v for k, v in c["drc_by_type_board"].items() if k not in IGNORE}
+        want(code == 0 and m["ok"] and not hard and not other, "%s: exit %d, hard %r, DRC %r" % (key, code, [f["text"] for f in hard], other))
+        g = tu["groups"]["hand"]
+        ref_drc = L["drc"]["FMC_A3"] + L["drc"]["FMC_A2"]
+        want(g.get("kind") == "ref" and abs(g["ref_natural"] - 38.6068) < 1e-3 and abs(g["ref_target"] - 42.9284) < 1e-3
+             and abs(g["ref_length"] - g["ref_target"]) <= 1e-3 and abs(ref_drc - g["ref_length"]) <= 0.01
+             and g["inside"] == g["total"] == 2 and abs(L["drc"]["FMC_A1"] - (g["ref_length"] - 16 + 0.3)) <= 0.01
+             and abs(L["drc"]["FMC_A0"] - 30.1284) <= 0.01 and not tu["missing"],
+             "%s: reference group %r, DRC A3 + A2 %.4f, A1 %.4f" % (key, {k: g.get(k) for k in ("ref_natural", "ref_target", "ref_length", "inside", "total", "missing")},
+                                                               ref_drc, L["drc"]["FMC_A1"]))
+        gm = tu["geometry"]
+        want(gm["min_clr"] >= 0.19 and gm["max_height_spread"] <= 1e-4 and gm["max_joint_deg"] <= 0.01, "%s: arc geometry %r" % (key, gm))
+        got[key] = [(x["net"], x["humps"], x["amp"], x["from"][0]) for x in tu["blocks"] if x["net"].startswith("FMC_A")]
+    want(got == TUNE_REF, "ref: blocks changed:\nTUNE_REF = %r" % (got,))
+    a2 = {k: [x for x in v if x[0] == "FMC_A2"] for k, v in got.items()}
+    want(a2.get("ref") and a2.get("ref+obstacle") and a2["ref"][0][3] < OBST[0][0] and a2["ref+obstacle"][0][3] > OBST[1][0],
+         "ref: the obstacle track did not move A2's block: %r" % (a2,))
     return time.time() - t0, budget_s
 
 
@@ -402,7 +452,7 @@ def main(argv):
             print("OK busroute: 12 nets (ring 0-3 fan-out, bundle with corner and per-leg gaps, join, via field), DRC clean, "
                   "geometry = DRC lengths, 2 builds identical, 2 groups = 1 build, 4 negative cases, obstacles (shield tab, footprint keep-out), "
                   "length verdict, fan-out @layer and keep, a shared group of ties; "
-                  "tuning (bundle slots, bump, free site both-sided, raised amp, missing, budget %.1f s) %.0f s; %.0f s%s" % (
+                  "tuning (bundle slots, bump, free site both-sided, raised amp, missing, summed reference group, obstacle board, budget %.1f s) %.0f s; %.0f s%s" % (
                       times.get("budget", 0), times.get("tune", 0), time.time() - t0, "; kept " + tmp if keep else ""))
         if not keep:
             shutil.rmtree(tmp, ignore_errors=True)

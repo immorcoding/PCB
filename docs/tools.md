@@ -21,6 +21,9 @@
 | 铜皮区域草图 | `D:\KiCad\bin\python.exe scripts\cu_sketch.py check <草图> [--board <板>]`，另有 `apply`（按草图写铺铜区，只动它自己建的 `cu:` 开头的区）、`read`（从板读回草图，PWR-7）、`measure`（铜皮那组指标）。草图格式见脚本开头和 `stm32h743_sdram/copper.sketch` |
 | 总线走线（线束、BGA 扇出、蛇形等长） | `D:\KiCad\bin\python.exe scripts\busroute\build.py <走线描述.py> [--fast] [--sketch] [--out 目录] [--write-board]`。默认在 `--out` 下的板子副本上构建，加 `--write-board` 才写真板；`--fast` 只做几何检查（57 根不到 1 秒），完整构建含 DRC、长度、指标、图片（7–14 秒）。描述文件的格式见 `scripts/busroute/job.py` 开头（蛇形：`TUNING` 加补线位置 `Bundle.slot` / `job.slot`，画法和限制在 `scripts/busroute/tune.py` 开头），例子是 `scripts/tests/busroute/bench_routes.py`、`bench_tune.py` |
 | 等长预算（只算不画） | `D:\KiCad\bin\python.exe scripts\busroute\build.py <走线描述.py> --tuning-budget`：每组的目标（组内最长 − 容差 + 余量）、每根的自然长度和要补多少、每个补线位置在摆幅 amp 和 amp_max 时按 RTE-2 的式子能补多少（不查间距），列出容量不够的网络；有不够的退出码 1。读板不写板，基准板上 0.1 秒 |
+| 对时钟的等长组（基准分段相加） | `TUNING` 的组写成 `{"nets": [...], "ref": ["FMC_SDCLK", "FMC_SDCLK_R"], "lo": -20, "hi": 20}`（不写 `spread`）：基准是几段相加（串阻两侧），先补基准到“最长成员 − hi + 余量”（几段的补线位置按写的顺序分摊），再按补到的基准把短的成员补到“基准 + lo + 余量”。DRC 侧在 `length_groups.json` 写同样的窗口（`len_rules.py` 生成） |
+| 蛇形避让后建的组 | 走线描述里 `TUNE_OBSTACLES = <板>`：那块板上别的网络的线、圆弧、过孔也当障碍。`build.sh route1 / route2` 先把板子拷一份、去掉 SDRAM 组自己的铜（`out/<步>/obstacles.kicad_pcb`），SDRAM 组的蛇形就避开随后才重建的电源组和各局部组 |
+| H743 板 SDRAM 的补线空间 | `D:\KiCad\bin\python.exe stm32h743_sdram\tune_sites.py <板> [--spread 5] [--window 20] [--natural <metrics.json>]`：L1 / L3 / L4 上每根要补的线（四个字节通道、时钟、地址命令）在规则区外的直线段两侧各能放一块多高、补多少、被谁挡住；在不带蛇形的构建结果上跑（走线描述加环境变量 `NOTUNE=1`） |
 | 摆位 | `D:\KiCad\bin\python.exe stm32h743_sdram\place.py`；`--pcb <副本> --rot <角度>` 在副本上试别的 SDRAM 转向 |
 | 布局指标（LAY-2、5、6、8） | `D:\KiCad\bin\python.exe scripts\place_check.py <板> [--edge J1=L ...] [--allow-under U1,U2] [--not-supply U3.5] [--json <输出>]`：摆进板框的个数、courtyard 重叠、安装孔周禁布、封装禁布区、连接器到板边、背面焊盘压顶面焊盘、每个电源脚到最近 100 nF 的距离、排针和测试点旁的丝印位置；几秒 |
 | 出线通道（LAY-2） | `D:\KiCad\bin\python.exe scripts\escape_check.py <板> --ref U1 [--ref ...] [--window x0 y0 x1 y1] [--debug U1.A1 <png>]`：每个焊盘单独查能否走出去（到窗口边、到同网络的别的器件、电源网络能否打孔），最多两个过孔；不算容量。两颗 BGA 加 40 mm 窗口约 15 秒 |
@@ -134,6 +137,8 @@
 - **`Bundle.slot(free=…)` 让位的折线要离下一个拐角够远**：外侧的线在 s1 之后再走 dV 加嵌套量才折回，离拐角近时报 `runs backwards` 或短于 0.1 的线段（蛇形基准板第一次 s1 离拐角约 0.6 mm 就报了）；折回段和拐角挤在 2 mm 内时 `track_shape.py` 报 crowded。
 - **蛇形和线束的线距**（2026-11-22，H743 板停点 6）：线束里 0.25 mm 线距的两根线边到边 0.148 mm，低于 `TUNING` 的 `clr` 0.19。`tune.py` 以前因此拒绝任何紧挨邻线的补线位置（弯朝另一侧也不行）；现在某个采样点离别的网络不比同一位置的原直线更近时不按 `clr` 查，所以弯这一侧仍要让出 `clr`（`Bundle.slot(free=…)` / `widen`），背面的邻线可以留在原线距。`tune.py` 不画规则区里的蛇形（`area_gap` 对区内一律不过）；线束里一根线的 jog 离前一个拐角不到 2 mm 时 `track_shape.py` 报 crowded（圆弧不算折弯）。
 - **挪了器件之后，压在新焊盘上的旧走线会被 pcbnew 改成那个焊盘的网络**（2026-11-22，停点 7：R102 转向后，`+5V_REG` 的旧线和过孔存出来成了 `FB_5V`，`SHARED` 组按网络和位置找自己的旧铜，找不到就留在板上造成短路）。改了 `place.py` 的构建先 `copper_report.py strip` 各组、再摆位（`build.sh route1 / route2` 就是这个顺序）。
+- **没有组认领的铜不会被重建，也不会被清掉**（2026-11-23）：`copper_report.py strip` 只删各组记录里的铜；停点 5 留下的一个 `+3V3_MCU` 过孔和 0.57 mm 的 L6 短线（一个悬空线头）一直留在板上。`build.sh route2` 把所有组都剥掉之后跑 `copper_report.py orphans`，剩下的线、圆弧、过孔全删并列出（`out/route2/orphans.txt`）。
+- **蛇形组先建、别的组后建时，蛇形看不到后建的铜**：SDRAM 组在剥光的板上先建，电源组和各局部组后建；不给 `TUNE_OBSTACLES`，蛇形会画到它们的线上（DRC 才发现）。迭代时在带全部组的板子副本上（先 `copper_report.py strip <副本> sdram`）用 `SDRAM_BOARD=<副本>` 跑 `--fast`，看到的空间和真板一样。
 - **DRC 量网络长度时，拐点落在焊盘里的那一段算短了**：线在焊盘里折一下再到中心，DRC 量出来比几何短 0.01–0.07 mm（停点 7：`ETH_TX_N` 0.064、`PHY_XO_R` 0.063、`CAN_TERM` 0.043）。有长度规则的线（差分对、等长组）把拐点放到焊盘外；`busroute` 的长度判定只对有长度规则的网络卡 0.002 mm，其余列为备注。
 - **差分对间隙检查把平行而不相邻的两段也当成耦合段**：`ETH_TX_P` 绕 RJ45 2 脚的 45° 小段和 `ETH_TX_N` 进 2 脚的 45° 斜线在投影上重叠 0.35 mm、相距 1.66 mm，报 `diff_pair_gap_out_of_range`（最大 0.8）。让两段的投影不重叠即可。
 - **两个封装的 courtyard 正好贴边，DRC 报 `courtyards_overlap`，`place_check.py` 不报**（它按面积 > 0.001 mm² 算）：摆件留 0.02 mm 以上。

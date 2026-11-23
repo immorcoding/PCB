@@ -225,8 +225,12 @@ def build(f):
     net_len("l0a", "通道 2 数据线 18 mm：本组最长，不报", "FMC_D17", 18)
     net_len("l0b", "通道 3 的 NBL3 40 mm", "FMC_NBL3", 40)
     net_len("l0c", "通道 3 数据线 34 mm：比 NBL3 短 6 mm", "FMC_D24", 34, {(SK, "sdram_lane3")})
-    net_len("l0d", "地址线 61 mm：超过 60 mm；地址不等长", "FMC_A0", 61, {(LEN, "sdram_len_max")})
-    net_len("l0e", "地址线 8 mm：比时钟短 12 mm、比 A0 短 53 mm，不报", "FMC_A1", 8)
+    net_len("l0d", "地址线 61 mm：超过 60 mm；生成段的 sdram_addr_window（时钟 ± 20 mm，上限仍 60）压过 sdram_len_max", "FMC_A0", 61,
+            {(LEN, "sdram_len_max")}, {(LEN, "sdram_addr_window")})
+    net_len("l0e", "地址线 8 mm：比时钟（20 mm）短 12 mm，在 20 mm 之内，不报", "FMC_A1", 8)
+    net_len("l0k", "地址线 41 mm：比时钟长 21 mm：只有生成段时报（用户 2026-11-23 定 ± 20 mm）", "FMC_A4", 41, (), {(LEN, "sdram_addr_window")})
+    net_len("l0l", "命令线 SDNWE 39 mm：比时钟长 19 mm，不报（命令线也在组里，见 l0m）", "FMC_SDNWE", 39)
+    net_len("l0m", "命令线 SDCKE0 42 mm：比时钟长 22 mm，生成段报", "FMC_SDCKE0", 42, (), {(LEN, "sdram_addr_window")})
     f.case("l0f", "地址线 14 mm 加 4 个 L1–L4 过孔（最后一个只接一层）：地址线不限过孔数；长度 14 + 3 × 过孔高度")
     for i in range(4):
         f.trk("FMC_A2", (5 + 3.5 * i, y), (5 + 3.5 * i + 3.5, y), 0.1016, "L1" if i % 2 == 0 else "L4")

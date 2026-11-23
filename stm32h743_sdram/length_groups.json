@@ -9,7 +9,11 @@
      "ref": ["SDMMC1_CK"], "lo": 0, "hi": 5},
     {"rule": "rmii_rx_min",
      "members": "A.NetName == 'RMII_RXD*' || A.NetName == 'RMII_CRS_DV'",
-     "ref": ["RMII_REF_CLK"], "lo": 0, "cap": 60}
+     "ref": ["RMII_REF_CLK"], "lo": 0, "cap": 60},
+    {"rule": "sdram_addr_window",
+     "members": "A.NetName == 'FMC_A*' || A.NetName == 'FMC_BA*' || A.NetName == 'FMC_SDNRAS' || A.NetName == 'FMC_SDNCAS' || A.NetName == 'FMC_SDNWE' || A.NetName == 'FMC_SDCKE0' || A.NetName == 'FMC_SDNE0'",
+     "ref": ["FMC_SDCLK", "FMC_SDCLK_R"], "lo": -20, "hi": 20, "cap": 60,
+     "why": "user 2026-11-23 (SPEC 9): every address / command line within 20 mm of the clock, the clock summed across R201; the 60 mm cap of sdram_len_max kept"}
   ],
   "fixed": [
     {"rule": "ltdc_spread_45",

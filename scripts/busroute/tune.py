@@ -45,6 +45,13 @@ is short of its target but inside the window [longest - spread, longest] all the
   is not held to `clr`: the neighbours of a bundle lane at the lane pitch (0.25 here: 0.148 mm edge to edge, legal
   for DRC, below clr) stay where they are on the side away from the humps (2026-11-22, stop 6 of the H743 board).
   Only the obstacles and pours near each trial element are tested (bounding box + the largest clearance).
+  TUNE_OBSTACLES in the routes file (a board path): the tracks, arcs and vias of other nets on that board are
+  obstacles too, for a group built before the groups whose copper it must leave room for (build.sh route2 passes
+  the board as the last build left it).
+Reference groups ("ref": the nets summed, e.g. a clock split by a series resistor; "lo" / "hi" mm relative to the
+sum; no "spread"): every member inside [R + lo, R + hi]. R is lengthened first, to max(R0, longest member - hi +
+margin), on the sites of its nets in the order they were written (one need shared by the pieces); then each member
+is aimed at R + lo + margin with the R reached. The longest member is never lengthened.
 
 Output: the group's segments with the serpentines cut in, PCB arcs (net, layer, start, mid, end, width), the new
 lengths, a report for the metrics table and the findings (TUNE, ARC). Points are rounded to 1 nm, as written.
@@ -250,12 +257,22 @@ class Settings:
         v = dict(DEFAULTS); v.update(d)
         self.groups = {}
         for g, spec in d["groups"].items():
-            if "nets" not in spec or "spread" not in spec:
-                raise RouteError("TUNING group %s needs 'nets' and 'spread'" % g)
-            self.groups[g] = {"nets": list(spec["nets"]), "spread": float(spec["spread"])}
+            if "nets" in spec and "ref" in spec:
+                # a reference group: every member inside [ref + lo, ref + hi], ref = the sum of the ref nets (a series
+                # resistor splits the clock); the reference is lengthened first, then the short members
+                if "lo" not in spec or "hi" not in spec or "spread" in spec:
+                    raise RouteError("TUNING group %s: a group with 'ref' needs 'lo' and 'hi' (mm relative to the ref) and no 'spread'" % g)
+                lo, hi = float(spec["lo"]), float(spec["hi"])
+                if not spec["ref"] or hi - lo < 0:
+                    raise RouteError("TUNING group %s: needs ref nets and lo <= hi" % g)
+                self.groups[g] = {"nets": list(spec["nets"]), "ref": list(spec["ref"]), "lo": lo, "hi": hi}
+            elif "nets" in spec and "spread" in spec:
+                self.groups[g] = {"nets": list(spec["nets"]), "spread": float(spec["spread"])}
+            else:
+                raise RouteError("TUNING group %s needs 'nets' and 'spread' (or 'nets', 'ref', 'lo', 'hi')" % g)
         seen = {}
         for g, spec in self.groups.items():
-            for n in spec["nets"]:
+            for n in spec["nets"] + spec.get("ref", []):
                 if n in seen:
                     raise RouteError("TUNING: %s is in group %s and in group %s" % (n, seen[n], g))
                 seen[n] = g
@@ -270,8 +287,9 @@ class Settings:
         if self.amp_max < self.amp - 1e-9:
             raise RouteError("TUNING: amp_max %.3f is below amp %.3f" % (self.amp_max, self.amp))
         for g, spec in self.groups.items():
-            if spec["spread"] < self.margin:
-                raise RouteError("TUNING group %s: spread %.3f is below the margin %.3f" % (g, spec["spread"], self.margin))
+            width = spec["hi"] - spec["lo"] if "ref" in spec else spec["spread"]
+            if width < (2 if "ref" in spec else 1) * self.margin:
+                raise RouteError("TUNING group %s: window %.3f is below the margin %.3f" % (g, width, self.margin))
 
     def pitch_of(self, net, given=None):
         return float(given if given is not None else self.pitch.get(net, self.pitch["default"]))
@@ -311,11 +329,30 @@ class Tuning:
                 raise RouteError("%s of %s: unknown layer %r" % (s.label, s.net, s.layer))
 
     # ---- what each net needs
-    def targets(self):
+    def targets(self, ref_len=None):
+        """Per group the target and each net's need. A reference group (TUNING group with 'ref'): the reference R0 =
+        the sum of its ref nets' natural lengths; it is aimed at max(R0, longest member - hi + margin) (the longest
+        member margin below the window's top), its need goes to the ref nets' sites; each member is aimed at
+        R + lo + margin, R = ref_len[g] (what the reference reached) or, before that is known, the reference's target."""
         out = {}
         for g, spec in self.S.groups.items():
             have = [n for n in spec["nets"] if n in self.natural]
             if not have:
+                continue
+            if "ref" in spec:
+                refs = [n for n in spec["ref"] if n in self.natural]
+                gone = [n for n in spec["nets"] + spec["ref"] if n not in self.natural]
+                L = max(have, key=lambda n: (self.natural[n]["length"], n))
+                Lm = self.natural[L]["length"]
+                R0 = sum(self.natural[n]["length"] for n in refs)
+                rt = max(R0, Lm - spec["hi"] + self.S.margin) if len(refs) == len(spec["ref"]) else R0
+                R = ref_len[g] if ref_len and g in ref_len else rt
+                tgt = R + spec["lo"] + self.S.margin
+                out[g] = {"kind": "ref", "ref": "+".join(spec["ref"]), "ref_nets": refs, "ref_natural": round(R0, 4),
+                          "ref_target": round(rt, 4), "ref_need": round(rt - R0, 4), "ref_length": round(R, 4),
+                          "lo": spec["lo"], "hi": spec["hi"], "longest": Lm, "longest_net": L, "spread": spec["hi"] - spec["lo"],
+                          "target": round(tgt, 4), "nets": have, "missing_nets": gone,
+                          "need": {n: round(max(0.0, tgt - self.natural[n]["length"]), 4) for n in have}}
                 continue
             ref = max(have, key=lambda n: (self.natural[n]["length"], n))
             tgt = self.natural[ref]["length"] - spec["spread"] + self.S.margin
@@ -330,6 +367,23 @@ class Tuning:
         out = {"settings": self.S.describe(), "groups": {}, "short": [], "sites_without_group": []}
         for g, t in T.items():
             rows = []
+            if t.get("kind") == "ref":                      # the reference first: its need is shared by its pieces' sites
+                cap = 0.0
+                for n in t["ref_nets"]:
+                    sites = []
+                    for s in self.sites:
+                        if s.net != n:
+                            continue
+                        p = self.S.pitch_of(n, s.pitch)
+                        k0, c0 = capacity(s.L, p, self.S.amp, s.side, self.S.keep)
+                        k1, c1 = capacity(s.L, p, self.S.amp_max, s.side, self.S.keep)
+                        sites.append({"site": s.label, "layer": s.layer, "length": round(s.L, 4), "side": s.side, "pitch": p,
+                                      "humps": k0, "cap_amp": round(c0, 4), "cap_amp_max": round(c1, 4)})
+                    cap += sum(x["cap_amp_max"] for x in sites)
+                    rows.append({"net": n, "ref": True, "natural": self.natural[n]["length"], "need": t["ref_need"], "sites": sites,
+                                 "cap_amp": round(sum(x["cap_amp"] for x in sites), 4), "cap_amp_max": round(sum(x["cap_amp_max"] for x in sites), 4)})
+                if t["ref_need"] > 1e-3 and cap < t["ref_need"] - 1e-9:
+                    out["short"].append({"net": t["ref"], "group": g, "need": t["ref_need"], "cap_amp_max": round(cap, 4)})
             for n in t["nets"]:
                 sites = []
                 for s in self.sites:
@@ -355,6 +409,14 @@ class Tuning:
         carry their block number in self._blk."""
         owned = set() if self.opts.get("shared") else set(self.resolved)
         sc = Scene(self.board, self.profile, skip_nets=owned, skip_items=self.opts.get("skip_items"))
+        ob = self.opts.get("obstacles")
+        if ob is not None:                                  # copper of groups built after this one (TUNE_OBSTACLES)
+            for n, lay, a, c, w, _ in ob.tracks:
+                if n not in owned:
+                    sc.add(sc.seg(n, lay, a, c, w, False))
+            for n, p, d, h in ob.vias:
+                if n not in owned:
+                    sc.add(sc.via(n, p, d, h, False))
         self._blk = {}
         legs = {(x[0], x[1], x[2], x[3]): b["id"] for b in self.blocks for x in b["segs"][1:-1]}
         for n, lay, a, c, w in segs:
@@ -691,8 +753,34 @@ class Tuning:
         for g, t in T.items():
             for n in t["missing_nets"]:
                 self.findings.append(F("TUNE", "%s is in TUNING group %s but has no route" % (n, g), n))
+        added, missing, notes, ref_len = {}, {}, {}, {}
+        # phase 1: the references of the reference groups (summed pieces: the need goes to the sites of every piece,
+        # in the order they were written), so that the members are aimed at what the reference really reached
+        for g, t in T.items():
+            if t.get("kind") != "ref":
+                continue
+            rem, tried = t["ref_need"], []
+            for s in sorted([s for n in t["ref_nets"] for s in by_net.get(n, [])], key=lambda s: s.seq):
+                if rem < 1e-4:
+                    break
+                blk, why = self._place(s, rem)
+                if blk:
+                    rem -= blk["gain"]
+                    added[s.net] = added.get(s.net, 0.0) + blk["gain"]
+                    tried.append("%s took %.3f (%s)" % (s.label, blk["gain"], self._say(blk)) + ("; stopped: " + why if why else ""))
+                else:
+                    tried.append("%s took nothing: %s" % (s.label, why))
+            ref_len[g] = t["ref_natural"] + sum(added.get(n, 0.0) for n in t["ref_nets"])
+            if rem > 1e-3:
+                missing[t["ref"]] = round(rem, 4)
+                at = next((s.p0 for n in t["ref_nets"] for s in by_net.get(n, [])), None)
+                self.findings.append(F("TUNE", "%s (reference of %s): missing %.3f mm at site(s): %s (need %.3f; %s %.3f is %.3f above the window)" % (
+                    t["ref"], g, rem, "; ".join(tried) if tried else "no site", t["ref_need"], t["longest_net"], t["longest"],
+                    t["longest"] - ref_len[g] - t["hi"]), t["ref_nets"][0] if t["ref_nets"] else None, at))
+            notes[t["ref"]] = tried
+        if ref_len:
+            T = self.targets(ref_len)
         need = {n: t["need"][n] for t in T.values() for n in t["nets"]}
-        added, missing, notes = {}, {}, {}
         for net in sorted(need, key=lambda n: (-need[n], n)):        # the neediest net picks its room first
             rem = need[net]
             if rem < 1e-4:
@@ -713,7 +801,8 @@ class Tuning:
                 where = "; ".join(tried) if tried else "no site"
                 at = by_net[net][0].p0 if by_net.get(net) else None
                 t = T[self.S.group_of[net]]
-                inside = self.natural[net]["length"] + added.get(net, 0.0) >= t["longest"] - t["spread"] - 1e-6
+                low = t["ref_length"] + t["lo"] if t.get("kind") == "ref" else t["longest"] - t["spread"]
+                inside = self.natural[net]["length"] + added.get(net, 0.0) >= low - 1e-6
                 self.findings.append(F("NOTE" if inside else "TUNE", "%s: missing %.3f mm at site(s): %s (need %.3f)%s" % (
                     net, rem, where, need[net], "; inside the window all the same" if inside else ""), net, at))
             notes[net] = tried
@@ -731,6 +820,27 @@ class Tuning:
         self.findings += self.check()
         groups = {}
         for g, t in T.items():
+            if t.get("kind") == "ref":
+                R = ref_len.get(g, t["ref_natural"])
+                w0, w1 = R + t["lo"], R + t["hi"]
+                rows = {n: {"natural": self.natural[n]["length"], "need": t["need"][n], "added": round(added.get(n, 0.0), 4),
+                            "length": self.lens[n]["length"], "to_window": round(min(self.lens[n]["length"] - w0, w1 - self.lens[n]["length"]), 4)}
+                        for n in t["nets"]}
+                worst = min(t["nets"], key=lambda n: (rows[n]["to_window"], n))
+                for n in t["nets"]:
+                    if rows[n]["length"] > w1 + 1e-6:
+                        self.findings.append(F("TUNE", "%s: %.3f mm above the window of %s (%s %.3f %+g)" % (
+                            n, rows[n]["length"] - w1, g, t["ref"], R, t["hi"]), n))
+                mem = t["nets"] + t["ref_nets"]
+                groups[g] = {"kind": "ref", "ref": t["ref"], "ref_nets": t["ref_nets"], "ref_natural": t["ref_natural"],
+                             "ref_target": t["ref_target"], "ref_length": round(R, 4), "lo": t["lo"], "hi": t["hi"],
+                             "longest": t["longest"], "spread": t["spread"], "target": t["target"], "window": [round(w0, 4), round(w1, 4)],
+                             "inside": sum(1 for n in t["nets"] if w0 - 1e-6 <= self.lens[n]["length"] <= w1 + 1e-6), "total": len(t["nets"]),
+                             "worst": [worst, rows[worst]["to_window"]], "nets": rows,
+                             "blocks": sum(1 for b in self.blocks if b["net"] in mem),
+                             "added": round(sum(added.get(n, 0.0) for n in mem), 4),
+                             "missing": {n: missing[n] for n in t["nets"] + [t["ref"]] if n in missing}}
+                continue
             lo = t["longest"] - t["spread"]
             rows = {n: {"natural": self.natural[n]["length"], "need": t["need"][n], "added": round(added.get(n, 0.0), 4),
                         "length": self.lens[n]["length"], "to_window": round(self.lens[n]["length"] - lo, 4)} for n in t["nets"]}

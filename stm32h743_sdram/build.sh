@@ -164,11 +164,18 @@ route1|route2)
   G2=""; [ "$STEP" = route2 ] && G2=$(echo "$ROUTE2_GROUPS" | awk 'NF { printf "%s ", $1 }')
   echo "== placement and pours (the groups are stripped first, then rebuilt in order)"
   $PY "$D/copper_report.py" unfill "$BRD" 2>&1 | quiet
+  # the SDRAM group's serpentines need the other groups' copper as obstacles (tune.py, TUNE_OBSTACLES in
+  # routes_sdram.py): a copy of the board as the last build left it, without the SDRAM group's own copper
+  cp "$BRD" "$O/obstacles.kicad_pcb"; cp "$D/$N.busroute.json" "$O/obstacles.busroute.json"
+  $PY "$D/copper_report.py" strip "$O/obstacles.kicad_pcb" sdram 2>&1 | quiet
   $PY "$D/copper_report.py" strip "$BRD" sdram power power_bga $G2 2>&1 | quiet
+  # route2 strips every group: what copper is left belongs to no script (removed, listed)
+  [ "$STEP" = route2 ] && $PY "$D/copper_report.py" orphans "$BRD" 2>&1 | quiet | tee "$O/orphans.txt"
   $PY "$D/place.py" 2>&1 | quiet
   $PY "$R/scripts/cu_sketch.py" check "$D/copper.sketch" --board "$BRD" 2>&1 | quiet > "$O/sketch_check.txt" || { cat "$O/sketch_check.txt"; exit 1; }
   $PY "$R/scripts/cu_sketch.py" apply "$D/copper.sketch" "$BRD" 2>&1 | quiet | grep -v "^warning: a ~" || true
   echo "== SDRAM group on the board"
+  SDRAM_TUNE_OBSTACLES="$O/obstacles.kicad_pcb" \
   $PY "$R/scripts/busroute/build.py" "$D/routes_sdram.py" --write-board --no-refill --no-pictures --out "$O/sdram" > "$O/sdram_build.txt" 2>&1 && SB=0 || SB=$?
   grep -E "^写入|^\[间距\]|^结论|^ERROR|^  ! " "$O/sdram_build.txt" || tail -5 "$O/sdram_build.txt"
   echo "== power group on the board (after the bus)"

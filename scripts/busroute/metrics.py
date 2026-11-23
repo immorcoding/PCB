@@ -203,6 +203,13 @@ def table(m):
             "；对基准 %+.3f .. %+.3f" % tuple(gr["to_ref_range"]) if gr["to_ref_range"] else "", gr["detour_total"]))
     if tu:
         for name, g in tu["groups"].items():
+            if g.get("kind") == "ref":
+                A("       蛇形 组 %s：基准 %s %.3f -> %.3f（目标 %.3f），窗口 %.3f .. %.3f（基准 %+g .. %+g），成员目标 %.3f；窗口内 %d / %d 根，"
+                  "最差 %s 离窗口边 %+.3f；%d 块蛇形，补 %.3f mm；没补够：%s" % (
+                      name, g["ref"], g["ref_natural"], g["ref_length"], g["ref_target"], g["window"][0], g["window"][1], g["lo"], g["hi"],
+                      g["target"], g["inside"], g["total"], g["worst"][0], g["worst"][1], g["blocks"], g["added"],
+                      "，".join("%s 差 %.3f" % kv for kv in g["missing"].items()) or "无"))
+                continue
             A("       蛇形 组 %s：窗口 %.3f .. %.3f（最长 %s − %g），目标 %.3f；窗口内 %d / %d 根，最差 %s 离窗口下沿 %+.3f；%d 块蛇形，补 %.3f mm；没补够：%s" % (
                 name, g["window"][0], g["window"][1], g["ref"], g["spread"], g["target"], g["inside"], g["total"], g["worst"][0], g["worst"][1],
                 g["blocks"], g["added"], "，".join("%s 差 %.3f" % kv for kv in g["missing"].items()) or "无"))
@@ -272,8 +279,13 @@ def budget_table(b, group, fname):
     A("容量按 RTE-2 的式子，不查间距：单侧 n = ⌊(L − 2·keep) / 2p⌋ 个弯，补 n·(2a − 0.858p)；双侧 n = ⌊(L − 2·keep) / p⌋ − 1 个弯，补 2na − 0.429p(n + 1)")
     for g, t in b["groups"].items():
         A("")
-        A("组 %s：最长 %s %.3f 是基准，容差 %g，余量 %g → 目标 %.3f%s" % (g, t["ref"], t["longest"], t["spread"], s["margin"], t["target"],
-                                                          "；没有走线的：" + " ".join(t["missing_nets"]) if t["missing_nets"] else ""))
+        if t.get("kind") == "ref":
+            A("组 %s：基准 %s 自然长度 %.3f，最长成员 %s %.3f，窗口 基准 %+g .. %+g，余量 %g → 基准目标 %.3f（要补 %.3f），成员目标 %.3f%s" % (
+                g, t["ref"], t["ref_natural"], t["longest_net"], t["longest"], t["lo"], t["hi"], s["margin"], t["ref_target"], t["ref_need"],
+                t["target"], "；没有走线的：" + " ".join(t["missing_nets"]) if t["missing_nets"] else ""))
+        else:
+            A("组 %s：最长 %s %.3f 是基准，容差 %g，余量 %g → 目标 %.3f%s" % (g, t["ref"], t["longest"], t["spread"], s["margin"], t["target"],
+                                                              "；没有走线的：" + " ".join(t["missing_nets"]) if t["missing_nets"] else ""))
         A("  %-11s %8s %8s  %-50s %4s %9s %9s" % ("网络", "自然长度", "要补", "补线位置（层，直线长，朝向，腿间距）", "弯数", "容量@%g" % s["amp"], "容量@%g" % s["amp_max"]))
         for r in sorted(t["rows"], key=lambda r: _natural(r["net"])):
             first = True

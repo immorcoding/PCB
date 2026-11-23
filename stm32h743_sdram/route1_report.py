@@ -161,6 +161,19 @@ def main(board_path, odir):
             nets_g = list(x["nets"])
             after = {n: dl.get(n, Ln["nets"][n]["length"]) for n in nets_g}
             before = {n: nat.get(n, Ln["nets"][n]["length"]) for n in nets_g}
+            if x.get("kind") == "ref":                     # a reference group: the clock (summed pieces) and its members
+                R = sum(dl.get(n, Ln["nets"][n]["length"]) for n in x["ref_nets"])
+                R0 = sum(nat.get(n, Ln["nets"][n]["length"]) for n in x["ref_nets"])
+                lo, hi = R + x["lo"], R + x["hi"]
+                out_ = {n: (v - hi if v > hi else v - lo) for n, v in after.items() if not (lo - 1e-6 <= v <= hi + 1e-6)}
+                A("       蛇形 组 %s：基准 %s %.3f -> %.3f（DRC 量；目标 %.3f），窗口 %.3f .. %.3f（基准 %+g .. %+g）；成员对基准 %+.3f .. %+.3f -> %+.3f .. %+.3f；"
+                  "窗口内 %d / %d 根；%d 块，补 %.3f mm；窗口外：%s" % (
+                      g, x["ref"], R0, R, x["ref_target"], lo, hi, x["lo"], x["hi"], min(before.values()) - R0, max(before.values()) - R0,
+                      min(after.values()) - R, max(after.values()) - R, len(nets_g) - len(out_), len(nets_g), x["blocks"], x["added"],
+                      "，".join("%s %+.3f" % kv for kv in sorted(out_.items())) or "无"))
+                if out_:
+                    bad.append("%s window" % g)
+                continue
             A("       蛇形 组 %s：最长 - 最短 %.3f -> %.3f（DRC 量）；窗口 %.3f .. %.3f（最长 %s − %g），目标 %.3f；窗口内 %d / %d 根；"
               "最差 %s 离窗口下沿 %+.3f；%d 块，补 %.3f mm；没补够：%s" % (
                   g, max(before.values()) - min(before.values()), max(after.values()) - min(after.values()), x["window"][0], x["window"][1],
