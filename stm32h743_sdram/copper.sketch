@@ -46,13 +46,16 @@ region L5_3V3 +3V3 L5 whole
 # and C108, R104 (EN pull-up), R814 (CAN 5 V link). A notch at y 20.8-24.4 leaves R813's +3V3 pad on +3V3 with
 # room for its two vias. The strip and the leg are 3 mm wide: routes_power.py lets no via of another net cut them.
 region L5_5V +5V L5
+# opt1 (review 1): the lower west edge x 63 -> 63.1 with the +3V3_SDRAM east edge (x 62 -> 62.6, gap 0.5): FMC_D16 (L4)
+# and LCD_BL_PWM (L6) at x 62.0 then run 0.6 mm inside +3V3_SDRAM instead of over the empty 1 mm strip between the blocks
   33.5,5.5  72,5.5  72,20.8  67.2,20.8  67.2,24.4  72,24.4  72,52.3  64,52.3  64,55.5  51.3,55.5  51.3,48
-  63,48  63,28  61.5,28  61.5,8.5  36.5,8.5  36.5,22.5  33.5,22.5
+  63.1,48  63.1,28  61.5,28  61.5,8.5  36.5,8.5  36.5,22.5  33.5,22.5
 
 # +3V3A: under the codec, its analog decoupling and the LDO output (C111, TP104); a notch at x 24.4-27.6 keeps
 # R610's +3V3 pad and its two vias on +3V3 (open to the south)
 region L5_3V3A +3V3A L5
-  8.6,17.8  30.6,17.8  30.6,24.7  27.6,24.7  27.6,21.6  24.4,21.6  24.4,31.9  8.6,31.9
+# opt1 (review 1): the lobe's bottom (x 27.6-30.6) y 24.7 -> 24.0: RMII_TXD0's L4 row (y 24.8) then lies over +3V3, not in the gap
+  8.6,17.8  30.6,17.8  30.6,24.0  27.6,24.0  27.6,21.6  24.4,21.6  24.4,31.9  8.6,31.9
 
 # Block rails behind 0 ohm links (user 2026-11-20). The two BGA blocks are on the power plane because their supply
 # balls reach it through vias under the package (five blocks on the power plane, user 2026-11-21; L5 since 2026-11-23). Each reaches
@@ -64,23 +67,28 @@ region L5_3V3A +3V3A L5
 # via, the VDDA filter having left the ball field
 region L5_3V3_MCU +3V3_MCU L5 islands=remove
   34,31  39.6,31  39.6,25  44.2,25  44.2,31  46,31  46,44.8  36.4,44.8  36.4,48.2  30.5,48.2  30.5,44.8  34,44.8
+# opt1 (review 1): the north-west corner (x 52-55.6) y 29.5 -> 30.2, so that FMC_SDNCAS (L4, y 29.25) and the NBL1 / NBL2
+# crossings lie over +3V3; the east edge x 62 -> 62.6 (see L5_5V)
 region L5_3V3_SDRAM +3V3_SDRAM L5 islands=remove
-  52,29.5  55.6,29.5  55.6,25  61,25  61,29.5  62,29.5  62,44.5  52,44.5
+  52,30.2  55.6,30.2  55.6,25  61,25  61,29.5  62.6,29.5  62.6,44.5  52,44.5
 
 # ---- outer-layer local pours. One or more per copper-class net of SPEC 5, around the placed pads.
 # 12 V input chain, right edge, lower part: jack pin 1 and fuse; fuse to P-MOS drain
 region L1_12V_JACK +12V_JACK L1
   67,58.9  69.45,58.9  69.45,57.15  73.15,57.15  73.15,60.85  67,60.85
 region L1_12V_IN +12V_IN L1
-  67.15,53.9  69,53.9  69,58.6  67.15,58.6
+  67.2,53.9  69,53.9  69,58.6  67.2,58.6
 # +12V: from the 5 V buck input (C102, C104 across the VIN end of the package as in the LMR51420 layout example;
 # both ground pads close the loop through vias, U56) down a column at x 65.55-67 between the feedback divider and
 # the IC to C103 and TP101, a column at x 61.7-62.8 west of the zener past the P-MOS source, to the bulk
 # capacitor C114 and across above it to the TVS D102. The SDRAM sketch's L1 tracks end at y 46.3, so the block
 # round C103 starts at y 46.6. U101 pin 5 (EN, tied to +12V) is reached by a track (it sits between FB and BOOT).
+# opt1 (look 9): the pocket round the zener D101 (x 62.8-67, y 52.1-54.95) is part of the region now; the pour keeps
+# its clearance to RPP_GATE's pads, track and via (the pocket was an empty hole: no ground pad in it); +12V_IN's west
+# edge 0.05 east (x 67.2) for the 0.2 mm gap to the x 67 edge
 region L1_12V +12V L1
   65.55,37.7  71.3,37.7  71.3,42.4  69.8,42.4  69.8,39.75  67,39.75
-  67,52.1  62.8,52.1  62.8,54.95  66.95,54.95  66.95,56.7  62.8,56.7  62.8,61.05  72,61.05  72,67.2  69.5,67.2
+  67,56.7  62.8,56.7  62.8,61.05  72,61.05  72,67.2  69.5,67.2
   69.5,62.45  63.35,62.45  63.35,65.5  58,65.5  58,63.5  61.7,63.5  61.7,46.6  65.55,46.6
 # 5 V buck: switch node kept small (pin 2 to the inductor; the bootstrap capacitor C101 by a track), output from
 # the inductor to C105-C107 and down a 1.3 mm column at x 76.4-77.7 to C107 and the link R110 (R102, the feedback

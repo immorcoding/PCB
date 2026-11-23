@@ -104,7 +104,13 @@ FIXED = [("R102.1", [("L1", ["R102.1", (65.0, 39.9)]), ("via", (65.0, 39.9)),
          ("C217.1", [("L1", ["C217.1", (42.025, 26.925)]), ("via", (42.025, 26.925))]),
          # c9: C225's ground via 0.445 west of where the search put it (27.645, 37.9): the west loop's corridor took one
          # more lane (RMII_TXD1 at x 27.65)
-         ("C225.2", [("L1", ["C225.2", (27.2, 37.9)]), ("via", (27.2, 37.9))])]
+         ("C225.2", [("L1", ["C225.2", (27.2, 37.9)]), ("via", (27.2, 37.9))]),
+         # opt1: Y201's south-west ground pad by a via south-west of it (the search put it at (30.55, 41.05), on FMC_A6's
+         # new L4 lane x 30.75 south of the crystal)
+         ("Y201.2", [("L1", ["Y201.2", (30.55, 40.4), (29.95, 41.0)]), ("via", (29.95, 41.0))]),
+         # opt1: C226's ground via where it stood (the search moved it onto ETH_MDIO's L4 diagonal once FMC_A6's L1 leg
+         # passed 0.18 mm from this site)
+         ("C226.2", [("L1", ["C226.2", (31.92, 42.2)]), ("via", (31.92, 42.2))])]
 FIXED_PADS = {pad for pad, _ in FIXED}
 # ---- ground
 GND_REG = ["U101.1", "U102.2", "U103.2", "U104.2", "U701.2"]                  # regulator / switcher ground pins
@@ -182,6 +188,8 @@ def routes(job):
             P.tie_via(name, plane=True, lmax=1.6)
             done.add(name)
     for p in gnd:
+        if p.name in FIXED_PADS:
+            continue
         if p.name in GND_IC or p.name in GND_ISLAND:
             P.tie_via(p, lmax=2.5)
         elif p.ref in GND_CONN:

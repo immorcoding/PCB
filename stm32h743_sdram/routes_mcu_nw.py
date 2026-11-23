@@ -55,7 +55,8 @@ SPREAD_CK = float(os.environ.get("SD_SPREAD_CK", "4.7"))
 SPREAD_D = float(os.environ.get("SD_SPREAD_D", "3.15"))
 TUNING = {"groups": {"sdmmc_ck": {"nets": ["SDMMC1_CK", "SDMMC1_D1"], "spread": SPREAD_CK},
                      "sdmmc_d": {"nets": SD_DATA, "spread": SPREAD_D}},
-          "margin": 0.3, "radius": 0.15, "amp": 0.5, "amp_max": 2.0, "pitch": {"default": 0.3},
+          # opt1 (review 1, RTE-7): the clock at the clock pitch 0.5 (radius 0.25), the data lines at 0.3 (radius 0.15)
+          "margin": 0.3, "radius": 0.25, "amp": 0.5, "amp_max": 2.0, "pitch": {"default": 0.3, "SDMMC1_CK": 0.5},
           "end": 0.35, "clr": 0.19, "area_gap": 0.127, "keep": 0.7}
 GATE_N, GATE_W = 27.6, 30.0
 THIN = 0.1016
@@ -180,11 +181,14 @@ def west():
     # R603.1 west to a second via and on L6 to the via south-west of U601.31 (the pin opens to the south only:
     # pins 30 / 32 and the +1V8 pour box it in); C612.1 hangs below R603.1 (a 0.12 mm dog-leg: the pads are 0.03 mm
     # apart in x)
+    # opt1 (review 1): L6 runs on through the via at (23.75, 28.2) straight to the codec's via (one SW diagonal); the
+    # via feeds R603 / C612 by its L1 stub (a branch at the via, accepted for this slow line). Was: R603.1 back west on
+    # L1 to a second via (23.6, 28.75) and L6 from there (5 vias, now 4)
     R["CODEC_NRST"] = [out("CODEC_NRST", [(31.4, 34.4), (30.9, 34.9), (30.9, 36.25), (30.4, 36.75), (27.15, 36.75)]) + [
         V(27.15, 36.75), ("L6", [(27.15, 36.75), (27.15, 29.4), (25.95, 28.2), (23.75, 28.2)]), V(23.75, 28.2),
         ("L1", [(23.75, 28.2), (24.69, 28.2), "R603.1"])],
         [("L1", ["R603.1", (24.97, 28.72), (24.97, 29.6), "C612.1"])],
-        [("L1", ["R603.1", (23.75, 28.6), (23.6, 28.75)]), V(23.6, 28.75), ("L6", [(23.6, 28.75), (22.95, 29.4), (19.75, 29.4)]),
+        [("L6", [(23.75, 28.2), (22.55, 29.4), (19.75, 29.4)]),
          V(19.75, 29.4), ("L1", [(19.75, 29.4), (20.25, 28.9), "U601.31"])]]
     # NRST: west between the crystal bodies (y 37.2), L3 north at x 25.6, east along y 24.0 / 22.0 north of the SAI
     # vias, a via at (39.6, 14.6) west of the SWD lanes, L1 into C224.1 -> SW201.1 -> J803.10
@@ -196,12 +200,19 @@ def west():
     return R
 
 
+# opt1 (review 1, tidy 20): a ground via at the south end of the L6 ground finger between SD_CD (x 41.6) and CAN_STB
+# (x 42.6), which had one via at its north end (north of C217's +3V3_MCU pad, between SWO's L1 / L3 legs and CMD's L3)
+GND_VIAS = [(42.1, 25.2)]
+
+
 def routes(job):
+    job.profile.classes["PWR"]["via"] = (0.45, 0.2)          # ground vias: this board's 0.45 / 0.2
+    job.stitch += [("GND", p) for p in GND_VIAS]
     R = north()
     R.update(west())
     # serpentine sites of the SD lines (TUNING): CK on its L6 lane (humps east, D2's lane 2.15 mm east of it), D3 and D2
     # on their rows (humps south, free down to the FDCAN rows), CMD on its row (humps north)
-    job.slot("SDMMC1_CK", "L6", (43.75, 23.0), (43.75, 18.85), side="R")
+    job.slot("SDMMC1_CK", "L6", (43.75, 24.4), (43.75, 18.85), side="R")      # opt1: from the via (was y 23.0): room for the 0.5 pitch
     job.slot("SDMMC1_D3", "L3", (46.65, 18.75), (51.3, 18.75), side="R")
     job.slot("SDMMC1_D2", "L6", (46.25, 18.75), (49.7, 18.75), side="R")
     job.slot("SDMMC1_CMD", "L3", (42.95, 18.5), (52.5, 18.5), side="L")

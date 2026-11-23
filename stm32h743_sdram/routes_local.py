@@ -54,6 +54,7 @@ ORIGIN = (100, 100)
 GROUP = "local"
 VIA_LIMIT = 4
 YIELD_NETS = ["GND"]          # the L1 / L6 ground pours give way to the tracks
+OPEN_ENDS = True              # opt1: EN_3V3A branches at a via (R108's chain starts at the via (67.25, 32.4))
 DRC_IGNORE = {"solder_mask_bridge": "mask webs between fine-pitch pads of the footprints (QFN, FPC), there before this group"}
 VIEWS = [("power", 60.0, 28.0, 80.0, 62.0, 40), ("can", 66.0, 7.0, 84.0, 28.0, 45), ("lcd", 10.0, 54.0, 60.0, 74.0, 30),
          ("top", 28.0, 14.0, 70.0, 36.0, 25),
@@ -86,16 +87,17 @@ def power():
         [("L1", ["R104.2", (73.4, 35.2), "TP106.1"])],
     ]
     R["EN_3V3A"] = [
-        # U102.5 -> via under the IC body -> L4 -> via north of R108.2
-        [("L1", ["U102.5", (69.5, 32.4)]), V(69.5, 32.4),
-         ("L4", [(69.5, 32.4), (70.1, 33.0), (73.61, 33.0), (74.11, 33.5)]), V(74.11, 33.5),
-         ("L1", [(74.11, 33.5), "R108.2"])],
         # U102.5 -> west -> L4 north, west at y 22.3 (north of the SDRAM loops and the decoupling vias), up to TP107
         [("L1", ["U102.5", (67.25, 32.4)]), V(67.25, 32.4),
          ("L4", [(67.25, 32.4), (66.75, 31.9), (66.75, 22.8), (66.25, 22.3), (39.6, 22.3), (39.1, 21.8), (39.1, 16.9),
                  (38.6, 16.4)]), V(38.6, 16.4),
          ("L1", [(38.6, 16.4), "TP107.1"])],
         [("L1", ["TP107.1", (36.0, 18.0), (31.1375, 18.0), (30.6375, 18.5), "U103.3"])],
+        # opt1 (review 1): R108's branch leaves the west via (67.25, 32.4) on L4, south first (no turn-back across the
+        # via) and east along y 33.0 (was U102.5 -> a second via under the IC body (69.5, 32.4) -> L4: one via less;
+        # a branch at the via, accepted for this enable line)
+        [("L4", [(67.25, 32.4), (67.25, 32.75), (67.5, 33.0), (73.61, 33.0), (74.11, 33.5)]), V(74.11, 33.5),
+         ("L1", [(74.11, 33.5), "R108.2"])],
     ]
     R["EN_1V8"] = [
         [("L1", ["TP108.1", (10.51, 32.51), "R109.2"])],

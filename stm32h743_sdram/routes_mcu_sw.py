@@ -140,11 +140,12 @@ JOG = 0.25                     # the bundle steps east right below the exits: of
 
 
 def east_lane(net):
+    # opt1 (review 1): each lane's diagonal from its exit runs on to the lower x (+ JOG) and the lane goes straight down
+    # from there (was: down at x_k, a 0.25 mm step east at y 41.4 - 42.6 and on down: 14 bends, 3 `crowded`)
     k = EAST.index(net) + 1
     xk = r4(46.25 + P * k)
     ye = exit_of(net)[1]
-    a = r4(41.5 + (10 - k) * 0.0947)                    # the eastmost lane jogs first
-    return k, xk, [(xk, ye + xk - 46.0), (xk, a), (xk + JOG, a + JOG)]
+    return k, xk, [(r4(xk + JOG), r4(ye + xk + JOG - 46.0))]
 
 
 def east_bundle():
@@ -314,10 +315,13 @@ def west():
     R["RMII_CRS_DV"] = go("RMII_CRS_DV", [(36.1, 43.4), (35.7, 43.8), (33.05, 43.8), (32.55, 44.3)], V(32.55, 44.3),
                           Lp("L1", [(32.55, 44.3), (32.4, 44.45), (32.4, 46.8), (29.45, 49.75), "U501.11"]))
     # REF_CLK / MDIO: L4 west, SW in parallel, vias in the field; L1 west / SW into the PHY
-    R["RMII_REF_CLK"] = go("RMII_REF_CLK", [(31.65, 40.9), (29.2, 43.35)], V(29.2, 43.35),
-                           Lp("L1", [(29.2, 43.35), (26.01, 43.35), (23.86, 45.5), (23.86, 47.3), (23.15, 48.01), "U501.14"]))
-    R["ETH_MDIO"] = [go("ETH_MDIO", [(31.65, 41.55), (28.95, 44.25)], V(28.95, 44.25),
-                        Lp("L1", [(28.95, 44.25), (28.95, 45.9), (26.5, 48.35), "R503.2"])),
+    # opt1: both turn south-west 0.27 mm further east (x 31.92, was 31.65; vias 0.27 east between LCD_DE's L6 lane
+    # (x 29.9) and C226's ground via (31.92, 42.2), the L1 legs 0.27 longer, same lengths): FMC_A6 drops to L4 at
+    # (30.66, 41.58), south of the HSE crystal, north of REF_CLK's diagonal
+    R["RMII_REF_CLK"] = go("RMII_REF_CLK", [(31.92, 40.9), (29.47, 43.35)], V(29.47, 43.35),
+                           Lp("L1", [(29.47, 43.35), (26.01, 43.35), (23.86, 45.5), (23.86, 47.3), (23.15, 48.01), "U501.14"]))
+    R["ETH_MDIO"] = [go("ETH_MDIO", [(31.92, 41.55), (29.22, 44.25)], V(29.22, 44.25),
+                        Lp("L1", [(29.22, 44.25), (29.22, 45.63), (26.5, 48.35), "R503.2"])),
                      [Lp("L1", ["R503.2", "U501.12"])]]
     return R
 
@@ -350,8 +354,10 @@ def open_nets():
     # straight lane past the power area's vias; it follows the gap between the +3V3_SDRAM and +5V blocks of L5) and
     # west at y 56.25 to a via east of R706, L1 into R706.1 and on to U701.4
     R["LCD_BL_PWM"] = [go("LCD_BL_PWM", [(38.05, 27.33)], V(38.05, 27.33),
-                          Lp("L4", [(38.05, 27.33), (38.5, 26.88), (41.15, 26.88), (41.67, 27.4), (47.0, 27.4), (47.2, 27.2)]),
-                          V(47.2, 27.2), Lp("L1", [(47.2, 27.2), (47.8, 27.8), (61.8, 27.8), (62.0, 28.0)]), V(62.0, 28.0),
+                          # opt1 (review 1): on along L4 north of the SDRAM's L4 river (y 26.7) to the via east of the
+                          # SDRAM, which goes straight to L6 (was: a via at (47.2, 27.2) and L1 along y 27.8; one via less)
+                          Lp("L4", [(38.05, 27.33), (38.5, 26.88), (41.15, 26.88), (41.67, 27.4), (47.0, 27.4), (47.7, 26.7),
+                                    (61.5, 26.7), (62.0, 27.2), (62.0, 28.0)]), V(62.0, 28.0),
                           Lp("L6", [(62.0, 28.0), (62.0, 55.75), (61.5, 56.25), (58.5, 56.25)]), V(58.5, 56.25),
                           Lp("L1", [(58.5, 56.25), (58.16, 55.91), "R706.1"])),
                        [Lp("L1", ["R706.1", (57.8, 56.55), (57.3, 57.05), "U701.4"])]]
@@ -386,8 +392,10 @@ def codec_i2c():
     # jogs staggered 0.0933 so the parallel diagonals keep the pitch)
     a1, b1 = 59.2, 48.9
     a2, b2 = r4(a1 + 0.0933), r4(b1 - 0.0933)
-    scl = [Lp("L1", ["R703.2", (29.85, 65.89), (29.85, 65.7)]), V(29.85, 65.7),
-           Lp("L6", [(29.85, 65.7), (29.4, 65.25), (23.25, 65.25)]), V(23.25, 65.25),
+    # opt1 (review 1): the codec branch leaves the MCU line's via (30.45, 64.0) north of R703 on L6 (west along y 64.0,
+    # north of SDA's via, then SW onto the y 65.25 run); was R703.2 back up on L1 to a second via (29.85, 65.7). A
+    # branch at the via (RTE-11, accepted for I2C4: one via less)
+    scl = [Lp("L6", [(30.45, 64.0), (28.3, 64.0), (27.05, 65.25), (23.25, 65.25)]), V(23.25, 65.25),
            Lp("L4", [(23.25, 65.25), (22.83, 64.83), (22.83, a2), (24.09, a2 - 1.26), (24.09, b2), (22.83, b2 - 1.26),
                      (22.83, 24.1425), (22.1875, 23.5)]), V(22.1875, 23.5),
            Lp("L1", [(22.1875, 23.5), "U601.8"])]
@@ -398,15 +406,19 @@ def codec_i2c():
            Lp("L1", [(20.75, 22.65), "U601.9"])]
     # SDA's pull-up R602 from U601.9 (its second way in, from the north-east): via, L6 north of the codec's ground via,
     # east along y 22.01 (between the +3V3A / +3V3 vias and the ground via), via north of R602.2
-    sda_pu = [Lp("L1", ["U601.9", (21.4, 22.9125)]), V(21.4, 22.9125),
-              Lp("L6", [(21.4, 22.9125), (22.6, 21.7125), (24.95, 21.7125), (25.25, 22.0125), (38.1375, 22.0125),
+    # opt1 (review 1): from the codec's SDA via (20.75, 22.65) on L6 (was U601.9's second way in by L1 to its own via
+    # (21.4, 22.9125)); a branch at the via, one via less
+    sda_pu = [Lp("L6", [(20.75, 22.65), (21.6875, 21.7125), (24.95, 21.7125), (25.25, 22.0125), (38.1375, 22.0125),
                         (38.4, 21.75)]), V(38.4, 21.75),
               Lp("L1", [(38.4, 21.75), "R602.2"])]
     # SCL's pull-up R601 (c8, C601 moved 0.32 mm east): from U601.8's second way in (east, then north-east to a via
     # west of C601), L6 south-east and east along y 24.25 (south of the codec's +3V3 / +3V3A vias, north of the SAI
     # vias), north-east past SAI1_SD_B's via, east along y 22.49 (south of SDA's pull-up row) to a via west of R601.2
-    scl_pu = [Lp("L1", ["U601.8", (22.2, 24.25), (22.6, 23.85)]), V(22.6, 23.85),
-              Lp("L6", [(22.6, 23.85), (23.0, 24.25), (29.5, 24.25), (31.26, 22.49), (36.5, 22.49)]), V(36.5, 22.49),
+    # opt1 (review 1): from the codec's SCL via (22.1875, 23.5) on L6 (was U601.8's second way in by L1 to its own via
+    # (22.6, 23.85)); a branch at the via, one via less
+    # opt1 (look 10): the east run 0.25 lower (y 24.5): the ground pour now passes south of the codec's +3V3 vias into
+    # the wedge between this line and SDA's (was cut off there and left a void)
+    scl_pu = [Lp("L6", [(22.1875, 23.5), (23.1875, 24.5), (29.25, 24.5), (31.26, 22.49), (36.5, 22.49)]), V(36.5, 22.49),
               Lp("L1", [(36.5, 22.49), "R601.2"])]
     return {"I2C4_SCL": [scl, scl_pu], "I2C4_SDA": [sda, sda_pu]}
 

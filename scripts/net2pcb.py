@@ -6,8 +6,9 @@ KiCad's "Update PCB from Schematic" / AD's "Update PCB Document").
 - Footprints missing on the board are loaded from the stock libraries (or from a
   project library <lib>.pretty next to the board) and dropped at the board origin
   (placement is a separate step).
-- Footprints already on the board keep their position; value, schematic link
-  and pad nets are refreshed. If the schematic names a different footprint,
+- Footprints already on the board keep their position; value, schematic link,
+  pad nets and the "do not populate" attribute (the symbol's `dnp`, a netlist
+  property) are refreshed. If the schematic names a different footprint,
   the old one is replaced in place (same position, rotation and side).
 - Footprints on the board that are no longer in the netlist are reported,
   not deleted.
@@ -29,10 +30,12 @@ def read_netlist(path):
     comps = {}
     for c in find_all(find(t, "components"), "comp"):
         sp = find(c, "sheetpath")
+        props = {str(find(pr, "name")[1]) for pr in find_all(c, "property")}
         comps[str(find(c, "ref")[1])] = {
             "value": str(find(c, "value")[1]),
             "footprint": str(find(c, "footprint")[1]),
             "path": str(find(sp, "tstamps")[1]) + str(find(c, "tstamps")[1]),
+            "dnp": "dnp" in props,
         }
     pads = {}
     for n in find_all(find(t, "nets"), "net"):
@@ -83,6 +86,9 @@ def main(net_path, pcb_path):
                 added += 1
         fp.SetValue(c["value"])
         fp.SetPath(pcbnew.KIID_PATH(c["path"]))
+        if fp.IsDNP() != c["dnp"]:
+            fp.SetDNP(c["dnp"])
+            print(f"{ref}: DNP {'set' if c['dnp'] else 'cleared'}")
         for pad in fp.Pads():
             name = pads.get((ref, pad.GetNumber()))
             if name:

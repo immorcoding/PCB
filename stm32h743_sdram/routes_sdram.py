@@ -55,7 +55,7 @@ DRC_IGNORE = {"skew_out_of_range": "2026-11-23 tuning (RTE-15): no byte lane rea
 # allows: lane 0 by D7 (inner lane of l6s, no room), lane 1 by D13 (2 humps of 1.975 between BA0 and D14 on its 2.85 mm
 # straight), lane 2 by D21 / D22 (inner lanes of l6n), lane 3 by D30 (middle lane of the l1n river); lanes 2 and 3 as
 # before (their blocks kept).
-LANE_SPREAD = {"lane0": float(os.environ.get("SPREAD0", "8.76")), "lane1": float(os.environ.get("SPREAD1", "9.92")), "lane2": float(os.environ.get("SPREAD2", "21.05")), "lane3": float(os.environ.get("SPREAD3", "12.74"))}
+LANE_SPREAD = {"lane0": float(os.environ.get("SPREAD0", "8.76")), "lane1": float(os.environ.get("SPREAD1", "9.92")), "lane2": float(os.environ.get("SPREAD2", "20.72")), "lane3": float(os.environ.get("SPREAD3", "12.74"))}
 # 2026-11-23 (user, SPEC 9): every address / command line within 20 mm of the clock, the clock summed across R201;
 # the clock is lengthened first (pitch 0.5, radius 0.25), then the short address lines (data pitch)
 ADDR_WINDOW = float(os.environ.get("ADDR_WINDOW", "20"))
@@ -73,7 +73,7 @@ TUNE_OBSTACLES = os.environ.get("SDRAM_TUNE_OBSTACLES") or None
 # tracks on L1 / L3 / L4 within x 46-66, y 26-50 (the strip and round the SDRAM). The serpentines themselves keep
 # clear of all other copper through TUNE_OBSTACLES; these boxes are the review check. Was (three-layer state, stop 7
 # not routed): L3 33.2-44.3 x 27.4-31.0 and L4 35.9-43.0 x 43.0-48.6, now the MCU groups' real copper.
-RESERVED = [("L1", 47.2, 27.2, 62.0, 28.0),             # LCD_BL_PWM along the SDRAM's north side
+RESERVED = [("L4", 47.0, 26.6, 62.1, 28.05),            # LCD_BL_PWM along the SDRAM's north side (opt1: L4, was L1 y 27.8)
             ("L1", 46.0, 49.99, 47.25, 50.39),          # LCD_R3 south of the strip
             ("L3", 45.95, 26.0, 46.3, 27.4),            # SDMMC1_D3 north of the MCU's north-east corner
             ("L3", 46.0, 45.88, 49.1, 50.0),            # LCD_G2 below the l6s lanes
@@ -89,7 +89,8 @@ P = 0.25                                   # lane pitch outside the rule areas
 GND_RETURN = [                             # (x, y): the layer changes they serve
     (29.95, 32.2),                         # A10 (30.65, 32.8) and A6 (31.15, 31.9), L4 -> L1 west of the crystal box
     (34.15, 32.95),                        # D28 (33.3, 33.25) L4 -> L1, A3 (32.1, 31.6) has no site of its own
-    (30.45, 39.0),                         # A6 (31.4, 39.0) L1 -> L4
+    # (30.45, 39.0) A6 (31.4, 39.0) L1 -> L4 dropped (opt1): A6 now changes layer at (30.66, 41.58), next to Y201's ground
+    # via (routes_power.py FIXED)
     (35.45, 31.2),                         # D30 / NBL3 (36.1 / 36.75, 31.6) L4 -> L1, north of the MCU
     (45.45, 32.1),                         # D3 (45.525, 32.775) L3 -> L1 (stop 7 part 2: was (43.375, 32.025), on B13's L6 way north;
                                            # c8: 0.15 east, off SWDIO's L6 step from its via (44.875, 32.125))
@@ -218,9 +219,13 @@ def routes(job):
         # west of the ball field, below A6's via (31.4, 39.0): L4 south of row L is then free for the MCU's
         # south-west signal balls (rows L-R), which have no other way out (L1 is closed by A6, L6 by WE and the VDDA
         # filter). Same layer, side and order; 0.59 mm longer
-        "FMC_A10": db("N7", (39.025, 39.925), "L4", [(39.025, 39.275), (38.7, 38.95), (33.5, 38.95), (32.95, 39.5), (31.15, 39.5),
-                                                      (30.9, 39.25), (30.9, 33.05), (30.65, 32.8)])
-                   + [("via", (30.65, 32.8)), ("L1", [(30.65, 32.8), (30.65, 32.5)])],
+        # opt1 (review 1, defect: no foreign copper on L1 at the crystals): A6 no longer comes up between Y201's pads;
+        # A10 keeps its step down to y 39.5 (under Y201.4's ground via (32.25, 38.85)) and goes north at x 31.2, east of
+        # A6's new L4 lane (x 30.66); its via moves from (30.65, 32.8), 0.3 mm from Y202's LSE_IN pad, to (31.2, 32.8)
+        # (0.98 mm), south of A6's via, and L1 steps north-west onto its lane. 0.18 mm shorter
+        "FMC_A10": db("N7", (39.025, 39.925), "L4", [(39.025, 39.275), (38.7, 38.95), (33.5, 38.95), (32.95, 39.5), (31.45, 39.5),
+                                                      (31.2, 39.25), (31.2, 32.8)])
+                   + [("via", (31.2, 32.8)), ("L1", [(31.2, 32.8), (30.65, 32.25)])],
         "FMC_A3": db("J2", (35.775, 37.975), "L4", [(32.3, 37.975), (31.9, 37.575), (31.9, 31.8), (32.1, 31.6)])
                   + [("via", (32.1, 31.6)), ("L1", [(32.1, 31.6), (32.1, 31.3)])],
         "FMC_D28": db("C3", (37.075, 34.075), "L4", [(36.75, 34.4), (33.7, 34.4), (33.3, 34.0), (33.3, 33.25)])
@@ -329,8 +334,12 @@ def routes(job):
         # stop 6 part B: D29 / D30 / NBL3 (lane 3) get no site: the room south of D2 down to D3 (y 32.775) is reserved for
         # the stop-7 escapes of the MCU's east side (main session, 2026-11-22); the other sides are lanes or the SDRAM area
         # A6: L1 west below the MCU, up the west side to y 39.0, L4 past the crystal box, L1 again at (31.15, 31.9)
-        a6 = [("L1", list(m["FMC_A6"].pieces[0][1]) + [(38.525, 43.5), (32.3, 43.5), (31.4, 42.6), (31.4, 39.0)]), ("via", (31.4, 39.0)),
-              ("L4", [(31.4, 39.0), (31.4, 32.15), (31.15, 31.9)]), ("via", (31.15, 31.9)), ("L1", [(31.15, 31.9), (31.15, 31.6)])]
+        # opt1 (review 1 defect): A6 ran on L1 between the HSE crystal's pads to a via at the crystal's centre (31.4, 39.0).
+        # Now it drops to L4 south of the crystal (30.66, 41.58; 0.65 mm below Y201's ground pad, north of REF_CLK's L4
+        # diagonal) and runs north on L4 at x 30.66 west of A10 (the two cross by A10 surfacing first at (31.2, 32.8)
+        # and A6 passing north of that via to its old via). West leg at y 43.3 (was 43.5); 0.08 mm longer
+        a6 = [("L1", list(m["FMC_A6"].pieces[0][1]) + [(38.725, 43.3), (32.38, 43.3), (30.66, 41.58)]), ("via", (30.66, 41.58)),
+              ("L4", [(30.66, 41.58), (30.66, 32.39), (31.15, 31.9)]), ("via", (31.15, 31.9)), ("L1", [(31.15, 31.9), (31.15, 31.6)])]
         st = {"FMC_A6": a6, "FMC_A10": a10, "FMC_A3": m["FMC_A3"], "FMC_D28": s_d28, "FMC_D29": m["FMC_D29"],
               "FMC_D30": s_d30, "FMC_NBL3": s_nbl3, "FMC_NBL0": m["FMC_NBL0"], "FMC_D2": trim(m["FMC_D2"], 0.1)}
         # stop 6: D29 runs its SE leg on to row A (x - y = 21.35 meets y 31.4 at x 52.75); sketch: down the S leg to
@@ -443,14 +452,16 @@ def routes(job):
                   "FMC_D1": m["FMC_D1"][:-1] + [(SEC, [(44.225, 39.275), (44.55, 39.6), (46.35, 39.6), (46.35 + D1Y - 39.6, D1Y),
                                                        (50.8, D1Y), (50.8 + D1Y - 39.8, 39.8), (55.8, 39.8)])]
                   + [("via", (55.8, 39.8)), ("L1", [(55.8, 39.8), "U301.M3"])],
+                  # opt1 (review 1): D0 stays on its row 1 mm further east (NE step at x 51.4, was 50.4), so that its
+                  # serpentine site takes four humps of about 0.68 mm (was two of 1.235 hanging down to y 42.7)
                   "FMC_D0": m["FMC_D0"][:-1] + [(SEC, [(44.225, 39.925), (44.55, 40.25), (46.35, 40.25), (46.35 + D0Y - 40.25, D0Y),
-                                                       (50.4, D0Y), (50.4 + D0Y - 40.6, 40.6), (54.2, 40.6)])]
+                                                       (51.4, D0Y), (51.4 + D0Y - 40.6, 40.6), (54.2, 40.6)])]
                   + [("via", (54.2, 40.6)), ("L1", [(54.2, 40.6), "U301.N2"])]})
         job.slot("FMC_A12", SEC, (46.3, 39.275), (49.675, 39.275), side="R")             # going east, R = south
         job.slot("FMC_A12", SEC, (49.675, 39.275), (51.8, 37.15), side="R")              # its NE diagonal, humps south-east
         L0X = 46.35 + D0Y - 40.25                                                         # D0's corner: both lane-0 blocks start 0.7 after it
         job.slot("FMC_D1", SEC, (L0X, D1Y), (50.8, D1Y), side="R")
-        job.slot("FMC_D0", SEC, (L0X, D0Y), (50.4, D0Y), side="R")
+        job.slot("FMC_D0", SEC, (L0X, D0Y), (51.4, D0Y), side="R")
         # l6ww: WE west, south down the west side, east (joins l6s as its outer lane)
         # stop 6: the SW leg starts at the lead's end (34.0, 38.3); sketch: a W leg and a 0.283 mm SW chamfer (SHARP)
         l6ww = bund("l6ww", ["FMC_SDNWE"], SEC, [("SW", {"FMC_SDNWE": 34.0 + 38.3}),
@@ -486,7 +497,9 @@ def routes(job):
                            "FMC_A8": via_end([(56.2, 38.6), (55.0, 37.4)], (54.2, 37.4), "H2"),
                            "FMC_A9": via_end([(56.6, 37.8), (56.2, 37.4)], (55.8, 37.4), "J3"),
                            "FMC_A7": via_end([(57.0, 37.4), (56.6, 37.0), (53.8, 37.0)], (53.4, 37.4), "H1"),
-                           "FMC_SDNRAS": via_end([(57.4, 38.2), (57.8, 37.8), (60.2, 37.8)], (60.6, 38.2), "J9"),
+                           # opt1: the via north-west of J9 (was (60.6, 38.2), south-east: the lane ran under the ball and
+                           # the dog-bone came straight back, a 180 degree turn at the via)
+                           "FMC_SDNRAS": via_end([(57.4, 38.2), (57.8, 37.8), (59.4, 37.8)], (59.8, 37.4), "J9"),
                            # WE keeps the sketch's path: K8's SW site (59.0, 39.0) is the ground via of C302.2 under the SDRAM
                            # (tried at stop 6: C302.2 then had no ground connection)
                            "FMC_SDNWE": via_end([(57.8, 39.8), (58.2, 39.4), (59.4, 39.4)], (59.8, 39.0), "K8")})
@@ -523,7 +536,9 @@ def routes(job):
                   "FMC_SDCKE0": ext(m["FMC_SDCKE0"], [(49.9, 35.7), (52.0, 37.8), (53.8, 37.8), (54.2, 38.2)]) + [("via", (54.2, 38.2)), ("L1", [(54.2, 38.2), "U301.J2"])]})
         job.slot("FMC_D27", "L4", (47.7, y27), (51.7, y27), side="R")      # all four blocks start at x 48.4 (RTE-7)
         job.slot("FMC_D25", "L4", (47.7, y25), (51.7, y25), side="R")
-        job.slot("FMC_D31", "L4", (47.7, y31), (51.7, y31), side="R")
+        # opt1 (review 1): D31's site 0.8 mm shorter, three humps of about 0.8 mm instead of four of 0.63, nearer the
+        # heights of D27 / D25 above it (CKE0 at y 35.7 limits it to about 0.85)
+        job.slot("FMC_D31", "L4", (47.7, y31), (50.9, y31), side="R")
         # l4w + l4n: A1 A2 NE0 A0 (west) NBL1 NBL2 CAS (north) D26 (east, up the strip) to the aisle's north end.
         # In the aisle the lanes turn east in order (eastmost first); A0 and NBL2 reach their balls round the vias
         # of the nets outside them: A0 below NE0's J8, NBL2 below NBL1's K9 and back up east of column 9.
@@ -580,14 +595,19 @@ def routes(job):
         # l4ss: D17 D16 south about: east below everything, up the SDRAM's east side, west along its north side
         ss = ["FMC_D17", "FMC_D16"]
         xs = {"FMC_D17": 43.9, "FMC_D16": 43.25}
-        ye = {"FMC_D17": 47.5, "FMC_D16": 47.75}      # round 3: below the L1 band, so that the south-east corner balls can drop through
+        # round 3: below the L1 band, so that the south-east corner balls can drop through. opt1 (review 1): 0.75 mm north
+        # (was 47.5 / 47.75): off the top edge of the +5V arm of L5 (y 48), 1.5 mm shorter each
+        ye = {"FMC_D17": 46.75, "FMC_D16": 47.0}
         xn = {"FMC_D17": 61.75, "FMC_D16": 62.0}
         yw = {"FMC_D17": 29.85, "FMC_D16": 29.6}
         legs = [("S", xs), ("SE", {n: xs[n] - ye[n] + 0.3 for n in ss}), ("E", ye), ("NE", {n: xn[n] + ye[n] - 0.6 for n in ss}),
                 ("N", xn), ("NW", {n: xn[n] - yw[n] - 0.6 for n in ss}), ("W", yw)]
-        l4ss = bund("l4ss", ss, "L4", legs, 43.0, 61.0)
+        # opt1 (review 1): D17 leaves the N leg on one NW diagonal straight into its via (x - y = 28.8, between the vias of
+        # D19, +3V3_SDRAM and D16), instead of going on round the top of the ball field and back down to it (a hook of
+        # four bends in 1.5 mm, `crowded`); D16 keeps the way round
+        l4ss = bund("l4ss", ss, "L4", legs, 43.0, 61.0, {"FMC_D17": (0, 4)})
         bus.add(l4ss, start={n: m[n] for n in ss},
-                end={"FMC_D17": via_end([(60.2, 30.25), (60.2, 30.6)], (59.8, 31.0), "A8", "L4"),
+                end={"FMC_D17": via_end([(61.75, 32.95)], (59.8, 31.0), "A8", "L4"),
                      "FMC_D16": via_end([(59.4, 30.1), (59.4, 31.4)], (59.8, 31.8), "B9", "L4")})   # SW 0.1 longer (sketch 30.0: `crowded`)
     if SEC in LAYERS:
         bus.keep({"FMC_BA1": m["FMC_BA1"]})

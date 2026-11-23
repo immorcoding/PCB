@@ -27,7 +27,7 @@ from fan_leads import plan, lead, ext
 BOARD = os.environ.get("LOCAL_BOARD", "stm32h743_sdram.kicad_pcb")
 ORIGIN = (100, 100)
 GROUP = "mcu_w"
-OPEN_ENDS = False
+OPEN_ENDS = True               # opt1: DISP and NCS branch at a via (one chain each starts or ends at the via)
 YIELD_NETS = ["GND"]
 VIA_LIMIT = 8
 LEN_MAX = {"QSPI_BK1_NCS": 1000}   # SPEC 9 (user 2026-11-23): the chip select has no length cap (rule qspi_ncs_no_cap)
@@ -109,24 +109,36 @@ def routes(job):
         pcs, l4, x2 = fin[net]
         R[net] = pcs + [L("L4", l4 + [(x2, row - C), (x2 + C, row), (xp - C, row), (xp, row + C), (xp, yv)]), V(xp, yv),
                         L("L1", [(xp, yv), "J701.%d" % pin])]
-    # DISP: on down to a via west of R705.1, then R705.1 -> via south of it -> L4 east -> FPC via -> pin 10
+    # opt1 (review 1): the loop's south end. G3 and NCS jog west at one height (starts staggered 0.0947 so the parallel
+    # diagonals keep the lane pitch; were at y 63.5 / 64.5) and their vias stand on one 45-degree diagonal
+    # (26.65, 66.9) / (27.1, 66.45). DISP: down to one via west of R705.1 as before and on along L4 east at the via's
+    # row to the FPC via (a branch at the via, accepted: one via less; was R705.1 down to a second via (27.8, 68.25))
+    JOG, JX = 64.0, {"LCD_G3": 26.65, "QSPI_BK1_NCS": 27.1}
+    jog = {n: [(x2, r4(JOG + 0.0947 * k)), (JX[n], r4(JOG + 0.0947 * k + x2 - JX[n]))]
+           for k, (n, (pcs, l4, x2)) in enumerate((n, fin[n]) for n in ("LCD_G3", "QSPI_BK1_NCS"))}
     pcs, l4, x2 = fin["LCD_DISP"]
-    R["LCD_DISP"] = [pcs + [L("L4", l4 + [(x2, r4(67.51 - (x2 - 26.9))), (26.9, 67.51)]), V(26.9, 67.51),
-                            L("L1", [(26.9, 67.51), "R705.1"])],
-                     [L("L1", ["R705.1", (27.8, 68.25)]), V(27.8, 68.25),
-                      L("L4", [(27.8, 68.25), (28.3, 67.75), (35.3, 67.75), (35.75, 68.2)]), V(35.75, 68.2),
-                      L("L1", [(35.75, 68.2), "J701.10"])]]
+    # (the via 0.34 lower than before, reached by a 0.36 mm vertical; L4 leaves it south-east and runs east at y 68.05,
+    # stepping up to y 67.79 before VSYNC's FPC via; L1 from the via one NE step and east into R705.1)
+    R["LCD_DISP"] = [pcs + [L("L4", l4 + [(x2, 66.79), (26.9, r4(66.79 + x2 - 26.9)), (26.9, 67.85)]), V(26.9, 67.85),
+                            L("L4", [(26.9, 67.85), (27.1, 68.05), (34.0, 68.05), (34.26, 67.79), (35.34, 67.79), (35.75, 68.2)]),
+                            V(35.75, 68.2), L("L1", [(35.75, 68.2), "J701.10"])],
+                     [L("L1", [(26.9, 67.85), (27.24, 67.51), "R705.1"])]]
+
     # NCS and G3 (west of DISP) step west and drop to L3 below the I2C4 / touch rows; L3 east in two rows south of
     # everything (y 66.4 / 66.65; G7 and G4 have left L3 at y 65.9): NCS north at x 39.245 to a via south of the flash's
     # pin 1 (north of the east bundle's L6 diagonals), L1 into it, and from the pin a second via to its pull-up R401.2 on
     # the bottom; G3 on east to its FPC via (S row) between G4's L1 and G2's L3 into pin 25
+    # opt1 (review 1): NCS's L3 runs on north into the via that feeds R401 (39.095, 59.25), which also takes the L1
+    # stub into U401.1 (a branch at the via, accepted: one via less; was a via (39.26, 60.395) south of pin 1)
     pcs, l4, x2 = fin["QSPI_BK1_NCS"]
-    R["QSPI_BK1_NCS"] = [pcs + [L("L4", l4 + [(x2, 64.5), (27.1, r4(64.5 + x2 - 27.1)), (27.1, 66.3)]), V(27.1, 66.3),
-                                L("L3", [(27.1, 66.3), (27.4, 66.6), (38.89, 66.6), (39.26, 66.23), (39.26, 60.395)]),
-                                V(39.26, 60.395), L("L1", [(39.26, 60.395), "U401.1"])],
-                         [L("L1", ["U401.1", (39.095, 59.25)]), V(39.095, 59.25), L("L6", [(39.095, 59.25), (38.735, 58.89), "R401.2"])]]
+    R["QSPI_BK1_NCS"] = [pcs + [L("L4", l4 + jog["QSPI_BK1_NCS"] + [(27.1, 66.45)]), V(27.1, 66.45),
+                                # its L3 row at the via's y (66.45, was 66.6), up x 38.5 and one NE diagonal into the via (no turn-back
+                                # across it: L1 leaves south-east)
+                                L("L3", [(27.1, 66.45), (38.15, 66.45), (38.5, 66.1), (38.5, 59.845), (39.095, 59.25)]),
+                                V(39.095, 59.25), L("L6", [(39.095, 59.25), (38.735, 58.89), "R401.2"])],
+                         [L("L1", ["U401.1", (39.095, 59.25)])]]
     pcs, l4, x2 = fin["LCD_G3"]
-    R["LCD_G3"] = pcs + [L("L4", l4 + [(x2, 63.5), (26.65, r4(63.5 + x2 - 26.65)), (26.65, 66.9)]), V(26.65, 66.9),
+    R["LCD_G3"] = pcs + [L("L4", l4 + jog["LCD_G3"] + [(26.65, 66.9)]), V(26.65, 66.9),
                          L("L3", [(26.65, 66.9), (42.9, 66.9), (43.25, 67.25), (43.25, 68.75)]), V(43.25, 68.75),
                          L("L1", [(43.25, 68.75), "J701.25"])]
     # ---- PHY_NRST: off the LSE crystal (its old via sat between Y202's pads)
