@@ -7,11 +7,10 @@ SDRAM track outside the ball fields, so every lane is clear of the bus as soon a
 
   north   the CAN pair up the strip between the packages (L6, x 46.5 / 46.75) to y 22.0 / 22.4, east to the
           transceiver, a via to L1 into U801.1 / U801.4 (complete)
-  south   the other ten lanes turn south in the strip as one bundle (L6, 0.2286 mm pitch from x 46.25, the
-          outermost 0.44 mm west of the SDCLK_R via at (48.75, 36.675)); USART1_RX goes on below the SDRAM's south
-          bands, a via to L4 at y 51.25 and south-east on L4 to the debug header (complete); the LCD, touch and
-          I2C4 lanes end at GATES at y = GATE_S (open ends: their way to the FPC / link resistors is the next step,
-          see the report)
+  south   USART1_RX, lane 0 of the south bundle (L6, x 46.25), below the SDRAM's south bands, a via to L4 at y 51.25
+          and south-east on L4 to the debug header (complete). The other nine lanes of that bundle (the LCD, touch and
+          I2C4 lines, lanes 1-9 at 0.2286 mm pitch from x 46.48) belong to routes_mcu_sw.py since stop 7's remaining
+          buses (issue 22): that file draws them from the ball to the FPC / link resistors.
 """
 import os
 from fan_leads import plan, lead, ext
@@ -25,9 +24,8 @@ DRC_IGNORE = {"solder_mask_bridge": "mask webs between fine-pitch pads of the fo
 VIA_LIMIT = 6
 VIEWS = [("east", 42.5, 30.5, 52.0, 50.0, 60), ("north", 43.0, 12.0, 66.0, 34.0, 30)]
 THIN = 0.1016
-GATE_S = 46.8
 X0, PITCH = 46.25, 0.2286
-SOUTH = ["USART1_RX", "TP_RST", "I2C4_SDA", "TP_INT", "LCD_HSYNC", "LCD_CLK", "LCD_B3", "LCD_G6", "LCD_B4", "LCD_R5"]   # west -> east
+SOUTH = ["USART1_RX"]          # lane 0; lanes 1-9 are routes_mcu_sw.py's
 
 
 def V(x, y):
@@ -60,16 +58,10 @@ def routes(job):
     if "FDCAN1_RX" in E:
         R["FDCAN1_RX"] = ext(lead(E["FDCAN1_RX"]), [(46.75, 33.0), (46.75, 22.8), (47.15, 22.4), (63.15, 22.4), (63.6, 21.95), (63.6, 20.0)]) + [
             V(63.6, 20.0), ("L1", [(63.6, 20.0), (63.6, 19.45), "U801.4"])]
-    # ---- the south bundle
-    for k, net in enumerate(SOUTH):
-        if net not in E:
-            continue
-        num, pts = south_lane(net, k)
+    # ---- USART1_RX: below the SDRAM's L4 band (D16 / D17 east legs at y 47.5 / 47.75): L4 south-east to the header
+    # (the line x - y = -5.0 keeps clear of the ground vias at (54.775, 57.825), (55.125, 57.475))
+    if "USART1_RX" in E:
+        num, pts = south_lane("USART1_RX", 0)
         x = pts[-1][0]
-        if net == "USART1_RX":
-            # below the SDRAM's L4 band (D16 / D17 east legs at y 47.5 / 47.75): L4 south-east to the header
-            # (the line x - y = -5.0 keeps clear of the ground vias at (47.525, 51.575), (54.775, 57.825), (55.125, 57.475))
-            R[net] = ext(lead(num), pts + [(x, 51.25)]) + [V(x, 51.25), ("L4", [(x, 51.25), (62.88, 67.88), "J804.3"])]
-        else:
-            R[net] = ext(lead(num), pts + [(x, GATE_S)])
+        R["USART1_RX"] = ext(lead(num), pts + [(x, 51.25)]) + [V(x, 51.25), ("L4", [(x, 51.25), (62.88, 67.88), "J804.3"])]
     return {n: thin(p) for n, p in R.items()}
