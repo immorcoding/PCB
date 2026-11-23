@@ -11,9 +11,9 @@ the BGA rule areas; the supply and ground balls of U201 / U301, their dog-bones 
 under them (PART_B) are routes_power_bga.py (part B, a second shared group).
 
 What is drawn, in this order (earlier items take the better sites):
-  feeds     the vias that join a local pour or a link resistor to its L3 block or to the other outer layer:
+  feeds     the vias that join a local pour or a link resistor to its L5 block or to the other outer layer:
             at least 1 per 0.5 A of the rail and at least 2 per regulator output, link side and block feed
-  supply    one via to its L3 block beside every other pad of +3V3, +5V, +3V3A (pull-ups, enables, test pads)
+  supply    one via to its L5 block beside every other pad of +3V3, +5V, +3V3A (pull-ups, enables, test pads)
   ties      the pads the sketch leaves to a short track (QFN pins, feedback tops, pull-ups on the bottom)
   ground    ground is not routed (user 2026-11-21): its own via beside every capacitor ground pad (pad edge to
             via centre <= 1.0 mm), regulator and IC ground pin and SMD connector ground; resistor and LED ground
@@ -43,7 +43,7 @@ VIA = (0.45, 0.2)
 PART_B = {"U201", "U301", "FB201"} | {"C%d" % i for i in range(201, 224)} - {"C217", "C224", "C225", "C226", "C227", "C228"} \
     | {"C%d" % i for i in range(301, 309)}
 
-# ---- feeds: (pad, count, how). plane = the via lands in the pad net's L3 block; 1.2 A / 1.1 A rails take 3.
+# ---- feeds: (pad, count, how). plane = the via lands in the pad net's L5 block; 1.2 A / 1.1 A rails take 3.
 FEEDS = [
     ("R110.2", 3, "plane"),        # +5V_REG -> R110 -> +5V (1.2 A)
     ("R111.2", 3, "plane"),        # +3V3_REG -> R111 -> +3V3 (1.1 A)
@@ -87,7 +87,7 @@ GND_IC = ["U401.4", "U401.9", "U601.6", "U601.17", "U601.21", "U601.26", "U801.2
           "Y501.2", "Y501.4", "Y201.2", "Y201.4"]
 GND_CONN = ("J601", "J602", "J701", "J801", "J803")
 GND_ISLAND = ["R101.2", "R708.2"]     # pads whose L1 ground pour piece KiCad's refill leaves on its own (pour_islands.py)
-# L3 +5V: the strip under the top connectors and the leg down to R112 are 3 mm wide; no via of another net may cut
+# L5 +5V: the strip under the top connectors and the leg down to R112 are 3 mm wide; no via of another net may cut
 # them (a ground via of J801 left 1.7 mm at the strip's east end in the first build)
 PROTECT = [("+5V", (33.5, 5.5, 64.0, 8.5)), ("+5V", (33.5, 8.5, 36.5, 22.5)),
            # stop 7: the escape lanes of the PHY's MCU-bound pins (13-18 north, 7 / 8 / 11 / 12 east) take no via of the

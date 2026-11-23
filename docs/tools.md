@@ -17,7 +17,7 @@
 | 生成等长窗口规则 | `D:\KiCad\bin\python.exe scripts\len_rules.py <工程>.kicad_pcb`（读板目录的 `length_groups.json`，改写 `.kicad_dru` 末尾的生成段）；加 `--check` 只报告是否过期 |
 | 全部工具的回归 | `D:\KiCad\bin\python.exe scripts\regress.py`（跑 `scripts/tests/*/check.py`，PROC-15） |
 | 走线阻抗 | `D:\KiCad\bin\python.exe scripts\impedance.py`（嘉立创 JLC06161H-3313E 上的单端和差分，二维场解；结果是计算值） |
-| H743 板按步骤构建 | `sh stm32h743_sdram/build.sh rules`（工程文件、规则基准板、金丝雀、规则匹配；1.5–3 分钟） |
+| H743 板按步骤构建 | `sh stm32h743_sdram/build.sh rules`（工程文件、规则基准板、金丝雀、规则匹配；1.5–3 分钟）。`make_project.py` 还把已有板文件层表里的铜层行改成它的 `LAYERS`（只改这几行，2026-11-23 起 In2.Cu 信号 `L3_SIG`、In4.Cu 电源 `L5_PWR`）；route1 / route2 开头也跑一次 |
 | 铜皮区域草图 | `D:\KiCad\bin\python.exe scripts\cu_sketch.py check <草图> [--board <板>]`，另有 `apply`（按草图写铺铜区，只动它自己建的 `cu:` 开头的区）、`read`（从板读回草图，PWR-7）、`measure`（铜皮那组指标）。草图格式见脚本开头和 `stm32h743_sdram/copper.sketch` |
 | 总线走线（线束、BGA 扇出、蛇形等长） | `D:\KiCad\bin\python.exe scripts\busroute\build.py <走线描述.py> [--fast] [--sketch] [--out 目录] [--write-board]`。默认在 `--out` 下的板子副本上构建，加 `--write-board` 才写真板；`--fast` 只做几何检查（57 根不到 1 秒），完整构建含 DRC、长度、指标、图片（7–14 秒）。描述文件的格式见 `scripts/busroute/job.py` 开头（蛇形：`TUNING` 加补线位置 `Bundle.slot` / `job.slot`，画法和限制在 `scripts/busroute/tune.py` 开头），例子是 `scripts/tests/busroute/bench_routes.py`、`bench_tune.py` |
 | 等长预算（只算不画） | `D:\KiCad\bin\python.exe scripts\busroute\build.py <走线描述.py> --tuning-budget`：每组的目标（组内最长 − 容差 + 余量）、每根的自然长度和要补多少、每个补线位置在摆幅 amp 和 amp_max 时按 RTE-2 的式子能补多少（不查间距），列出容量不够的网络；有不够的退出码 1。读板不写板，基准板上 0.1 秒 |
@@ -25,7 +25,7 @@
 | 布局指标（LAY-2、5、6、8） | `D:\KiCad\bin\python.exe scripts\place_check.py <板> [--edge J1=L ...] [--allow-under U1,U2] [--not-supply U3.5] [--json <输出>]`：摆进板框的个数、courtyard 重叠、安装孔周禁布、封装禁布区、连接器到板边、背面焊盘压顶面焊盘、每个电源脚到最近 100 nF 的距离、排针和测试点旁的丝印位置；几秒 |
 | 出线通道（LAY-2） | `D:\KiCad\bin\python.exe scripts\escape_check.py <板> --ref U1 [--ref ...] [--window x0 y0 x1 y1] [--debug U1.A1 <png>]`：每个焊盘单独查能否走出去（到窗口边、到同网络的别的器件、电源网络能否打孔），最多两个过孔；不算容量。两颗 BGA 加 40 mm 窗口约 15 秒 |
 | H743 板布局一步 | `sh stm32h743_sdram/build.sh layout`（摆位 → 线序草图重建 → 上面两个检查 → 铜皮草图检查 → `layout_probe.py` 的实测试走；约 70 秒） |
-| H743 板走线二一步 | `sh stm32h743_sdram/build.sh route2`（route1 的全部，再按 `build.sh` 里 `ROUTE2_GROUPS` 的顺序把各组局部走线写入真板（`LOCAL_BOARD`=真板，`--write-board`），填充、DRC、布局检查，`route2_report.py` 出一张表 `out/route2/table.txt`：每个走线描述文件一行、以太网差分对、布局和铜皮草图，后面接 route1 的 SDRAM 表；约 4–5 分钟）。加一组 = 在 `ROUTE2_GROUPS` 加一行“组名 文件名”，描述文件从 `LOCAL_BOARD` 读板 |
+| H743 板走线二一步 | `sh stm32h743_sdram/build.sh route2`（route1 的全部，再按 `build.sh` 里 `ROUTE2_GROUPS` 的顺序把各组局部走线写入真板（`LOCAL_BOARD`=真板，`--write-board`），填充、DRC、布局检查，`route2_report.py` 出一张表 `out/route2/table.txt`：每个走线描述文件一行、以太网差分对、布局和铜皮草图，后面接 route1 的 SDRAM 表；约 4–5 分钟）。加一组 = 在 `ROUTE2_GROUPS` 加一行“组名 文件名”，描述文件从 `LOCAL_BOARD` 读板。平面开槽量 L2、L5（总线窗口 `slots.json`，L5 全板每块 `slots_l5.json`），外层地铺铜每块有没有地过孔 `pour_islands.txt`；图：信号层 L1 / L3 / L4 / L6，平面 `L2_planes.png`、`L5_planes.png`、`L5_board.png` |
 | H743 板电源与铜皮一步 | `sh stm32h743_sdram/build.sh copper`（摆位 → 铺铜区 → `routes_power.py`（BGA 区外）和 `routes_power_bga.py`（两颗 BGA 的电源球、背面去耦）写真板 → 填充 → 同样两组写线序草图副本、填充、平面开槽（U31）→ 出线检查 → 图 → `out/copper/table.txt`；约 3.5 分钟） |
 | 原理图构建并检查 | `sh scripts/sch_build.sh <工程目录> <输出目录>`（生成 → 升级到 KiCad 10 格式 → ERC → 网表 → PDF） |
 | H743 板的原理图 | `sh stm32h743_sdram/build.sh sch`（上一行，加网表对意图、对 `pins.csv`、对 `swap.csv` 的检查和 kicad-happy 审查；约 15 秒）；单独试一页：`sh stm32h743_sdram/sch/try_page.sh <输出目录> <页名>` |
@@ -123,6 +123,7 @@
 - **布局阶段的出线检查要在线序草图的副本上跑**：SDRAM 的走线只在 `out/sketch/rot0/` 的副本里，真板文件里没有。
 - **Git Bash 会把 `/` 开头的网络名改写成路径**：传网络名的命令前 `export MSYS2_ARG_CONV_EXCL='*'`。
 - **Shell here-doc 会改写反斜杠和 `\n`**：补丁脚本用文件写，不用 here-doc。
+- **`busroute` 不在平面层上画线**（2026-11-23 起）：板文件层表里类型是 `power` 的铜层（H743 板 L2、L5）算平面层，走线描述里有线放在这些层上直接报错（`RouteError`）；其余铜层都能走线（H743 板 L1、L3、L4、L6）。
 - **`busroute` 在规则区内默认把线宽改成 0.09**：电源类的狗骨线、背面短线要保留给定线宽，在走线描述里写 `PROFILE = {"area_free_classes": ["PWR"]}`（规则文件 `bga_width_inside` 本来就不管 PWR 类）。
 - **DRC 的 `corner_angle` 也查在过孔中心相交的两段线**：两个球共用一个过孔、两条狗骨线成 90° 时报 `track_angle`；`bga_power.py` 让第二条线停在过孔里、离中心每轴 0.05 mm（靠过孔铜连上，没有共同端点）。
 - **`escape_check.py` 允许单根线从 BGA 球阵内部穿过去**：电源球的狗骨线和过孔会把这些路堵上，外圈球的"不打孔出线"可能因此变成"打 1 个孔"；对比前先看路径是不是从球阵内部走的（`--debug`）。

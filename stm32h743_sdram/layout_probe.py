@@ -7,8 +7,8 @@ Reads the board file and copper.sketch (nothing is written). Distances are strai
 not counting the escape inside the BGA); they decide whether a part is close enough, not the routing.
 
   rails      every pad of a copper-class net that has drawn regions in the sketch: does a region of its net
-             reach it (any of nine points spread over the pad inside the region) (outer-layer pour on its own side, or an L3 block, which it reaches by a via).
-             +3V3 counts as covered where no other L3 block is (the rest of L3 is +3V3).
+             reach it (any of nine points spread over the pad inside the region) (outer-layer pour on its own side, or an L5 block, which it reaches by a via).
+             +3V3 counts as covered where no other L5 block is (the rest of L5 is +3V3).
   crystals   ball - crystal pad and crystal pad - load capacitor; the crystal parts inside the L1 window the
              SDRAM sketch keeps free (x 29-34, y 33.5-38.5, open to the west)
   loops      the high-current loops of the three switchers: input capacitor to VIN and GND pins (bucks),
@@ -67,7 +67,7 @@ def main(argv):
     for r in sk.regions:
         if not r.whole:
             drawn.setdefault(r.net, []).append(r)
-    l3_blocks = [r for r in sk.regions if r.layer == 3 and not r.whole]
+    l3_blocks = [r for r in sk.regions if r.layer == 5 and not r.whole]      # the power blocks (L5 since 2026-11-23)
     nm = lambda p: (int(round(p[0] * 1e6)), int(round(p[1] * 1e6)))
     def on(r, p):
         return cu_sketch.inside(nm(p), [r.pts]) >= 0          # 1 inside, 0 on the edge, -1 outside

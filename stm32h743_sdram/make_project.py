@@ -8,7 +8,8 @@ templates/common/ and applies the profile C values and the board's own data:
 
   .kicad_pro   board-level floors, net classes, and the net-class membership taken from pins.csv
   .kicad_pcb   empty six-layer board with the JLC06161H-3313E stackup (true thicknesses: KiCad's
-               length rules add the height of every via, so a default stackup gives wrong lengths)
+               length rules add the height of every via, so a default stackup gives wrong lengths); on an
+               existing board only the copper rows of the layer table are brought to LAYERS (sync_layers)
 
 The rule file stm32h743_sdram.kicad_dru is written by hand and is not touched here.
 The .kicad_pro is always regenerated (edit this script, not the file; KiCad also rewrites the file
@@ -76,8 +77,10 @@ STACKUP = [
     ("cu", "B.Cu", 0.035),
     ("mask", "B.Mask", 0.01524, "Solder mask", 3.8),
 ]
-LAYERS = [(0, "F.Cu", "signal", None), (4, "In1.Cu", "power", "L2_GND"), (6, "In2.Cu", "power", "L3_PWR"),
-          (8, "In3.Cu", "signal", "L4_SIG"), (10, "In4.Cu", "power", "L5_GND"), (2, "B.Cu", "signal", None)]
+# Layer order signal / ground / signal / signal / power / signal on the same stackup (user 2026-11-23, SPEC 6): L2 is the
+# only ground plane, L5 carries the five power blocks, L3 is a routing layer (until 2026-11-23: L3 power, L5 ground).
+LAYERS = [(0, "F.Cu", "signal", None), (4, "In1.Cu", "power", "L2_GND"), (6, "In2.Cu", "signal", "L3_SIG"),
+          (8, "In3.Cu", "signal", "L4_SIG"), (10, "In4.Cu", "power", "L5_PWR"), (2, "B.Cu", "signal", None)]
 
 
 def board_thickness():
@@ -125,10 +128,29 @@ def stackup_text():
     return "\n".join(out) + "\n"
 
 
+def layer_rows():
+    return "".join('\t\t(%d "%s" %s%s)\n' % (i, n, t, ' "%s"' % u if u else "") for i, n, t, u in LAYERS)
+
+
+def sync_layers(path):
+    """Bring the copper rows of an existing board's layer table to LAYERS (type and user name); the stackup and
+    every object stay. Text edit, nothing else in the file changes. True when it wrote."""
+    s = open(path, encoding="utf-8", newline="").read()
+    eol = "\r\n" if "\r\n" in s[:2000] else "\n"
+    rows = "".join(r'\t\t\(%d "%s" (?:signal|power|mixed|jumper)(?: "[^"]*")?\)\r?\n' % (i, re.escape(n)) for i, n, _, _ in LAYERS)
+    m = re.search(rows, s)
+    assert m, "copper rows of the layer table not found in %s" % path
+    new = layer_rows().replace("\n", eol)
+    if m.group(0) == new:
+        return False
+    open(path, "w", encoding="utf-8", newline="").write(s[:m.start()] + new + s[m.end():])
+    return True
+
+
 def make_pcb(path):
     s = open(TEMPLATE + ".kicad_pcb", encoding="utf-8").read()
     s = re.sub(r"\(thickness [\d.]+\)", "(thickness %g)" % board_thickness(), s, count=1)
-    cu = "".join('\t\t(%d "%s" %s%s)\n' % (i, n, t, ' "%s"' % u if u else "") for i, n, t, u in LAYERS)
+    cu = layer_rows()
     s, k = re.subn(r'\t\t\(0 "F\.Cu" signal\)\n\t\t\(2 "B\.Cu" signal\)\n', lambda m: cu, s, count=1)
     assert k == 1, "template layer table not found"
     assert "(stackup" not in s
@@ -214,10 +236,12 @@ def main(argv):
         make_pcb(stem + ".kicad_pcb")
         print("wrote %s.kicad_pcb: empty, 6 copper layers, stackup %.4f mm" % (NAME, board_thickness()))
     else:
-        print("kept the existing %s.kicad_pcb (pass --new-pcb to replace it with an empty board)" % NAME)
+        print("kept the existing %s.kicad_pcb (pass --new-pcb to replace it with an empty board)%s" % (
+            NAME, "; its layer table rewritten to LAYERS" if sync_layers(stem + ".kicad_pcb") else ""))
     print("wrote h743.pretty/%s.kicad_mod and fp-lib-table" % make_footprints())
-    print("via heights counted in net lengths: L1-L4 %.4f, L1-L6 %.4f, L4-L6 %.4f mm"
-          % (via_height("F.Cu", "In3.Cu"), via_height("F.Cu", "B.Cu"), via_height("In3.Cu", "B.Cu")))
+    print("via heights counted in net lengths: L1-L3 %.4f, L1-L4 %.4f, L1-L6 %.4f, L3-L4 %.4f, L4-L6 %.4f mm"
+          % (via_height("F.Cu", "In2.Cu"), via_height("F.Cu", "In3.Cu"), via_height("F.Cu", "B.Cu"),
+             via_height("In2.Cu", "In3.Cu"), via_height("In3.Cu", "B.Cu")))
 
 
 if __name__ == "__main__":

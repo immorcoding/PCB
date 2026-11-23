@@ -364,6 +364,22 @@ def main(argv):
             want((l2 is None and "L12" in r2.refused) or (l2 is not None and l2.via != l12.via),
                  "fan-out keep: the via of another net at %r did not move the dog-bone (%s)" % (l12.via, r2.text()))
 
+        # plane layers (type power in the layer table: L2 ground, L5 power since 2026-11-23) take no tracks; L3 is a
+        # routing layer like L4
+        from busroute.routes import resolve
+        from busroute.geom import RouteError
+        pr = Profile.from_project(pcb)
+        want(bb.planes == {"L2", "L5"}, "plane layers of the bench board: %r" % (bb.planes,))
+        try:
+            resolve(bb, pr, {"FMC_D10": [("L5", [(5.0, 30.0), (6.0, 30.0)])]}, open_ok=True)
+            want(False, "a track on the plane layer L5 was accepted")
+        except RouteError as e:
+            want("plane layer" in str(e), "a track on L5: %s" % e)
+        try:
+            resolve(bb, pr, {"FMC_D10": [("L3", [(5.0, 30.0), (6.0, 30.0)])]}, open_ok=True)
+        except RouteError as e:
+            want(False, "a track on the routing layer L3 was refused: %s" % e)
+
         times["tune"], times["budget"] = tuning(tmp, want)
     except StopIteration:
         pass

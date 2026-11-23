@@ -6,10 +6,10 @@
 # State: stop 5 (power and copper), part A. The outer-layer regions hug the pads of their nets and are kept clear
 # of the SDRAM line-order sketch (its L1 tracks east of the SDRAM run at x 61.6-62.6, y 37-46.3; nothing of +12V
 # may go there). Current paths are at least 1.0 mm wide on the 12 V chain, the two buck outputs, +5V_BL and
-# LED_A, and at least 2.0 mm on L3 (cu_sketch measure, build.sh copper). A through-hole pad a region touches is
+# LED_A, and at least 2.0 mm on L5 (cu_sketch measure, build.sh copper). A through-hole pad a region touches is
 # covered by pad + 0.5 mm or more, so its thermal relief (gap 0.254) keeps a ring of copper and no crumbs.
 # Pads a region does not reach are tied by routes_power.py: QFN pins (0.5 mm pitch: a pour cannot pass between
-# the neighbouring pins), the enable and feedback ends, pull-ups, and the vias to L3 and between L1 and L6.
+# the neighbouring pins), the enable and feedback ends, pull-ups, and the vias to L5 and between L1 and L6.
 #
 # Floor plan (stop 4, see place.py):
 #   top edge     headphone jack x 11-22, line-in jack x 23-34, SWD x 36-45, microSD x 47-63
@@ -23,43 +23,46 @@
 #   codec        under the jacks at (19, 26), LDOs north-east (3.3 V analog) and south (1.8 V) of it
 
 origin 100 100
-planes L2 L3 L5
-gap 0.5                   # L3: distance between blocks of different nets (PWR-8)
+# Layer order signal / ground / signal / signal / power / signal (user 2026-11-23, SPEC 6): L2 the only ground
+# plane, L5 the power plane with the five blocks (they were on L3 until 2026-11-23, same shapes), L3 a signal layer
+# with no pour.
+planes L2 L5
+gap 0.5                   # L5: distance between blocks of different nets (PWR-8)
 clearance 0.2             # outer layers: local pour to anything else (user 2026-11-21, U33)
 minwidth 0.2              # narrowest drawn part (user 2026-11-21, U33)
 
-# ---- ground: L2 and L5 are whole planes, never cut; L1 and L6 are filled with ground where free
+# ---- ground: L2 is the whole ground plane, never cut; L1 and L6 are filled with ground where free and tied to
+# L2 by vias
 region L2_GND GND L2 whole
-region L5_GND GND L5 whole
 region L1_GND GND L1 whole minwidth=0.3
 region L6_GND GND L6 whole minwidth=0.3
 
-# ---- L3, the power plane. +3V3 is everything that is not one of the blocks below.
-region L3_3V3 +3V3 L3 whole
+# ---- L5, the power plane. +3V3 is everything that is not one of the blocks below.
+region L5_3V3 +3V3 L5 whole
 
 # +5V: band down x 61.5-72 from the top strip to the 5 V buck output (R110) and its test pad, with an arm west
 # under the backlight boost to its link R710 (x 51.3-64, y 48-55.5); the strip along the top (y 5.5-8.5, under the jacks, SWD and the
 # microSD) runs to a leg at x 33.5-36.5 that comes down to the analog LDO link R112 (SPEC 5). Loads: U102 VIN
 # and C108, R104 (EN pull-up), R814 (CAN 5 V link). A notch at y 20.8-24.4 leaves R813's +3V3 pad on +3V3 with
 # room for its two vias. The strip and the leg are 3 mm wide: routes_power.py lets no via of another net cut them.
-region L3_5V +5V L3
+region L5_5V +5V L5
   33.5,5.5  72,5.5  72,20.8  67.2,20.8  67.2,24.4  72,24.4  72,52.3  64,52.3  64,55.5  51.3,55.5  51.3,48
   63,48  63,28  61.5,28  61.5,8.5  36.5,8.5  36.5,22.5  33.5,22.5
 
 # +3V3A: under the codec, its analog decoupling and the LDO output (C111, TP104); a notch at x 24.4-27.6 keeps
 # R610's +3V3 pad and its two vias on +3V3 (open to the south)
-region L3_3V3A +3V3A L3
+region L5_3V3A +3V3A L5
   8.6,17.8  30.6,17.8  30.6,24.7  27.6,24.7  27.6,21.6  24.4,21.6  24.4,31.9  8.6,31.9
 
-# Block rails behind 0 ohm links (user 2026-11-20). The two BGA blocks are on L3 because their supply
-# balls reach the plane through vias under the package (five blocks on L3, user 2026-11-21). Each reaches
+# Block rails behind 0 ohm links (user 2026-11-20). The two BGA blocks are on the power plane because their supply
+# balls reach it through vias under the package (five blocks on the power plane, user 2026-11-21; L5 since 2026-11-23). Each reaches
 # north in a tongue under the SDRAM bands to its link (R203, R301) and bulk capacitor (C217, C309), which sit
 # above the bands; the tongue starts 0.5 mm east of the link's +3V3 pad.
 # islands=remove (stop 5 part B): rings of dog-bone antipads box in crumbs of the block at ball positions, where no
 # via can stand (a ball pad is above); KiCad drops them, the block itself is fed and kept.
-region L3_3V3_MCU +3V3_MCU L3 islands=remove
+region L5_3V3_MCU +3V3_MCU L5 islands=remove
   34,31  39.6,31  39.6,25  44.2,25  44.2,31  46,31  46,44.8  34,44.8
-region L3_3V3_SDRAM +3V3_SDRAM L3 islands=remove
+region L5_3V3_SDRAM +3V3_SDRAM L5 islands=remove
   52,29.5  55.6,29.5  55.6,25  61,25  61,29.5  62,29.5  62,44.5  52,44.5
 
 # ---- outer-layer local pours. One or more per copper-class net of SPEC 5, around the placed pads.
@@ -164,7 +167,7 @@ region L1_3V3_CAN +3V3_CAN L1
 region L1_5V_CAN +5V_CAN L1
   62.1,17.3  63.8,17.3  63.8,18  62.85,18  62.85,23.6  61.9,23.6  61.9,18  62.1,18
 # backlight boost at the east end of the LCD connector (its pins 39 LED_A and 40 LED_K are the two easternmost;
-# the link R710 takes +5V from the L3 arm). Switch node (L701 pin 2, U701 pin 1, D701 anode) >= 6 mm east of the
+# the link R710 takes +5V from the L5 arm). Switch node (L701 pin 2, U701 pin 1, D701 anode) >= 6 mm east of the
 # easternmost straight LCD path (x 47.25); output capacitor C705 between the diode cathode and the IC's GND pin.
 # +5V_BL: a 1.05 mm band from R710 above the inductor, east of C704's ground pad down to U701 pin 5 (C703 moved
 # 0.4 mm north at stop 5 to keep the corner 1.0 mm wide).

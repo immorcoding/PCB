@@ -54,6 +54,7 @@ for gap, w in ((0.10, 0.091), (0.125, 0.104), (0.15, 0.113), (0.20, 0.125)):
 check("C Z0    L1 w=0.157", imp.z0("L1", 0.157), 50.034, PIN_TOL, "ohm")
 check("C Zdiff L1 w=0.11 gap=0.15", imp.zdiff("L1", 0.11, 0.15), 99.56, PIN_TOL, "ohm")
 check("C Z0    L4 w=0.127", imp.z0("L4", 0.127), 49.962, PIN_TOL, "ohm")
+check("C Z0    L3 w=0.127 (same build as L4, 2026-11-23)", imp.z0("L3", 0.127), 49.962, PIN_TOL, "ohm")
 check("C Zdiff L4 w=0.09 gap=0.15", imp.zdiff("L4", 0.09, 0.15), 99.346, PIN_TOL, "ohm")
 check("C Zdiff L1 w=0.11 gap=0.15, 0.035 copper", imp.zdiff("L1", 0.11, 0.15, copper=0.035), 101.38, PIN_TOL, "ohm")
 check("C Zdiff L1 w=0.11 gap=0.15, domestic mask", imp.zdiff("L1", 0.11, 0.15, mask="domestic"), 98.41, PIN_TOL, "ohm")

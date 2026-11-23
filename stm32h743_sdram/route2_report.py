@@ -35,6 +35,69 @@ def groups_env():
     return out
 
 
+def gap_crossings(b, side, layers=("L4", "L6"), step=0.02):
+    """Lines of the table: every net with a track on `layers` (the layers whose plane is L5) that crosses the outline of a
+    drawn L5 block of copper.sketch (a block edge = a gap of `gap` mm to the rest of the plane), with the crossing
+    points, and the length it runs inside a gap without crossing (sampled every `step` mm)."""
+    import math
+    import cu_sketch
+    from busroute.geom import in_poly, pt_seg
+    sk = cu_sketch.load_sketch(os.path.join(HERE, "copper.sketch"), len(b.cu))
+    gap = sk.p["gap"] / 1e6
+    ox, oy = sk.origin[0] / 1e6 - b.origin[0], sk.origin[1] / 1e6 - b.origin[1]
+    blocks = [(r.name, r.net, [(x / 1e6 + ox, y / 1e6 + oy) for x, y in r.pts]) for r in sk.regions
+              if not r.whole and "L%d" % r.layer == "L5"]
+    owner = {}
+    for g, rec in side["groups"].items():
+        for n in rec.get("nets", []):
+            owner.setdefault(n, g)
+
+    def cross(a, c, p, q):
+        d = (c[0] - a[0]) * (q[1] - p[1]) - (c[1] - a[1]) * (q[0] - p[0])
+        if abs(d) < 1e-12:
+            return None
+        t = ((p[0] - a[0]) * (q[1] - p[1]) - (p[1] - a[1]) * (q[0] - p[0])) / d
+        u = ((p[0] - a[0]) * (c[1] - a[1]) - (p[1] - a[1]) * (c[0] - a[0])) / d
+        return (a[0] + t * (c[0] - a[0]), a[1] + t * (c[1] - a[1])) if 0 <= t <= 1 and 0 <= u <= 1 else None
+
+    boxes = [(min(q[0] for q in poly) - gap, min(q[1] for q in poly) - gap, max(q[0] for q in poly) + gap, max(q[1] for q in poly) + gap)
+             for _, _, poly in blocks]
+
+    def near(p, k):
+        x0, y0, x1, y1 = boxes[k]
+        return x0 <= p[0] <= x1 and y0 <= p[1] <= y1
+
+    def in_gap(p):
+        ks = [k for k in range(len(blocks)) if near(p, k)]
+        if not ks or any(in_poly(p, blocks[k][2]) for k in ks):
+            return False
+        return any(min(pt_seg(p, e0, e1)[0] for e0, e1 in zip(blocks[k][2], blocks[k][2][1:] + blocks[k][2][:1])) < gap for k in ks)
+
+    hits = collections.defaultdict(lambda: {"pts": [], "run": 0.0, "layers": set()})
+    for n, lay, a, c, w, _ in b.tracks:
+        if lay not in layers or n == "GND":
+            continue
+        for name, bnet, poly in blocks:
+            for p, q in zip(poly, poly[1:] + poly[:1]):
+                x = cross(a, c, p, q)
+                if x:
+                    h = hits[n]; h["pts"].append((lay, round(x[0], 2), round(x[1], 2), bnet)); h["layers"].add(lay)
+        L_ = math.dist(a, c)
+        k = max(1, int(L_ / step))
+        inside = sum(1 for i in range(k) if in_gap((a[0] + (c[0] - a[0]) * (i + 0.5) / k, a[1] + (c[1] - a[1]) * (i + 0.5) / k)))
+        if inside:
+            hits[n]["run"] += L_ * inside / k; hits[n]["layers"].add(lay)
+    out = ["[跨缝] L4 / L6 上的线跨过 L5 块间缝（块的外形取自 copper.sketch，缝 %.1f mm；只列出，不改走法）：%d 根网络" % (gap, len(hits))]
+    for n in sorted(hits, key=lambda n: (owner.get(n, "~"), n)):
+        h = hits[n]
+        pts = sorted(set(h["pts"]))
+        out.append("       %-10s %-14s %s：跨缝 %d 处 %s%s" % (
+            owner.get(n, "power*"), n, "/".join(sorted(h["layers"])), len(pts),
+            " ".join("%s(%.2f, %.2f)|%s" % p for p in pts[:8]) + (" …" if len(pts) > 8 else ""),
+            "；在缝里走 %.2f mm" % h["run"] if h["run"] > 0.05 else ""))
+    return out
+
+
 def main(board_path, odir):
     from busroute.board import Board
     buf = io.StringIO()
@@ -139,6 +202,11 @@ def main(board_path, odir):
             "，".join("%s %+.4f" % kv for kv in (lc.get("notes") or {}).items()) or "无"))
         if lc and not lc.get("ok", True):
             bad.append("%s length check" % name)
+    # ---- tracks on L4 / L6 over the gaps between the L5 blocks (SPEC 6: L4 and L6 reference the split power plane L5;
+    # every line that crosses a gap is listed, nothing is re-routed for it here)
+    A("")
+    for l in gap_crossings(b, side):
+        A(l)
     # ---- the Ethernet pairs
     A("")
     A("[差分对] 以太网两对（100 Ω，L1，线宽 0.1194、对内间距 0.2032；对内差上限 1.27 mm，eth_skew）")

@@ -33,6 +33,9 @@ class Board:
         self.cu = {"L%d" % (i + 1): ("F.Cu" if i == 0 else "B.Cu" if i == len(ids) - 1 else "In%d.Cu" % i) for i in range(len(ids))}
         lname = {lid: "L%d" % (i + 1) for i, lid in enumerate(ids)}
         self.layers = list(self.cu)
+        # plane layers: type "power" in the board's layer table (H743 board: L2 ground, L5 the power blocks); no route
+        # may put a track there (routes.py). Every other copper layer is a routing layer.
+        self.planes = {lname[l] for l in ids if b.GetLayerType(l) == pcbnew.LT_POWER}
         self.pads, self.by_ref, self.fp, self.dup_pads = {}, {}, {}, []
         for f in b.GetFootprints():
             ref = f.GetReference()

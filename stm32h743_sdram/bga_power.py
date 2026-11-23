@@ -8,11 +8,11 @@ Per supply or ground ball (GND, +3V3_MCU, +3V3_SDRAM, VDDA_MCU, VCAP1, VCAP2):
   line-order sketch (its tracks and vias on every layer), part A's copper and what was placed here before
   (busroute's Scene: clearance 0.09 in the rule areas, hole to copper 0.2), keep 0.45 mm centre to centre to every
   other via, stay clear of the drawn outer-layer regions of other nets (the VDDA_MCU pockets) and, for a supply
-  net, sit inside its own L3 block.
+  net, sit inside its own block of the power plane (L5 since 2026-11-23; L3 before).
   Choice among the legal sites, best first: under a capacitor pad of the ball's net that has no via yet (the pad
   over the via, the approved via-in-pad case), then near one (an L6 stub of <= STUB_MAX), and always: no signal
   ball of the package (not routed by the SDRAM sketch) may lose its last free ball-gap site, and the via should
-  not join antipads of other vias on L2 / L3 / L5 into a longer slot (U31). A ball with no legal site of its
+  not join antipads of other vias on the planes L2 / L5 into a longer slot (U31). A ball with no legal site of its
   own shares a neighbouring ball's via of the same net (reported).
 Per bottom capacitor pad (and the bead) under the BGAs: a via of its net under the pad (in-pad), else a stub on
 L6 to the nearest via of its net (ball vias first) no longer than STUB_MAX from the pad edge, else a via of its
@@ -31,13 +31,15 @@ VIA_IN = (0.30, 0.15)            # inside the rule areas
 VIA_OUT = (0.45, 0.20)           # outside
 VIA_PITCH = 0.45                 # least centre distance between two vias, any nets (hole to copper 0.2 needs 0.425)
 REGION_MARGIN = 0.1              # foreign copper to a drawn outer-layer region of another net, beyond its own size
-PLANE_MARGIN = 0.15              # a supply via inside its L3 block by radius + this
+PWR_PLANE = "L5"                # layer of the power blocks (signal / GND / signal / signal / power / signal, user 2026-11-23)
+PLANES = ("L2", PWR_PLANE)        # L2 the whole ground plane, L5 the power blocks
+PLANE_MARGIN = 0.15              # a supply via inside its power block by radius + this
 STUB_MAX = 0.7                   # L6 stub, pad edge to via centre
 GND_VIA_MAX = 1.0                # a capacitor's own ground via: pad edge to via centre
 BONE_W = (0.2, 0.15, 0.09)       # dog-bone widths, first legal
 STUB_W = (0.25, 0.2, 0.15, 0.1)  # L6 stub widths
 WIDE_W = (0.3, 0.25, 0.2)        # VCAP stubs ("short and wide")
-PLANE_CLR = 0.127                # zone clearance on L2 / L3 / L5 (copper.sketch plane_clearance default)
+PLANE_CLR = 0.127                # zone clearance on the planes L2 / L5 (copper.sketch plane_clearance default)
 MINWIDTH = 0.2                   # zone minimum width (copper.sketch minwidth)
 SLOT_FREE = 1.5                  # a chain of merged antipads up to this long costs nothing (U31 lists those over 2.0)
 SLOT_W = 400                     # score per mm of chain beyond SLOT_FREE (a capacitor pad over the via scores 1000)
@@ -94,7 +96,7 @@ class BgaPlanner:
         ox, oy = sk.origin[0] / 1e6 - board.origin[0], sk.origin[1] / 1e6 - board.origin[1]
         self.regions = [(r.name, r.net, "L%d" % r.layer, [(x / 1e6 + ox, y / 1e6 + oy) for x, y in r.pts]) for r in sk.regions if not r.whole]
         self.rbox = [(min(q[0] for q in poly), min(q[1] for q in poly), max(q[0] for q in poly), max(q[1] for q in poly)) for _, _, _, poly in self.regions]
-        self.l3_whole = next((r.net for r in sk.regions if r.whole and r.layer == 3), None)
+        self.pwr_whole = next((r.net for r in sk.regions if r.whole and "L%d" % r.layer == PWR_PLANE), None)
         self._pn = {}
         self.mine = []                       # (net, p, size, kind) vias placed here
         self.chains, self.extras, self.log, self.done = {}, [], [], []
@@ -131,21 +133,22 @@ class BgaPlanner:
         d = min(pt_seg(p, a, c)[0] for a, c in zip(poly, poly[1:] + poly[:1]))
         return -d if in_poly(p, poly) else d
 
-    def l3_net(self, p, margin):
+    def pwr_net(self, p, margin):
+        """The power-plane block net at p when p is inside it by `margin`; None in a gap or near an edge of one."""
         for name, net, lay, poly in self.regions:
-            if lay == "L3":
+            if lay == PWR_PLANE:
                 d = self._rdist(p, poly)
                 if d <= -margin:
                     return net
                 if d < self.gap + margin:
                     return None
-        return self.l3_whole
+        return self.pwr_whole
 
     def plane_nets(self, p):
-        """{layer: net of the plane there} for L2, L3, L5."""
+        """{layer: net of the plane there} for the planes L2 (ground) and L5 (power blocks)."""
         k = (round(p[0], 4), round(p[1], 4))
         if k not in self._pn:
-            self._pn[k] = {"L2": "GND", "L3": self.l3_net(p, 0.0), "L5": "GND"}
+            self._pn[k] = {"L2": "GND", PWR_PLANE: self.pwr_net(p, 0.0)}
         return self._pn[k]
 
     # ---------------------------------------------------------------- legality
@@ -183,8 +186,8 @@ class BgaPlanner:
         why = self.sc.conflict([it])
         if why:
             return why
-        if net in SUPPLY and self.l3_net(p, r + PLANE_MARGIN) != net:
-            return "not inside the L3 block of %s" % net
+        if net in SUPPLY and self.pwr_net(p, r + PLANE_MARGIN) != net:
+            return "not inside the %s block of %s" % (PWR_PLANE, net)
         return None
 
     def seg_why(self, net, layer, a, c, w):
@@ -234,14 +237,14 @@ class BgaPlanner:
         return (s1[0] + s2[0]) / 2 + 2 * PLANE_CLR + MINWIDTH
 
     def slot_growth(self, net, p, size=VIA_IN):
-        """How much longer (mm, summed over L2, L3, L5) the longest chain of merged antipads through p gets when a
+        """How much longer (mm, summed over the planes L2, L5) the longest chain of merged antipads through p gets when a
         via of `net` goes there: 0 when it touches no other antipad on any plane where it is foreign."""
         allv = [(n, q, VIA_IN if self._in_area(q) else VIA_OUT) for n, q in self.vias if abs(q[0] - p[0]) < 5 and abs(q[1] - p[1]) < 5] \
             + [(n, q, s) for n, q, s, k in self.mine if abs(q[0] - p[0]) < 5 and abs(q[1] - p[1]) < 5]
         near = [v for v in allv if math.dist(v[1], p) < 2.5]
         tot = 0.0
         pn0 = self.plane_nets(p)
-        for lay in ("L2", "L3", "L5"):
+        for lay in PLANES:
             if pn0[lay] == net:
                 continue
             fv = [v for v in allv if self.plane_nets(v[1])[lay] != v[0]]
@@ -254,12 +257,12 @@ class BgaPlanner:
         return tot
 
     def merges(self, net, p, size=VIA_IN):
-        """Antipads the via at p would join on L2, L3, L5 (counted per layer): other vias closer than the merge
+        """Antipads the via at p would join on L2, L5 (counted per layer): other vias closer than the merge
         distance that are foreign to the plane where this one is too."""
         n = 0
         pn0 = self.plane_nets(p)
         near = [(m, q, VIA_IN if self._in_area(q) else VIA_OUT) for m, q in self.vias if abs(q[0] - p[0]) < 1 and abs(q[1] - p[1]) < 1]             + [(m, q, s) for m, q, s, k in self.mine if abs(q[0] - p[0]) < 1 and abs(q[1] - p[1]) < 1]
-        for lay in ("L2", "L3", "L5"):
+        for lay in PLANES:
             if pn0[lay] == net:
                 continue
             n += sum(1 for m, q, s in near if self.plane_nets(q)[lay] != m and math.dist(q, p) < self.merge_dist(size, s))
@@ -710,8 +713,8 @@ class BgaPlanner:
                 if pad_dist(p, pad) < VIA_OUT[0] / 2 + 0.001:
                     continue
                 why = self.via_why(net, p, VIA_OUT, pads_ok=(padname,))
-                if why is None and plane and net in SUPPLY and self.l3_net(p, VIA_OUT[0] / 2 + PLANE_MARGIN) != net:
-                    why = "not in the L3 block"
+                if why is None and plane and net in SUPPLY and self.pwr_net(p, VIA_OUT[0] / 2 + PLANE_MARGIN) != net:
+                    why = "not in the %s block" % PWR_PLANE
                 if why is None:
                     why = self.seg_why(net, lay, c, p, w)
                 if why is None:

@@ -11,8 +11,9 @@ What a site has to keep (checked here; DRC in the build stays the authority):
     own net (hole to hole), 0.9 mm to plated holes of the connectors (hole to hole 0.45)
   - outer layers: a via or a track of net N stays `REGION_MARGIN` clear of every drawn region of another net on
     that layer (copper.sketch), so no local pour is cut by foreign copper
-  - L3: a via that must reach the plane lands inside the block of its net with `PLANE_MARGIN` to spare; +3V3 is
-    the rest of L3 (outside every drawn L3 block grown by the sketch's gap)
+  - power plane (`PWR_PLANE`, L5 since 2026-11-23; it was L3): a via that must reach the plane lands inside the
+    block of its net with `PLANE_MARGIN` to spare; +3V3 is the rest of the plane (outside every drawn block of that
+    layer grown by the sketch's gap). L2 is the ground plane; every through via reaches it
 Ties are straight from the pad centre (0/45/90) or have one 45 degree bend; the shortest legal one is taken,
 ties that point at the part's own centre cost a little more (vias go beside the part, not under it).
 """
@@ -28,7 +29,8 @@ from busroute.geom import in_poly, seg_poly_dist, seg_rect_dist, seg_dist, pt_se
 DIRS = [(1, 0), (1, 1), (0, 1), (-1, 1), (-1, 0), (-1, -1), (0, -1), (1, -1)]
 STEP = 0.025                 # search step along a direction (keeps the 0.1 um grid from a pad centre on it)
 REGION_MARGIN = 0.1          # foreign copper to a drawn region of another net on an outer layer, beyond its own size
-PLANE_MARGIN = 0.15          # a via that must hit its L3 block: inside it by radius + this
+PWR_PLANE = "L5"            # the layer of the power blocks in copper.sketch (signal / GND / signal / signal / power / signal)
+PLANE_MARGIN = 0.15          # a via that must hit its power block: inside it by radius + this
 OWN_VIA = 0.5                # centre distance between two vias of one net (hole to hole 0.254 + 0.2)
 PTH_VIA = 0.75               # via centre to a plated hole of another part (hole to hole 0.45 + radii)
 
@@ -69,7 +71,7 @@ class Planner:
         for r in sk.regions:
             if not r.whole:
                 self.regions.append((r.name, r.net, "L%d" % r.layer, [(x / 1e6 + ox, y / 1e6 + oy) for x, y in r.pts]))
-        self.l3_whole = next((r.net for r in sk.regions if r.whole and r.layer == 3), None)
+        self.pwr_whole = next((r.net for r in sk.regions if r.whole and "L%d" % r.layer == PWR_PLANE), None)
         xs = [p[0] for e in board.edges for p in e]
         ys = [p[1] for e in board.edges for p in e]
         self.box = (min(xs), min(ys), max(xs), max(ys))
@@ -90,16 +92,16 @@ class Planner:
         d = min(pt_seg(p, a, c)[0] for a, c in zip(poly, poly[1:] + poly[:1]))
         return -d if in_poly(p, poly) else d
 
-    def l3_net(self, p, margin):
-        """The L3 block net at p when p is inside it by `margin`; None in a gap or near an edge of one."""
+    def pwr_net(self, p, margin):
+        """The power-plane block net at p when p is inside it by `margin`; None in a gap or near an edge of one."""
         for name, net, lay, poly in self.regions:
-            if lay == "L3":
+            if lay == PWR_PLANE:
                 d = self._rdist(p, poly)
                 if d <= -margin:
                     return net
                 if d < self.gap + margin:
                     return None
-        return self.l3_whole
+        return self.pwr_whole
 
     def inside(self, net, layer, p, margin):
         return any(n == net and lay == layer and self._rdist(p, poly) <= -margin for _, n, lay, poly in self.regions)
@@ -143,8 +145,8 @@ class Planner:
         why = self.sc.conflict([it])
         if why:
             return why
-        if plane and self.l3_net(p, r + PLANE_MARGIN) != (plane_net or net):
-            return "not inside the L3 block of %s" % (plane_net or net)
+        if plane and self.pwr_net(p, r + PLANE_MARGIN) != (plane_net or net):
+            return "not inside the %s block of %s" % (PWR_PLANE, plane_net or net)
         for lay in outer:
             if not self.inside(net, lay, p, r + 0.05):
                 return "not inside a %s region of %s" % (lay, net)
@@ -352,7 +354,7 @@ class Planner:
         return False
 
     def feed(self, net, near, count, outer=(), plane=False, plane_net=None, spacing=0.8, radius=3.0, label=""):
-        """`count` vias of `net` inside its regions on the `outer` layers (and its L3 block with plane), nearest to
+        """`count` vias of `net` inside its regions on the `outer` layers (and its power-plane block with plane), nearest to
         `near` (a pad name or a point). No track: the pours join them. -> list of points."""
         c = self.b.pads[near].pos if isinstance(near, str) else near
         cand = []

@@ -15,8 +15,9 @@ table    the copper group of the metrics table (PROC-4, docs/tools.md) after the
          there against out/layout; part B (routes_power_bga.py: balls, sharing, decoupling, VCAP / VDDA_MCU, the
          sketch copy's DRC and slots.txt). Writes <out dir>/table.txt and prints it.
 slots    (D:\\KiCad\\bin\\python.exe stm32h743_sdram\\copper_report.py slots <refilled board> <out dir>) U31: plane slots
-         under the BGAs, cut-off vias, the L3 blocks' strip from the feed vias into the ball field (slots.json / .txt).
-         Options: --window NAME X0 Y0 X1 Y1 (repeatable; instead of the two BGA windows), --part-b <power_bga_sites.json>.
+         under the BGAs, cut-off vias, the BGA blocks' strip on the power plane (L5) from the feed vias into the ball
+         field (slots.json / .txt). Options: --window NAME X0 Y0 X1 Y1 (repeatable; instead of the two BGA windows),
+         --part-b <power_bga_sites.json>, --layers L5 (only these plane layers), --stem NAME (NAME.json / .txt).
 strip    (copper_report.py strip <board> GROUP ...) removes what those busroute groups wrote last time, so that
          build.sh route1 can rebuild sdram, power and power_bga in that order.
 """
@@ -68,10 +69,10 @@ COPPER = """GND +3V3 +5V +3V3A +3V3_MCU +3V3_SDRAM +3V3_QSPI +3V3_PHY +3V3_AUD +
 +5V_LDO +3V3_LDO +5V_REG +3V3_REG +12V_IN +12V +12V_JACK SW_5V SW_3V3 SW_BL LED_A +1V8 VDDA_MCU VDDA_PHY""".split()
 # per rail: (feed pads, vias required) by the coordinator's rule: 1 per 0.5 A of the rail, at least 2 per output / side
 RAILS = [
-    ("+5V (1.2 A) R110 -> L3", ["R110.2"], 3), ("+3V3 (1.1 A) R111 -> L3", ["R111.2"], 3),
+    ("+5V (1.2 A) R110 -> L5", ["R110.2"], 3), ("+3V3 (1.1 A) R111 -> L5", ["R111.2"], 3),
     ("+5V -> 3.3 V buck input (U102, C108)", ["U102.4", "C108.1"], 2),
-    ("+3V3A LDO output -> L3 block (U103, C111)", ["U103.5", "C111.1"], 2),
-    ("+3V3_MCU R203 -> L3 tongue (+ C217)", ["R203.2", "C217.1"], 2), ("+3V3_SDRAM R301 -> L3 tongue (+ C309)", ["R301.2", "C309.1"], 2),
+    ("+3V3A LDO output -> L5 block (U103, C111)", ["U103.5", "C111.1"], 2),
+    ("+3V3_MCU R203 -> L5 tongue (+ C217)", ["R203.2", "C217.1"], 2), ("+3V3_SDRAM R301 -> L5 tongue (+ C309)", ["R301.2", "C309.1"], 2),
     ("VDDA_PHY L1 north piece <-> L6", ["L1_VDDA_PHY_N"], 1), ("VDDA_PHY L1 west piece <-> L6", ["L1_VDDA_PHY_W"], 1),
     ("VDDA_PHY L1 south piece <-> L6", ["L1_VDDA_PHY_S"], 1), ("VDDA_PHY FB501 <-> L6", ["FB501.2"], 2),
     ("+3V3_PHY L6 strip <-> L1 pour", ["L1_3V3_PHY - L6 strip"], 1),
@@ -140,7 +141,7 @@ def table(board_path, odir):
         L.append("  %-44s %d / %d %s" % (label, got, need, "ok" if got >= need else "MISS"))
     L.append("  +12V 链（0.94 A）、+5V_REG、+3V3_REG、+1V8、LED_A、+5V_BL: 全在 L1，不换层，没有供电过孔")
     single = [s for s in sites["done"] if s["kind"] == "via" and s["net"] in ("+3V3", "+5V", "+3V3A") and s["pad"] not in {p for _, ps, _ in RAILS for p in ps}]
-    L.append("  其余 +3V3 / +5V / +3V3A 焊盘各 1 个过孔到 L3: %d 个焊盘" % len({s["pad"] for s in single}))
+    L.append("  其余 +3V3 / +5V / +3V3A 焊盘各 1 个过孔到 L5: %d 个焊盘" % len({s["pad"] for s in single}))
     # ---- ground
     g = [s for s in sites["done"] if s["net"] == "GND"]
     own = sorted({s["pad"] for s in g if s["kind"] == "via"})
@@ -216,7 +217,7 @@ def part_b_text(b, odir):
         sum(1 for c in caps.values() if c["net"] == "GND" and c.get("balls")), len(gown),
         max([c.get("edge", 0) for c in gown] or [0]), sum(1 for c in gown if c.get("edge", 0) > 1.0)))
     supply_own = sorted(k for k, c in caps.items() if c["net"] != "GND" and c["kind"].startswith("own"))
-    L.append("  电源焊盘没有落到球的过孔、用自己的过孔到 L3 的 %d 个: %s" % (len(supply_own), " ".join(supply_own) or "-"))
+    L.append("  电源焊盘没有落到球的过孔、用自己的过孔到 L5 的 %d 个: %s" % (len(supply_own), " ".join(supply_own) or "-"))
     small = [(f.GetReference(), p) for r, f in fps.items() if r.startswith("C") and f.GetValue().replace(" ", "").lower() in ("100n", "100nf", "0.1u", "0.1uf")
              for p in f.Pads()]
     rows = []
@@ -297,17 +298,20 @@ def pours_in_areas(b, areas=("BGA_MCU", "BGA_SDRAM")):
 
 SLOT_WINDOWS = {"MCU": (32.0, 29.0, 48.0, 45.0), "SDRAM": (50.0, 27.5, 64.0, 46.5)}   # rule area +- 2 mm (the via
 #                column at x 59-60, y 28.5-37 that the stop-3 review saw lies in the SDRAM window)
-REF_LAYERS = {"L2": ["L1"], "L3": ["L4"], "L5": ["L4", "L6"]}      # signal layers whose return current runs on the plane
+# signal layers whose return current runs on the plane (signal / GND / signal / signal / power / signal, user 2026-11-23)
+REF_LAYERS = {"L2": ["L1", "L3"], "L5": ["L4", "L6"]}
+PWR_PLANE = "L5"                                                   # the layer of the power blocks (copper.sketch)
 SLOT_REPORT = 2.0                                                  # slots longer than this are listed
 BLOCKS = {"+3V3_MCU": "BGA_MCU", "+3V3_SDRAM": "BGA_SDRAM"}
 
 
-def slots(board_path, odir, windows=None, part_b=None):
+def slots(board_path, odir, windows=None, part_b=None, layers=None, stem="slots"):
     """U31 on a refilled board (the line-order sketch copy): per plane layer and BGA window, the voids of the plane
     fill that hold vias (antipads merged into slots), their length (farthest two points), the nets whose tracks
     on the neighbouring signal layer cross them, and whether the part-B vias make them longer; vias of the plane's
     own net that the fill does not hold on its main piece (cut off); the narrowest connection of the two BGA blocks
-    on L3 between their feed vias and the ball field. Writes <out dir>/slots.json and slots.txt.
+    on the power plane between their feed vias and the ball field. Writes <out dir>/<stem>.json and <stem>.txt.
+    layers: only these plane layers (default every layer of REF_LAYERS).
     windows: {name: (x0, y0, x1, y1)} instead of SLOT_WINDOWS (build.sh route1 measures the whole bus region);
     part_b: the power_bga_sites.json whose vias are counted as part B (default <out dir>/sketch_power_bga/)."""
     import math
@@ -342,11 +346,17 @@ def slots(board_path, odir, windows=None, part_b=None):
             ch.Append(V(x, y))
         ch.SetClosed(True)
         win.AddOutline(ch)
+        # only the board less a 0.3 mm rim: the fills stop 0.254 short of the edge, and a `whole` zone reaches 1 mm past
+        # it, so a window over the edge would count that rim as one void round the board
+        brd = pcbnew.SHAPE_POLY_SET()
+        b.GetBoardPolygonOutlines(brd, True)
+        brd.Deflate(300000, pcbnew.CORNER_STRATEGY_ROUND_ALL_CORNERS, 2000)
+        win.BooleanIntersection(brd)
         for z in b.Zones():
             if z.GetIsRuleArea() or not z.IsOnCopperLayer():
                 continue
             L = lname.get(z.GetLayer())
-            if L not in REF_LAYERS:
+            if L not in REF_LAYERS or (layers and L not in layers):
                 continue
             net = z.GetNetname()
             A = pcbnew.SHAPE_POLY_SET(z.Outline()); A.BooleanIntersection(win)
@@ -399,9 +409,9 @@ def slots(board_path, odir, windows=None, part_b=None):
         k = r["layer"]
         if k not in out["longest"] or r["length"] > out["longest"][k]["length"]:
             out["longest"][k] = r
-    # L3 blocks: narrowest connection between the feed vias (outside the rule area) and the ball field
+    # the BGA blocks on the power plane: narrowest connection between the feed vias (outside the rule area) and the ball field
     for z in b.Zones():
-        if z.GetIsRuleArea() or z.GetNetname() not in BLOCKS or lname.get(z.GetLayer()) != "L3":
+        if z.GetIsRuleArea() or z.GetNetname() not in BLOCKS or lname.get(z.GetLayer()) != PWR_PLANE or (layers and PWR_PLANE not in layers):
             continue
         net, area = z.GetNetname(), areas[BLOCKS[z.GetNetname()]]
         fill = pcbnew.SHAPE_POLY_SET(z.GetFilledPolysList(z.GetLayer())); fill.Simplify()
@@ -432,9 +442,14 @@ def slots(board_path, odir, windows=None, part_b=None):
         out["necks"][net] = {"pieces": len(pieces), "neck_mm": round(lo, 3), "feeds": len(feeds), "field_vias": len(balls),
                              "field_vias_at_2mm": n2,
                              "note": "the widest strip from the feed vias that still reaches a supply via in the rule area"}
-    json.dump(out, open(os.path.join(odir, "slots.json"), "w", encoding="utf-8"), indent=1, ensure_ascii=False)
+    out["longest_zone"] = {}
+    for r in out["slots"]:
+        k = "%s %s" % (r["layer"], r["zone"])
+        if k not in out["longest_zone"] or r["length"] > out["longest_zone"][k]["length"]:
+            out["longest_zone"][k] = r
+    json.dump(out, open(os.path.join(odir, stem + ".json"), "w", encoding="utf-8"), indent=1, ensure_ascii=False)
     txt = slots_text(out)
-    open(os.path.join(odir, "slots.txt"), "w", encoding="utf-8").write(txt + "\n")
+    open(os.path.join(odir, stem + ".txt"), "w", encoding="utf-8").write(txt + "\n")
     print(txt)
 
 
@@ -445,10 +460,12 @@ def slots_text(s):
             L.append("  %-2s %-5s %-6.2f mm  (%.2f, %.2f)-(%.2f, %.2f)  过孔 %d（B 部分 %d，去掉它们后最长 %.2f）  过孔网络 %s  上方走线 %s" % (
                 r["layer"], r["window"], r["length"], r["ends"][0][0], r["ends"][0][1], r["ends"][1][0], r["ends"][1][1], r["vias"], r["part_b_vias"],
                 r["without_part_b"], " ".join(r["via_nets"][:8]) + (" …" if len(r["via_nets"]) > 8 else ""), " ".join(r["crossing"]) or "-"))
+    L.append("  每块最长: " + "  ".join("%s %.2f mm (%.2f, %.2f)-(%.2f, %.2f)" % (k, v["length"], v["ends"][0][0], v["ends"][0][1], v["ends"][1][0], v["ends"][1][1])
+                                     for k, v in sorted(s.get("longest_zone", {}).items())))
     L.append("  每层最长: " + "  ".join("%s %.2f mm (%s)" % (k, v["length"], v["window"]) for k, v in sorted(s["longest"].items())))
     L.append("  被切断的本网络过孔: %d%s" % (len(s["cut_off"]), "".join("\n    %s %s %s (%.2f, %.2f)%s" % (c["layer"], c["zone"], c["net"], c["via"][0], c["via"][1], " B 部分" if c["part_b"] else "") for c in s["cut_off"])))
     for net, n in s["necks"].items():
-        L.append("  L3 %-11s 块数 %d；供电过孔 %d 个到球区（区内 %d 个本网络过孔）的最窄连接 %.2f mm（能连到第一个的最宽铜带）；按 2.0 mm 宽的铜带能到的 %d 个" % (
+        L.append("  L5 %-11s 块数 %d；供电过孔 %d 个到球区（区内 %d 个本网络过孔）的最窄连接 %.2f mm（能连到第一个的最宽铜带）；按 2.0 mm 宽的铜带能到的 %d 个" % (
             net, n["pieces"], n["feeds"], n["field_vias"], n["neck_mm"], n["field_vias_at_2mm"]))
     return "\n".join(L)
 
@@ -467,7 +484,8 @@ if __name__ == "__main__":
     elif sys.argv[1] == "slots":
         a = sys.argv[4:]
         win = {a[k + 1]: tuple(float(v) for v in a[k + 2:k + 6]) for k in range(len(a)) if a[k] == "--window"} or None
-        slots(sys.argv[2], sys.argv[3], win, a[a.index("--part-b") + 1] if "--part-b" in a else None)
+        slots(sys.argv[2], sys.argv[3], win, a[a.index("--part-b") + 1] if "--part-b" in a else None,
+              a[a.index("--layers") + 1].split(",") if "--layers" in a else None, a[a.index("--stem") + 1] if "--stem" in a else "slots")
     else:
         print(__doc__)
         sys.exit(2)

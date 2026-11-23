@@ -61,8 +61,15 @@ _OUTER = dict(below=[(0.0994, 4.1)], above=None, t=1.6 * MIL, etch=None)
 STACKUP = {
     "L1": _OUTER,                                   # microstrip over L2, 3313 prepreg
     "L6": _OUTER,                                   # microstrip over L5, same build
+    # Inner layers: L3 and L4 are both signal layers since 2026-11-23 (layer order signal / GND / signal / signal /
+    # power / signal); each is a stripline between its near plane (L2 for L3, L5 for L4, 0.1 mm core) and the other
+    # inner signal layer 1.12 mm away, taken as a plane as the fab's calculator does. The stackup is symmetric, so
+    # the two give the same numbers (SPEC 6: 50 ohm 0.135 mm on L3 and L4 from the user's run of that calculator).
     "L4": dict(below=[(0.1, 4.6)],                  # 0.1 mm core down to L5
                above=[(0.2104, 4.4), (0.7, 4.6), (0.2104, 4.4)],   # 7628 / core / 7628 up to L3
+               t=0.6 * MIL, etch=None),
+    "L3": dict(below=[(0.1, 4.6)],                  # 0.1 mm core up to L2
+               above=[(0.2104, 4.4), (0.7, 4.6), (0.2104, 4.4)],   # 7628 / core / 7628 down to L4
                t=0.6 * MIL, etch=None),
 }
 # Fab parameter sets, one per site: solder mask thickness on laminate and on

@@ -1,6 +1,6 @@
 """Power group of the two BGAs (stop 5, power and copper, part B): the supply and ground balls of U201 (MCU) and
-U301 (SDRAM), each by a dog-bone to a 0.30 / 0.15 via at a ball-gap point and so to its plane (GND: L2 / L5,
-+3V3_MCU / +3V3_SDRAM: their L3 blocks), and the bottom decoupling under them (pad over a via, or an L6 stub).
+U301 (SDRAM), each by a dog-bone to a 0.30 / 0.15 via at a ball-gap point and so to its plane (GND: L2,
++3V3_MCU / +3V3_SDRAM: their L5 blocks), and the bottom decoupling under them (pad over a via, or an L6 stub).
 
     sh stm32h743_sdram/build.sh copper          (the whole step; this group follows routes_power.py)
     D:\\KiCad\\bin\\python.exe scripts\\busroute\\build.py stm32h743_sdram\\routes_power_bga.py --fast
@@ -35,7 +35,7 @@ POWER = {"U201": ["GND", "+3V3_MCU", "VDDA_MCU", "VCAP1", "VCAP2"], "U301": ["GN
 PARTS = ["C%d" % i for i in range(201, 224) if i != 217] + ["FB201"] + ["C%d" % i for i in range(301, 309)]
 # ball-gap sites no via of this group may take: kept for a signal ball's way out (escape_check, stop 4 numbers)
 FORBID = [(45.525, 36.025)]   # stop 7 part 2: LCD_B3's via (C210.2's ground via moves to another site beside the pad)
-# no via of another net in these boxes: where the L3 tongue of +3V3_MCU (x 39.6-44.2) enters the MCU's ball field,
+# no via of another net in these boxes: where the L5 tongue of +3V3_MCU (x 39.6-44.2) enters the MCU's ball field,
 # between the SDRAM sketch's vias, down to the first supply vias (row C)
 PROTECT = [("+3V3_MCU", (40.0, 30.5, 43.2, 33.1))]
 

@@ -1,7 +1,7 @@
 """Pictures of the filled copper, one per layer, for the reviewer (qualitative only: necks, planes cut by via rows,
 islands; every number comes from the board file, PROC-14).
 
-    D:\\KiCad\\bin\\python.exe stm32h743_sdram\\copper_view.py <board> <out dir> [L1 L2 L3 L6 ...] [--scale 14]
+    D:\\KiCad\\bin\\python.exe stm32h743_sdram\\copper_view.py <board> <out dir> [L1 L2 L5 L6 ...] [--scale 14]
                                                           [--window x0 y0 x1 y1 --name <suffix>]
                                                           [--slots <slots.json> [--slot-min 3.0]] [--via-labels]
 
@@ -59,7 +59,7 @@ def main(argv):
     except OSError:
         small = ImageFont.load_default()
     path, out = args[0], args[1]
-    layers = args[2:] or ["L1", "L2", "L3", "L6"]
+    layers = args[2:] or ["L1", "L2", "L5", "L6"]          # the pours: L2 ground plane, L5 power blocks, L1 / L6 ground fill
     b = pcbnew.LoadBoard(path)
     mm = pcbnew.ToMM
     ids = list(b.GetEnabledLayers().CuStack())

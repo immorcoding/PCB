@@ -72,6 +72,8 @@ def _chain(board, profile, net, pieces, finds, open_ok, single):
         lay, width = pc[0], (pc[2] if len(pc) > 2 else None)
         if lay not in board.cu:
             raise RouteError("%s: unknown layer %r (the board has %s)" % (net, lay, " ".join(board.layers)))
+        if lay in getattr(board, "planes", ()):
+            raise RouteError("%s: %s is a plane layer (type power in the board's layer table): no tracks there" % (net, lay))
         pts = []
         for k, p in enumerate(pc[1]):
             if isinstance(p, str):

@@ -146,6 +146,10 @@ def build(f):
     f.case("w15", "总线类（RMII）0.09 在区外", {(W, "bus_width")}); f.trk("RMII_TX_EN", (X, 36), (X + 8, 36), 0.09)
 
     f.case("w16", "0.05 跨过 MCU 区的边：碰到规则区也不能低于 0.09", {(W, "bga_width")}); f.trk("N17", (20, 17), (23, 17), 0.05)
+    # L3 (In2.Cu) is a signal layer since 2026-11-23: no rule names a layer, so a track there is checked as on L4 (In3.Cu)
+    f.case("w17", "默认类 0.09 在 L3 区外：低于 0.1016（和 w18 的 L4 相同）", {(W, "signal_width")}); f.trk("N18", (X, 37), (X + 8, 37), 0.09, "L3")
+    f.case("w18", "默认类 0.09 在 L4 区外：低于 0.1016", {(W, "signal_width")}); f.trk("N19", (X, 38), (X + 8, 38), 0.09, "L4")
+    f.case("w19", "0.1016 整段在 MCU 区内、L3 上：区内只能 0.09", {(W, "bga_width_inside")}); f.trk("N70", (12, 14), (16, 14), 0.1016, "L3")
 
     # ---- vias
     D, H, A = "via_diameter", "drill_out_of_range", "annular_width"
@@ -158,12 +162,13 @@ def build(f):
     f.case("v07", "0.30 / 0.10 在区内：孔小于 0.15", {(H, "bga_via")}); f.via("N16", 16, 20, 0.30, 0.10)
 
     # ---- clearance (edge to edge)
-    def pair(na, nb, x, y, w, gap, length=4):
-        f.trk(na, (x, y), (x + length, y), w); f.trk(nb, (x, y + w + gap), (x + length, y + w + gap), w)
+    def pair(na, nb, x, y, w, gap, length=4, layer="L1"):
+        f.trk(na, (x, y), (x + length, y), w, layer); f.trk(nb, (x, y + w + gap), (x + length, y + w + gap), w, layer)
     f.case("c01", "区内两根 0.09 的线，间距 0.10"); pair("N20", "N21", 17, 11, 0.09, 0.10, 3)
     f.case("c02", "区内间距 0.08：低于 0.09", {(C, "bga_clearance")}); pair("N22", "N23", 17, 12, 0.09, 0.08, 3)
     f.case("c03", "区外间距 0.10：低于网络类的 0.127", {(C, "Default")}); pair("N24", "N25", X, 44, 0.1016, 0.10)
     f.case("c04", "区外间距 0.13"); pair("N26", "N27", X, 45, 0.1016, 0.13)
+    f.case("c05", "L3 区外间距 0.10：低于网络类的 0.127（同 c03）", {(C, "Default")}); pair("N28", "N29", X, 46.5, 0.1016, 0.10, layer="L3")
 
     # ---- corners, short segments
     f.case("k01", "90° 拐角", {("track_angle", "corner_angle")})
@@ -178,6 +183,10 @@ def build(f):
     f.via("N40", X, 56, strip_inner=True); f.trk("N41", (X - 2, 56 + 0.1 + 0.19 + 0.0508), (X + 2, 56 + 0.1 + 0.19 + 0.0508), 0.1016, "L4")
     f.case("h02", "过孔的孔到内层走线 0.21")
     f.via("N42", X + 6, 56, strip_inner=True); f.trk("N43", (X + 4, 56 + 0.1 + 0.21 + 0.0508), (X + 8, 56 + 0.1 + 0.21 + 0.0508), 0.1016, "L4")
+    f.case("h08", "过孔的孔到 L3 走线 0.19（同 h01 的 L4）：低于 0.2", {("hole_clearance", None)})
+    f.via("N71", X + 12, 56, strip_inner=True); f.trk("N72", (X + 10, 56 + 0.1 + 0.19 + 0.0508), (X + 14, 56 + 0.1 + 0.19 + 0.0508), 0.1016, "L3")
+    f.case("h09", "过孔的孔到 L3 走线 0.21")
+    f.via("N73", X + 18, 56, strip_inner=True); f.trk("N74", (X + 16, 56 + 0.1 + 0.21 + 0.0508), (X + 20, 56 + 0.1 + 0.21 + 0.0508), 0.1016, "L3")
     f.case("h03", "插件孔（孔 1.0、盘 1.2）到走线 0.25：插件孔要 0.3", {("hole_clearance", "pth_hole_clearance")})
     f.pad("H3", "N44", X, 60, 1.2, 1.0); f.trk("N45", (X - 2, 60 + 0.5 + 0.25 + 0.0508), (X + 2, 60 + 0.5 + 0.25 + 0.0508), 0.1016)
     f.case("h04", "插件孔到走线 0.32")
@@ -249,6 +258,11 @@ def build(f):
     for i in range(4):
         f.trk("LCD_R6", (5 + 25 * i, y), (5 + 25 * i + 25, y), 0.1016, "L1" if i % 2 == 0 else "L6")
         f.via("LCD_R6", 5 + 25 * i + 25, y)
+    y += 1.5
+    f.case("l0h", "地址线 14 mm 加 4 个通孔、L1–L3 换层（最后一个只接一层）：长度 14 + 3 × L1–L3 过孔高度（真板上的过孔都是通孔）")
+    for i in range(4):
+        f.trk("FMC_A3", (5 + 3.5 * i, y), (5 + 3.5 * i + 3.5, y), 0.1016, "L1" if i % 2 == 0 else "L3")
+        f.via("FMC_A3", 5 + 3.5 * i + 3.5, y)
     y += 1.5
 
     # ---- pour on L6 over the whole board, clearance 0.2: distance to tracks, pad connections
@@ -353,9 +367,15 @@ def main(out):
     for cid, text, ok in measure(stem + ".kicad_pcb"):
         check(ok, "%s 实测：%s" % (cid, text))
     h = make_project.via_height("F.Cu", "In3.Cu")
-    d4 = drc_probe.measure_lengths(stem + ".kicad_pcb", {"d4": "A.NetName == 'FMC_A2'"})["d4"].get("FMC_A2")
+    got = drc_probe.measure_lengths(stem + ".kicad_pcb", {"d4": "A.NetName == 'FMC_A2'", "d3": "A.NetName == 'FMC_A3'"})
+    d4 = got["d4"].get("FMC_A2")
     check(d4 is not None and abs(d4 - (14 + 3 * h)) < 0.0005,
           "l0f 实测：KiCad 量到 %s mm，按叠层算 14 + 3 × %.4f = %.4f mm（换层的过孔按 L1–L4 的高度计入，只接一层的不计）" % (d4, h, 14 + 3 * h))
+    h3 = make_project.via_height("F.Cu", "In2.Cu")
+    d3 = got["d3"].get("FMC_A3")
+    check(d3 is not None and abs(d3 - (14 + 3 * h3)) < 0.0005,
+          "l0h 实测：KiCad 量到 %s mm，按叠层算 14 + 3 × %.4f = %.4f mm（通孔在 L1–L3 换层只计 L1–L3 的高度，不是整板 %.4f）" % (
+              d3, h3, 14 + 3 * h3, make_project.via_height("F.Cu", "B.Cu")))
 
     rows, loaded = dru_match.match(stem + ".kicad_pcb")
     empty = [r["rule"] for r in rows if r["matched"] == 0]

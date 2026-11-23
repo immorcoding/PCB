@@ -84,14 +84,14 @@ PLACE.update({
     # trial routes in routes_probe_xtal.py (all four nets on L1, no via) and routes_probe_xtal_gnd.py (guards).
     "Y201": (31.4, 39.0, 270), "C225": (28.65, 37.9, 180), "C226": (32.4, 41.65, 180),
     "Y202": (29.5, 34.8, 90), "C227": (27.35, 33.55, 180), "C228": (27.35, 36.05, 180),
-    # supply entry of the MCU block (L3_3V3_MCU reaches north under the SDRAM bands to these pads)
+    # supply entry of the MCU block (L5_3V3_MCU reaches north under the SDRAM bands to these pads)
     "R203": (39.5, 26.2, 0), "C217": (42.8, 26.2, 0),
     # BOOT0 pull-down and test pad, reset key, SWD header on the top edge
     "R202": (41.0, 23.9, 0), "TP201": (41.0, 21.6, 0),
     "SW201": (42.0, 12.0, 0), "C224": (42.0, 14.6, 0),
     "J803": (40.6, 5.0, 0),
     "TP111": (48.8, 24.0, 0),
-    # ---- SDRAM supply entry (L3_3V3_SDRAM reaches north to it); bulk capacitor beside it
+    # ---- SDRAM supply entry (L5_3V3_SDRAM reaches north to it); bulk capacitor beside it
     "R301": (55.5, 26.2, 0), "C309": (59.0, 26.2, 0),
     # ---- microSD on the top edge, card slot facing out (L1_3V3_SD). The body front is 0.48 mm inside the edge:
     # the shell pads stand 0.21 mm proud of it and need the 0.254 mm copper-to-edge clearance.
@@ -100,7 +100,7 @@ PLACE.update({
     "R801": (51.5, 21.5, 90), "R802": (52.9, 21.5, 90), "R803": (54.3, 21.5, 90),
     "R804": (55.7, 21.5, 90), "R805": (57.1, 21.5, 90), "R806": (58.5, 21.5, 90),
     # ---- audio: jacks on the top edge (headphone left, line in right), codec below them with SAI facing the
-    # MCU (L3_3V3A under it; L1_3V3_AUD east of it, L1_1V8 south of it)
+    # MCU (L5_3V3A under it; L1_3V3_AUD east of it, L1_1V8 south of it)
     "J601": (16.5, 8.5, 0), "J602": (28.5, 8.5, 0),
     # U601's exposed pad (DRVSS) gets thermal vias as a via-in-pad exception like the PHY (coordinator, stop 4
     # round 2); the vias come with the fan-out
@@ -113,7 +113,7 @@ PLACE.update({
     "C601": (22.95, 24.5, 90), "C602": (24.5, 23.6, 90), "R610": (26.1, 23.6, 270),
     "R603": (25.6, 28.6, 0), "C612": (25.6, 29.75, 0),
     "R601": (37.2, 23.0, 90), "R602": (38.4, 23.0, 90),
-    # 3.3 V analog LDO north-east of the codec: +5V from the L3 +5V strip through R112 (L1_5V_LDO)
+    # 3.3 V analog LDO north-east of the codec: +5V from the L5 +5V strip through R112 (L1_5V_LDO)
     "U103": (29.5, 20.0, 180), "C111": (26.4, 19.9, 90), "C110": (32.6, 20.4, 90), "R112": (34.6, 20.4, 270),
     "TP104": (29.6, 23.9, 0), "TP107": (37.6, 16.4, 0),
     # 1.8 V LDO under the codec, output straight to DVDD (L1_1V8, L1_3V3_LDO)
@@ -169,7 +169,7 @@ PLACE.update({
     # ---- bottom side under the BGAs (SPEC 6, agreed exception to LAY-5): MCU decoupling, VCAP, VDDA filter, and
     # the SDRAM decoupling. Positions from decap_search.py on the SDRAM sketch board: pads clear of every L6
     # track and foreign via, every ball keeps a free via site, every VDD ball has a 100 nF within 2.5 mm.
-    # L3_3V3_MCU and L3_3V3_SDRAM under them; VDDA_MCU is an L6 pour here (the SW corner is closed on L1, L4, L6).
+    # L5_3V3_MCU and L5_3V3_SDRAM under them; VDDA_MCU is an L6 pour here (the SW corner is closed on L1, L4, L6).
     "C218": (42.15, 34.45, 90, "B"), "C219": (41.00, 38.45, 90, "B"), "C220": (35.45, 40.75, 90, "B"),
     "C222": (34.40, 40.95, 90, "B"), "C201": (39.60, 35.70, 0, "B"), "C202": (43.85, 37.90, 0, "B"),
     "C203": (39.65, 38.85, 90, "B"), "C204": (36.40, 35.60, 270, "B"), "C205": (39.25, 34.00, 0, "B"),
@@ -179,7 +179,7 @@ PLACE.update({
     "C215": (35.20, 36.30, 90, "B"), "C221": (35.85, 43.45, 270, "B"), "C223": (34.30, 43.45, 270, "B"),
     "C216": (42.70, 41.95, 0, "B"), "FB201": (37.40, 43.00, 270, "B"),
     # stop 5 part B moved seven of them (decap_search's positions did not connect): C208 turned (+3V3 pad north
-    # over ball C9's via site, so the L3 tongue reaches a supply via in a strip >= 2 mm); C204 turned (+3V3 pad north over
+    # over ball C9's via site, so the L5 tongue reaches a supply via in a strip >= 2 mm); C204 turned (+3V3 pad north over
     # ball F3's via site, ground pad over ball G2's: F3's other site bridged two SDRAM-sketch via rows on L2 / L5);
     # C218 0.3 mm south (VCAP1 pad within 0.5 mm of ball F13's only via site); C211 0.05 mm south so ball L4
     # (GND) keeps a via site (hole to copper 0.195 -> 0.24); C221, C223 and FB201 into the corner west of
@@ -197,7 +197,7 @@ PLACE.update({
     "C803": (61.9, 18.0, 180), "C804": (61.3, 20.6, 180), "R814": (62.2, 23.9, 90),
     "C805": (68.6, 20.75, 90), "R813": (68.9, 22.6, 0),
     "R807": (71.9, 21.9125, 270), "JP801": (76.0, 26.2, 90),
-    # ---- 3.3 V buck (L1_SW_3V3, L1_3V3_REG; input from the L3 +5V band)
+    # ---- 3.3 V buck (L1_SW_3V3, L1_3V3_REG; input from the L5 +5V band)
     "U102": (69.5, 32.4, 180), "L102": (75.3, 31.45, 0), "C108": (69.5, 29.6, 0), "C109": (79.8, 31.9, 90),
     "R111": (79.5, 36.7, 270), "R105": (67.5, 35.2, 0), "R106": (67.5, 36.4, 0), "R104": (71.0, 35.2, 0),
     "R108": (73.6, 34.3, 0), "TP106": (74.4, 36.2, 0), "TP103": (83.0, 33.6, 0),
@@ -220,7 +220,7 @@ RULE_AREAS = {
 # No pour on F.Cu under the two BGAs (user 2026-11-22: "a BGA is not suited to taking power from copper pours; just
 # track and via"): an F.Cu-only keep-out over the same rectangle as each rule area above that forbids zone fills
 # and nothing else. Own names (not BGA_*: the rule file, busroute and escape_check read the BGA_* areas); the
-# all-layer areas above keep every flag off, so the L2 / L3 / L5 planes and the L6 fill under the BGAs stay.
+# all-layer areas above keep every flag off, so the L2 / L5 planes and the L6 fill under the BGAs stay.
 NOPOUR_AREAS = {"NOPOUR_L1_MCU": "BGA_MCU", "NOPOUR_L1_SDRAM": "BGA_SDRAM"}
 BGA_REFS = ("U201", "U301")           # ball pads: solder-mask opening equal to the pad (approved exception)
 

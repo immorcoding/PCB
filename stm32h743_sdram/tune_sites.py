@@ -20,7 +20,7 @@ SPREAD, MARGIN = opt("--spread", 5.0), opt("--margin", 0.3)
 P, KEEP, CLR, AMAX, REACH = 0.3, 0.7, 0.19, 2.0, 2.3
 mm = pcbnew.ToMM
 b = pcbnew.LoadBoard(os.path.abspath(BOARD))
-LAY = {pcbnew.F_Cu: "L1", pcbnew.In3_Cu: "L4", pcbnew.B_Cu: "L6"}
+LAY = {pcbnew.F_Cu: "L1", pcbnew.In2_Cu: "L3", pcbnew.In3_Cu: "L4", pcbnew.B_Cu: "L6"}
 loc = lambda v: (mm(v.x) - 100, mm(v.y) - 100)
 
 segs, circ, rect, zones = {l: [] for l in LAY.values()}, {l: [] for l in LAY.values()}, {l: [] for l in LAY.values()}, {l: [] for l in LAY.values()}
@@ -66,7 +66,7 @@ def net_lengths():
 LEN = net_lengths()
 VIAH = 1.3932 * 0 + 0.0            # via height is added below from the stackup spans actually crossed
 # vias: add the height between the layers the net's tracks use at that via
-Z = {"L1": 0.0, "L4": 1.3932, "L6": 1.6154}
+Z = {"L1": 0.0, "L3": 0.2572, "L4": 1.3932, "L6": 1.6154}       # L3 since 2026-11-23 (make_project.via_height)
 try:
     st = b.GetDesignSettings().GetStackupDescriptor()
     z, zs, cu = 0.0, {}, 0

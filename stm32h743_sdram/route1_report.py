@@ -224,6 +224,20 @@ def main(board_path, odir):
                                                                       r["ends"][1][0], r["ends"][1][1], r["vias"], " ".join(r["via_nets"][:9])))
     if any(r["length"] > SLOT_MAX for r in sj["longest"].values()) or sj["cut_off"]:
         bad.append("slots")
+    # the power plane L5 over the whole board (build.sh: copper_report.py slots --layers L5 --stem slots_l5): the
+    # longest antipad chain inside each block; ground: L2 is the only plane, the L1 / L6 ground pieces hang on vias
+    s5 = os.path.join(odir, "slots_l5.json")
+    if os.path.isfile(s5):
+        s5 = json.load(open(s5, encoding="utf-8"))
+        A("       L5 每块最长的开槽（全板）：%s" % ("  ".join("%s %.2f mm (%.2f, %.2f)-(%.2f, %.2f)" % (
+            k.split(" ", 1)[1], r["length"], r["ends"][0][0], r["ends"][0][1], r["ends"][1][0], r["ends"][1][1])
+            for k, r in sorted(s5.get("longest_zone", {}).items())) or "无"))
+    gv = sum(1 for n, *_ in b.vias if n == "GND")
+    pi = os.path.join(odir, "pour_islands.txt")
+    pis = [l.strip() for l in open(pi, encoding="utf-8").read().splitlines() if l.startswith("cu-whole:")] if os.path.isfile(pi) else []
+    A("       地过孔 %d 个（GND 只有 L2 一层平面）；外层地铺铜：%s" % (gv, "；".join(pis) or "pour_islands.txt 没有"))
+    if any(" 0 without" not in l for l in pis):
+        bad.append("ground pieces")
     # ---- escape (U59)
     ej = os.path.join(odir, "escape_bga.json")
     old = os.path.join(HERE, "out", "copper", "escape_bga.json")

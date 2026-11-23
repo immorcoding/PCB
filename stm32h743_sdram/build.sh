@@ -137,8 +137,8 @@ copper)
   echo "== pictures of the filled layers (qualitative review only)"
   $PY "$D/copper_view.py" "$BRD" "$O" L1 L2 L3 L5 L6 2>&1 | quiet | tr '\n' ' '; echo
   # close-ups of the two BGAs on the sketch copy (it carries the SDRAM sketch's tracks and vias, as U31 is measured)
-  $PY "$D/copper_view.py" "$SK" "$O" L1 L2 L3 L6 --scale 40 --window 33 30 47 45 --name mcu 2>&1 | quiet | tr '\n' ' '; echo
-  $PY "$D/copper_view.py" "$SK" "$O" L1 L2 L3 L6 --scale 40 --window 51 28.5 63 45.5 --name sdram 2>&1 | quiet | tr '\n' ' '; echo
+  $PY "$D/copper_view.py" "$SK" "$O" L1 L2 L3 L5 L6 --scale 40 --window 33 30 47 45 --name mcu 2>&1 | quiet | tr '\n' ' '; echo
+  $PY "$D/copper_view.py" "$SK" "$O" L1 L2 L3 L5 L6 --scale 40 --window 51 28.5 63 45.5 --name sdram 2>&1 | quiet | tr '\n' ' '; echo
   # the longest L2 slot under the MCU marked, every via labelled with its net (for the reviewer)
   $PY "$D/copper_view.py" "$SK" "$O" L2 --scale 90 --window 36 36 46 45 --name slot_mcu --slots "$O/slots.json" --via-labels 2>&1 | quiet | tr '\n' ' '; echo
   mv -f "$O/L2_slot_mcu.png" "$O/slot_L2_mcu.png"
@@ -157,6 +157,7 @@ route1|route2)
   T0=$(date +%s)
   BRD="$D/$N.kicad_pcb"
   ls "$D"/~*.lck > /dev/null 2>&1 && { echo "KiCad has the project open (~*.lck): nothing written"; exit 2; }
+  $PY "$D/make_project.py" 2>&1 | quiet | grep "layer table" || true    # the board's layer table follows make_project.LAYERS
   G2=""; [ "$STEP" = route2 ] && G2=$(echo "$ROUTE2_GROUPS" | awk 'NF { printf "%s ", $1 }')
   echo "== placement and pours (the groups are stripped first, then rebuilt in order)"
   $PY "$D/copper_report.py" unfill "$BRD" 2>&1 | quiet
@@ -191,14 +192,21 @@ route1|route2)
   $PY "$R/scripts/cu_sketch.py" measure "$BRD" --drc "$O/drc.json" --json "$O/measure.json" --skip-areas BGA_MCU,BGA_SDRAM > "$O/measure.txt" 2>&1 || true
   # plane slots over the whole bus region (both BGAs, the west layer changes, the strip between the packages)
   $PY "$D/copper_report.py" slots "$BRD" "$O" --window BUS 27 25 66 51 --part-b "$O/power_bga_sites.json" 2>&1 | quiet | tail -8
+  # the power plane L5 over the whole board: the antipad chains inside each of the five blocks (slots_l5.json / .txt)
+  $PY "$D/copper_report.py" slots "$BRD" "$O" --window BOARD -1 -1 86 76 --layers L5 --stem slots_l5 --part-b "$O/power_bga_sites.json" 2>&1 | quiet | grep "每块最长" || true
+  # ground: L2 is the only plane; every L1 / L6 ground pour piece must hold a via or a through-hole pad of GND
+  $PY "$R/scripts/pour_islands.py" "$BRD" "cu-whole:L1_GND" "cu-whole:L6_GND" 2>&1 | quiet > "$O/pour_islands.txt" || true
+  cat "$O/pour_islands.txt"
   $PY "$R/scripts/escape_check.py" "$BRD" --ref U201 --ref U301 --window 27 25 66 51 --json "$O/escape_bga.json" 2>&1 | quiet > "$O/escape.txt"
   $PY "$R/scripts/dru_canary.py" "$BRD" 2>&1 | quiet > "$O/canary.txt" || true
   $PY "$R/scripts/dru_match.py" "$BRD" --json "$O/dru_match.json" > "$O/dru_match.txt" 2>&1 || true
   echo "== pictures (qualitative review only)"
-  $PY "$D/copper_view.py" "$BRD" "$O" L1 L4 L6 --scale 40 --window 29 26 66 50 --name bus 2>&1 | quiet | tr '\n' ' '; echo
-  $PY "$D/copper_view.py" "$BRD" "$O" L1 L2 L4 L6 --scale 90 --window 36 37 46 47 --name mcu_south --via-labels 2>&1 | quiet | tr '\n' ' '; echo
-  $PY "$D/copper_view.py" "$BRD" "$O" L1 L6 --scale 80 --window 51 28.5 63 45.5 --name sdram --via-labels 2>&1 | quiet | tr '\n' ' '; echo
-  $PY "$D/copper_view.py" "$BRD" "$O" L2 L3 L5 --scale 40 --window 27 25 66 51 --name planes --slots "$O/slots.json" 2>&1 | quiet | tr '\n' ' '; echo
+  $PY "$D/copper_view.py" "$BRD" "$O" L1 L3 L4 L6 --scale 40 --window 29 26 66 50 --name bus 2>&1 | quiet | tr '\n' ' '; echo
+  $PY "$D/copper_view.py" "$BRD" "$O" L1 L2 L3 L4 L6 --scale 90 --window 36 37 46 47 --name mcu_south --via-labels 2>&1 | quiet | tr '\n' ' '; echo
+  $PY "$D/copper_view.py" "$BRD" "$O" L1 L3 L6 --scale 80 --window 51 28.5 63 45.5 --name sdram --via-labels 2>&1 | quiet | tr '\n' ' '; echo
+  # the two planes (L2 ground, L5 the power blocks) over the bus region, and L5 over the whole board with its longest slot
+  $PY "$D/copper_view.py" "$BRD" "$O" L2 L5 --scale 40 --window 27 25 66 51 --name planes --slots "$O/slots.json" 2>&1 | quiet | tr '\n' ' '; echo
+  $PY "$D/copper_view.py" "$BRD" "$O" L5 --scale 14 --name board --slots "$O/slots_l5.json" 2>&1 | quiet | tr '\n' ' '; echo
   if [ "$STEP" = route2 ]; then
     # the Ethernet block (L1 / L4 / L6) and the areas of the stop-7 part moves, from the refilled board
     $PY "$D/copper_view.py" "$BRD" "$O" L1 L4 L6 --scale 45 --window 0 38 32 63 --name phy --via-labels 2>&1 | quiet | tr '\n' ' '; echo
