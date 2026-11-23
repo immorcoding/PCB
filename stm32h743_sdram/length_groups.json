@@ -1,5 +1,5 @@
 {
-  "_": "SPEC.md section 9. Read by scripts/len_rules.py. Members are rule conditions; lo / hi are mm relative to the reference. SDRAM data is matched inside each byte lane by the static skew rules sdram_lane0..3 of the rule file, not here.",
+  "_": "SPEC.md section 9. Read by scripts/len_rules.py. Members are rule conditions; lo / hi are mm relative to the reference. SDRAM data is matched inside each byte lane by the static skew rules sdram_lane0..3 of the rule file, not here. The fixed rules come after the static ones of the rule file and win over them for the objects they cover.",
   "groups": [
     {"rule": "qspi_window",
      "members": "A.NetName == 'QSPI_BK1_IO*'",
@@ -10,6 +10,16 @@
     {"rule": "rmii_rx_min",
      "members": "A.NetName == 'RMII_RXD*' || A.NetName == 'RMII_CRS_DV'",
      "ref": ["RMII_REF_CLK"], "lo": 0, "cap": 60}
+  ],
+  "fixed": [
+    {"rule": "ltdc_spread_45",
+     "members": "A.NetClass == 'LTDC'",
+     "constraint": "skew (max 45mm)",
+     "why": "user 2026-11-23: LTDC longest minus shortest relaxed from 30 to a working target of 45 mm, replaces ltdc_spread"},
+    {"rule": "qspi_ncs_no_cap",
+     "members": "A.NetName == 'QSPI_BK1_NCS'",
+     "constraint": "length (max 1000mm)",
+     "why": "user 2026-11-23: the chip select has no length cap, replaces qspi_len_max for it"}
   ],
   "sums": [
     {"name": "sdclk_total", "nets": ["FMC_SDCLK", "FMC_SDCLK_R"], "max": 60},

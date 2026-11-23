@@ -160,11 +160,12 @@ region L1_3V3_QSPI +3V3_QSPI L1
 region L1_3V3_LCD +3V3_LCD L1
   48.4,60.2  49.85,60.2  49.85,68.6  49.4,68.6  49.4,69.6  49.1,69.6  49.1,68.1  48.4,68.1  48.4,67.65  49.3,67.65
   49.3,65.6  48.4,65.6  48.4,64.9  49.3,64.9  49.3,60.9  48.4,60.9
-# microSD: link R812, C801, C802 in a band under the socket with a stub to contact 4, a strip between R802 and
-# R803 down to a second band under the five pull-ups and the card-detect pull-up
+# microSD (stop 7 c8): a band under the supply pads of the six pull-ups (row in contact order at y 19.2), the link
+# R812 and C801 / C802 hanging below it, and a stub north to contact 4 between the CMD and CK lines; nothing of
+# +3V3_SD between the pull-ups and the socket (each SD line is one L1 piece from its pull-up into its contact)
 region L1_3V3_SD +3V3_SD L1
-  52.5,17.85  55.33,17.85  55.33,16.5  55.73,16.5  55.73,17.85  58.5,17.85  58.5,18.65  53.78,18.65
-  53.78,21.5  58.9,21.5  58.9,22.5  51.1,22.5  51.1,21.5  53.42,21.5  53.42,18.65  52.5,18.65
+  50.9,19.6  55.3,19.6  55.3,16.5  55.75,16.5  55.75,19.6  59.75,19.6  59.75,19.95  61.05,19.95  61.05,20.35  57.75,20.35
+  57.75,21.0  56.55,21.0  56.55,20.35  53.6,20.35  53.6,21.4  52.65,21.4  52.65,20.35  50.9,20.35
 # CAN: VIO (3.3 V) and VCC (5 V) of the transceiver behind R813 and R814 (the +5V_CAN column keeps 0.2 mm from
 # C803's ground pad)
 region L1_3V3_CAN +3V3_CAN L1

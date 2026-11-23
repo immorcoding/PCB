@@ -236,7 +236,7 @@ def build(f):
     net_len("l11", "QSPI IO 22 mm", "QSPI_BK1_IO0", 22)
     net_len("l12", "QSPI IO 26 mm：比时钟长 6 mm", "QSPI_BK1_IO1", 26, (), {(LEN, "qspi_window")})
     net_len("l13", "QSPI IO 31 mm：超过 30 mm", "QSPI_BK1_IO2", 31, {(LEN, "qspi_len_max")}, {(LEN, "qspi_window")})
-    net_len("l14", "QSPI 片选 29 mm：不限等长，只限 30 mm", "QSPI_BK1_NCS", 29)
+    net_len("l14", "QSPI 片选 35 mm：不限等长，也不限长度（用户 2026-11-23）：只有手写段时报 qspi_len_max，生成段的 qspi_ncs_no_cap 压过它", "QSPI_BK1_NCS", 35, {(LEN, "qspi_len_max")}, set())
     net_len("l20", "SD 时钟 20 mm", "SDMMC1_CK", 20)
     net_len("l21", "SD 数据 22 mm", "SDMMC1_D0", 22)
     net_len("l22", "SD 数据 19 mm：比时钟短", "SDMMC1_D1", 19, (), {(LEN, "sdmmc_window")})
@@ -248,7 +248,7 @@ def build(f):
     net_len("l34", "RMII TXD1 59 mm", "RMII_TXD1", 59)
     net_len("l40", "LTDC 100 mm", "LCD_R3", 100)
     net_len("l41", "LTDC 121 mm：超过 120 mm", "LCD_R4", 121, {(LEN, "ltdc_len_max")})
-    net_len("l42", "LTDC 85 mm：比最长的短 36 mm，超过 30 mm", "LCD_R5", 85, {(SK, "ltdc_spread")})
+    net_len("l42", "LTDC 75 mm：比最长的（R4 121 mm）短 46 mm：只有手写段时报 ltdc_spread（30），生成段的 ltdc_spread_45（用户 2026-11-23 放宽）压过它，仍超 45 mm", "LCD_R5", 75, {(SK, "ltdc_spread")}, {(SK, "ltdc_spread_45")})
     f.case("l0g", "通道 1 数据线 4 个 L1–L4 过孔：超过 3 个（长度 28.8 + 3 × 过孔高度，在通道 1 的 5 mm 之内）", {(VC, "sdram_via_max")})
     for i in range(4):
         f.trk("FMC_D10", (5 + 7.2 * i, y), (5 + 7.2 * i + 7.2, y), 0.1016, "L1" if i % 2 == 0 else "L4")
@@ -326,7 +326,11 @@ def main(out):
     os.remove(base)
     # after SaveBoard: pcbnew writes a default .kicad_pro next to a board it saves
     shutil.copy(os.path.join(HERE, NAME + ".kicad_pro"), stem + ".kicad_pro")
-    shutil.copy(os.path.join(HERE, NAME + ".kicad_dru"), stem + ".kicad_dru")
+    # the static phase is the hand-written part only: the real board's generated block (its windows and fixed rules)
+    # is emptied here and regenerated for the fixture by len_rules.py before the window phase
+    dru = open(os.path.join(HERE, NAME + ".kicad_dru"), encoding="utf-8").read()
+    i, j = dru.index(len_rules.BEGIN), dru.index(len_rules.END)
+    open(stem + ".kicad_dru", "w", encoding="utf-8", newline="\n").write(dru[:i] + len_rules.BEGIN + "\n" + dru[j:])
     shutil.copy(os.path.join(HERE, "length_groups.json"), os.path.join(out, "length_groups.json"))
     # fill the pour once and keep it in the board file
     subprocess.run([drc_probe.KICAD_CLI, "pcb", "drc", "--refill-zones", "--save-board", "--severity-all", "--format", "json",

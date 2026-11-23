@@ -5,7 +5,8 @@
 Builds a four-net board in a temp directory with a rule file that has one misspelt net name, and
 expects: the canary says the file is loaded; dru_match names exactly the misspelt rule as empty;
 len_rules writes a window of 9.5 .. 14.5 mm around a 12 mm clock (two pieces, 2 + 10 mm, summed) and
-DRC then reports exactly the one net outside it; --check says the block is current, and stale after
+DRC then reports exactly the one net outside it; a fixed skew rule (max 2 mm over D0 12 / D1 15 mm) is written
+as given and DRC reports the shorter net; --check says the block is current, and stale after
 the clock is made longer. Prints one line, `OK ...` or `FAIL ...`; exit code 0 = pass.
 """
 import os, shutil, subprocess, sys, tempfile
@@ -33,7 +34,8 @@ DRU = """(version 1)
 # (nothing generated yet)
 %s
 """ % (len_rules.BEGIN, len_rules.END)
-GROUPS = '{"groups": [{"rule": "d_window", "members": "A.NetName == \'D*\'", "ref": ["CLK", "CLK_R"], "lo": -2.5, "hi": 2.5}], "sums": []}'
+GROUPS = ('{"groups": [{"rule": "d_window", "members": "A.NetName == \'D*\'", "ref": ["CLK", "CLK_R"], "lo": -2.5, "hi": 2.5}], "sums": [], '
+          '"fixed": [{"rule": "d_spread", "members": "A.NetName == \'D*\'", "constraint": "skew (max 2mm)", "why": "bench"}]}')
 
 
 def board(path, clk_r):
@@ -74,8 +76,12 @@ def main():
         code, out = run("len_rules.py", pcb)
         text = open(os.path.join(tmp, "t.kicad_dru"), encoding="utf-8").read()
         want(code == 0 and "(constraint length (min 9.5000mm) (opt 12.0000mm) (max 14.5000mm))" in text, "len_rules block: %s\n%s" % (out, text[-400:]))
-        bad = sorted(drc_probe.net_of(v["items"][0]) for v in drc_probe.run_drc(pcb)["violations"] if v["type"] == "length_out_of_range")
+        want('(rule "d_spread"\n  (condition "A.NetName == \'D*\'")\n  (constraint skew (max 2mm)))' in text, "fixed rule not written:\n%s" % text[-400:])
+        drc = drc_probe.run_drc(pcb)
+        bad = sorted(drc_probe.net_of(v["items"][0]) for v in drc["violations"] if v["type"] == "length_out_of_range")
         want(bad == ["D1"], "nets outside the window: %r" % bad)
+        skew = sorted(drc_probe.net_of(v["items"][0]) for v in drc["violations"] if v["type"] == "skew_out_of_range")
+        want(skew == ["D0"], "fixed skew rule (D0 12 mm, D1 15 mm, max 2 mm): skew violations on %r" % skew)
         code, out = run("len_rules.py", pcb, "--check")
         want(code == 0, "--check on a current block: exit %d %s" % (code, out))
         board(pcb, 11.0)
@@ -87,7 +93,7 @@ def main():
             print("\n".join("  " + f for f in fails))
         else:
             shutil.rmtree(tmp, ignore_errors=True)
-            print("OK drc_tools: canary, dru_match (1 empty rule found), len_rules (window 9.5..14.5 mm, stale check)")
+            print("OK drc_tools: canary, dru_match (1 empty rule found), len_rules (window 9.5..14.5 mm, fixed skew rule, stale check)")
     return 1 if fails else 0
 
 

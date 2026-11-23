@@ -187,12 +187,20 @@
 (rule "qspi_window"
   (condition "A.NetName == 'QSPI_BK1_IO*'")
   (constraint length (min 21.1196mm) (opt 26.1196mm) (max 30.0000mm)))
-# sdmmc_window: reference SDMMC1_CK = 36.5668 mm
+# sdmmc_window: reference SDMMC1_CK = 36.7080 mm
 (rule "sdmmc_window"
   (condition "A.NetClass == 'SDMMC' && A.NetName != 'SDMMC1_CK'")
-  (constraint length (min 36.5668mm) (opt 36.5668mm) (max 41.5668mm)))
+  (constraint length (min 36.7080mm) (opt 36.7080mm) (max 41.7080mm)))
 # rmii_rx_min: reference RMII_REF_CLK = 20.5576 mm
 (rule "rmii_rx_min"
   (condition "A.NetName == 'RMII_RXD*' || A.NetName == 'RMII_CRS_DV'")
   (constraint length (min 20.5576mm) (opt 20.5576mm) (max 60.0000mm)))
+# ltdc_spread_45: fixed (user 2026-11-23: LTDC longest minus shortest relaxed from 30 to a working target of 45 mm, replaces ltdc_spread)
+(rule "ltdc_spread_45"
+  (condition "A.NetClass == 'LTDC'")
+  (constraint skew (max 45mm)))
+# qspi_ncs_no_cap: fixed (user 2026-11-23: the chip select has no length cap, replaces qspi_len_max for it)
+(rule "qspi_ncs_no_cap"
+  (condition "A.NetName == 'QSPI_BK1_NCS'")
+  (constraint length (max 1000mm)))
 # <<< generated

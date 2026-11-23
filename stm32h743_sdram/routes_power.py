@@ -89,7 +89,10 @@ FIXED = [("R102.1", [("L1", ["R102.1", (65.0, 39.9)]), ("via", (65.0, 39.9)),
          ("C506.2", [("L1", ["C506.2", (26.725, 54.525)]), ("via", (26.725, 54.525))]),
          ("C508.2", [("L1", ["C508.2", (25.5, 57.795)]), ("via", (25.5, 57.795))]),
          # R501.2 (PHY_NRST pull-down's ground pad): PHY_NRST, REF_CLK and MDC box its L1 ground piece in; a via in it
-         ("R501.2", [("L1", ["R501.2", (23.41, 46.1)]), ("via", (23.41, 46.1))])]
+         ("R501.2", [("L1", ["R501.2", (23.41, 46.1)]), ("via", (23.41, 46.1))]),
+         # stop 7 c8: C217's ground via east of its pad, where it stood at stop 7 (the searched site moved south of the
+         # pad onto the SD lanes' window between the R203 / C217 vias)
+         ("C217.2", [("L1", ["C217.2", (44.275, 26.2)]), ("via", (44.275, 26.2))])]
 FIXED_PADS = {pad for pad, _ in FIXED}
 # ---- ground
 GND_REG = ["U101.1", "U102.2", "U103.2", "U104.2", "U701.2"]                  # regulator / switcher ground pins
@@ -106,7 +109,16 @@ PROTECT = [("+5V", (33.5, 5.5, 64.0, 8.5)), ("+5V", (33.5, 8.5, 36.5, 22.5)),
            ("-", (20.95, 44.0, 22.6, 48.1)), ("+3V3_PHY", (24.8, 48.9, 27.0, 52.0)),
            # stop 7 compose: the L4 lanes of LCD_B6 / B7 / DISP down the strip between the PHY and USER_KEY
            # (routes_mcu_west.py, x 27.14-27.6) take no via (FB501's VDDA_PHY vias and a ground via stood there)
-           ("-", (27.16, 44.3, 27.6, 66.0))]
+           ("-", (27.16, 44.3, 27.6, 66.0)),
+           # stop 7 c8: the SD lanes north of the R203 / C217 vias (L3 / L6, x 42.6-44.3, routes_mcu_nw.py), their rows
+           # east under the pull-up row (y 18.0-18.75), the pull-ups' vias and the L1 lines into the socket, and the
+           # card-detect line's L3 descent (x 60.025) take no via of the power group
+           ("-", (41.3, 17.6, 44.7, 25.75)), ("-", (44.5, 16.95, 61.15, 19.62)), ("-", (59.1, 13.0, 60.4, 19.62)),
+           # stop 7 c8: the FDCAN rows (L6 y 22.0 / 22.4) and EN_3V3A (L4 y 22.3) south of the SD block, built after
+           # this group, take no via of it either (the moved SD parts' vias stood there)
+           ("-", (46.4, 21.75, 64.0, 22.65)),
+           # stop 7 c8: the via of SCL's pull-up branch west of C601 (routes_mcu_sw.py) takes C601's old ground via site
+           ("-", (22.3, 23.55, 22.9, 24.15))]
 
 
 def routes(job):

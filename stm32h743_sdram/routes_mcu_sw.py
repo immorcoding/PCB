@@ -24,14 +24,13 @@ L1 stub into the pad (the R group comes on L1 and needs none). The field: the we
 x 32.65-33.11 and west at y 42.63-43.09; with REF_CLK / MDIO (L4) and PHY_NRST (L4, corridor) their vias sit at
 x 28.35-32.55, y 42.9-44.3 (south of the crystals' L1 box) in the order the PHY's pins need.
 
-Open (lead and gate only, kept where routes_mcu_nw.py / routes_mcu_south.py left them):
-  DISP, TXD0, G3, G7, BL_PWM  no via spot on the gate's x in the band: R203's / C217's vias (37.84-42.03, 26.2-27.15)
-  TX_EN, B7                   a via only 0.86 / 0.66 mm from the gate (rule: 0.6); TX_EN alone is no use without TXD0
-  B6, B7                      via the west corridor ~68 mm: beyond the LTDC spread (30 mm) against the south lines
-  NCS                         from a north exit > 50 mm (QSPI cap 30 mm)
-  TXD1                        its gate (30.0, 33.75) is inside Y202.1's pad clearance: no via within 0.6 mm
-  QSPI IO2 / IO3              west exits: IO2 ~32.5 mm, IO3 ~28 mm + the 5 mm stub to R403 (cap 30, window CLK +-5);
-                              no south exit through the field (L4 / L6 west runs, SDNWE closes L3)
+Open (lead and gate only; stop 7 c8 state, the reasons in the c8 report):
+  G3, BL_PWM, G7, NCS         no lane west of the north gates: north of the staircase vias of the west loop one L4 row
+                              (y 25.22) is left below the SAI vias (y 24.7), and a new westmost corridor lane would have
+                              to cross TXD0 / TX_EN's turns at y 41.5 / 41.95 (the westmost lane x 28.1 is TXD1's now)
+  QSPI IO2 / IO3              no south exit through the field (L4: A10 y 38.95, REF_CLK / MDIO corners at x 35.45; L3:
+                              the SDRAM river y 43.4-45.6); west of the field L6 is closed by the ground via (32.25, 38.85)
+                              and the DE / MDC / KEY lanes, L3 by G2's row y 45.88 and the LED rows
 """
 import os
 from fan_leads import plan, info
@@ -284,10 +283,16 @@ def west():
 # ---------------------------------------------------------------- the x 30 gates down the corridor on L4
 def corridor():
     R = {}
-    # PHY_NRST: routes_mcu_west.py (stop 7 compose). TXD1: no exit (open): west of the rule area its L3 row (y 33.75) is
-    # boxed by the SAI lanes and the vias of FMC_A6 / A10 / ground to the north, CODEC_NRST's L3 row (y 34.4) to the
-    # south, the L4 rivers (x 30.9-33.7, no via) and the LSE crystal Y202 to the west; the stub stops east of the crystal
-    R["RMII_TXD1"] = go("RMII_TXD1", [(31.3, 33.75)])
+    # PHY_NRST: routes_mcu_west.py (stop 7 compose). TXD1 (c8): west of the rule area its L3 row (y 33.75) is boxed by
+    # the SAI lanes and the vias of FMC_A6 / A10 / ground to the north, CODEC_NRST's L3 row (y 34.4) to the south, the L4
+    # rivers (x 30.9-33.7, no via) and the LSE crystal Y202 to the west. It leaves the pocket on L3 north-west (north of
+    # the crystal's body, west of A10's and the ground via (29.95, 32.2)), a via (27.9, 30.75) west of the corridor
+    # lanes and clear of the crystal pads, L4 down the corridor as the westmost lane
+    # (x 28.1, next to TXD0), west at y 41.05 north of TXD0's turn, a via (24.8, 41.05) and L1 parallel to TXD0's
+    # diagonal into pin 18 (the PHY's north escape lanes, routes_power.py keeps them free)
+    R["RMII_TXD1"] = go("RMII_TXD1", [(30.9, 33.75), (27.9, 30.75)], V(27.9, 30.75),
+                        Lp("L4", [(27.9, 30.75), (28.1, 30.95), (28.1, 40.7), (27.75, 41.05), (24.8, 41.05)]), V(24.8, 41.05),
+                        Lp("L1", [(24.8, 41.05), (21.15, 44.7), "U501.18"]))
     return R
 
 
@@ -313,7 +318,7 @@ def codec_i2c():
     R704 and R703 / NW of R704), L6 west along y 65.25 / 65.84, a via, L4 north in two lanes at x 22.83 / 22.6
     (west of the PHY block's vias, east of the codec's LDOs) to vias at the codec's north-east corner and L1 into
     U601.8 (SCL, from the north-east: C601 stands east of it) and U601.9 (SDA, from the north); R602 from U601.9's
-    second way in. R601 is not reached: U601.8 has this one way in (C601's ground pad east of it, pin 7's tie south)."""
+    second way in. R601 from U601.8's second way in (east; C601 moved 0.32 mm east at c8)."""
     # lanes x 22.83 / 22.6, east to 24.09 / 23.86 past the PHY's thermal via array (y 49-52) and back west below it (the
     # jogs staggered 0.0933 so the parallel diagonals keep the pitch)
     a1, b1 = 59.2, 48.9
@@ -334,7 +339,13 @@ def codec_i2c():
               Lp("L6", [(21.4, 22.9125), (22.6, 21.7125), (24.95, 21.7125), (25.25, 22.0125), (38.1375, 22.0125),
                         (38.4, 21.75)]), V(38.4, 21.75),
               Lp("L1", [(38.4, 21.75), "R602.2"])]
-    return {"I2C4_SCL": [scl], "I2C4_SDA": [sda, sda_pu]}
+    # SCL's pull-up R601 (c8, C601 moved 0.32 mm east): from U601.8's second way in (east, then north-east to a via
+    # west of C601), L6 south-east and east along y 24.25 (south of the codec's +3V3 / +3V3A vias, north of the SAI
+    # vias), north-east past SAI1_SD_B's via, east along y 22.49 (south of SDA's pull-up row) to a via west of R601.2
+    scl_pu = [Lp("L1", ["U601.8", (22.2, 24.25), (22.6, 23.85)]), V(22.6, 23.85),
+              Lp("L6", [(22.6, 23.85), (23.0, 24.25), (29.5, 24.25), (31.26, 22.49), (36.5, 22.49)]), V(36.5, 22.49),
+              Lp("L1", [(36.5, 22.49), "R601.2"])]
+    return {"I2C4_SCL": [scl, scl_pu], "I2C4_SDA": [sda, sda_pu]}
 
 
 def routes(job):

@@ -13,6 +13,9 @@ Input: length_groups.json next to the board:
   groups: [{rule, members (a rule condition), ref: [nets, summed: a series resistor splits a net],
             lo, hi (mm relative to the reference; either may be omitted), cap (absolute max, optional)}]
   sums:   [{name, nets: [summed], plus_longest_of: [nets] (optional), max}]   checked here, not by DRC
+  fixed:  [{rule, members, constraint (KiCad text, e.g. "skew (max 45mm)"), why (optional)}]   written as given;
+          for limits that need no reference but must win over a static rule of the hand-written part (the
+          block is last in the file, and the last matching rule of a constraint type wins)
 The block is written between the two marker lines of the .kicad_dru; it must be last in the file so
 that it wins over the static max-length rules for the nets it covers.
 """
@@ -64,6 +67,10 @@ def build(board_path):
                   '(rule "%s"\n  (condition "%s")\n  (constraint length%s))' % (g["rule"], g["members"], c)]
         report.append("%s: 基准 %s = %.4f mm，窗口 %s … %s mm" % (
             g["rule"], " + ".join(g["ref"]), ref, "%.4f" % lo if lo is not None else "不限", "%.4f" % hi if hi is not None else "不限"))
+    for x in spec.get("fixed", []):
+        lines += ["# %s: fixed%s" % (x["rule"], " (%s)" % x["why"] if x.get("why") else ""),
+                  '(rule "%s"\n  (condition "%s")\n  (constraint %s))' % (x["rule"], x["members"], x["constraint"])]
+        report.append("%s: 固定 %s" % (x["rule"], x["constraint"]))
     for s in spec.get("sums", []):
         need = s["nets"] + s.get("plus_longest_of", [])
         if not all(usable(n) for n in s["nets"]) or (s.get("plus_longest_of") and not any(usable(n) for n in s["plus_longest_of"])):

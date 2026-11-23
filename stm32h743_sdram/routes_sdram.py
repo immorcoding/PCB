@@ -70,7 +70,8 @@ GND_RETURN = [                             # (x, y): the layer changes they serv
     (34.15, 32.95),                        # D28 (33.3, 33.25) L4 -> L1, A3 (32.1, 31.6) has no site of its own
     (30.45, 39.0),                         # A6 (31.4, 39.0) L1 -> L4
     (35.45, 31.2),                         # D30 / NBL3 (36.1 / 36.75, 31.6) L4 -> L1, north of the MCU
-    (45.3, 32.1),                          # D3 (44.225, 32.775) L6 -> L1 (stop 7 part 2: was (43.375, 32.025), on B13's L6 way north)
+    (45.45, 32.1),                         # D3 (45.525, 32.775) L3 -> L1 (stop 7 part 2: was (43.375, 32.025), on B13's L6 way north;
+                                           # c8: 0.15 east, off SWDIO's L6 step from its via (44.875, 32.125))
     (45.85, 37.325),                       # D20 (45.4, 37.975) L4 -> L1
     (49.35, 37.3),                         # SDCLK_R (48.75, 36.675) L1 -> L4 beside R201 (stop 7 part 2: was (48.15, 37.375), in the
                                            # L4 way from the pocket under the strip to the pocket south of SDCLK_R)
@@ -217,7 +218,10 @@ def routes(job):
         # stop 7 part 2: D3 surfaces one column further east, after an L6 leg along the row-B line (sketch / stop 6:
         # via at (43.575, 32.775), B13's north-east quadrant): SDMMC1_D3 (B13) can then take that site and go north on
         # L6. Same layers, side and lane; length unchanged (0.65 mm more on L6, 0.65 mm less on L1)
-        "FMC_D3": db("C12", (42.925, 33.425), SEC, [(43.25, 33.1), (43.9, 33.1), (44.225, 32.775)]) + [("via", (44.225, 32.775)), ("L1", [(44.225, 32.775), (46.0, 32.775)])],
+        # stop 7 c8: D3 stays on L3 two columns further, along the row-B line to the gap east of B15, and surfaces at
+        # (45.525, 32.775) off the lattice: SDMMC1_D2 (B14) takes (44.225, 32.775). Same layers, side and lane; length
+        # unchanged (1.3 mm more on L3, 1.3 mm less on L1)
+        "FMC_D3": db("C12", (42.925, 33.425), SEC, [(43.25, 33.1), (45.2, 33.1), (45.525, 32.775)]) + [("via", (45.525, 32.775)), ("L1", [(45.525, 32.775), (46.0, 32.775)])],
         "FMC_D20": db("K12", (42.275, 37.975), "L4", [(45.4, 37.975)]) + [("via", (45.4, 37.975)), ("L1", [(45.4, 37.975), (46.0, 37.975)])],
         "FMC_D23": db("D13", (43.575, 34.075), SEC, [(43.9, 33.75), (46.0, 33.75)]),
         "FMC_D22": db("E13", (43.575, 34.725), SEC, [(43.9, 34.4), (46.0, 34.4)]),

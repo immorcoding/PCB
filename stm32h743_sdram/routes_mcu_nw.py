@@ -12,18 +12,22 @@ via there (every via is outside both boxes, or north of y 25.05).
 
 North of the gate row (y 27.6), the power vias of R203 / C217 at y 26.2-27.15 leave three windows for lanes
 through the band (x 39.0-40.0, 41.57-41.62, 42.43-43.87); vias are allowed east of x 44.35:
-  SWD     SWO (L3) to L1 at (41.0, 24.6), SWCLK (L3) east on y 26.85 to L1 at (44.85, 26.85), SWDIO (L6) east on
-          y 27.3 to L1 at (45.5, 26.95); three L1 lanes north (x 42.3 -> 44.5, 44.85, 45.5) east of the reset key
-          and into the header's signal pads from the east (westmost lane to the southmost pad)
+  SWD     SWO (L3) to L1 at (41.0, 24.6), SWCLK (L3) east on y 26.85 to L1 at (44.85, 26.85), SWDIO (L6, lane
+          x 45.2 since c8) north-east to L1 at (45.5, 26.95); three L1 lanes north (x 42.3 -> 44.5, 44.85, 45.5)
+          east of the reset key and into the header's signal pads from the east (westmost lane to the southmost pad)
   BOOT0   L6 straight north to a via at (39.35, 24.5), L1 into R202.1 and on to TP201
-  SD      CMD (L3) and D1 (L6 -> L3 at (43.25, 24.75)) and D3 (L3) run north-east to x 45.2 / 45.75 / 46.3 and
-          east above the test loop TP111 on L3 (y 21.4 / 21.95 / 22.5, slots for D0 and D2 between them); each
-          net then: via Va beside its pull-up's signal pad -> L1 -> pull-up pad -> L1 north to via Vb -> inner
-          layer -> via Vc in front of its socket contact -> L1 into the contact. The 3V3_SD band (y 17.85-18.65)
-          between the pull-ups and the socket leaves no L1 way between them (pull-ups and contacts are in a
-          different order, too): 1 + 3 vias per net
-  SD_CD   L6 north at x 41.6 to y 13.5, east under the socket, L3 down into its Va (59.35, 20.99), the same
-          pull-up -> contact hop, its contact via east of contact 9 (61.6, 16.6)
+  SD      (stop 7 c8) the pull-ups R804 R805 R801 | R802 R803 R806 stand in contact order in a row at y 19.2
+          (signal pad north); each line comes up by a via Va south-west of its pull-up's signal pad (y 19.365),
+          L1 into the pad and one L1 piece north into its contact (CK: a via in line with contact 5). The lines
+          reach their vias from the north (U-turns, so each layer keeps its order without a crossing):
+            L3  CMD (lane x 42.6) and D3 (x 46.3, east of the SWD vias) north to rows y 18.5 / 18.75, east, down
+            L6  D1 / D0 / D2 jog west into the window between the R203 / C217 vias (x 42.9 / 43.2 / 43.5); D2 then
+                steps east to x 45.9 (west of the FDCAN lanes); CK leaves L3 by a via (43.75, 24.4) between D0
+                and D2; north to rows y 18.0 (D1), 18.25 (D0), 18.5 (CK), 18.75 (D2), east, down
+          Lengths (SPEC 9: D0-D3 and CMD between CK and CK + 5 mm): arc serpentines (TUNING) on CK's L6 lane
+          (east), D2's / D3's rows (south) and CMD's row (north); 1 + 1 vias per line (CK 1 + 2)
+  SD_CD   L6 north at x 41.6, east along y 13.5 under the socket (north of CAN_STB's row), one via to L3 at
+          (59.45, 13.5) to pass CAN_STB's row, L3 down and east into its Va (60.025, 19.615) beside R806 (0.25 below the row: C803 / U801 / J801 leave no room in it) (3 vias)
   CAN_STB L6 north at x 42.6, east along y 14.3 (north of the FDCAN_TX via) to a via north of U801.8
 """
 import os
@@ -41,7 +45,18 @@ VIEWS = [("nw", 28.0, 25.0, 47.0, 44.0, 60), ("north", 36.0, 0.0, 63.0, 29.0, 30
          ("gates", 38.0, 23.0, 47.5, 28.5, 90), ("codec", 18.0, 22.0, 35.0, 31.0, 60), ("can", 58.0, 12.0, 71.0, 18.0, 60),
          ("west", 22.0, 24.0, 35.0, 40.0, 50), ("swd", 37.0, 1.0, 47.0, 16.0, 60)]
 NETS_NW = ["SAI1_SD_B", "SAI1_MCLK_A", "SAI1_FS_A", "SAI1_SCK_A", "SAI1_SD_A", "SWO", "SWCLK", "SWDIO", "SDMMC1_CMD",
-           "SDMMC1_D3", "SDMMC1_D1", "SD_CD", "CODEC_NRST", "NRST", "BOOT0", "CAN_STB", "SDMMC1_CK"]
+           "SDMMC1_D3", "SDMMC1_D1", "SD_CD", "CODEC_NRST", "NRST", "BOOT0", "CAN_STB", "SDMMC1_CK", "SDMMC1_D0",
+           "SDMMC1_D2"]
+SD_DATA = ["SDMMC1_CMD", "SDMMC1_D0", "SDMMC1_D2", "SDMMC1_D3"]
+# SPEC 9: D0-D3 and CMD between CK and CK + 5 mm. D1 is the longest line (deepest ball, easternmost contact but CD's):
+# CK is tuned up to D1 - SPREAD_CK + margin (D1 never lengthened), the other data lines and CMD up to D0 - SPREAD_D +
+# margin, which lands them 0.3 mm above CK (D0 - D1 = -1.25 in the fast build)
+SPREAD_CK = float(os.environ.get("SD_SPREAD_CK", "4.7"))
+SPREAD_D = float(os.environ.get("SD_SPREAD_D", "3.15"))
+TUNING = {"groups": {"sdmmc_ck": {"nets": ["SDMMC1_CK", "SDMMC1_D1"], "spread": SPREAD_CK},
+                     "sdmmc_d": {"nets": SD_DATA, "spread": SPREAD_D}},
+          "margin": 0.3, "radius": 0.15, "amp": 0.5, "amp_max": 2.0, "pitch": {"default": 0.3},
+          "end": 0.35, "clr": 0.19, "area_gap": 0.127, "keep": 0.7}
 GATE_N, GATE_W = 27.6, 30.0
 THIN = 0.1016
 
@@ -68,23 +83,22 @@ def gate(net):
     return (e[0], GATE_N)
 
 
-# ---- SD card: pull-up R80x (signal pad .2 at y 20.99) and socket contact; Va / Vb / Vc as in the header
-SD = {  # net: (pull-up pad, Va, Vb, contact, Vc, layer of the Vb -> Vc hop, hop points between Vb and Vc)
-    "SDMMC1_CMD": ("R801.2", (50.8, 20.99), (51.5, 20.1), "J801.3", (54.425, 17.39), "L6", [(54.21, 17.39)]),
-    "SDMMC1_D1": ("R803.2", (55.0, 20.99), (54.3, 20.1), "J801.8", (59.925, 17.39), "L6",
-                  [(55.4, 19.0), (59.35, 19.0), (59.925, 18.425)]),
-    "SDMMC1_D3": ("R805.2", (57.8, 20.99), (57.1, 20.1), "J801.2", (53.325, 17.39), "L3",
-                  [(57.1, 18.55), (56.6, 18.05), (53.985, 18.05)]),
-    "SD_CD": ("R806.2", (59.35, 20.99), (58.5, 20.1), "J801.9", (61.6, 16.6), "L6",
-              [(61.1, 20.1), (61.6, 19.6)]),
-}
+# ---- SD card (c8): each line's via Va south-west of its pull-up's signal pad; L1 into the pad, then into the contact
+SD_VA = {"SDMMC1_D2": (50.925, 19.365), "SDMMC1_D3": (52.325, 19.365), "SDMMC1_CMD": (53.75, 19.365),
+         "SDMMC1_D0": (57.325, 19.365), "SDMMC1_D1": (58.675, 19.365), "SD_CD": (60.025, 19.615)}
+SD_PU = {"SDMMC1_D2": ("R804.2", [(51.6, 18.29), (52.225, 17.665)], "J801.1"),
+         "SDMMC1_D3": ("R805.2", [(53.0, 18.29), (53.325, 17.965)], "J801.2"),
+         "SDMMC1_CMD": ("R801.2", [], "J801.3"),
+         "SDMMC1_D0": ("R802.2", [(58.0, 18.29), (58.825, 17.465)], "J801.7"),
+         "SDMMC1_D1": ("R803.2", [(59.35, 18.29), (59.925, 17.715)], "J801.8"),
+         "SD_CD": ("R806.2", [(60.7, 18.54), (60.875, 18.365)], "J801.9")}
 
 
-def sd_tail(net):
-    """Chains after the arrival at Va: Va -> pull-up pad, pull-up pad -> Vb -> hop -> Vc -> contact."""
-    pad, va, vb, con, vc, lay, hop = SD[net]
-    last = [(vc[0], vc[1]), con] if net != "SD_CD" else [vc, (61.325, 16.325), con]
-    return [("L1", [va, pad])], [("L1", [pad, vb]), V(*vb), (lay, [vb] + hop + [vc]), V(*vc), ("L1", last)]
+def sd_end(net, arr):
+    """arr (pieces ending at Va) + via Va + L1 into the pull-up pad; second chain: pull-up pad -> contact."""
+    va = SD_VA[net]
+    pad, pts, con = SD_PU[net]
+    return [arr + [V(*va), ("L1", [va, pad])], [("L1", [pad] + pts + [con])]]
 
 
 def north():
@@ -95,31 +109,33 @@ def north():
                                (44.15, 5.0), "J803.6"])]
     R["SWCLK"] = out("SWCLK", [gate("SWCLK"), (43.25, 27.2), (43.6, 26.85), (44.85, 26.85)]) + [
         V(44.85, 26.85), ("L1", [(44.85, 26.85), (44.85, 4.08), (44.5, 3.73), "J803.4"])]
-    R["SWDIO"] = out("SWDIO", [gate("SWDIO"), (44.2, 27.3), (45.15, 27.3), (45.5, 26.95)]) + [
+    R["SWDIO"] = out("SWDIO", [(45.2, 27.6), (45.5, 27.3), (45.5, 26.95)]) + [
         V(45.5, 26.95), ("L1", [(45.5, 26.95), (45.5, 3.16), (44.8, 2.46), "J803.2"])]
     # ---- BOOT0: R202.1 (pull-down) and TP201
     R["BOOT0"] = [out("BOOT0", [gate("BOOT0"), (39.35, 24.5)]) + [
         V(39.35, 24.5), ("L1", [(39.35, 24.5), (39.95, 23.9), "R202.1"])],
         [("L1", ["R202.1", (40.49, 22.11), "TP201.1"])]]
-    # ---- SD lines: north-east, east above TP111 on L3, up into Va
-    cmd = out("SDMMC1_CMD", [gate("SDMMC1_CMD"), (42.6, 24.35), (42.95, 24.0), (44.85, 24.0), (45.2, 23.65),
-                             (45.2, 21.75), (45.55, 21.4), (50.39, 21.4), (50.8, 20.99)]) + [V(50.8, 20.99)]
-    d1 = out("SDMMC1_D1", [gate("SDMMC1_D1"), (43.25, 24.75)]) + [
-        V(43.25, 24.75), ("L3", [(43.25, 24.75), (45.4, 24.75), (45.75, 24.4), (45.75, 22.3), (46.1, 21.95),
-                                 (54.04, 21.95), (55.0, 20.99)]), V(55.0, 20.99)]
-    d3 = out("SDMMC1_D3", [(43.9, 27.75), (44.25, 27.4), (45.95, 27.4), (46.3, 27.05), (46.3, 22.85),
-                           (46.65, 22.5), (56.29, 22.5), (57.8, 20.99)]) + [V(57.8, 20.99)]
-    cd = out("SD_CD", [gate("SD_CD"), (41.6, 27.25), (41.6, 13.85), (41.95, 13.5), (59.35, 13.5)]) + [
-        V(59.35, 13.5), ("L3", [(59.35, 13.5), (59.35, 20.99)]), V(59.35, 20.99)]
-    for net, arr in (("SDMMC1_CMD", cmd), ("SDMMC1_D1", d1), ("SDMMC1_D3", d3), ("SD_CD", cd)):
-        a, b = sd_tail(net)
-        R[net] = [arr + a, b]
-    # ---- SDMMC1_CK (A12, fanned out at stop 7 compose: FMC_D2 moved to x 42.275): L3 north between CMD and SWCLK, a
-    # step east between D1's via and C217 (y 25.3), via to L6, north west of the CAN lanes, east along y 15.4 under
-    # the socket, south into its contact via (56.625, 17.39) (no pull-up; reachable only from the north)
-    R["SDMMC1_CK"] = out("SDMMC1_CK", [(42.925, 25.75), (43.375, 25.3), (44.0, 25.3)]) + [
-        V(44.0, 25.3), ("L6", [(44.0, 25.3), (44.0, 15.75), (44.35, 15.4), (56.275, 15.4), (56.625, 15.75), (56.625, 17.39)]),
-        V(56.625, 17.39), ("L1", [(56.625, 17.39), "J801.5"])]
+    # ---- SD lines (c8): north, east in rows north of the pull-up row, a 45-degree step down between the vias and
+    # east into each via Va (no turn back at a via: the L1 leaves north-east into the pull-up)
+    R["SDMMC1_CMD"] = sd_end("SDMMC1_CMD", out("SDMMC1_CMD", [(42.6, 18.85), (42.95, 18.5), (52.5, 18.5), (53.365, 19.365),
+                                                              (53.75, 19.365)]))
+    R["SDMMC1_D3"] = sd_end("SDMMC1_D3", out("SDMMC1_D3", [(43.9, 27.75), (44.25, 27.4), (45.95, 27.4), (46.3, 27.05),
+                                                            (46.3, 19.1), (46.65, 18.75), (51.3, 18.75), (51.915, 19.365),
+                                                            (52.325, 19.365)]))
+    R["SDMMC1_D1"] = sd_end("SDMMC1_D1", out("SDMMC1_D1", [(43.25, 28.6), (42.9, 28.25), (42.9, 18.35), (43.25, 18.0),
+                                                            (56.6, 18.0), (57.965, 19.365), (58.675, 19.365)]))
+    R["SDMMC1_D0"] = sd_end("SDMMC1_D0", out("SDMMC1_D0", [(43.9, 28.9), (43.2, 28.2), (43.2, 18.6), (43.55, 18.25),
+                                                            (56.1, 18.25), (57.215, 19.365), (57.325, 19.365)]))
+    R["SDMMC1_D2"] = sd_end("SDMMC1_D2", out("SDMMC1_D2", [(44.55, 29.2), (43.5, 28.15), (43.5, 25.6), (45.9, 23.2),
+                                                            (45.9, 19.1), (46.25, 18.75), (49.7, 18.75), (50.315, 19.365),
+                                                            (50.925, 19.365)]))
+    R["SD_CD"] = sd_end("SD_CD", out("SD_CD", [gate("SD_CD"), (41.6, 27.25), (41.6, 13.85), (41.95, 13.5), (59.45, 13.5)]) + [
+        V(59.45, 13.5), ("L3", [(59.45, 13.5), (59.45, 19.19), (59.875, 19.615), (60.025, 19.615)])])
+    # SDMMC1_CK (A12): L3 north between CMD and SWCLK, a via between the L6 lanes of D0 and D2, L6 north (serpentine
+    # site, humps east), east in its row, down into its via in line with contact 5 (no pull-up)
+    R["SDMMC1_CK"] = out("SDMMC1_CK", [(42.925, 25.225), (43.75, 24.4)]) + [
+        V(43.75, 24.4), ("L6", [(43.75, 24.4), (43.75, 18.85), (44.1, 18.5), (55.3, 18.5), (56.165, 19.365), (56.625, 19.365)]),
+        V(56.625, 19.365), ("L1", [(56.625, 19.365), "J801.5"])]
     # ---- CAN_STB: north, east along y 14.3, via north of U801.8
     R["CAN_STB"] = out("CAN_STB", [gate("CAN_STB"), (42.6, 16.0), (44.0, 14.6), (44.3, 14.3), (69.095, 14.3)]) + [
         V(69.095, 14.3), ("L1", [(69.095, 14.3), "U801.8"])]
@@ -181,6 +197,12 @@ def west():
 def routes(job):
     R = north()
     R.update(west())
+    # serpentine sites of the SD lines (TUNING): CK on its L6 lane (humps east, D2's lane 2.15 mm east of it), D3 and D2
+    # on their rows (humps south, free down to the FDCAN rows), CMD on its row (humps north)
+    job.slot("SDMMC1_CK", "L6", (43.75, 23.0), (43.75, 18.85), side="R")
+    job.slot("SDMMC1_D3", "L3", (46.65, 18.75), (51.3, 18.75), side="R")
+    job.slot("SDMMC1_D2", "L6", (46.25, 18.75), (49.7, 18.75), side="R")
+    job.slot("SDMMC1_CMD", "L3", (42.95, 18.5), (52.5, 18.5), side="L")
     # crystals: L1 only, 0.254, ball - crystal pad - load capacitor (routes_probe_xtal.py)
     R = {n: ([thin(c) for c in p] if p and isinstance(p[0], list) else thin(p)) for n, p in R.items()}
     R.update({

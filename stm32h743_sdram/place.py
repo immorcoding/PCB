@@ -96,9 +96,14 @@ PLACE.update({
     # ---- microSD on the top edge, card slot facing out (L1_3V3_SD). The body front is 0.48 mm inside the edge:
     # the shell pads stand 0.21 mm proud of it and need the 0.254 mm copper-to-edge clearance.
     "J801": (55.0, 8.6, 180),
-    "R812": (52.3, 18.7, 0), "C801": (55.5, 18.7, 270), "C802": (58.8, 18.7, 0),
-    "R801": (51.5, 21.5, 90), "R802": (52.9, 21.5, 90), "R803": (54.3, 21.5, 90),
-    "R804": (55.7, 21.5, 90), "R805": (57.1, 21.5, 90), "R806": (58.5, 21.5, 90),
+    # stop 7 c8: the pull-ups in contact order (D2 D3 CMD | CK | D0 D1 CD), each a short L1 line from its signal pad
+    # (north) into its contact; 1.4 / 1.35 mm apart so that each line's via sits south-west of its pull-up's signal
+    # pad; the +3V3_SD band runs south of the row (under the pull-ups' supply pads) and a stub goes north to contact 4
+    # between the CMD and CK lines; the link R812 and C801 / C802 moved from between the row and the socket to the
+    # band's south side
+    "R812": (52.3, 21.35, 0), "C801": (55.525, 20.85, 270), "C802": (58.1, 21.3, 0),
+    "R804": (51.6, 19.2, 90), "R805": (53.0, 19.2, 90), "R801": (54.425, 19.2, 90),
+    "R802": (58.0, 19.2, 90), "R803": (59.35, 19.2, 90), "R806": (60.7, 19.45, 90),
     # ---- audio: jacks on the top edge (headphone left, line in right), codec below them with SAI facing the
     # MCU (L5_3V3A under it; L1_3V3_AUD east of it, L1_1V8 south of it)
     "J601": (16.5, 8.5, 0), "J602": (28.5, 8.5, 0),
@@ -110,7 +115,8 @@ PLACE.update({
     "C606": (13.6, 24.4, 90), "C608": (13.6, 28.4, 90), "C611": (13.6, 19.6, 90), "C610": (10.4, 28.2, 0),
     "R609": (17.0, 18.6, 0), "R607": (19.2, 18.6, 0), "R606": (21.4, 18.6, 0), "R608": (23.6, 18.6, 0),
     "C616": (17.25, 21.0, 90), "C615": (19.0, 21.0, 90),
-    "C601": (22.95, 24.5, 90), "C602": (24.5, 23.6, 90), "R610": (26.1, 23.6, 270),
+    "C601": (23.27, 24.5, 90),     # stop 7 c8: C601 0.32 east (C602's courtyard 0.04 off): U601.8 gets a second way in from the east
+    "C602": (24.5, 23.6, 90), "R610": (26.1, 23.6, 270),
     "R603": (25.6, 28.6, 0), "C612": (25.6, 29.75, 0),
     "R601": (37.2, 23.0, 90), "R602": (38.4, 23.0, 90),
     # 3.3 V analog LDO north-east of the codec: +5V from the L5 +5V strip through R112 (L1_5V_LDO)
@@ -194,7 +200,9 @@ PLACE.update({
     # ---- CAN: terminal on the right edge, transceiver and ESD beside it (L1_3V3_CAN, L1_5V_CAN)
     "J802": (79.05, 21.0, 90),
     "U801": (66.62, 17.0, 0), "D801": (72.4, 17.0, 0),
-    "C803": (61.9, 18.0, 180), "C804": (61.3, 20.6, 180), "R814": (62.2, 23.9, 90),
+    # stop 7 c8: C804 0.55 south, off R806 (R806 sits 0.25 below the pull-up row: C803 can go neither north (J801) nor
+    # east (U801))
+    "C803": (61.9, 18.0, 180), "C804": (61.3, 21.15, 180), "R814": (62.2, 23.9, 90),
     "C805": (68.6, 20.75, 90), "R813": (68.9, 22.6, 0),
     "R807": (71.9, 21.9125, 270), "JP801": (76.0, 26.2, 90),
     # ---- 3.3 V buck (L1_SW_3V3, L1_3V3_REG; input from the L5 +5V band)
