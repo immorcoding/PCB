@@ -1,10 +1,13 @@
-"""Grid engine of bga_plan.py: the copper of a geo.json (bga_plan.py dump) as exact clearance fields on a 0.025 mm
-point grid, the legal via sites, the plane-slot rule, and shortest escapes over the signal layers (the verifier).
-2026-11-23 (try/sgsps): layer order signal / GND / signal / signal / power / signal: signal layers L1 L3 L4 L6,
-planes L2 (ground, whole) and L5 (the power blocks).
+"""Grid engine of planning.bga_plan and planning.bga_fan: the copper of a geo.json (planning.bga_dump) as exact
+clearance fields on a 0.025 mm point grid, the legal via sites, the plane-slot rule, and shortest escapes over the
+signal layers (the verifier).
+
+The layers come from the board's board.toml (configure(cfg), called by the planners before anything else): the
+signal layers (role signal / mixed; H743: L1 L3 L4 L6), the planes (L2 ground, whole; L5 the power blocks), the
+power plane (role power), the ground plane (role ground) and the ground net ([power] ground).
 
 Pure Python + numpy / scipy / scikit-image (system Python, not KiCad's). Nothing here allocates anything: the
-allocation is bga_plan.py's model; this module only answers "is there room" for a given state.
+allocation is bga_plan's model; this module only answers "is there room" for a given state.
 
 Rules (profile C, docs/rule-profiles/C-bga-065.md; values read from geo["rules"]):
   track    inside a BGA rule area 0.09 wide, 0.09 to other copper; outside its class width, 0.127
@@ -12,7 +15,7 @@ Rules (profile C, docs/rule-profiles/C-bga-065.md; values read from geo["rules"]
            other copper 0.2 (plated part holes 0.3); hole edge to hole edge 0.254; never on a pad
   planes   two vias foreign to a plane (L2: not GND; L5: not the net of the block they stand in) join their
            clearance holes when closer than (d1 + d2) / 2 + 2 * 0.127 + 0.2; a chain's length is the largest
-           centre distance in it + the largest pad + 0.254 (copper_report.py slots, bga_power.py)
+           centre distance in it + the largest pad + 0.254 (copper.plane_slots, copper.bga_power)
 The grid is aligned to the ball lattices (0.65 / 2 and 0.8 / 2 are multiples of 0.025), so the one-track
 channels (0.08 mm of room between two pads, 0.01 mm between two vias) are met exactly: distances are computed
 per copper item at the grid points, not from a raster.
@@ -21,12 +24,39 @@ import math
 import numpy as np
 
 STEP = 0.025
-LAYERS = ("L1", "L3", "L4", "L6")
-PLANES = ("L2", "L5")
-PWR_PLANE = "L5"
 PLANE_CLR, PLANE_MINW = 0.127, 0.2
 CAP = 0.6                      # distances are kept up to this (the largest need is a 0.45 via: 0.352)
 EPS = 1e-4
+
+# the board's layers and ground net, set by configure(cfg)
+LAYERS = None                  # signal layers, top to bottom
+PLANES = None                  # plane layers (ground and power), top to bottom
+PWR_PLANE = None               # the power plane (its blocks: one net each, the rest the whole-layer net)
+GND_PLANE = None               # the ground plane
+COPPER = None                  # every copper layer (pads without a layer list, vias)
+TOP = BOTTOM = None            # the outer layers
+GROUND = None                  # the ground net
+
+
+def configure(cfg):
+    """Take the layers and the ground net from a board configuration (core.config)."""
+    global LAYERS, PLANES, PWR_PLANE, GND_PLANE, COPPER, TOP, BOTTOM, GROUND
+    from Tools.KiCadDesignTools.core import config
+    LAYERS = tuple(cfg.signal_layers())
+    PLANES = tuple(cfg.plane_layers())
+    pw = [l.L for l in cfg.layers if l.role == "power"]
+    gn = [l.L for l in cfg.layers if l.role == "ground"]
+    if len(pw) != 1 or len(gn) != 1:
+        raise config.ConfigError("%s: the BGA planners need one ground and one power layer, found %s / %s" % (cfg.toml, gn, pw))
+    PWR_PLANE, GND_PLANE = pw[0], gn[0]
+    COPPER = tuple(l.L for l in cfg.layers)
+    TOP, BOTTOM = cfg.layers[0].L, cfg.layers[-1].L
+    GROUND = cfg.need("power.ground")
+
+
+def _need_config():
+    if LAYERS is None:
+        raise RuntimeError("bga_grid: configure(cfg) has not been called")
 
 
 class Item:
@@ -79,13 +109,17 @@ def item_dist(it, X, Y):
     return np.maximum(np.hypot(X - it.a[0], Y - it.a[1]) - it.r, 0.0)
 
 
-def scene_items(geo, drop_nets=(), yield_nets=("GND",), extra=()):
+def scene_items(geo, drop_nets=(), yield_nets=None, extra=()):
     """Every piece of copper of a geo.json as Items. drop_nets: nets whose tracks and vias are left out (their
-    pads stay). Zones of yield_nets are not obstacles (their pours give way); other zones on the signal layers are."""
+    pads stay). Zones of yield_nets (default: the ground net) are not obstacles (their pours give way); other zones
+    on the signal layers are."""
+    _need_config()
+    if yield_nets is None:
+        yield_nets = (GROUND,)
     out = []
     drop = set(drop_nets)
     for p in geo["pads"]:
-        lays = tuple(p["layers"]) if p["layers"] else ("L1", "L2", "L3", "L4", "L5", "L6")
+        lays = tuple(p["layers"]) if p["layers"] else COPPER
         hole = p["hole"] + (0.1 if p["hole"] > 0 else 0.0)                      # plated part holes: 0.3 to copper, kept as 0.2 + 0.1
         tag = "%s.%s" % (p["ref"], p["num"])
         if p["shape"] == "circle":
@@ -95,7 +129,7 @@ def scene_items(geo, drop_nets=(), yield_nets=("GND",), extra=()):
     for n, pos, d, h in geo["vias"]:
         if n in drop:
             continue
-        out.append(Item(n, ("L1", "L2", "L3", "L4", "L5", "L6"), "round", a=tuple(pos), r=d / 2, hole=h / 2, tag="via"))
+        out.append(Item(n, COPPER, "round", a=tuple(pos), r=d / 2, hole=h / 2, tag="via"))
     for n, lay, a, c, w in geo["tracks"]:
         if n in drop:
             continue
@@ -119,6 +153,7 @@ class Field:
     the nearest copper edge on that layer; H = distance to the nearest hole edge (part holes grown by 0.1)."""
 
     def __init__(self, geo, window, items=None, step=STEP):
+        _need_config()
         self.geo, self.step = geo, step
         self.x0, self.y0 = window[0], window[1]
         self.nx = int(round((window[2] - window[0]) / step)) + 1
@@ -262,10 +297,11 @@ def merge_dist(d1, d2):
 
 
 class Slots:
-    """Chains of joined clearance holes on the planes (L2 ground, L5 power blocks) for a set of vias
+    """Chains of joined clearance holes on the planes (the ground plane, the power plane's blocks) for a set of vias
     [(net, (x, y), diameter)]."""
 
     def __init__(self, geo, vias=()):
+        _need_config()
         self.blocks = [(z["net"], z["poly"]) for z in geo["zones"] if PWR_PLANE in z["layers"] and not z["name"].startswith("cu-whole")]
         self.whole = next((z["net"] for z in geo["zones"] if PWR_PLANE in z["layers"] and z["name"].startswith("cu-whole")), None)
         self.vias = []
@@ -282,8 +318,8 @@ class Slots:
     def foreign(self, net, p):
         """The planes on which a via of `net` at p needs a clearance hole."""
         out = []
-        if net != "GND":
-            out.append("L2")
+        if net != GROUND:
+            out.append(GND_PLANE)
         if net != self.l3_net(p):
             out.append(PWR_PLANE)
         return out
@@ -357,13 +393,15 @@ def _in_poly(p, poly):
 
 # ---------------------------------------------------------------- shortest escapes (the verifier)
 class Maze:
-    """Shortest octilinear path of one net over L1 / L4 / L6 with through vias at given candidate sites.
-    Planes of the cost volume: L1, via, L4, via, L6. A via site is one open point of both via planes (candidate
-    sites are never neighbours on the grid, so a path cannot slide along a via plane)."""
+    """Shortest octilinear path of one net over three layers (bga_plan's: H743 L1 / L4 / L6) with through vias at
+    given candidate sites. Planes of the cost volume: layer 1, via, layer 2, via, layer 3. A via site is one open
+    point of both via planes (candidate sites are never neighbours on the grid, so a path cannot slide along a via
+    plane)."""
     VIA_COST = 3.0             # mm of path a via counts as
 
-    def __init__(self, field):
+    def __init__(self, field, layers):
         self.f = field
+        self.layers = tuple(layers)
 
     def volume(self, masks, S, sel):
         """masks: {layer: track-free mask}; S: an object with index arrays I, J of the via candidates; sel: which
@@ -384,7 +422,7 @@ class Maze:
         """starts / ends: [(layer, (x, y))]. -> (cost, [(layer or 'via', (x, y))...]) or None."""
         from skimage.graph import MCP_Geometric
         f = self.f
-        K = {"L1": 0, "L4": 2, "L6": 4}          # three-layer verifier (try/fanout-first); not used for the L3 order
+        K = {l: 2 * k for k, l in enumerate(self.layers)}   # three-layer verifier (try/fanout-first); not used for the L3 order
         S = [(K[l],) + f.ij(p)[::-1] for l, p in starts]
         E = [(K[l],) + f.ij(p)[::-1] for l, p in ends]
         S = [s for s in S if np.isfinite(vol[s])]
@@ -397,7 +435,7 @@ class Maze:
         if not np.isfinite(cost[best]):
             return None
         tb = m.traceback(best)
-        names = {0: "L1", 1: "via", 2: "L4", 3: "via", 4: "L6"}
+        names = {0: self.layers[0], 1: "via", 2: self.layers[1], 3: "via", 4: self.layers[2]}
         return float(cost[best]), [(names[k], f.pt(i, j)) for k, j, i in tb]
 
 

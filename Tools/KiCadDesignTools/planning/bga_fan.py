@@ -1,18 +1,25 @@
-"""Whole-BGA block of the STM32H743 + SDRAM board in the layer order signal / GND / signal / signal / power / signal
-(try/sgsps, SPEC 6 and 14, stop 3.2 - 3.4): every supply / ground ball of both BGAs on a via of its own, the bottom
-decoupling on those vias, and the fan-out of every non-SDRAM signal ball of the MCU, decided together by one mixed
-integer program (scipy / HiGHS) on the half-pitch ball lattice, against the SDRAM bus as it is on the board.
+"""Whole-BGA block of an MCU + SDRAM board (written for the STM32H743 + SDRAM board, layer order signal / GND /
+signal / signal / power / signal; try/sgsps, SPEC 6 and 14, stop 3.2 - 3.4): every supply / ground ball of both BGAs
+on a via of its own, the bottom decoupling on those vias, and the fan-out of every non-SDRAM signal ball of the MCU,
+decided together by one mixed integer program (scipy / HiGHS) on the half-pitch ball lattice, against the SDRAM bus
+as it is on the board.
 
-    D:\\KiCad\\bin\\python.exe stm32h743_sdram\\bga_plan_dump.py <base board> --out <geo.json>     (pcbnew: the state)
-    python stm32h743_sdram/bga_fan.py --geo <geo.json> --out <dir> [--slot-max 3.0] [--time 120]  (system Python)
+    D:\\KiCad\\bin\\python.exe -m Tools.KiCadDesignTools.planning.bga_dump <board dir> <base board> --out <geo.json>   (pcbnew: the state)
+    python -m Tools.KiCadDesignTools.planning.bga_fan <board dir> --geo <geo.json> --out <dir> [--slot-max 3.0] [--time 120]  (system Python)
 
 The base board is the real board with the groups power_bga, mcu_east, mcu_south (and the newer MCU groups) stripped
-and no fill (copper_report.py unfill / strip); its bottom parts C201-C216 and C301-C308 are taken out of the state
-and placed here. Writes <dir>/fan.json (read by routes_power_bga.py, place.py and the MCU route files) and fan.txt.
+and no fill (core.boardtext unfill / strip); its bottom parts (H743: C201-C219 and C301-C308) are taken out of the
+state and placed here. Writes <dir>/fan.json (the board's bga_fan.json: read by routes_power_bga.py, placement.place
+and the MCU route files), fan.txt and fan.log.
 
-Taken over from bga_plan.py (branch try/fanout-first): the lattice, the capacitor candidates (step 3), the options of
+The board's data: <board dir>/bga_block.toml [block] and [fan] (packages, power nets, window, the capacitors and
+their kinds, the crystal balls, exits the SDRAM bus leaves open, each net's sides and target, the +3V3_MCU feed and
+island sites, off-lattice vias), board.toml (layers, [power] ground, [bga.<ref>] supply). Defaults (--slot-max,
+--only) come from there too.
+
+Taken over from bga_plan (branch try/fanout-first): the lattice, the capacitor candidates (step 3), the options of
 a ball (dog-bone and a straight run on an inner layer to the edge of the rule area) and the exact clearance fields of
-bga_grid.py, now with four signal layers (L1 L3 L4 L6) and the planes L2 (ground) and L5 (power blocks).
+bga_grid, now with four signal layers (L1 L3 L4 L6) and the planes L2 (ground) and L5 (power blocks).
 
 The program (per package, the MCU with everything, the SDRAM with its supply balls and capacitors):
   supply    one site of the four round each supply / ground ball (no sharing: one via per site)
@@ -25,88 +32,98 @@ The program (per package, the MCU with everything, the SDRAM with its supply bal
   slots     no chain of joined plane clearance holes (L2: every via but GND; L5: every via but the block's net)
             longer than --slot-max: added lazily, exact (bga_grid.Slots over the fixed vias and the chosen ones)
 """
-import argparse, json, math, os, sys, time
+import argparse, json, math, os, time
 
-HERE = os.path.dirname(os.path.abspath(__file__))
-sys.path.insert(0, HERE)
-import numpy as np                                            # noqa: E402
-import bga_grid as G                                          # noqa: E402
-from bga_plan import Lattice, LP, sample_ok, ball_options, cap_candidate, CAP_GEOM, r4, staircases   # noqa: E402
+import numpy as np
+from Tools.KiCadDesignTools.core import config
+from Tools.KiCadDesignTools.planning import bga_grid as G
+from Tools.KiCadDesignTools.planning.bga_plan import Lattice, LP, sample_ok, ball_options, cap_candidate, CAP_GEOM, r4, staircases
 
-MCU, SDRAM = "U201", "U301"
-POWER = ("GND", "+3V3_MCU", "+3V3_SDRAM", "VDDA_MCU", "VCAP1", "VCAP2")
-SUPPLY33 = ("+3V3_MCU", "+3V3_SDRAM")
-WINDOW = (29.0, 26.0, 66.0, 48.0)
-MCU_CAPS = ["C2%02d" % k for k in range(1, 20)]               # C201-C215 100 nF 0402, C216 1 uF 0603, C218 / C219 VCAP 0603
-SD_CAPS = ["C3%02d" % k for k in range(1, 9)]                 # 100 nF 0402
-CAP_KINDS = {MCU: [("100n", "0402", "+3V3_MCU", 15), ("C216", "0402", "+3V3_MCU", 1), ("C218", "0402", "VCAP1", 1), ("C219", "0402", "VCAP2", 1)],
-             SDRAM: [("100n", "0402", "+3V3_SDRAM", 8)]}
-for _k in os.environ.get("FAN_DROP", "").split():
-    CAP_KINDS[MCU] = [c for c in CAP_KINDS[MCU] if c[0] != _k]
-CAP_REF = {MCU: {"100n": ["C2%02d" % k for k in range(1, 16)], "C216": ["C216"], "C218": ["C218"], "C219": ["C219"]}, SDRAM: {"100n": SD_CAPS}}
-TIED = ("VCAP1", "VCAP2")
-# the +3V3_MCU block's feed (user 2026-11-23: no slot limit, but the L5 tongue must reach the ball field wide): the
-# site column pair either side of ball column 11 (x 41.625 / 42.275, rows A-C, where balls A11 / B11 are unconnected)
-# holds no via of another net, so the tongue (x 39.6-44.2) enters the field in a 1.4 mm channel
-# sites where a via of that net ends up on an island of its L5 block (ringed by the antipads round it; found on the
-# refilled board, copper_report.py slots: "cut-off own-net vias")
-ISLAND = [((36.425, 38.625), "+3V3_MCU")]
-FEED = [] if os.environ.get("FAN_NOFEED") else [(x, y) for x in (41.625, 42.275) for y in (31.475, 32.125, 32.775, 33.425)]                                     # their capacitor sits on the ball's own via (no via of its own)
-# off-lattice vias for balls whose four gap sites the bus takes: ball -> [(via, L1 points between ball and via, layer,
-# run from the via to the area edge, side)]
-EXTRA = {"J1": [((34.65, 37.65), [], "L3", [(34.0, 37.65)], "W"), ((34.65, 37.65), [], "L6", [(34.0, 37.65)], "W")],
-         "K15": [((45.8, 38.3), [], "L6", [(46.0, 38.3)], "E")]}
-CAP_REACH = float(os.environ.get("FAN_REACH", "1.9"))        # every 3.3 V ball has a 100 nF this close (supply pad centre)
-CAP_FAR = 2.5                                                 # every 100 nF this close to some 3.3 V ball (LAY-2)
-XTAL_BALLS = {"E1": "LSE_IN", "F1": "LSE_OUT", "G1": "HSE_IN", "H1": "HSE_OUT"}
-XTAL_BOX = (29.0, 33.5, 34.0, 38.5)
 DIRS = {"E": (1, 0), "W": (-1, 0), "S": (0, 1), "N": (0, -1)}
-# exits the SDRAM bus leaves open outside the MCU's rule area (34-46, 31-43): side -> {layer: [(lo, hi)] of the
-# coordinate along the edge (x for N / S, y for E / W)}. L1 is closed on every side (rivers), L3 / L4 where the bus
-# runs there (see routes_sdram.py), L6 is free everywhere outside the ball fields.
-EXITS = {"N": {"L3": [(34.0, 46.0)], "L6": [(34.0, 46.0)]},
-         "E": {"L6": [(31.0, 43.0)]},
-         "S": {"L6": [(34.0, 46.0)], "L4": [(34.0, 39.75), (40.25, 43.0)]},
-         "W": {"L6": [(31.0, 43.0)], "L3": [(31.0, 38.0)], "L4": [(39.8, 43.0)]}}
-# where each net is going (a point beyond the SDRAM bands, for the estimate only), and its kind (layer preference:
-# important nets on L1 / L3 next to the ground plane, SPEC 6)
-NW, N_, NE, SW, S_, SE = (28.0, 27.0), (42.0, 26.0), (50.0, 26.0), (30.0, 46.0), (39.0, 50.0), (49.0, 50.0)
-TARGET = {}
-for n in ("SAI1_SD_B", "SAI1_MCLK_A", "SAI1_FS_A", "SAI1_SCK_A", "SAI1_SD_A", "CODEC_NRST"):
-    TARGET[n] = NW
-for n in ("SWO", "SWCLK", "SWDIO", "BOOT0", "NRST"):
-    TARGET[n] = N_
-for n in ("SDMMC1_CK", "SDMMC1_CMD", "SDMMC1_D0", "SDMMC1_D1", "SDMMC1_D2", "SDMMC1_D3", "SD_CD", "FDCAN1_TX", "FDCAN1_RX", "CAN_STB"):
-    TARGET[n] = NE
-for n in ("RMII_TXD0", "RMII_TXD1", "RMII_TX_EN", "PHY_NRST", "RMII_REF_CLK", "RMII_RXD0", "RMII_RXD1", "RMII_CRS_DV",
-          "ETH_MDC", "ETH_MDIO", "LED1", "LED2", "USER_KEY"):
-    TARGET[n] = SW
-for n in ("QSPI_BK1_IO0", "QSPI_BK1_IO1", "QSPI_BK1_IO2", "QSPI_BK1_IO3", "QSPI_CLK", "QSPI_BK1_NCS", "TP_INT", "TP_RST",
-          "I2C4_SDA", "I2C4_SCL", "LCD_DISP"):
-    TARGET[n] = S_
-for n in ("USART1_TX", "USART1_RX", "LCD_BL_PWM"):
-    TARGET[n] = SE
-IMPORTANT = ("RMII_", "ETH_", "QSPI_", "SDMMC1_")
-FREE_SIDES = os.environ.get("FAN_SIDES_FREE", "").split()
-# (north-west: the SDRAM's west vias at x 29.9-34.2, y 31.2-33.3 close the west exits above row D, so the codec's
-# lines leave north)
-# the sides of the MCU a net may leave through (the side its destination lies on, or the way round to it that does
-# not cross the SDRAM bands on its layer); nets not listed: any side
-SIDES = {"SAI1_SD_B": "NW", "SAI1_MCLK_A": "NW", "SAI1_FS_A": "NW", "SAI1_SCK_A": "NW", "SAI1_SD_A": "NW", "CODEC_NRST": "NW",
-         "SWO": "N", "SWCLK": "N", "SWDIO": "N", "BOOT0": "N", "NRST": "W",
-         "SDMMC1_CK": "NE", "SDMMC1_CMD": "NE", "SDMMC1_D2": "NE", "SDMMC1_D3": "NE", "SD_CD": "NE", "CAN_STB": "NE",
-         "SDMMC1_D0": "NE", "SDMMC1_D1": "NE", "FDCAN1_TX": "NE", "FDCAN1_RX": "NE",
-         "RMII_TXD0": "NWS", "RMII_TXD1": "NWS", "RMII_TX_EN": "NWS", "PHY_NRST": "WS",
-         "LCD_B6": "NWSE", "LCD_B7": "NWSE", "LCD_G3": "NWSE", "LCD_G7": "NWSE", "LCD_DISP": "NWSE", "LCD_BL_PWM": "NWSE", "QSPI_BK1_NCS": "NWS",
-         "RMII_REF_CLK": "WS", "RMII_RXD0": "WS", "RMII_RXD1": "WS", "RMII_CRS_DV": "WS", "ETH_MDC": "WS", "ETH_MDIO": "WS",
-         "QSPI_BK1_IO0": "WS", "QSPI_BK1_IO1": "WS", "QSPI_BK1_IO2": "WS", "QSPI_BK1_IO3": "WS", "QSPI_CLK": "WS",
-         "LED1": "WS", "LED2": "WS", "USER_KEY": "WS", "LCD_DE": "WS", "LCD_VSYNC": "WS", "LCD_G2": "WS", "LCD_R4": "WS",
-         "LCD_B5": "WS", "LCD_R6": "WS", "LCD_R3": "WS", "LCD_G4": "SE", "LCD_G5": "SE", "USART1_TX": "SE", "USART1_RX": "SE",
-         "TP_RST": "SE", "I2C4_SCL": "SE", "I2C4_SDA": "SE", "TP_INT": "SE",
-         "LCD_B4": "SE", "LCD_R5": "SE", "LCD_B3": "SE", "LCD_G6": "SE", "LCD_HSYNC": "SE", "LCD_R7": "SE", "LCD_CLK": "SE"}
 UNALLOC, W_OUT, W_IN = float(os.environ.get("FAN_UNALLOC", "400")), 0.25, 0.15
 DONE = set()                                          # signal balls fixed by an earlier pass (with_fixed)
 NOSIGSLOT = bool(os.environ.get("FAN_NOSIGSLOT"))     # signal vias left out of the slot rule (stage A of the staged run)
+FREE_SIDES = os.environ.get("FAN_SIDES_FREE", "").split()
+
+# The board's values, set by setup(cfg) from bga_block.toml [block] / [fan] and board.toml (H743 values in the comments).
+MCU = SDRAM = None               # the two packages (U201, U301)
+POWER = None                     # supply and ground nets: [power] ground, [bga.<ref>] supply of both, [block] other_power
+SUPPLY33 = None                  # the two packages' supply nets (+3V3_MCU, +3V3_SDRAM)
+GROUND = None
+WINDOW = None                    # the planning window x0 y0 x1 y1
+MCU_CAPS = None                  # parts taken out of the state and placed here (C201-C219), with SD_CAPS (C301-C308)
+SD_CAPS = None
+CAP_KINDS = None                 # {ref: [(kind, size, net, count)]}; FAN_DROP="C218 C219" leaves kinds out
+CAP_REF = None                   # {ref: {kind: [references in naming order]}}
+TIED = None                      # nets whose capacitor sits on the ball's own via (no via of its own): VCAP1, VCAP2
+ISLAND = None                    # [(site, net)]: a via of that net there ends up on an island of its power-plane block
+FEED = None                      # sites that hold no via of another net than the MCU's supply (its block's feed)
+EXTRA = None                     # off-lattice vias for balls whose four gap sites the bus takes:
+                                 # ball -> [(via, L1 points between ball and via, layer, run from the via to the area edge, side)]
+CAP_REACH = None                 # every 3.3 V ball has a 100 nF this close (supply pad centre); FAN_REACH overrides
+CAP_FAR = None                   # every 100 nF this close to some 3.3 V ball (LAY-2)
+CAP_FAR_OTHER = None             # the other parts (1 uF, VCAP) this close to a ball of their net
+XTAL_BALLS = None                # crystal ball -> net
+XTAL_BOX = None                  # L1 kept for the crystals
+XTAL_END_X = None                # the crystal lines' reserve runs straight west to this x
+XTAL_W = None
+EXITS = None                     # exits the SDRAM bus leaves open outside the MCU's rule area: side -> {layer: [(lo, hi)]}
+TARGET = None                    # net -> where it is going (a point beyond the SDRAM bands, for the estimate only)
+DEFAULT_TARGET = None
+IMPORTANT = None                 # net prefixes that prefer IMPORTANT_LAYER (next to the ground plane, SPEC 6)
+IMPORTANT_LAYER = None
+SIDES = None                     # net -> the MCU sides it may leave through; nets not listed: any side
+NOVDDA = None                    # FAN_NOVDDA: the VDDA filter's parts, zone and net taken out of the state
+SLOT_MAX = None                  # --slot-max default
+AREA = None                      # {ref: its BGA rule area name} (place.toml [rule_areas])
+BUS_W = None                     # the bus width the options are checked at
+INNER = None                     # the layers of a run after a via: the signal layers but the top one
+
+
+def setup(cfg):
+    """Read the board's values (see the globals above) and configure bga_grid."""
+    global MCU, SDRAM, POWER, SUPPLY33, GROUND, WINDOW, MCU_CAPS, SD_CAPS, CAP_KINDS, CAP_REF, TIED, ISLAND, FEED
+    global EXTRA, CAP_REACH, CAP_FAR, CAP_FAR_OTHER, XTAL_BALLS, XTAL_BOX, XTAL_END_X, XTAL_W, EXITS, TARGET
+    global DEFAULT_TARGET, IMPORTANT, IMPORTANT_LAYER, SIDES, NOVDDA, SLOT_MAX, INNER, AREA, BUS_W
+    G.configure(cfg)
+    blk = cfg.datafile("bga_block.toml")
+    if not blk.get("block") or not blk.get("fan"):
+        raise config.ConfigError("%s: bga_block.toml [block] and [fan] are needed by bga_fan" % cfg.dir)
+    b, f = blk["block"], blk["fan"]
+    MCU, SDRAM = b["mcu"], b["sdram"]
+    SUPPLY33 = (cfg.need("bga.%s.supply" % MCU), cfg.need("bga.%s.supply" % SDRAM))
+    GROUND = cfg.need("power.ground")
+    POWER = (GROUND,) + SUPPLY33 + tuple(b["other_power"])
+    WINDOW = tuple(f["window"])
+    MCU_CAPS = list(f["mcu_caps"])
+    SD_CAPS = list(b["sdram_caps"])
+    CAP_KINDS = {r: [(k["name"], k["size"], k["net"], k["count"]) for k in v] for r, v in f["cap_kinds"].items()}
+    CAP_REF = {r: dict({"100n": list(b["caps_100n"][r])}, **{k[0]: [k[0]] for k in v if k[0] != "100n"}) for r, v in CAP_KINDS.items()}
+    for _k in os.environ.get("FAN_DROP", "").split():
+        CAP_KINDS[MCU] = [c for c in CAP_KINDS[MCU] if c[0] != _k]
+    TIED = tuple(f["tied"])
+    ISLAND = [(tuple(i["site"]), i["net"]) for i in f["island"]]
+    FEED = [] if os.environ.get("FAN_NOFEED") else [(x, y) for x in f["feed"]["x"] for y in f["feed"]["y"]]
+    EXTRA = {ball: [(tuple(e["via"]), [tuple(q) for q in e["mid"]], e["layer"], [tuple(q) for q in e["run"]], e["side"]) for e in v]
+             for ball, v in f["extra"].items()}
+    CAP_REACH = float(os.environ.get("FAN_REACH", f["cap_reach"]))
+    CAP_FAR, CAP_FAR_OTHER = f["cap_far"], f["cap_far_other"]
+    XTAL_BALLS = dict(b["xtal_balls"])
+    XTAL_BOX = tuple(b["xtal_box"])
+    XTAL_END_X = f["xtal_end_x"]
+    XTAL_W = b["xtal_width"]
+    EXITS = {side: {l: [tuple(r) for r in rs] for l, rs in v.items()} for side, v in f["exits"].items()}
+    TARGET = {n: tuple(t["at"]) for t in f["targets"].values() for n in t["nets"]}
+    DEFAULT_TARGET = tuple(f["default_target"])
+    IMPORTANT = tuple(f["important"])
+    IMPORTANT_LAYER = f["important_layer"]
+    SIDES = dict(f["sides"])
+    NOVDDA = f["novdda"]
+    SLOT_MAX = b["slot_max"]
+    INNER = G.LAYERS[1:]
+    AREA = {a["ref"]: a["name"] for a in cfg.datafile("place.toml")["rule_areas"]["areas"]}
+    BUS_W = b["bus_width"]
+    return cfg
 
 
 def is_signal(net):
@@ -150,7 +167,7 @@ def turn(a, b, c):
     return round(min(d, 360 - d) / 45.0)
 
 
-def with_fixed(geo, fixA, ref=MCU):
+def with_fixed(geo, fixA, ref=None):
     """The geo with a stage-A result built in: its supply and own vias, the supply dog-bones (L1, 0.2) and the
     capacitor pads (L6), so that the signal stage sees them as ordinary copper."""
     g = dict(geo)
@@ -159,10 +176,10 @@ def with_fixed(geo, fixA, ref=MCU):
         if not v["via"]:
             continue
         g["vias"].append([v["net"], list(v["via"]), 0.3, 0.15])
-        g["tracks"].append([v["net"], "L1", list(v["ball"]), list(v["via"]), 0.2])
+        g["tracks"].append([v["net"], G.TOP, list(v["ball"]), list(v["via"]), 0.2])
     for num, v in fixA.get("signal", {}).items():              # signal fan-outs placed by an earlier pass
         g["vias"].append([v["net"], list(v["via"]), 0.3, 0.15])
-        g["tracks"].append([v["net"], "L1", list(v["ball"]), list(v["via"]), 0.09])
+        g["tracks"].append([v["net"], G.TOP, list(v["ball"]), list(v["via"]), 0.09])
         run = [v["via"]] + [q for q in v["run"] if q != v["via"]]
         for a_, b_ in zip(run, run[1:]):
             g["tracks"].append([v["net"], v["layer"], list(a_), list(b_), 0.09])
@@ -175,7 +192,7 @@ def with_fixed(geo, fixA, ref=MCU):
         ax, ay = (hl, hw) if horiz else (hw, hl)
         for i, (q, net) in enumerate(zip(c["pads"], c["nets"])):
             box = [q[0] - ax, q[1] - ay, q[0] + ax, q[1] + ay]
-            g["pads"].append({"ref": "fix" + c["ref"], "num": str(i + 1), "net": net, "pos": list(q), "layers": ["L6"], "smd": True, "hole": 0.0,
+            g["pads"].append({"ref": "fix" + c["ref"], "num": str(i + 1), "net": net, "pos": list(q), "layers": [G.BOTTOM], "smd": True, "hole": 0.0,
                               "shape": "rect", "r": 0.0, "box": box, "poly": [[box[0], box[1]], [box[2], box[1]], [box[2], box[3]], [box[0], box[3]]]})
     return g
 
@@ -184,10 +201,10 @@ def state(geo):
     g = dict(geo)
     gone = set(MCU_CAPS + SD_CAPS)
     if os.environ.get("FAN_NOVDDA"):                # the VDDA filter moved out of the ball field (west of the MCU)
-        gone |= {"C220", "C221", "C222", "C223", "FB201"}
-        g["zones"] = [z for z in geo["zones"] if z["name"] != "cu:L6_VDDA_MCU"]
-        g["tracks"] = [t for t in geo["tracks"] if t[0] != "VDDA_MCU"]
-        g["vias"] = [v for v in geo["vias"] if v[0] != "VDDA_MCU"]
+        gone |= set(NOVDDA["parts"])
+        g["zones"] = [z for z in geo["zones"] if z["name"] != NOVDDA["zone"]]
+        g["tracks"] = [t for t in geo["tracks"] if t[0] != NOVDDA["net"]]
+        g["vias"] = [v for v in geo["vias"] if v[0] != NOVDDA["net"]]
     g["pads"] = [p for p in geo["pads"] if p["ref"] not in gone]
     return g
 
@@ -195,7 +212,7 @@ def state(geo):
 def site_ok_fixed(f, cc, fixed_vias):
     """Capacitor pads against the state: L6 copper 0.09 away, foreign holes 0.2 away (fixed vias are all foreign:
     the state has no supply via)."""
-    d6 = f.D["L6"]
+    d6 = f.D[G.BOTTOM]
     for (x0, y0, x1, y1) in cc["rects"]:
         j0, j1, i0, i1 = f._win((x0, y0, x1, y1), 0.0)
         X, Y = np.meshgrid(f.xs[i0:i1], f.ys[j0:j1])
@@ -214,15 +231,15 @@ class Fan:
         self.log, self.slot_max = log, slot_max
         self.geo = g = state(geo)
         t0 = time.time()
-        reserve = [G.Item("<xtal>", ("L1",), "poly", poly=[(XTAL_BOX[0], XTAL_BOX[1]), (XTAL_BOX[2], XTAL_BOX[1]),
+        reserve = [G.Item("<xtal>", (G.TOP,), "poly", poly=[(XTAL_BOX[0], XTAL_BOX[1]), (XTAL_BOX[2], XTAL_BOX[1]),
                                                            (XTAL_BOX[2], XTAL_BOX[3]), (XTAL_BOX[0], XTAL_BOX[3])], tag="reserve")]
         self.pads = {(p["ref"], p["num"]): p for p in g["pads"]}
         for ball, net in XTAL_BALLS.items():                  # the crystal lines: L1 straight west, 0.254 wide
             p = self.pads[(MCU, ball)]["pos"]
-            reserve.append(G.Item(net, ("L1",), "seg", a=tuple(p), b=(33.5, p[1]), r=0.127, tag="reserve"))
+            reserve.append(G.Item(net, (G.TOP,), "seg", a=tuple(p), b=(XTAL_END_X, p[1]), r=XTAL_W / 2, tag="reserve"))
         self.field = G.Field(g, WINDOW, items=G.scene_items(g, extra=reserve))
-        self.lat = {MCU: Lattice(MCU, [p for p in g["pads"] if p["ref"] == MCU], g["areas"]["BGA_MCU"]["rect"]),
-                    SDRAM: Lattice(SDRAM, [p for p in g["pads"] if p["ref"] == SDRAM], g["areas"]["BGA_SDRAM"]["rect"])}
+        self.lat = {MCU: Lattice(MCU, [p for p in g["pads"] if p["ref"] == MCU], g["areas"][AREA[MCU]]["rect"]),
+                    SDRAM: Lattice(SDRAM, [p for p in g["pads"] if p["ref"] == SDRAM], g["areas"][AREA[SDRAM]]["rect"])}
         x0, y0, x1, y1 = WINDOW
         self.fixed_vias = [(n, tuple(p), d, h) for n, p, d, h in g["vias"] if x0 <= p[0] <= x1 and y0 <= p[1] <= y1]
         log("state: %d items, %d fixed vias in the window, field %.1f s" % (len(self.field.items), len(self.fixed_vias), time.time() - t0))
@@ -238,7 +255,7 @@ class Fan:
                 continue
             if net not in opened:
                 opened[net] = f.opened(net)
-                self.pmask[net] = f.track_free("L1", 0.1016, *opened[net])
+                self.pmask[net] = f.track_free(G.TOP, BUS_W, *opened[net])
             D, H = opened[net]
             c = []
             for dg in ((1, 1), (1, -1), (-1, 1), (-1, -1)):
@@ -269,7 +286,7 @@ class Fan:
 
     def signal_options(self):
         f, lat = self.field, self.lat[MCU]
-        masks = {l: f.track_free(l, 0.1016) for l in G.LAYERS}
+        masks = {l: f.track_free(l, BUS_W) for l in G.LAYERS}
         ok = {}
 
         def via_ok(s):
@@ -283,13 +300,13 @@ class Fan:
             if not is_signal(net) or net.startswith("FMC_") or pad["num"] in XTAL_BALLS or pad["num"] in DONE:
                 continue
             opts = []
-            for o in ball_options(lat, f, masks, via_ok, uv, inner=("L3", "L4", "L6")):
+            for o in ball_options(lat, f, masks, via_ok, uv, inner=INNER):
                 if o["via"] is None or not self.exit_ok(o["side"], o["layer"], o["exit"]) or (o["side"] not in SIDES.get(net, "NESW") and net not in FREE_SIDES):
                     continue
-                tgt = TARGET.get(net, (40.0, 37.0))
+                tgt = TARGET.get(net, DEFAULT_TARGET)
                 o["cost"] = (W_IN * o["len"] + W_OUT * (abs(o["exit"][0] - tgt[0]) + abs(o["exit"][1] - tgt[1]))
-                             + (0.6 if net.startswith(IMPORTANT) and o["layer"] != "L3" else 0.0)
-                             + (0.4 if not net.startswith(IMPORTANT) and o["layer"] == "L3" else 0.0)
+                             + (0.6 if net.startswith(IMPORTANT) and o["layer"] != IMPORTANT_LAYER else 0.0)
+                             + (0.4 if not net.startswith(IMPORTANT) and o["layer"] == IMPORTANT_LAYER else 0.0)
                              + 0.3 * turn(o["l1"][0], o["l1"][-1], o["run"][1]))
                 opts.append(o)
             # a via on the empty ball position next to the ball (outside the array, the ball-free ring), straight
@@ -299,35 +316,35 @@ class Fan:
                 if q in lat.balls or not lat.inside(*q):
                     continue
                 p = lat.xy(*q)
-                if not (f.is_area(p, f.via_in[0] / 2) and f.via_ok(p) and sample_ok(f, masks["L1"], [tuple(pad["pos"]), p], lat.pad_r + 0.17)):
+                if not (f.is_area(p, f.via_in[0] / 2) and f.via_ok(p) and sample_ok(f, masks[G.TOP], [tuple(pad["pos"]), p], lat.pad_r + 0.17)):
                     continue
                 e, side = lat.edge_point(q[0], q[1], d)
-                for layer in ("L3", "L4", "L6"):
+                for layer in INNER:
                     if side not in SIDES.get(net, "NESW") or not self.exit_ok(side, layer, e) or not sample_ok(f, masks[layer], [p, e]):
                         continue
-                    tgt = TARGET.get(net, (40.0, 37.0))
+                    tgt = TARGET.get(net, DEFAULT_TARGET)
                     ln = 0.65 + math.dist(p, e)
                     opts.append({"layer": layer, "via": ("xy", p), "l1": [tuple(pad["pos"]), p], "run": [p, e], "side": side, "exit": e, "len": ln,
                                  "nodes": {layer: lat.run(q[0], q[1], d)},
                                  "cost": W_IN * ln + W_OUT * (abs(e[0] - tgt[0]) + abs(e[1] - tgt[1])) + 0.2
-                                 + (0.6 if net.startswith(IMPORTANT) and layer != "L3" else 0.0)})
+                                 + (0.6 if net.startswith(IMPORTANT) and layer != IMPORTANT_LAYER else 0.0)})
             # an east-edge ball (column 15): L1 straight east along its row out of the rule area to a 0.45 via just
             # outside it (between the SDRAM's L1 lanes leaving east), then L6 (free of the bus outside the fields)
             if uv[0] == max(u for u, v in lat.balls):
                 p = (r4(lat.area[2] + 0.45), r4(pad["pos"][1]))
-                if f.via_ok(p) and sample_ok(f, masks["L1"], [tuple(pad["pos"]), p], lat.pad_r + 0.17) and "E" in SIDES.get(net, "NESW"):
-                    tgt = TARGET.get(net, (40.0, 37.0))
+                if f.via_ok(p) and sample_ok(f, masks[G.TOP], [tuple(pad["pos"]), p], lat.pad_r + 0.17) and "E" in SIDES.get(net, "NESW"):
+                    tgt = TARGET.get(net, DEFAULT_TARGET)
                     ln = math.dist(pad["pos"], p)
-                    opts.append({"layer": "L6", "via": ("xy", p), "l1": [tuple(pad["pos"]), p], "run": [p, p], "side": "E", "exit": p, "len": ln,
-                                 "nodes": {"L1": [q for q in lat.run(uv[0], uv[1], (1, 0))[1:]]},
+                    opts.append({"layer": G.BOTTOM, "via": ("xy", p), "l1": [tuple(pad["pos"]), p], "run": [p, p], "side": "E", "exit": p, "len": ln,
+                                 "nodes": {G.TOP: [q for q in lat.run(uv[0], uv[1], (1, 0))[1:]]},
                                  "cost": W_IN * ln + W_OUT * (abs(p[0] - tgt[0]) + abs(p[1] - tgt[1])) + 0.3})
             for via, mid, layer, run, side in EXTRA.get(pad["num"], []):
                 bx = tuple(pad["pos"])
-                if not (f.via_ok(via) and sample_ok(f, masks["L1"], [bx] + list(mid) + [via], lat.pad_r + 0.17)
+                if not (f.via_ok(via) and sample_ok(f, masks[G.TOP], [bx] + list(mid) + [via], lat.pad_r + 0.17)
                         and sample_ok(f, masks[layer], [via] + list(run))):
                     self.log("  extra via of %s at %s on %s: not free" % (pad["num"], via, layer))
                     continue
-                tgt = TARGET.get(net, (40.0, 37.0))
+                tgt = TARGET.get(net, DEFAULT_TARGET)
                 ln = sum(math.dist(a, b) for a, b in zip([bx] + list(mid) + [via] + list(run), (list(mid) + [via] + list(run))))
                 opts.append({"layer": layer, "via": ("xy", via), "l1": [bx] + list(mid) + [via], "run": [via] + list(run), "side": side,
                              "exit": run[-1], "len": ln, "nodes": {},
@@ -340,9 +357,9 @@ class Fan:
 
     # ---------------------------------------------------------------- the program
     def foreign(self, ref, net, plane):
-        if plane == "L2":
-            return net != "GND"
-        return net != ("+3V3_MCU" if ref == MCU else "+3V3_SDRAM")
+        if plane == G.GND_PLANE:
+            return net != GROUND
+        return net != (SUPPLY33[0] if ref == MCU else SUPPLY33[1])
 
     def solve(self, ref, time_limit=120.0, stage=None, fixA=None):
         """stage None: everything in one program. "A": supply vias and capacitors, each signal ball keeping one of
@@ -397,7 +414,7 @@ class Fan:
                     vs.append(v)
                     if s_[0] == "xy":
                         q = lat.uv(s_[1])
-                        for l in ("L1", "L3", "L4", "L6"):
+                        for l in G.LAYERS:
                             pts.setdefault((l, q), []).append(v)
                         near_extra.append((v, [q2 for q2 in lat.via_sites() if math.dist(lat.xy(*q2), s_[1]) < 0.44]))
                 sl = lp.var(2 * UNALLOC, name="nosupply")
@@ -428,7 +445,7 @@ class Fan:
                 v = lp.var(0.3 * cc["nearest"] + 0.0001 * k - ((600.0 if cc["kind"] in ("C218", "C219") else 300.0) if os.environ.get("FAN_CAPOPT") else 0.0), name="cap")
                 C[k] = v
                 by_kind.setdefault(cc["kind"], []).append(v)
-                for s_, net in ((cc["s"], cc["nets"][0]), (cc["g"], "GND")):
+                for s_, net in ((cc["s"], cc["nets"][0]), (cc["g"], GROUND)):
                     have = [w for w, n_ in at_site.get(s_, []) if n_ == net and lp.names[w] in ("x", "y")]
                     if net not in TIED:
                         if (s_, net) not in NEW:
@@ -437,7 +454,7 @@ class Fan:
                         have = have + [NEW[(s_, net)]]
                     lp.row([v] + have, [1.0] + [-1.0] * len(have), -np.inf, 0.0)
                 for q in cc["bl"]:
-                    pts.setdefault(("L6", q), []).append(v)
+                    pts.setdefault((G.BOTTOM, q), []).append(v)
                 for q in cc["bv"]:
                     qx = lat.xy(*q)
                     dd = [math.hypot(max(r_[0] - qx[0], 0, qx[0] - r_[2]), max(r_[1] - qx[1], 0, qx[1] - r_[3])) for r_ in cc["rects"]]
@@ -467,7 +484,7 @@ class Fan:
                         lp.row(vs, [1.0] * len(vs), -np.inf, 0.0)
                 for q in FEED:
                     key = lat.uv(q)
-                    vs = [v for v, n_ in at_site.get(key, []) if n_ != "+3V3_MCU"]
+                    vs = [v for v, n_ in at_site.get(key, []) if n_ != SUPPLY33[0]]
                     if vs:
                         lp.row(vs, [1.0] * len(vs), -np.inf, 0.0)
             for v, qs in near_extra:
@@ -493,7 +510,7 @@ class Fan:
                     lp.row(vs, [1.0] * len(vs), -np.inf, 1.0)
             # plane slots: staircase rows over the site lattice (fixed vias on sites as constants) ...
             nst = 0
-            for pl in ("L2", "L5"):
+            for pl in G.PLANES:
                 fv = {}
                 for s_, lst in at_site.items():
                     if s_[0] == "xy":
@@ -672,12 +689,12 @@ class Fan:
                     g = (s[0] + step * d[0], s[1] + step * d[1])
                     if not lat.inside(*g) or not f.is_area(lat.xy(*g), f.via_in[0] / 2):
                         continue
-                    for site, n_ in ((s, net), (g, "GND")):
+                    for site, n_ in ((s, net), (g, GROUND)):
                         if (site, n_) not in site_ok:
                             D, H = f.opened(n_) if n_ not in getattr(self, "_op", {}) else self._op[n_]
                             self.__dict__.setdefault("_op", {})[n_] = (D, H)
                             site_ok[(site, n_)] = f.via_ok(lat.xy(*site), D, H)
-                    if not (site_ok[(s, net)] and site_ok[(g, "GND")]):
+                    if not (site_ok[(s, net)] and site_ok[(g, GROUND)]):
                         continue
                     shifts = [(0.0, 0.0)] + ([(da, dp) for da in (-0.175, -0.1, 0.0, 0.1, 0.175) for dp in (-0.05, 0.0, 0.05) if da or dp] if size == "0603"
                                              else [(da, dp) for da in (-0.15, 0.0, 0.15) for dp in (-0.1, 0.0, 0.1) if da or dp] if ref == SDRAM else [])
@@ -691,9 +708,9 @@ class Fan:
                     nearest = min((math.dist(cc["pads"][0], b) for num, b, n_ in supply if n_ == net), default=9.0)
                     if name == "100n" and nearest > CAP_FAR:
                         continue
-                    if name != "100n" and nearest > 3.0:
+                    if name != "100n" and nearest > CAP_FAR_OTHER:
                         continue
-                    cc = dict(cc, kind=name, nets=(net, "GND"), serves=sorted(serves) if name == "100n" else [], serves_d=serves, nearest=nearest)
+                    cc = dict(cc, kind=name, nets=(net, GROUND), serves=sorted(serves) if name == "100n" else [], serves_d=serves, nearest=nearest)
                     out.append(cc)
         self.log("  %s: %d capacitor candidates" % (ref, len(out)))
         return out
@@ -720,16 +737,22 @@ def text(res):
     return "\n".join(out)
 
 
-def main():
-    ap = argparse.ArgumentParser()
+def main(argv=None):
+    ap = argparse.ArgumentParser(prog="python -m Tools.KiCadDesignTools.planning.bga_fan")
+    ap.add_argument("board", help="board folder (board.toml, bga_block.toml)")
     ap.add_argument("--geo", required=True)
     ap.add_argument("--out", required=True)
-    ap.add_argument("--slot-max", type=float, default=3.0)
+    ap.add_argument("--slot-max", type=float, default=None, help="default: bga_block.toml [block] slot_max")
     ap.add_argument("--time", type=float, default=120.0)
-    ap.add_argument("--only", default="U201,U301")
+    ap.add_argument("--only", default=None, help="packages, comma-separated (default: the MCU and the SDRAM)")
     ap.add_argument("--staged", action="store_true", help="supply vias and capacitors first, then the signal fan-out")
     ap.add_argument("--fixa", help="signal stage only: the supply vias and capacitors of this result (fan.json) are fixed copper")
-    a = ap.parse_args()
+    a = ap.parse_args(argv)
+    setup(config.load(a.board))
+    if a.slot_max is None:
+        a.slot_max = SLOT_MAX
+    if a.only is None:
+        a.only = "%s,%s" % (MCU, SDRAM)
     os.makedirs(a.out, exist_ok=True)
     log_f = open(os.path.join(a.out, "fan.log"), "w", encoding="utf-8")
 
@@ -737,7 +760,7 @@ def main():
         print(s); log_f.write(s + "\n"); log_f.flush()
     geo = json.load(open(a.geo, encoding="utf-8"))
     if a.fixa:
-        fixA = json.load(open(a.fixa, encoding="utf-8"))["U201"]
+        fixA = json.load(open(a.fixa, encoding="utf-8"))[MCU]
         geo = with_fixed(geo, fixA)
         os.environ["FAN_NOSUP"] = os.environ["FAN_NOCAP"] = "1"
     fan = Fan(geo, a.slot_max, log)

@@ -1,24 +1,29 @@
-"""bga_plan dump: the one part of the planner that needs pcbnew (through busroute's Board snapshot).
+"""bga_plan dump: the one part of the BGA planners that needs pcbnew (through busroute's Board snapshot).
+
+    D:\\KiCad\\bin\\python.exe -m Tools.KiCadDesignTools.planning.bga_dump <board dir> [board] [--out geo.json]
 
 Writes geo.json: every pad (ball) of the two BGAs, every other pad, via, track, zone outline, rule area and
 keep-out of the board, the stack heights and the rule values of the profile. Coordinates are local mm
-(board-file mm - 100). The planner and the checker read only this file.
+(board-file mm - the origin of board.toml [board]). The planners and the checker read only this file.
+Defaults: the board folder's own board, <board dir>/out/plan/geo.json.
 """
 import json, os, sys
 
-HERE = os.path.dirname(os.path.abspath(__file__))
-sys.path.insert(0, os.path.dirname(HERE))                     # interim (Tools/ consolidation stage 1): the repository root, for Tools.KiCadDesignTools
-ORIGIN = (100.0, 100.0)
-MCU, SDRAM = "U201", "U301"
+from Tools.KiCadDesignTools.core import config
 
 
 def r4(v):
     return round(float(v), 4)
 
 
-def dump(board_path, out_path):
+def default_out(cfg):
+    return os.path.join(cfg.dir, "out", "plan", "geo.json")
+
+
+def dump(board_path, out_path, origin):
     from Tools.KiCadDesignTools.routing.busroute.board import Board
     from Tools.KiCadDesignTools.routing.busroute.profile import Profile
+    ORIGIN = tuple(origin)
     b = Board(board_path, ORIGIN)
     pr = Profile.from_project(board_path)
     pads = []
@@ -48,8 +53,17 @@ def dump(board_path, out_path):
     print("wrote %s: %d pads, %d vias, %d tracks, %d zones" % (out_path, len(pads), len(geo["vias"]), len(geo["tracks"]), len(geo["zones"])))
 
 
+def main(argv):
+    if not argv or argv[0].startswith("--"):
+        print(__doc__)
+        return 2
+    cfg = config.load(argv[0])
+    a = argv[1:]
+    board = a[0] if a and not a[0].startswith("--") else cfg.pcb
+    out = a[a.index("--out") + 1] if "--out" in a else default_out(cfg)
+    dump(board, out, cfg.origin)
+    return 0
+
+
 if __name__ == "__main__":
-    a = sys.argv[1:]
-    board = a[0] if a and not a[0].startswith("--") else os.path.join(HERE, "stm32h743_sdram.kicad_pcb")
-    out = a[a.index("--out") + 1] if "--out" in a else os.path.join(HERE, "out", "plan", "geo.json")
-    dump(board, out)
+    sys.exit(main(sys.argv[1:]))

@@ -7,7 +7,8 @@
 # report scripts move into this file (and silk.toml) in stage 3; the project file's ([project], [netclasses],
 # [netclass_patterns], [[footprints.derived]]) moved in stage 3A, the schematic's ([schematic]) in stage 3B, the
 # placement's (place.toml, [probe]) in stage 3C, the copper reports' and power planners' ([copper.slots],
-# [copper.table], [copper_view], [power], [bga.<ref>], [tune_sites], place.toml [fan] ref) in stage 3D.
+# [copper.table], [copper_view], [power], [bga.<ref>], [tune_sites], place.toml [fan] ref) in stage 3D, the offline
+# BGA planners' (bga_block.toml) in stage 3E.
 
 [board]
 name = "stm32h743_sdram"

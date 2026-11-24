@@ -43,7 +43,7 @@ mask_margin_zero = ["U201", "U301"]   # ball pads: solder-mask opening equal to 
 skip = ["FID"]                   # reference prefixes never parked: the fiducials are finish's (stop 8, board-only)
 
 # try/sgsps, the BGA block (SPEC 14 stop 3.3): the bottom decoupling under both BGAs sits where the BGA block plan put
-# it (written by bga_fan.py: each pad over a via of its net, every 3.3 V ball with a 100 nF close by); the parts the
+# it (written by planning.bga_fan: each pad over a via of its net, every 3.3 V ball with a 100 nF close by); the parts the
 # plan does not place keep the positions in [parts] (VCAP and VDDA parts when they are not in the plan).
 [fan]
 file = "bga_fan.json"

@@ -1,0 +1,244 @@
+# Planner hints of the BGA block (try/sgsps, SPEC 14 stop 3.2 - 3.4): the offline planners
+#   python -m Tools.KiCadDesignTools.planning.bga_fan stm32h743_sdram --geo <geo.json> --out <dir>    (wrote bga_fan.json)
+#   python -m Tools.KiCadDesignTools.planning.bga_plan stm32h743_sdram plan|check ...                  (try/fanout-first)
+# and their geo dump (planning.bga_dump). Not run by the build. Coordinates are local mm (board-file mm - origin).
+# Also read: board.toml [layers] (signal / plane layers), [power] ground and bus_prefix, [bga.<ref>] supply,
+# [schematic.swap] (SDRAM byte lanes: data_net, mask_net, lanes); place.toml [bodies] (the SDRAM body) and
+# [rule_areas] (the BGA rule areas by reference, their F.Cu no-pour areas, the margin).
+
+[block]                          # both planners
+mcu = "U201"
+sdram = "U301"
+other_power = ["VDDA_MCU", "VCAP1", "VCAP2"]   # power nets besides the ground and the two supplies
+sdram_caps = ["C301", "C302", "C303", "C304", "C305", "C306", "C307", "C308"]   # 100 nF 0402, placed by the plan
+xtal_balls = { E1 = "LSE_IN", F1 = "LSE_OUT", G1 = "HSE_IN", H1 = "HSE_OUT" }   # crystal balls of the MCU and their nets
+xtal_box = [29.0, 33.5, 34.0, 38.5]   # x0 y0 x1 y1: L1 kept for the crystals (no other track, no via)
+xtal_prefixes = ["HSE_", "LSE_"]      # nets drawn at the crystal width
+xtal_width = 0.254
+bus_width = 0.1016               # the bus width (the classes' minimum) ball options are checked at
+slot_max = 3.0                   # --slot-max default: longest chain of joined plane clearance holes (U31)
+
+[block.caps_100n]                # the 100 nF parts in naming order (SPEC 4)
+U201 = ["C201", "C202", "C203", "C204", "C205", "C206", "C207", "C208", "C209", "C210", "C211", "C212", "C213", "C214", "C215"]
+U301 = ["C301", "C302", "C303", "C304", "C305", "C306", "C307", "C308"]
+
+# bga_plan (branch try/fanout-first, whole-BGA model with the SDRAM line order; written for the old layer order:
+# its zone name below is the L3 block of then, the board's is now cu:L5_3V3_SDRAM)
+[plan]
+window = [26.0, 22.0, 70.0, 52.0]     # the planning window x0 y0 x1 y1
+layers = ["L1", "L4", "L6"]           # the plan's routing layers, the SDRAM's order first (plan A: the first two)
+mcu_caps = ["C201", "C202", "C203", "C204", "C205", "C206", "C207", "C208", "C209", "C210", "C211", "C212", "C213",
+            "C214", "C215", "C216"]   # re-placed by the plan; the VCAP parts (C218, C219: 0603 on a ball via with a ground
+                                      # via two sites on finds no place) and the VDDA parts stay fixed
+cap_kinds.U201 = [{ name = "100n", size = "0402", net = "+3V3_MCU", count = 15 },
+                  { name = "C216", size = "0603", net = "+3V3_MCU", count = 1 }]
+cap_kinds.U301 = [{ name = "100n", size = "0402", net = "+3V3_SDRAM", count = 8 }]
+cap_reach = 1.9                       # every 3.3 V ball needs a 100 nF this close
+sdram_zone = "cu:L3_3V3_SDRAM"        # the SDRAM's power-plane block, moved with the SDRAM's candidate place
+identity = "line_order/balls_identity.json"   # the SDRAM's pin functions (line_order.py's identity dump)
+clock = ["FMC_SDCLK", "FMC_SDCLK_R"]  # the SDRAM clock and its piece after the series resistor
+clock_resistor = "R201"
+# gates on the planning window: direction (clockwise from north, degrees), the direction a gate counts as in the
+# order, the window edge it owns (angles round the MCU); [plan.gate_hint] below
+gates = { N = 0.0, NE = 45.0, SE = 140.0, S = 180.0, SW = 230.0, W = 270.0, NW = 300.0 }
+order_of = { N = 0.0, NE = 0.0, NW = 360.0, SE = 180.0, S = 180.0, SW = 180.0, W = 270.0 }
+gate_sector = { N = [340.0, 20.0], NE = [20.0, 75.0], SE = [105.0, 160.0], S = [160.0, 205.0], SW = [205.0, 250.0], W = [250.0, 290.0], NW = [290.0, 340.0] }
+xtal_gate = "W"                       # the crystals leave straight through this gate on L1
+sdram_theta = [75.0, 105.0]           # the SDRAM's entries on the target circle (east)
+perim = 52.0                          # length of one turn round the MCU's rule area, for the estimates
+dest_far = 8.0                        # estimate: distance of a net without a far pad
+est_reach = 6.5                       # estimate: the part of the distance to the far pad the fan-out already covers
+default_width = 0.2032                # a net's width outside the rule areas when the geo has no class width for it
+lane_window = 5.0                     # byte-lane target = longest - lane_window + lane_margin (SPEC 9)
+lane_margin = 0.3
+slot_report = 3.5                     # the report lists chains over this too
+ground_far = 1.5                      # the report lists signal vias farther than this from a ground via
+
+[plan.gate_hint]                      # the nets whose gate the far pad does not decide
+I2C4_SCL = "S"
+I2C4_SDA = "S"
+NRST = "N"
+BOOT0 = "N"
+LCD_DISP = "S"
+LCD_BL_PWM = "SE"
+QSPI_BK1_NCS = "S"
+QSPI_BK1_IO2 = "S"
+QSPI_BK1_IO3 = "S"
+ETH_MDIO = "SW"
+PHY_NRST = "SW"
+USER_KEY = "SW"
+CODEC_NRST = "NW"
+SD_CD = "NE"
+SDMMC1_CMD = "NE"
+SDMMC1_D0 = "NE"
+SDMMC1_D1 = "NE"
+SDMMC1_D2 = "NE"
+SDMMC1_D3 = "NE"
+
+[plan.spec]                           # length limits of the estimates (SPEC 9), mm
+sdram_max = 60.0
+ltdc = { prefix = "LCD_", class = "LTDC", spread = 30.0, max = 120.0 }
+qspi = { prefix = "QSPI_", clock = "QSPI_CLK", data = "_IO", max = 30.0, window = 5.0 }
+sdmmc = { prefix = "SDMMC1_", clock = "SDMMC1_CK", window = [0.0, 5.0] }
+rmii = { prefix = "RMII_", clock = "RMII_REF_CLK", max = 40.0, not_shorter = ["RMII_RXD0", "RMII_RXD1", "RMII_CRS_DV"] }
+
+[plan.seeds]                          # fence mode, 3 sections a side: whole patterns of the SDRAM's layers per section,
+                                      # east 0-2 (north to south), south 3-5 (east to west), west 6-8 (south to north),
+                                      # north 9-11 (west to east)
+"north-about L4+L6, south-about L1+L6" = ["L4L6", "L1L4", "L1L6", "L1L6", "L1L6", "L1L6", "L6", "L4L6", "L4L6", "L4L6", "L4L6", "L4L6"]
+"north-about L4+L6, south-about L1+L4" = ["L4L6", "L1L4", "L1L4", "L1L4", "L1L4", "L1L4", "L4", "L4L6", "L4L6", "L4L6", "L4L6", "L4L6"]
+"north-about L1+L6, south-about L4+L6" = ["L1L6", "L1L4", "L4L6", "L4L6", "L4L6", "L4L6", "L4L6", "L4L6", "L6", "L1L6", "L1L6", "L1L6"]
+
+# bga_fan (the plan of bga_fan.json: every supply / ground ball on its own via, bottom decoupling, the MCU's
+# non-SDRAM signal fan-out against the SDRAM bus as it is on the board)
+[fan]
+window = [29.0, 26.0, 66.0, 48.0]     # the planning window x0 y0 x1 y1
+mcu_caps = ["C201", "C202", "C203", "C204", "C205", "C206", "C207", "C208", "C209", "C210", "C211", "C212", "C213",
+            "C214", "C215", "C216", "C217", "C218", "C219"]   # C201-C215 100 nF, C216 1 uF, C218 / C219 VCAP: placed here
+cap_kinds.U201 = [{ name = "100n", size = "0402", net = "+3V3_MCU", count = 15 },
+                  { name = "C216", size = "0402", net = "+3V3_MCU", count = 1 },
+                  { name = "C218", size = "0402", net = "VCAP1", count = 1 },
+                  { name = "C219", size = "0402", net = "VCAP2", count = 1 }]
+cap_kinds.U301 = [{ name = "100n", size = "0402", net = "+3V3_SDRAM", count = 8 }]
+tied = ["VCAP1", "VCAP2"]             # their capacitor sits on the ball's own via (no via of its own)
+cap_reach = 1.9                       # every 3.3 V ball has a 100 nF this close (supply pad centre); FAN_REACH overrides
+cap_far = 2.5                         # every 100 nF this close to some 3.3 V ball (LAY-2)
+cap_far_other = 3.0                   # the other parts this close to a ball of their net
+xtal_end_x = 33.5                     # the crystal lines (L1, straight west from their balls) are reserved up to this x
+# sites where a via of that net ends up on an island of its L5 block (ringed by the antipads round it; found on the
+# refilled board, copper.plane_slots: "cut-off own-net vias")
+island = [{ site = [36.425, 38.625], net = "+3V3_MCU" }]
+# the +3V3_MCU block's feed (user 2026-11-23: no slot limit, but the L5 tongue must reach the ball field wide): the
+# site column pair either side of ball column 11 (x 41.625 / 42.275, rows A-C, where balls A11 / B11 are unconnected)
+# holds no via of another net, so the tongue (x 39.6-44.2) enters the field in a 1.4 mm channel; FAN_NOFEED drops it
+feed = { x = [41.625, 42.275], y = [31.475, 32.125, 32.775, 33.425] }
+# the VDDA filter taken out of the state with FAN_NOVDDA (moved out of the ball field, west of the MCU)
+novdda = { parts = ["C220", "C221", "C222", "C223", "FB201"], zone = "cu:L6_VDDA_MCU", net = "VDDA_MCU" }
+default_target = [40.0, 37.0]         # target of a net not listed below
+important = ["RMII_", "ETH_", "QSPI_", "SDMMC1_"]   # nets that prefer the important layer (next to the ground plane, SPEC 6)
+important_layer = "L3"
+
+# off-lattice vias for balls whose four gap sites the bus takes: via, L1 points between ball and via, layer, run
+# from the via to the area edge, side
+[[fan.extra.J1]]
+via = [34.65, 37.65]
+mid = []
+layer = "L3"
+run = [[34.0, 37.65]]
+side = "W"
+[[fan.extra.J1]]
+via = [34.65, 37.65]
+mid = []
+layer = "L6"
+run = [[34.0, 37.65]]
+side = "W"
+[[fan.extra.K15]]
+via = [45.8, 38.3]
+mid = []
+layer = "L6"
+run = [[46.0, 38.3]]
+side = "E"
+
+# exits the SDRAM bus leaves open outside the MCU's rule area (34-46, 31-43): side -> {layer: [[lo, hi]] of the
+# coordinate along the edge (x for N / S, y for E / W)}. L1 is closed on every side (rivers), L3 / L4 where the bus
+# runs there (see routes_sdram.py), L6 is free everywhere outside the ball fields.
+[fan.exits]
+N = { L3 = [[34.0, 46.0]], L6 = [[34.0, 46.0]] }
+E = { L6 = [[31.0, 43.0]] }
+S = { L6 = [[34.0, 46.0]], L4 = [[34.0, 39.75], [40.25, 43.0]] }
+W = { L6 = [[31.0, 43.0]], L3 = [[31.0, 38.0]], L4 = [[39.8, 43.0]] }
+
+# where each net is going (a point beyond the SDRAM bands, for the estimate only)
+[fan.targets.NW]
+at = [28.0, 27.0]
+nets = ["SAI1_SD_B", "SAI1_MCLK_A", "SAI1_FS_A", "SAI1_SCK_A", "SAI1_SD_A", "CODEC_NRST"]
+[fan.targets.N]
+at = [42.0, 26.0]
+nets = ["SWO", "SWCLK", "SWDIO", "BOOT0", "NRST"]
+[fan.targets.NE]
+at = [50.0, 26.0]
+nets = ["SDMMC1_CK", "SDMMC1_CMD", "SDMMC1_D0", "SDMMC1_D1", "SDMMC1_D2", "SDMMC1_D3", "SD_CD", "FDCAN1_TX", "FDCAN1_RX", "CAN_STB"]
+[fan.targets.SW]
+at = [30.0, 46.0]
+nets = ["RMII_TXD0", "RMII_TXD1", "RMII_TX_EN", "PHY_NRST", "RMII_REF_CLK", "RMII_RXD0", "RMII_RXD1", "RMII_CRS_DV",
+        "ETH_MDC", "ETH_MDIO", "LED1", "LED2", "USER_KEY"]
+[fan.targets.S]
+at = [39.0, 50.0]
+nets = ["QSPI_BK1_IO0", "QSPI_BK1_IO1", "QSPI_BK1_IO2", "QSPI_BK1_IO3", "QSPI_CLK", "QSPI_BK1_NCS", "TP_INT", "TP_RST",
+        "I2C4_SDA", "I2C4_SCL", "LCD_DISP"]
+[fan.targets.SE]
+at = [49.0, 50.0]
+nets = ["USART1_TX", "USART1_RX", "LCD_BL_PWM"]
+
+# the sides of the MCU a net may leave through (the side its destination lies on, or the way round to it that does
+# not cross the SDRAM bands on its layer); nets not listed: any side. (North-west: the SDRAM's west vias at x 29.9-34.2,
+# y 31.2-33.3 close the west exits above row D, so the codec's lines leave north.) FAN_SIDES_FREE="net ..." frees nets.
+[fan.sides]
+SAI1_SD_B = "NW"
+SAI1_MCLK_A = "NW"
+SAI1_FS_A = "NW"
+SAI1_SCK_A = "NW"
+SAI1_SD_A = "NW"
+CODEC_NRST = "NW"
+SWO = "N"
+SWCLK = "N"
+SWDIO = "N"
+BOOT0 = "N"
+NRST = "W"
+SDMMC1_CK = "NE"
+SDMMC1_CMD = "NE"
+SDMMC1_D2 = "NE"
+SDMMC1_D3 = "NE"
+SD_CD = "NE"
+CAN_STB = "NE"
+SDMMC1_D0 = "NE"
+SDMMC1_D1 = "NE"
+FDCAN1_TX = "NE"
+FDCAN1_RX = "NE"
+RMII_TXD0 = "NWS"
+RMII_TXD1 = "NWS"
+RMII_TX_EN = "NWS"
+PHY_NRST = "WS"
+LCD_B6 = "NWSE"
+LCD_B7 = "NWSE"
+LCD_G3 = "NWSE"
+LCD_G7 = "NWSE"
+LCD_DISP = "NWSE"
+LCD_BL_PWM = "NWSE"
+QSPI_BK1_NCS = "NWS"
+RMII_REF_CLK = "WS"
+RMII_RXD0 = "WS"
+RMII_RXD1 = "WS"
+RMII_CRS_DV = "WS"
+ETH_MDC = "WS"
+ETH_MDIO = "WS"
+QSPI_BK1_IO0 = "WS"
+QSPI_BK1_IO1 = "WS"
+QSPI_BK1_IO2 = "WS"
+QSPI_BK1_IO3 = "WS"
+QSPI_CLK = "WS"
+LED1 = "WS"
+LED2 = "WS"
+USER_KEY = "WS"
+LCD_DE = "WS"
+LCD_VSYNC = "WS"
+LCD_G2 = "WS"
+LCD_R4 = "WS"
+LCD_B5 = "WS"
+LCD_R6 = "WS"
+LCD_R3 = "WS"
+LCD_G4 = "SE"
+LCD_G5 = "SE"
+USART1_TX = "SE"
+USART1_RX = "SE"
+TP_RST = "SE"
+I2C4_SCL = "SE"
+I2C4_SDA = "SE"
+TP_INT = "SE"
+LCD_B4 = "SE"
+LCD_R5 = "SE"
+LCD_B3 = "SE"
+LCD_G6 = "SE"
+LCD_HSYNC = "SE"
+LCD_R7 = "SE"
+LCD_CLK = "SE"

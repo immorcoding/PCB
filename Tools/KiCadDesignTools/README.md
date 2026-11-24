@@ -52,6 +52,10 @@ modules here plus data files.
 | routing | `fan_plan` | (library) | a BGA block plan (`place.toml [fan]`) as busroute pieces for the routes files | | |
 | routing | `tune_sites` | `-m ...routing.tune_sites <board dir> [board] [--spread 5] [--window 20] [--natural M] [--json F]` | room for serpentines beside each straight of the SDRAM nets (`[tune_sites]`) | RTE-2 | |
 | routing | `busroute` | `-m ...routing.busroute.build <routes.py> [--fast] [--write-board] ...` | bundles, BGA fan-out, serpentines, metrics | RTE-2, 7, 13 | `tests/busroute` |
+| planning | `bga_dump` | `-m ...planning.bga_dump <board dir> [board] [--out geo.json]` (KiCad's python) | a board as geo.json (pads, vias, tracks, zones, rule areas, keep-outs, stack, rule values) for the BGA planners | | |
+| planning | `bga_fan` | `-m ...planning.bga_fan <board dir> --geo <geo.json> --out <dir> [--slot-max] [--time] [--only] [--staged] [--fixa]` (system python: numpy, scipy) | offline BGA block plan (the H743's `bga_fan.json`): supply / ground vias, bottom decoupling, MCU signal fan-out, one MILP on the ball lattice (`bga_block.toml [block]`, `[fan]`) | U31, LAY-2 | |
+| planning | `bga_plan` | `-m ...planning.bga_plan <board dir> dump/plan/check ...` (system python: numpy, scipy, scikit-image) | offline whole-BGA model with the SDRAM line order (try/fanout-first; `check` needs `bga_check`, not in the repository) (`bga_block.toml [block]`, `[plan]`) | | |
+| planning | `bga_grid` | (library) | exact clearance fields on a 0.025 mm grid, via sites, plane-slot chains, grid escapes (layers from `board.toml`) | | |
 | finishing | `teardrops` | `-m ...finishing.teardrops <board>` | teardrops (last; earlier boards) | FIN | |
 | finishing | `silk_refs` | `-m ...finishing.silk_refs ...` | reference designators on sparse boards | FIN | |
 | views | `pcb_view`, `layer_view` | `-m ...views.<tool> ...` | pictures (qualitative only) | PROC-14 | |
