@@ -224,6 +224,9 @@ class Build:
             args += ["--ref", ref]
         if run.get("window"):
             args += ["--window"] + [_num(v) for v in run["window"]]
+        # the layers tracks may use: the board's signal layers (layer roles), unless the run names its own; the tool's
+        # own default (L1 L4 L6) was the four-layer plan before L3 became a signal layer (2026-11-23)
+        args += ["--layers"] + list(run.get("layers") or self.cfg.signal_layers())
         return args
 
     def view(self, board, O, v):
