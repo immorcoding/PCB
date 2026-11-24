@@ -1,0 +1,22 @@
+# The planning benchmark's board folder (tests/planning/check.py copies it into a temp folder with the board it builds).
+[board]
+name = "bench"
+origin = [100.0, 100.0]
+stackup = "JLC06161H-3313E"
+
+[layers]
+roles = ["signal", "ground", "signal", "signal", "power", "signal"]
+
+[power]
+ground = "GND"                   # its pours yield (no [plan] routes here: busroute tune.DEFAULTS are the block limits)
+
+[tune_sites]
+addr = ["A0", "A1"]
+clock = ["CK", "CK_R"]
+
+[length]
+start_refs = ["U1", "R1"]
+window_rule = "bench_window"
+
+[plan]
+block_free_layers = ["L1"]

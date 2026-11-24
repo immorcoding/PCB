@@ -377,6 +377,19 @@ addr = ["FMC_A0", "FMC_A1", "FMC_A2", "FMC_A3", "FMC_A4", "FMC_A5", "FMC_A6", "F
 area_prefix = "BGA_"             # rule areas the sites stay out of
 box = [0.3, 0.3, 84.7, 74.7]     # x0 y0 x1 y1: the board (85 x 75) less 0.3 mm
 
+# Lengths of the bus (Tools.KiCadDesignTools.planning.measure / check / plan): byte lanes from [schematic.swap], address
+# lines and the clock's pieces from [tune_sites].
+[length]
+start_refs = ["U201", "R201"]    # a net is traced from its pad on the first of these parts (R201: FMC_SDCLK_R)
+window_rule = "sdram_addr_window"   # length_groups.json group: the address lines' window round the clock sum
+
+# Length plans on paper (Tools.KiCadDesignTools.planning.plan; the hand waypoints in a plan data file, e.g.
+# probes/plan50/plan_h743.py).
+[plan]
+routes = "routes_sdram"          # its TUNING (block limits, pitch), YIELD_NETS and VIA_TARGET apply to the plan
+block_free_layers = ["L1"]       # serpentine blocks on these layers stay outside the BGA rule areas
+label_strip = "FMC_"             # left out of net names in the summary
+
 [route]
 obstacles_group = "sdram"        # built on a copy without its own copper: its serpentines see the later groups
 orphans = true                   # copper no group claims is removed and listed (orphans.txt)

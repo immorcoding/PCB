@@ -14,7 +14,7 @@ NS = uuid.UUID("6f0c2b0e-5d0a-4a57-9d1c-627573726f75")       # namespace of the 
 
 
 class Pad:
-    __slots__ = ("ref", "num", "net", "pos", "shape", "r", "poly", "layers", "smd", "hole", "box")
+    __slots__ = ("ref", "num", "net", "pos", "shape", "r", "poly", "layers", "smd", "hole", "box", "npth")
 
     @property
     def name(self):
@@ -22,7 +22,9 @@ class Pad:
 
 
 class Board:
-    def __init__(self, path, origin=(0.0, 0.0)):
+    def __init__(self, path, origin=(0.0, 0.0), fills=False):
+        """fills=True also reads the saved fill of every copper zone into self.fills (planning/check.py): one dict
+        per ring {"net", "name", "layer", "pts", "teardrop", "clearance"} (clearance: the zone's own, mm, or None)."""
         import pcbnew
         self.path, self.origin = os.path.abspath(path), (float(origin[0]), float(origin[1]))
         b = pcbnew.LoadBoard(self.path)
@@ -48,6 +50,7 @@ class Board:
                     continue
                 q.layers = None if len(cus) == len(ids) else set(cus)
                 q.smd = p.GetDrillSizeX() == 0
+                q.npth = p.GetAttribute() == pcbnew.PAD_ATTRIB_NPTH
                 q.hole = mm(max(p.GetDrillSizeX(), p.GetDrillSizeY())) / 2
                 lay0 = [l for l in p.GetLayerSet().CuStack() if l in lname][0]
                 sx, sy = mm(p.GetSizeX()), mm(p.GetSizeY())
@@ -68,7 +71,7 @@ class Board:
                 self.pads[q.name] = q
                 self.by_ref.setdefault(ref, []).append(q)
                 self.fp[ref]["pads"].append(q.name)
-        self.areas, self.keepouts, self.zones = {}, [], []
+        self.areas, self.keepouts, self.zones, self.fills = {}, [], [], []
         # board zones, then the keep-outs that footprints carry (an RJ45's "shield contact area"): those count as
         # keep-outs only, named "REF:name"
         fzones = [(f.GetReference(), z) for f in b.GetFootprints() for z in f.Zones() if z.GetIsRuleArea()]
@@ -90,6 +93,17 @@ class Board:
                     self.areas[z.GetZoneName()] = {"rect": R, "is_rect": rect, "layers": lays}
             else:
                 self.zones += [{"net": z.GetNetname(), "name": z.GetZoneName(), "layers": lays, "poly": pl} for pl in polys]
+                if fills:
+                    cl = z.GetLocalClearance()
+                    for lid in z.GetLayerSet().Seq():
+                        if lid not in lname or not z.HasFilledPolysForLayer(lid):
+                            continue
+                        ps = z.GetFilledPolysList(lid)
+                        for k in range(ps.OutlineCount()):
+                            for ring in [ps.Outline(k)] + [ps.Hole(k, h) for h in range(ps.HoleCount(k))]:
+                                self.fills.append({"net": z.GetNetname(), "name": z.GetZoneName(), "layer": lname[lid],
+                                                   "pts": [L(ring.CPoint(i)) for i in range(ring.PointCount())],
+                                                   "teardrop": z.IsTeardropArea(), "clearance": None if cl is None else mm(cl)})
         self.tracks, self.vias, self.arcs, self.arc_items = [], [], 0, []
         for t in b.GetTracks():
             n = t.GetNetname()
