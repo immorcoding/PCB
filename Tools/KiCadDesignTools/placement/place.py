@@ -17,6 +17,7 @@ import json, math, os, sys
 
 from Tools.KiCadDesignTools.core import config, uuids
 
+DATA = "place.toml"                   # the board's placement table, in the board folder
 EDGE_WIDTH = 0.1                      # Edge.Cuts line width, mm
 PARK_BELOW, PARK_ROW, PARK_GAP = 12.0, 160.0, 1.0   # parked rows: start below the board, row length, gap between parts
 
@@ -26,9 +27,9 @@ class Plan:
     the views can read it too."""
 
     def __init__(self, cfg, rot=None, fan=True):
-        d = cfg.datafile("place.toml")
+        d = cfg.datafile(DATA)
         if not d:
-            raise config.ConfigError("%s: no place.toml" % cfg.dir)
+            raise config.ConfigError("%s: no %s" % (cfg.dir, DATA))
         self.cfg = cfg
         o = d["outline"]
         self.width, self.height, self.corner_r = o["width"], o["height"], o["corner_r"]

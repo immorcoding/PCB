@@ -20,6 +20,7 @@ role "power".
 import collections, json, os, sys
 
 from Tools.KiCadDesignTools.copper.power_ties import power_plane
+from Tools.KiCadDesignTools.placement import place
 
 
 def clusters(board, nets):
@@ -163,8 +164,8 @@ def part_b_text(cfg, b, odir):
         return L + ["B 部分: 没有 power_bga_sites.json"]
     s = json.load(open(path, encoding="utf-8"))
     kinds = collections.Counter(k for n, p, sz, k in s["vias"])
-    L.append("B 部分（routes_power_bga.py）: 过孔 %d 个（球的 %d：球间位 %d、封装外圈外侧 %d、空球位 %d；电容和磁珠自己的 %d）" % (
-        len(s["vias"]), kinds["ball"] + kinds["ball lane"] + kinds["ball edge"], kinds["ball"], kinds["ball lane"], kinds["ball edge"],
+    L.append("B 部分（%s）: 过孔 %d 个（球的 %d：球间位 %d、封装外圈外侧 %d、空球位 %d；电容和磁珠自己的 %d）" % (
+        os.path.basename(RB.__file__), len(s["vias"]), kinds["ball"] + kinds["ball lane"] + kinds["ball edge"], kinds["ball"], kinds["ball lane"], kinds["ball edge"],
         kinds["own"] + kinds["tie"]))
     fps = {f.GetReference(): f for f in b.GetFootprints()}
     for ref, nets in RB.POWER.items():
@@ -190,7 +191,7 @@ def part_b_text(cfg, b, odir):
         sum(1 for c in caps.values() if c["net"] == GND and c.get("balls")), len(gown),
         max([c.get("edge", 0) for c in gown] or [0]), sum(1 for c in gown if c.get("edge", 0) > 1.0)))
     supply_own = sorted(k for k, c in caps.items() if c["net"] != GND and c["kind"].startswith("own"))
-    L.append("  电源焊盘没有落到球的过孔、用自己的过孔到 L5 的 %d 个: %s" % (len(supply_own), " ".join(supply_own) or "-"))
+    L.append("  电源焊盘没有落到球的过孔、用自己的过孔到 %s 的 %d 个: %s" % (power_plane(cfg), len(supply_own), " ".join(supply_own) or "-"))
     small = [(f.GetReference(), p) for r, f in fps.items() if r.startswith("C") and f.GetValue().replace(" ", "").lower() in ("100n", "100nf", "0.1u", "0.1uf")
              for p in f.Pads()]
     rows = []
@@ -204,7 +205,10 @@ def part_b_text(cfg, b, odir):
     L.append("  每个电源球到最近 100 nF 的距离（LAY-2）: 最远 %.2f mm（%s），超过 2.5 mm 的 %d" % (max(rows)[0], max(rows)[1], sum(1 for r in rows if r[0] > 2.5)))
     cl = clusters(b, list(T["clusters"]))
     L.append("  %s 连通块: %s" % (" / ".join(T["clusters"]), "  ".join("%s %d（%s）" % (n, len(g), " | ".join(" ".join(x) for x in g)[:110]) for n, g in cl.items())))
-    L += pours_in_areas(b, RB.POWER, tuple(T["bga_areas"]))
+    areas = tuple(T["bga_areas"])
+    no_pour = [a["no_pour"] for a in cfg.datafile(place.DATA).get("rule_areas", {}).get("areas", []) if a.get("no_pour") and a["name"] in areas]
+    top, bottom = cfg.layers[0], cfg.layers[-1]
+    L += pours_in_areas(b, RB.POWER, areas, "%s [rule_areas] 的 %s 禁铺区 %s" % (place.DATA, top.kicad, " ".join(no_pour) or "-"), (top.L, bottom.L))
     sd = os.path.join(odir, "sketch_drc.json")
     if os.path.isfile(sd):
         d = json.load(open(sd, encoding="utf-8"))
@@ -219,11 +223,12 @@ def part_b_text(cfg, b, odir):
     return L
 
 
-def pours_in_areas(b, power, areas):
-    """Zone fills inside the BGA rule areas, from the saved fills: L1 must have none (user 2026-11-22, the F.Cu
-    keep-outs NOPOUR_L1_* of the placement); L6 is listed per fill piece with the pads and vias of its net it joins
-    there (left as it is, for the user to decide). Also the supply and ground balls of the packages (power = {ref:
-    [nets]}) that are not on the main connected piece of their net."""
+def pours_in_areas(b, power, areas, keepouts, names):
+    """Zone fills inside the BGA rule areas, from the saved fills: the top layer must have none (user 2026-11-22, the
+    placement's no-pour keep-outs; H743: L1, NOPOUR_L1_*); the bottom layer is listed per fill piece with the pads and
+    vias of its net it joins there (left as it is, for the user to decide). Also the supply and ground balls of the
+    packages (power = {ref: [nets]}) that are not on the main connected piece of their net. keepouts: the text naming
+    the top layer's no-pour areas; names: the outer layers' short names (top, bottom)."""
     import pcbnew
     ids = list(b.GetEnabledLayers().CuStack())
     rect = {z.GetZoneName(): z.Outline() for z in b.Zones() if z.GetIsRuleArea() and z.GetZoneName() in areas}
@@ -256,8 +261,8 @@ def pours_in_areas(b, power, areas):
                         joined.append(name)
                 nv = sum(1 for v in vias if v.GetNetname() == z.GetNetname() and one.Collide(v.GetPosition(), int(v.GetWidth(lay) / 2)))
                 l6.append((an, z.GetZoneName(), z.GetNetname(), mm2(one), joined, nv))
-    out = ["  BGA 区内的 L1 铺铜（place.py 的 F.Cu 禁铺区 NOPOUR_L1_*，填充后）: %s" % "  ".join("%s %.3f mm2" % kv for kv in sorted(l1.items()))]
-    out.append("  BGA 区内的 L6 铺铜（保留；每块: 面积、连到的本网络焊盘、本网络过孔数）:")
+    out = ["  BGA 区内的 %s 铺铜（%s，填充后）: %s" % (names[0], keepouts, "  ".join("%s %.3f mm2" % kv for kv in sorted(l1.items())))]
+    out.append("  BGA 区内的 %s 铺铜（保留；每块: 面积、连到的本网络焊盘、本网络过孔数）:" % names[1])
     for an, zn, net, a, joined, nv in sorted(l6, key=lambda r: (r[0], r[1], -r[3])):
         out.append("    %-9s %-20s %-9s %7.2f mm2  焊盘 %s  过孔 %d" % (an, zn, net, a, " ".join(sorted(joined)) or "-", nv))
     # supply and ground balls off the main piece of their net
