@@ -1,9 +1,10 @@
 """Draw copper.sketch as pictures, one per layer that has drawn regions (for review; not a check).
 
-    python stm32h743_sdram/sketch_view.py <out dir>
+    python -m Tools.KiCadDesignTools.views.sketch_view <board dir> <out dir>
 
-Any Python with matplotlib. Shows the board outline, the two BGA bodies with their rule areas (from
-place.py) and every drawn region with its net name; `whole` regions are named in the title only.
+Any Python >= 3.11 with matplotlib. Shows the board outline, the package bodies with their rule areas and the
+mounting holes (from place.toml: [outline], [rule_areas], [holes]) and every drawn region of the copper sketch
+([copper] sketch) with its net name; `whole` regions are named in the title only.
 """
 import os, re, sys
 import matplotlib
@@ -11,7 +12,8 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 from matplotlib.patches import Polygon, Rectangle
 
-HERE = os.path.dirname(os.path.abspath(__file__))
+from Tools.KiCadDesignTools.core import config
+from Tools.KiCadDesignTools.placement.place import Plan
 
 
 def read_sketch(path):
@@ -29,23 +31,12 @@ def read_sketch(path):
     return regions
 
 
-def place_consts():
-    src = open(os.path.join(HERE, "place.py"), encoding="utf-8").read()
-    ns = {}
-    for line in src.split("def sdram_centre")[0].splitlines():      # the constants block at the top of place.py
-        if re.match(r"^[A-Z][A-Z_, ]* = ", line) and "os.path" not in line:
-            exec(line, {}, ns)
-    return ns
-
-
-def main(out):
+def main(cfg, out):
     os.makedirs(out, exist_ok=True)
-    regions = read_sketch(os.path.join(HERE, "copper.sketch"))
-    c = place_consts()
-    W, H = c["BOARD_W"], c["BOARD_H"]
-    sw, sh = c["SDRAM_BODY"] if c["SDRAM_ROT"] % 180 == 0 else c["SDRAM_BODY"][::-1]
-    bodies = [("MCU", c["MCU"], c["MCU_BODY"]),
-              ("SDRAM", (c["MCU"][0] + c["MCU_BODY"][0] / 2 + c["BODY_GAP"] + sw / 2, c["MCU"][1]), (sw, sh))]
+    regions = read_sketch(cfg.path(cfg.need("copper.sketch")))
+    plan = Plan(cfg, fan=False)
+    W, H = plan.width, plan.height
+    bodies = [(a["label"], a["centre"], a["size"]) for a in plan.areas]
     colours = {}
     palette = plt.get_cmap("tab20")
     for layer in sorted({r["layer"] for r in regions if not r["whole"]}):
@@ -53,11 +44,10 @@ def main(out):
         ax.add_patch(Rectangle((0, 0), W, H, fill=False, lw=1.5))
         for name, (cx, cy), (bw, bh) in bodies:
             ax.add_patch(Rectangle((cx - bw / 2, cy - bh / 2), bw, bh, fill=False, lw=1, ls="-", ec="0.3"))
-            m = c["AREA_MARGIN"]
+            m = plan.margin
             ax.add_patch(Rectangle((cx - bw / 2 - m, cy - bh / 2 - m), bw + 2 * m, bh + 2 * m, fill=False, lw=0.6, ls="--", ec="0.5"))
             ax.text(cx, cy, name, ha="center", va="center", fontsize=8, color="0.3")
-        hi = c["HOLE_INSET"]
-        for hx, hy in ((hi, hi), (W - hi, hi), (hi, H - hi), (W - hi, H - hi)):
+        for hx, hy in (plan.place[ref][:2] for ref in plan.holes):
             ax.add_patch(plt.Circle((hx, hy), 1.6, fill=False, ec="0.3"))
         for r in regions:
             if r["layer"] != layer or r["whole"]:
@@ -80,4 +70,4 @@ def main(out):
 
 
 if __name__ == "__main__":
-    main(sys.argv[1])
+    main(config.load(sys.argv[1]), sys.argv[2])

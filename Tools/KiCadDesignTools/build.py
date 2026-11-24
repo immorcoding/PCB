@@ -12,7 +12,8 @@ repository root. Reports go to <out>/<step folder>/, <out> = <board dir>/out unl
               once at the end), length-window rules
   sch         schematic: generate, upgrade, ERC, netlist, PDF (schematic.build); netlist checks (schematic.check);
               kicad-happy review
-  layout      placement, the line-order sketch on a copy, placement / escape / copper-sketch checks, measured trials
+  layout      placement (placement.place, place.toml), the line-order sketch on a copy, placement / escape /
+              copper-sketch checks, measured trials (placement.layout_probe, [probe])
   copper      placement, pours, the power groups on the board and on the sketch copy, refill, measures, pictures, table
   route       every [[route.group]] stripped, placement, pours, the groups rebuilt in order (--upto GROUP: only up to
               that one), refill, DRC, measures, plane slots, escape check, canary, pictures, placement check, table
@@ -38,6 +39,7 @@ from Tools.KiCadDesignTools.core import config, heavy, paths
 STEPS = ("project", "rules", "sch", "pcb-update", "layout", "copper", "route", "finish", "checks", "publish", "all",
          "compare", "init")
 PROJECT = "Tools.KiCadDesignTools.project.make_project"      # the project file, after every SaveBoard too
+PLACE = "Tools.KiCadDesignTools.placement.place"             # every part from <board dir>/place.toml
 KH = os.path.join(os.path.expanduser("~"), ".claude", "plugins", "marketplaces", "kicad-happy", "skills", "kicad", "scripts",
                   "analyze_schematic.py")
 
@@ -332,7 +334,7 @@ class Build:
         sk = lay["sketch"]
         SKO = self.D + "/" + sk["out"]
         SK = SKO + "/" + self.N + ".kicad_pcb"
-        rc, data = self.r.py(self.script("place"), filt=quiet)
+        rc, data = self.r.py(PLACE, self.D, filt=quiet)
         self.pr(data)
         SB, data = self.busroute(sk["routes"], ["--sketch"], SKO, O + "/sketch_build.txt")
         print("== line-order sketch on the placed board")
@@ -348,7 +350,7 @@ class Build:
         rc, data = self.r.py("Tools.KiCadDesignTools.copper.cu_sketch", "check", self.D + "/" + self.cfg.need("copper.sketch"), "--board", self.BRD, filt=quiet)
         echo(text(data).splitlines()[-40:])
         print("== measured trial checks")
-        rc, data = self.r.py(self.script("layout_probe"), "--json", O + "/layout_probe.json", filt=quiet)
+        rc, data = self.r.py("Tools.KiCadDesignTools.placement.layout_probe", self.D, "--json", O + "/layout_probe.json", filt=quiet)
         self.pr(data)
         print("layout step: %d s; sketch build exit %s, place_check exit %s" % (time.time() - T0, SB, PC))
         return 0
@@ -363,7 +365,7 @@ class Build:
         sketch = self.D + "/" + cu["sketch"]
         print("== placement and pours")
         self.r.py(CR, "unfill", BRD, filt=quiet)
-        self.r.py(self.script("place"), filt=quiet)
+        self.r.py(PLACE, self.D, filt=quiet)
         rc, data = self.r.py("Tools.KiCadDesignTools.copper.cu_sketch", "check", sketch, "--board", BRD, filt=quiet, out=O + "/sketch_check.txt")
         rc, data = self.r.py("Tools.KiCadDesignTools.copper.cu_sketch", "apply", sketch, BRD, filt=quiet)
         echo(grep(data, r"^warning: a ~", invert=True))
@@ -435,7 +437,7 @@ class Build:
         if rt.get("orphans", True):
             rc, data = self.r.py(CR, "orphans", BRD, filt=quiet, out=O + "/orphans.txt")
             self.pr(data)
-        self.r.py(self.script("place"), filt=quiet)
+        self.r.py(PLACE, self.D, filt=quiet)
         sketch = self.D + "/" + self.cfg.need("copper.sketch")
         rc, data = self.r.py("Tools.KiCadDesignTools.copper.cu_sketch", "check", sketch, "--board", BRD, filt=quiet, out=O + "/sketch_check.txt")
         rc, data = self.r.py("Tools.KiCadDesignTools.copper.cu_sketch", "apply", sketch, BRD, filt=quiet)

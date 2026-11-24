@@ -1,22 +1,28 @@
 """Pictures of the placement: pads and courtyards of the board, the whole board and chosen windows.
 
-    D:\\KiCad\\bin\\python.exe stm32h743_sdram\\place_view.py dump [board]     writes out/layout/place_view.json
-    python stm32h743_sdram/place_view.py draw [x0 y0 x1 y1 name]             writes out/layout/placement.png (or <name>.png)
+    D:\\KiCad\\bin\\python.exe -m Tools.KiCadDesignTools.views.place_view <board dir> dump [board]   writes <board dir>/out/layout/place_view.json
+    python -m Tools.KiCadDesignTools.views.place_view <board dir> draw [x0 y0 x1 y1 name]          writes <board dir>/out/layout/placement.png (or <name>.png)
 
-Two steps because KiCad's Python has no matplotlib. Local mm (board-file mm minus 100). Top pads red,
+Two steps because KiCad's Python has no matplotlib. Local mm (board-file mm minus [board] origin). Top pads red,
 bottom pads blue, through-hole grey; courtyards as outlines (bottom dashed); references at the centre.
 """
 import json, os, sys
 
-HERE = os.path.dirname(os.path.abspath(__file__))
-OUT = os.path.join(HERE, "out", "layout")
-JS = os.path.join(OUT, "place_view.json")
+from Tools.KiCadDesignTools.core import config
 
 
-def dump(path):
+def files(cfg):
+    out = os.path.join(cfg.dir, "out", "layout")
+    return out, os.path.join(out, "place_view.json")
+
+
+def dump(cfg, path):
     import pcbnew
+    OUT, JS = files(cfg)
     b = pcbnew.LoadBoard(path)
-    mm = lambda v: v / 1e6 - 100
+    ox, oy = cfg.origin
+    mm = lambda v: v / 1e6 - ox
+    my = lambda v: v / 1e6 - oy
     parts = []
     for fp in b.GetFootprints():
         bot = fp.GetLayer() == pcbnew.B_Cu
@@ -25,21 +31,22 @@ def dump(path):
         pads = []
         for p in fp.Pads():
             r = p.GetBoundingBox()
-            pads.append([mm(r.GetLeft()), mm(r.GetTop()), mm(r.GetRight()), mm(r.GetBottom()),
+            pads.append([mm(r.GetLeft()), my(r.GetTop()), mm(r.GetRight()), my(r.GetBottom()),
                          "th" if p.HasHole() else ("b" if p.IsOnLayer(pcbnew.B_Cu) else "t"), p.GetNetname()])
-        parts.append(dict(ref=fp.GetReference(), bot=bot, pos=[mm(fp.GetPosition().x), mm(fp.GetPosition().y)],
-                          box=[mm(bb.GetLeft()), mm(bb.GetTop()), mm(bb.GetRight()), mm(bb.GetBottom())], pads=pads))
+        parts.append(dict(ref=fp.GetReference(), bot=bot, pos=[mm(fp.GetPosition().x), my(fp.GetPosition().y)],
+                          box=[mm(bb.GetLeft()), my(bb.GetTop()), mm(bb.GetRight()), my(bb.GetBottom())], pads=pads))
     e = b.GetBoardEdgesBoundingBox()
     os.makedirs(OUT, exist_ok=True)
-    json.dump(dict(edge=[mm(e.GetLeft()), mm(e.GetTop()), mm(e.GetRight()), mm(e.GetBottom())], parts=parts), open(JS, "w"))
+    json.dump(dict(edge=[mm(e.GetLeft()), my(e.GetTop()), mm(e.GetRight()), my(e.GetBottom())], parts=parts), open(JS, "w"))
     print("wrote", JS, len(parts), "parts")
 
 
-def draw(win=None, name="placement"):
+def draw(cfg, win=None, name="placement"):
     import matplotlib
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
     from matplotlib.patches import Rectangle
+    OUT, JS = files(cfg)
     d = json.load(open(JS))
     if win:
         x0, y0, x1, y1 = win
@@ -70,8 +77,9 @@ def draw(win=None, name="placement"):
 
 
 if __name__ == "__main__":
-    if sys.argv[1] == "dump":
-        dump(sys.argv[2] if len(sys.argv) > 2 else os.path.join(HERE, "stm32h743_sdram.kicad_pcb"))
+    cfg = config.load(sys.argv[1])
+    if sys.argv[2] == "dump":
+        dump(cfg, sys.argv[3] if len(sys.argv) > 3 else cfg.pcb)
     else:
-        a = sys.argv[2:]
-        draw([float(v) for v in a[:4]] if len(a) >= 4 else None, a[4] if len(a) > 4 else "placement")
+        a = sys.argv[3:]
+        draw(cfg, [float(v) for v in a[:4]] if len(a) >= 4 else None, a[4] if len(a) > 4 else "placement")

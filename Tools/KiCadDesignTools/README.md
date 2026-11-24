@@ -38,6 +38,8 @@ modules here plus data files.
 | schematic | `build` | `-m ...schematic.build <board dir> <out> [--page NAME ...]` | generate, upgrade, ERC, netlist, PDF; `--page`: some pages alone in `<out>`; a folder without board.toml runs its own `gen_sch.py` | RUL-6 | |
 | schematic | `check` | `-m ...schematic.check <board dir> <netlist>` | netlist against the drawing's intent, the pin table (`[schematic.pin_table]`), the SDRAM byte lanes (`[schematic.swap]`) | RUL-6 | |
 | schematic | `net2pcb` | `-m ...schematic.net2pcb <netlist> <board>` | netlist into the board | | |
+| placement | `place` | `-m ...placement.place <board dir> [--pcb <copy>] [--rot <angle>]` | every part, outline, holes, rule areas and F.Cu no-pour areas from `<board dir>/place.toml`; parks unlisted parts below the board; `--pcb`/`--rot`: trials on a copy | LAY-1, PROC-13 | |
+| placement | `layout_probe` | `-m ...placement.layout_probe <board dir> [--pcb <board>] [--json <out>]` | measured trials: rails against the copper sketch, crystals, switcher loops, bus lengths, LCD fan (board.toml `[probe]`) | LAY-2, 3 | |
 | placement | `place_check` | `-m ...placement.place_check <board> [...]` | placement metrics | LAY-2, 5, 6, 8 | `tests/place_check` |
 | placement | `escape_check` | `-m ...placement.escape_check <board> --ref U1 [...]` | ways out of fine-pitch parts | LAY-2 | `tests/place_check` |
 | placement | `via_spots` | `-m ...placement.via_spots ...` | legal via spots (ignores footprint keep-outs) | | |
@@ -47,6 +49,8 @@ modules here plus data files.
 | finishing | `teardrops` | `-m ...finishing.teardrops <board>` | teardrops (last; earlier boards) | FIN | |
 | finishing | `silk_refs` | `-m ...finishing.silk_refs ...` | reference designators on sparse boards | FIN | |
 | views | `pcb_view`, `layer_view` | `-m ...views.<tool> ...` | pictures (qualitative only) | PROC-14 | |
+| views | `place_view` | `-m ...views.place_view <board dir> dump [board]` (KiCad's python), then `... draw [x0 y0 x1 y1 name]` (matplotlib) | pads and courtyards of the placement, whole board or a window, into `<board dir>/out/layout/` | PROC-14 | |
+| views | `sketch_view` | `-m ...views.sketch_view <board dir> <out>` (matplotlib) | the copper sketch per layer with the package bodies, rule areas and holes of `place.toml` | PROC-14 | |
 | analysis | `track_shape` | `-m ...analysis.track_shape <board>` | track shapes DRC does not check | RTE-8 | `tests/track_shape` |
 | analysis | `board_diff` | `-m ...analysis.board_diff <a> <b>` | two board files item by item (uuids aside, fills as areas) | | |
 | analysis | `compare_runs` | `-m ...analysis.compare_runs <out A> <out B>` | two builds' reports number by number | | |

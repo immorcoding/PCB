@@ -3,10 +3,10 @@
 # Coordinates are local mm (board-file mm - origin), x right, y down. Paths are relative to this folder. Numbers that
 # end up on a command line are written as the command line had them (27, not 27.0).
 # Stage 2 of the Tools/ consolidation (2026-11-24): the driver reads the sections below and still calls this folder's
-# scripts ([scripts]) with the arguments build.sh gave them. The constants still hard-coded in place.py, finish*.py
-# and the report scripts move into this file (and place.toml, silk.toml) in stage 3; the project file's
-# ([project], [netclasses], [netclass_patterns], [[footprints.derived]]) moved in stage 3A, the schematic's
-# ([schematic]) in stage 3B.
+# scripts ([scripts]) with the arguments build.sh gave them. The constants still hard-coded in finish*.py and the
+# report scripts move into this file (and silk.toml) in stage 3; the project file's ([project], [netclasses],
+# [netclass_patterns], [[footprints.derived]]) moved in stage 3A, the schematic's ([schematic]) in stage 3B, the
+# placement's (place.toml, [probe]) in stage 3C.
 
 [board]
 name = "stm32h743_sdram"
@@ -104,8 +104,6 @@ route = "route2"                 # build.sh's step was route2 (stop 7); finish r
 checks = "finish"                # build.sh finish-checks wrote into out/finish
 
 [scripts]                        # this folder's scripts the driver calls (stage 3: Tools modules plus data files)
-place = "place.py"
-layout_probe = "layout_probe.py"
 copper_report = "copper_report.py"   # unfill / strip / orphans / slots / table
 copper_view = "copper_view.py"   # pictures (qualitative only, PROC-14)
 route_report = "route2_report.py"
@@ -206,6 +204,46 @@ json = "escape_bga.json"
 [[layout.escape]]
 refs = ["U501", "U601", "U701", "J701", "U401"]
 json = "escape_parts.json"
+
+# Measured trial checks of the layout step (Tools.KiCadDesignTools.placement.layout_probe; LAY-2 rails, LAY-3).
+# Board extent from place.toml [outline]; power blocks = the sketch regions on the power layer ([layers] roles).
+[probe]
+mcu = "U201"                     # the balls the crystals, buses and LCD fan start from
+ground = "GND"                   # not a rail; left out of the LCD fan
+plane_net = "+3V3"               # rails: counts as covered where no other power block is (the rest of L5 is +3V3)
+via_layers = [3]                 # rails: sketch regions on these layers also reach a pad (by a via); 3 as the code had it
+xtal_window = [29.0, 33.5, 34.0, 38.5]   # x0 y0 x1 y1, the L1 window the SDRAM sketch keeps free (open to the west)
+loop_pad_by_net = ["D701"]       # loops: these parts' first pad is found by the net, not the pad number
+net_limit = { RMII_REF_CLK = 40.0 }      # Manhattan limits of single nets (SPEC 9)
+
+[probe.crystals]                 # crystal, load capacitors, MCU balls
+HSE = { ref = "Y201", caps = ["C225", "C226"], balls = ["G1", "H1"] }
+LSE = { ref = "Y202", caps = ["C227", "C228"], balls = ["E1", "F1"] }
+
+[probe.loops]                    # high-current loops: what, part, pad, part, net (nearest pad of that net)
+"U101 5 V buck" = [["VIN", "U101", "3", "C104", "+12V"], ["GND", "U101", "1", "C104", "GND"],
+                   ["SW", "U101", "2", "L101", "SW_5V"], ["bulk", "U101", "3", "C102", "+12V"]]
+"U102 3.3 V buck" = [["VIN", "U102", "4", "C108", "+5V"], ["GND", "U102", "2", "C108", "GND"],
+                     ["SW", "U102", "3", "L102", "SW_3V3"]]
+"U701 backlight boost" = [["VIN", "U701", "5", "C704", "+5V_BL"], ["SW", "U701", "1", "D701", "SW_BL"],
+                          ["SW-L", "U701", "1", "L701", "SW_BL"], ["diode-Cout", "D701", "1", "C705", "LED_A"],
+                          ["Cout-GND", "U701", "2", "C705", "GND"]]
+
+[probe.buses]                    # nets, far part, Manhattan limit and spread limit (SPEC 9; none when absent)
+LTDC = { to = "J701", limit = 120.0, spread = 30.0, nets = [
+    "LCD_R3", "LCD_R4", "LCD_R5", "LCD_R6", "LCD_R7", "LCD_G2", "LCD_G3", "LCD_G4", "LCD_G5", "LCD_G6", "LCD_G7",
+    "LCD_B3", "LCD_B4", "LCD_B5", "LCD_B6", "LCD_B7", "LCD_CLK", "LCD_DE", "LCD_HSYNC", "LCD_VSYNC"] }
+QSPI = { to = "U401", limit = 30.0, nets = ["QSPI_CLK", "QSPI_BK1_IO0", "QSPI_BK1_IO1", "QSPI_BK1_IO2", "QSPI_BK1_IO3"] }
+RMII = { to = "U501", limit = 60.0, nets = ["RMII_REF_CLK", "RMII_CRS_DV", "RMII_RXD0", "RMII_RXD1", "RMII_TX_EN", "RMII_TXD0", "RMII_TXD1"] }
+SDMMC = { to = "J801", nets = ["SDMMC1_CK", "SDMMC1_CMD", "SDMMC1_D0", "SDMMC1_D1", "SDMMC1_D2", "SDMMC1_D3"] }
+SAI = { to = "U601", nets = ["SAI1_MCLK_A", "SAI1_SCK_A", "SAI1_FS_A", "SAI1_SD_A", "SAI1_SD_B"] }
+CAN = { to = "U801", nets = ["FDCAN1_TX", "FDCAN1_RX"] }
+SWD = { to = "J803", nets = ["SWDIO", "SWCLK", "SWO"] }
+UART = { to = "J804", nets = ["USART1_TX", "USART1_RX"] }
+
+[probe.lcd_fan]                  # straight paths ball -> connector pad; the boost's switch node against them
+connector = "J701"
+switch_net = "SW_BL"
 
 [copper]
 sketch = "copper.sketch"
