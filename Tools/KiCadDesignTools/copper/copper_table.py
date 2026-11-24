@@ -82,7 +82,7 @@ def table(cfg, board_path, odir):
     # ---- feed vias per rail
     RAILS = [(label, list(pads), need) for label, pads, need in T["rails"]]
     sites = json.load(open(os.path.join(odir, "power_sites.json"), encoding="utf-8"))
-    per_pad = collections.Counter(s["pad"] for s in sites["done"] if s["kind"] in ("via", "feed"))
+    per_pad = collections.Counter(s["pad"] for s in sites["done"] if s["kind"] == "feed" or _own_via(s))
     L.append("")
     L.append("供电过孔（每 0.5 A 至少 1 个；稳压器输出、跳线电阻每侧、分块入口至少 2 个）:")
     for label, pads, need in RAILS:
@@ -90,25 +90,25 @@ def table(cfg, board_path, odir):
         L.append("  %-44s %d / %d %s" % (label, got, need, "ok" if got >= need else "MISS"))
     L.append(T["no_vias"])
     plane_nets = tuple(RP.PLANE_NETS)
-    single = [s for s in sites["done"] if s["kind"] == "via" and s["net"] in plane_nets and s["pad"] not in {p for _, ps, _ in RAILS for p in ps}]
+    single = [s for s in sites["done"] if _own_via(s) and s["net"] in plane_nets and s["pad"] not in {p for _, ps, _ in RAILS for p in ps}]
     L.append("  其余 %s 焊盘各 1 个过孔到 %s: %d 个焊盘" % (" / ".join(plane_nets), power_plane(cfg), len({s["pad"] for s in single})))
     # ---- ground
     skip_pads, skip_refs = set(T.get("ground_skip", [])), set(T.get("ground_skip_refs", []))
     g = [s for s in sites["done"] if s["net"] == GND]
-    own = sorted({s["pad"] for s in g if s["kind"] == "via"})
+    own = sorted({s["pad"] for s in g if _own_via(s)})
     gpads = [("%s.%s" % (f.GetReference(), p.GetNumber()), p) for f in b.GetFootprints() for p in f.Pads() if p.GetNetname() == GND]
     cand = [n for n, p in gpads if not p.HasHole() and not part_b(n) and n not in skip_pads and n.split(".")[0] not in skip_refs]
     rely = sorted(set(cand) - set(own))
     far = [s for s in g if s["kind"] == "via" and s["pad"].startswith("C") and s.get("edge", 0) > 1.0]
     L.append("")
     L.append("地: 过孔 %d 个（焊盘旁 %d，散热焊盘内 %d）；有自己过孔的焊盘 %d；靠铺地的焊盘 %d：%s" % (
-        len(g), sum(1 for s in g if s["kind"] == "via"), sum(1 for s in g if s["kind"] == "in pad"), len(own), len(rely), " ".join(rely)))
+        len(g), sum(1 for s in g if _own_via(s)), sum(1 for s in g if s["kind"] == "in pad"), len(own), len(rely), " ".join(rely)))
     L.append("  电容地过孔离焊盘边超过 1.0 mm: %s" % (" ".join("%s %.2f" % (s["pad"], s["edge"]) for s in far) or "0"))
     miss = [l for l in sites["log"] if l.startswith("NO ")]
     L.append("  找不到位置的: %d%s" % (len(miss), "".join("\n    " + l for l in miss)))
     L.append("环路的地过孔（U56，焊盘边到过孔中心 mm）: " + "  ".join(
-        "%s %s" % (p, " ".join("%.2f" % s["edge"] for s in g if s["pad"] == p) or "-") for p in T["loops"]))
-    L.append("晶振外壳地（U54）: " + "  ".join("%s %s" % (p, next(("via (%.2f, %.2f) 焊盘边 %.2f" % (s["at"][0], s["at"][1], s["edge"]) for s in g if s["pad"] == p), "没有位置"))
+        "%s %s" % (p, " ".join("%.2f" % s["edge"] if "edge" in s else _site(s) for s in g if s["pad"] == p) or "-") for p in T["loops"]))
+    L.append("晶振外壳地（U54）: " + "  ".join("%s %s" % (p, next((_site(s) for s in g if s["pad"] == p), "没有位置"))
                                           for p in T["crystal_ground"]))
     # ---- DRC of the refilled board
     d = json.load(open(os.path.join(odir, "drc.json"), encoding="utf-8"))
@@ -129,6 +129,26 @@ def table(cfg, board_path, odir):
     open(os.path.join(odir, "table.txt"), "w", encoding="utf-8").write(txt + "\n")
     print(txt)
     return 1 if n_mine else 0
+
+
+def _site(s):
+    """A ground entry of the power group's log as the table shows it: a via with the distance from the pad edge to its
+    centre, or an entry without a via of its own (a FIXED chain of the routes file: no edge) with its kind, position
+    and length."""
+    if "edge" in s:
+        return "via (%.2f, %.2f) 焊盘边 %.2f" % (s["at"][0], s["at"][1], s["edge"])
+    return "%s (%.2f, %.2f)%s" % (s["kind"], s["at"][0], s["at"][1], " 线长 %.2f" % s["len"] if s.get("len") is not None else "")
+
+
+def _own_via(s):
+    """True when the power group's log entry puts a via of its own beside the pad: a searched via, or a FIXED chain of
+    the routes file that ends in a via (its "at")."""
+    return s["kind"] == "via" or (s["kind"] == "fixed" and s.get("at") is not None)
+
+
+def _others(x):
+    """The balls a shared via is shared with: the log writes a list of names, or one name as a string."""
+    return [x] if isinstance(x, str) else list(x)
 
 
 def part_b_text(cfg, b, odir):
@@ -156,7 +176,7 @@ def part_b_text(cfg, b, odir):
         vias = {tuple(v) for k, v in s["ball_via"].items() if k in names}
         L.append("  %s: 球 %d（%s），过孔 %d；共用过孔 %d：%s；没有位置 %d%s" % (
             ref, len(balls), " ".join("%s %d" % kv for kv in sorted(per.items())), len(vias), len(sh),
-            " ".join("%s->%s" % (x[0].split(".")[1], "+".join(o.split(".")[1] for o in x[2])) for x in sh) or "-", len(ns),
+            " ".join("%s->%s" % (x[0].split(".")[1], "+".join(o.split(".")[1] for o in _others(x[2]))) for x in sh) or "-", len(ns),
             "".join("\n    %s: %s" % (k, s["nosite"][k][:230]) for k in ns)))
     GND = cfg.need("power.ground")
     caps = s["caps"]
