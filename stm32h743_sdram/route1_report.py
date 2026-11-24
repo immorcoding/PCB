@@ -8,7 +8,9 @@ Reads from <out dir>: drc.json (kicad-cli, refilled), sdram/metrics.json (the SD
 power_bga_sites.json, slots.json, escape_bga.json (and out/copper/escape_bga.json of stop 5 to compare), measure.txt,
 dru_match.txt, and the environment ROUTE1_SECONDS / ROUND. Runs scripts/track_shape.py on the board. Writes
 <out dir>/table.txt and prints it; exit code 1 when a hard number is off (unconnected, clearance-type DRC items,
-copper-class unconnected, a crossing, a net over 60 mm or over 3 vias, a sharp corner, a slot over 3.0 mm).
+copper-class unconnected, a crossing, a net over 60 mm or over 3 vias, a sharp corner, a byte lane over its skew rule
+sdram_lane0-3, a via of a plane's own net cut off from it). Plane slot lengths are reported only: the user removed the
+slot limit (it was 3.0 mm, SLOT_MAX, still the mark in the table).
 """
 import collections, json, math, os, re, subprocess, sys
 
@@ -149,6 +151,23 @@ def main(board_path, odir):
     for g, gr in Ln["groups"].items():
         A("       组 %-6s %d 根：最短 %s %.3f，最长 %s %.3f，相差 %.3f；对基准 %+.3f .. %+.3f" % (
             g, gr["nets"], gr["shortest"][0], gr["shortest"][1], gr["longest"][0], gr["longest"][1], gr["spread"], gr["to_ref_range"][0], gr["to_ref_range"][1]))
+    # the byte lanes against their DRC skew rules (sdram_lane0-3 of the rule file: longest minus shortest, DRC lengths)
+    dru = open(os.path.splitext(board_path)[0] + ".kicad_dru", encoding="utf-8").read()
+    lane_max = {"lane" + k: float(v) for k, v in re.findall(r'\(rule "sdram_lane(\d)"[^()]*\(condition "[^"]*"\)\s*\(constraint skew \(max ([\d.]+)mm\)\)', dru)}
+    rows = []
+    for g in sorted(lane_max):
+        if g not in Ln["groups"]:
+            continue
+        k = int(g[4:])
+        ls = {n: dl.get(n, Ln["nets"][n]["length"]) for n in ["FMC_D%d" % i for i in range(8 * k, 8 * k + 8)] + ["FMC_NBL%d" % k]}
+        sp = max(ls.values()) - min(ls.values())
+        rows.append("%s %.3f %s" % (g, sp, "满足" if sp <= lane_max[g] + 1e-6 else "超出 %.3f" % (sp - lane_max[g])))
+        if sp > lane_max[g] + 1e-6:
+            bad.append("%s skew" % g)
+    A("       字节通道对规则（sdram_lane0-3，最长减最短，DRC 量）：上限 %s mm；%s" % (
+        "/".join("%g" % lane_max[g] for g in sorted(lane_max)) or "规则文件里没有", "，".join(rows) or "—"))
+    if len(lane_max) != 4:
+        bad.append("lane rules")
     lon = max(Ln["nets"].items(), key=lambda kv: kv[1]["length"])
     A("       最长的网络 %s %.3f mm（上限 %s）；超过的 %d 根；DRC 量的长度对几何最大相差 %s mm" % (
         lon[0], lon[1]["length"], Ln["limit"], len(Ln["over_limit"]), Ln.get("max_abs_geometry_minus_drc")))
@@ -235,8 +254,12 @@ def main(board_path, odir):
         if r["length"] > 2.5:
             A("         %s %-5s %.2f mm (%.2f, %.2f)-(%.2f, %.2f) 过孔 %d：%s" % (r["layer"], r["window"], r["length"], r["ends"][0][0], r["ends"][0][1],
                                                                       r["ends"][1][0], r["ends"][1][1], r["vias"], " ".join(r["via_nets"][:9])))
-    if any(r["length"] > SLOT_MAX for r in sj["longest"].values()) or sj["cut_off"]:
-        bad.append("slots")
+    # slot length: reported, not judged (the user removed the plane-slot limit); a cut-off via still fails
+    over = sorted(k for k, r in sj["longest"].items() if r["length"] > SLOT_MAX)
+    if over:
+        A("       开槽长度只报告（用户已取消开槽上限）：超过原来 %.1f mm 的层 %s" % (SLOT_MAX, " ".join(over)))
+    if sj["cut_off"]:
+        bad.append("cut-off vias")
     # the power plane L5 over the whole board (build.sh: copper_report.py slots --layers L5 --stem slots_l5): the
     # longest antipad chain inside each block; ground: L2 is the only plane, the L1 / L6 ground pieces hang on vias
     s5 = os.path.join(odir, "slots_l5.json")

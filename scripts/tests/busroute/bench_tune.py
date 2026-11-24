@@ -4,7 +4,8 @@
           areas (lane pitch 0.9) and up into the south row of U2 (R1, P1, R2, P2, R3; P1 / P2 through channels).
           The inner lanes are shorter (natural spread 9.4 mm); the three short ones have a site on the east leg
           (Bundle.slot, all starting at station 1.2, humps north): D8 six humps, D9 two humps under D8's, D10 a
-          bump. Spread 4.2: the project's skew rule sdram_lane1 (5 mm) covers exactly these five nets here.
+          bump. Spread 4.2: check.py's skew rule bench_lane1 (5 mm, it wins over the project's sdram_lane1, 20 mm
+          since 2026-11-23) covers exactly these five nets.
           On the east leg D11 runs 0.25 mm south of D10 (the lane pitch of the H743 board: 0.148 mm edge to edge, below
           clr 0.19): D10's bump is drawn all the same, it comes no closer to D11 than the straight it replaces.
   hand    L1, FMC_A0..A3 written by hand (bus.keep) from the north row of U1 over the top to the north row

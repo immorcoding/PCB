@@ -16,10 +16,10 @@
      "why": "user 2026-11-23 (SPEC 9): every address / command line within 20 mm of the clock, the clock summed across R201; the 60 mm cap of sdram_len_max kept"}
   ],
   "fixed": [
-    {"rule": "ltdc_spread_45",
+    {"rule": "ltdc_spread_60",
      "members": "A.NetClass == 'LTDC'",
-     "constraint": "skew (max 45mm)",
-     "why": "user 2026-11-23: LTDC longest minus shortest relaxed from 30 to a working target of 45 mm, replaces ltdc_spread"},
+     "constraint": "skew (max 60mm)",
+     "why": "user 2026-11-23 (SPEC 9): LTDC longest minus shortest <= 60 mm, the electrical value (was 30, then a working target of 45); replaces ltdc_spread"},
     {"rule": "qspi_ncs_no_cap",
      "members": "A.NetName == 'QSPI_BK1_NCS'",
      "constraint": "length (max 1000mm)",

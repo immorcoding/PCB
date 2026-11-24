@@ -41,12 +41,13 @@ GROUPS = {"lane0": ["FMC_D%d" % i for i in range(8)] + ["FMC_NBL0"], "lane1": ["
           "lane2": ["FMC_D%d" % i for i in range(16, 24)] + ["FMC_NBL2"], "lane3": ["FMC_D%d" % i for i in range(24, 32)] + ["FMC_NBL3"],
           "addr": ADDR, "clock": ["FMC_SDCLK", "FMC_SDCLK_R"]}
 YIELD_NETS = ["GND"]
-DRC_IGNORE = {"skew_out_of_range": "2026-11-23 tuning (RTE-15): no byte lane reaches the 5 mm of sdram_lane0-3 with tidy serpentines in the "
-                                   "room the routed board leaves (compact pass 2026-11-23: lane 0 8.75, lane 1 10.17, lane 2 17.52, lane 3 13.30 mm; limiting nets "
-                                   "D7, D9, D19, D26, reported per net in the tuning report); the address / command window "
-                                   "(sdram_addr_window) is met and is not ignored"}
-# ---- stop 6 part B: length tuning of the four byte lanes (RTE-2, RTE-7, RTE-15; SPEC 9: inside a lane longest -
-# shortest <= 5 mm). spread per lane = the window aimed at (5 where the room allows it, see the report for the others);
+# No DRC item is ignored: the byte-lane skew rules sdram_lane0-3 allow 20 mm since 2026-11-23 (user, SPEC 9: the
+# electrical value; skew_out_of_range was ignored here while the rules said 5 mm, which no lane reached), so a lane
+# over 20 mm fails this build. The spreads aimed at (LANE_SPREAD below) are tighter than the rule and stay as tuned.
+DRC_IGNORE = {}
+# ---- stop 6 part B: length tuning of the four byte lanes (RTE-2, RTE-7, RTE-15; SPEC 9 then: inside a lane longest -
+# shortest <= 5 mm; 20 mm since 2026-11-23, the rules sdram_lane0-3, which every spread below meets).
+# spread per lane = the window aimed at (5 where the room allows it, see the report for the others);
 # end / clr / area_gap / keep are the tool's defaults (not yet confirmed by the user, RTE open question).
 # 2026-11-23: the pieces on L6 moved to L3 (SEC). A via L1 - L3 adds 0.2572 mm to a length instead of 1.6504 (L1 - L6), so
 # every net that used L6 is 2.786 mm shorter with its two vias; lane 0 (D0 D1 D4-D7 shortest, D0 has no site) and lane 2

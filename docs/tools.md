@@ -17,7 +17,7 @@
 | 生成等长窗口规则 | `D:\KiCad\bin\python.exe scripts\len_rules.py <工程>.kicad_pcb`（读板目录的 `length_groups.json`，改写 `.kicad_dru` 末尾的生成段）；加 `--check` 只报告是否过期 |
 | 全部工具的回归 | `D:\KiCad\bin\python.exe scripts\regress.py`（跑 `scripts/tests/*/check.py`，PROC-15） |
 | 走线阻抗 | `D:\KiCad\bin\python.exe scripts\impedance.py`（嘉立创 JLC06161H-3313E 上的单端和差分，二维场解；结果是计算值） |
-| H743 板按步骤构建 | `sh stm32h743_sdram/build.sh rules`（工程文件、规则基准板、金丝雀、规则匹配；1.5–3 分钟）。`make_project.py` 还把已有板文件层表里的铜层行改成它的 `LAYERS`（只改这几行，2026-11-23 起 In2.Cu 信号 `L3_SIG`、In4.Cu 电源 `L5_PWR`）；route1 / route2 开头也跑一次 |
+| H743 板按步骤构建 | `sh stm32h743_sdram/build.sh rules`（工程文件、规则基准板、金丝雀、规则匹配、等长窗口；规则匹配逐条跑约 8 分钟，加 `SKIP_DRU_MATCH=1` 跳过它，留给 `finish-checks` 跑一次）。`make_project.py` 还把已有板文件层表里的铜层行改成它的 `LAYERS`（只改这几行，2026-11-23 起 In2.Cu 信号 `L3_SIG`、In4.Cu 电源 `L5_PWR`）；route1 / route2 开头也跑一次 |
 | 铜皮区域草图 | `D:\KiCad\bin\python.exe scripts\cu_sketch.py check <草图> [--board <板>]`，另有 `apply`（按草图写铺铜区，只动它自己建的 `cu:` 开头的区）、`read`（从板读回草图，PWR-7）、`measure`（铜皮那组指标）。草图格式见脚本开头和 `stm32h743_sdram/copper.sketch` |
 | 总线走线（线束、BGA 扇出、蛇形等长） | `D:\KiCad\bin\python.exe scripts\busroute\build.py <走线描述.py> [--fast] [--sketch] [--out 目录] [--write-board]`。默认在 `--out` 下的板子副本上构建，加 `--write-board` 才写真板；`--fast` 只做几何检查（57 根不到 1 秒），完整构建含 DRC、长度、指标、图片（7–14 秒）。描述文件的格式见 `scripts/busroute/job.py` 开头（蛇形：`TUNING` 加补线位置 `Bundle.slot` / `job.slot`，画法和限制在 `scripts/busroute/tune.py` 开头），例子是 `scripts/tests/busroute/bench_routes.py`、`bench_tune.py` |
 | 等长预算（只算不画） | `D:\KiCad\bin\python.exe scripts\busroute\build.py <走线描述.py> --tuning-budget`：每组的目标（组内最长 − 容差 + 余量）、每根的自然长度和要补多少、每个补线位置在摆幅 amp 和 amp_max 时按 RTE-2 的式子能补多少（不查间距），列出容量不够的网络；有不够的退出码 1。读板不写板，基准板上 0.1 秒 |

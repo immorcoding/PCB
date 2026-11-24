@@ -22,7 +22,8 @@ bench_routes.py and expects:
   length verdict    metrics.length_check: a geometry-vs-DRC difference fails only nets with a length rule
 
 Length tuning (tune.py), on the same board with other balls on the nets (TUNE_PADS) and bench_tune.py:
-  plain             the routes without TUNING: DRC reports the lane's skew (rule sdram_lane1, 5 mm) -- the rule is live
+  plain             the routes without TUNING: DRC reports the lane's skew (the bench's rule bench_lane1, 5 mm, which
+                    wins over the project's sdram_lane1, 20 mm since 2026-11-23) -- the rule is live
   budget            --tuning-budget numbers of variant "short": targets, needs, RTE-2 capacities, the one short net
   tune              a 5-lane bundle (3 slots, two start on one line, a bump beside a lane 0.25 mm away), a hand-written route with a
                     double-sided free site, one whose site is short for amp 0.5 (amplitude raised): every group inside
@@ -94,6 +95,10 @@ TUNE_BUDGET = {'lane1': (22.72, {'FMC_D8': (4.9229, [(6, 4.4549, 22.4549)]), 'FM
 OBST = ((21.8, 3.2), (22.6, 3.2))
 TUNE_REF = {'ref': [('FMC_A3', 2, 0.905, 18.3), ('FMC_A2', 1, 0.7371, 21.7), ('FMC_A1', 1, 0.6896, 16.7)],
             'ref+obstacle': [('FMC_A3', 2, 0.905, 18.3), ('FMC_A2', 1, 0.7371, 22.75), ('FMC_A1', 1, 0.6896, 16.7)]}
+# The tuning bench's skew rule (tuning()): the project's sdram_lane1 allows 20 mm, more than the bench lane's natural
+# spread, so the bench carries its own 5 mm rule over the same five nets to prove that tuning meets a live skew rule.
+BENCH_LANE_RULE = ('(rule "bench_lane1"\n  (condition "A.NetName == \'FMC_D8\' || A.NetName == \'FMC_D9\' || A.NetName == \'FMC_D10\''
+                   ' || A.NetName == \'FMC_D11\' || A.NetName == \'FMC_D12\'")\n  (constraint skew (max 5mm)))\n\n')
 # DRC item types that say nothing about the routes on this synthetic board.
 IGNORE = {"lib_footprint_issues": "the two footprints are loaded from library folders, the board has no fp-lib-table",
           "lib_footprint_mismatch": "the BGA pads get solder-mask margin 0 as on the real board, which differs from the library",
@@ -202,6 +207,13 @@ def tuning(tmp, want):
     tt = os.path.join(tmp, "tune")
     os.makedirs(tt)
     make_board(tt, TUNE_PADS)
+    # the bench's own 5 mm skew rule over the five lane nets, after the project's rules so that it wins over
+    # sdram_lane1 (20 mm since 2026-11-23, wider than the natural spread of 8.8 mm here): the plain build must
+    # report it, the tuned one (spread 4.2) must not
+    dru_path = os.path.join(tt, "bench.kicad_dru")
+    dru = open(dru_path, encoding="utf-8").read()
+    i = dru.index(len_rules.BEGIN)
+    open(dru_path, "w", encoding="utf-8", newline="\n").write(dru[:i] + BENCH_LANE_RULE + dru[i:])
     shutil.copy(os.path.join(HERE, "bench_tune.py"), os.path.join(tt, "bench_tune.py"))
     rt = os.path.join(tt, "bench_tune.py")
     quiet = lambda *a: None

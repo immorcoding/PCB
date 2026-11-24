@@ -14,16 +14,62 @@ The SDRAM group's part is route1_report.py's table, unchanged (it reads the same
 Reads <out dir>/<group>/metrics.json of each ROUTE2_GROUPS entry (the group build: lengths as DRC measures them, the
 serpentines). Writes <out dir>/table.txt (the SDRAM part also as table_route1.txt); exit 1 when a hard number is off.
 """
-import collections, contextlib, io, json, os, re, subprocess, sys
+import collections, contextlib, io, json, math, os, re, subprocess, sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(HERE)
 sys.path.insert(0, HERE)
 sys.path.insert(0, os.path.join(ROOT, "scripts"))
 import route1_report as R1                                  # noqa: E402
+from busroute.metrics import LEN_TOL                        # noqa: E402
 
 PAIRS = [("ETH_TX_P", "ETH_TX_N"), ("ETH_RX_P", "ETH_RX_N")]
 PAIR_TYPES = ("diff_pair_gap_out_of_range", "diff_pair_uncoupled_length_too_long", "skew_out_of_range")
+
+
+def explain_length(b, net, diff, tol=0.1):
+    """Why the geometry length of `net` (busroute: every track plus a via height at each layer change of the piece
+    list) differs from DRC's by `diff` mm, or None. Two known causes:
+      - a branch at a via (three or more track ends of the net at one via): the piece list counts a via height once
+        per layer change through it, DRC once per via over the layers it really connects; explained when |diff| is
+        within `tol` of one height between two layers that meet at such a via, or of the sum of two;
+      - track inside the net's pads (docs/tools.md: a bend inside a pad, a track through a pad centre): DRC does not
+        count all of a track's length inside a pad, so DRC is shorter, by less than `tol` and by no more than the
+        tracks' length inside the pad boxes of the net."""
+    import itertools
+    ends = [(t[1], p) for t in b.tracks if t[0] == net and not t[5] for p in (t[2], t[3])]
+    ends += [(a[1], p) for a in b.arc_items if a[0] == net for p in (a[2], a[4])]
+    heights = []
+    for n, pos, dia, _ in b.vias:
+        if n != net:
+            continue
+        at = [lay for lay, p in ends if math.dist(p, pos) <= dia / 2 + 1e-6]
+        if len(at) >= 3:
+            heights += [b.via_height(la, lc) for la, lc in itertools.combinations(sorted(set(at)), 2)]
+    cand = set(heights) | {h1 + h2 for h1, h2 in itertools.combinations_with_replacement(heights, 2)}
+    hit = min(cand, key=lambda h: abs(abs(diff) - h), default=None)
+    if hit is not None and abs(abs(diff) - hit) <= tol:
+        return "过孔处分叉（差 %.4f 对应过孔高度 %.4f，余 %+.4f），只报告" % (diff, hit, abs(diff) - hit)
+    if 0 < diff <= tol:
+        def clip(a, c, box):                    # length of segment a-c inside an axis-aligned box (Liang-Barsky)
+            t0, t1 = 0.0, 1.0
+            d = (c[0] - a[0], c[1] - a[1])
+            for p_, q_ in ((-d[0], a[0] - box[0]), (d[0], box[2] - a[0]), (-d[1], a[1] - box[1]), (d[1], box[3] - a[1])):
+                if abs(p_) < 1e-12:
+                    if q_ < 0:
+                        return 0.0
+                    continue
+                r = q_ / p_
+                if p_ < 0:
+                    t0 = max(t0, r)
+                else:
+                    t1 = min(t1, r)
+            return max(0.0, t1 - t0) * math.hypot(*d)
+        pads = b.net_pads(net)
+        inside = sum(clip(t[2], t[3], p.box) for t in b.tracks if t[0] == net for p in pads)
+        if diff <= inside + 1e-4:
+            return "DRC 短 %.4f，不超过本网络焊盘里的线长 %.3f（DRC 对焊盘里的那段另算，如拐点在焊盘里，tools.md），只报告" % (diff, inside)
+    return None
 
 
 def groups_env():
@@ -201,7 +247,21 @@ def main(board_path, odir):
             "—" if lc.get("max_ruled") is None else "%.4f" % lc["max_ruled"],
             "，".join("%s %+.4f" % kv for kv in (lc.get("notes") or {}).items()) or "无"))
         if lc and not lc.get("ok", True):
-            bad.append("%s length check" % name)
+            # nets with a length rule whose geometry length differs from DRC's: report-only when the difference is
+            # explained (a branch at a via, or a bend inside a pad: both known, DRC judges the rules on its own length);
+            # an unexplained difference fails the table
+            gd = m["length"].get("geometry_minus_drc") or {}
+            notes = lc.get("notes") or {}
+            unexplained = []
+            for n, dv in sorted(gd.items()):
+                if n in notes or abs(dv) <= LEN_TOL:
+                    continue
+                why = explain_length(b, n, dv)
+                A("         %-14s 几何减 DRC %+.4f mm，有长度规则：%s" % (n, dv, why or "原因不明"))
+                if not why:
+                    unexplained.append(n)
+            if unexplained:
+                bad.append("%s length check (%s)" % (name, " ".join(unexplained)))
     # ---- tracks on L4 / L6 over the gaps between the L5 blocks (SPEC 6: L4 and L6 reference the split power plane L5;
     # every line that crosses a gap is listed, nothing is re-routed for it here)
     A("")
