@@ -1,0 +1,10 @@
+(version 1)
+# The spec_check benchmark's rule file: the two rules its SPEC.md refers to.
+
+(rule "bench_lane0"
+  (condition "A.NetName == 'D0' || A.NetName == 'D1' || A.NetName == 'DM0'")
+  (constraint skew (max 1.27mm)))
+
+(rule "bench_via_max"
+  (condition "A.NetName == 'D*' || A.NetName == 'CK'")
+  (constraint via_count (max 3)))

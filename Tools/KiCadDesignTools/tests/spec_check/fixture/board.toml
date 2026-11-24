@@ -1,0 +1,9 @@
+# The spec_check benchmark's board folder (tests/spec_check/check.py copies it into a temp folder and breaks one thing
+# per case). Its SPEC.md has a complete table "本板取值"; the data files hold the same values.
+[board]
+name = "fixture"
+profile = "C"
+template = "C-bga-065"
+
+[layers]
+roles = ["signal", "ground", "signal", "signal", "power", "signal"]

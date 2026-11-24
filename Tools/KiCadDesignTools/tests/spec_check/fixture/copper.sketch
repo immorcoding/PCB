@@ -1,0 +1,9 @@
+# The spec_check benchmark's copper sketch: the parameters and one whole region (no shapes are needed to read them).
+origin 100 100
+planes L2 L5
+gap 0.5
+clearance 0.2
+minwidth 0.2
+
+region L2_GND GND L2 whole
+region L1_GND GND L1 whole minwidth=0.3

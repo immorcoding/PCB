@@ -12,8 +12,9 @@ repository root. Reports go to <out>/<step folder>/, <out> = <board dir>/out unl
               once at the end), length-window rules
   sch         schematic: generate, upgrade, ERC, netlist, PDF (schematic.build); netlist checks (schematic.check);
               kicad-happy review
-  layout      placement (placement.place, place.toml), the line-order sketch on a copy, placement / escape /
-              copper-sketch checks, measured trials (placement.layout_probe, [probe])
+  layout      SPEC.md's table 本板取值 first (project.spec_check; stops on exit 1), placement (placement.place,
+              place.toml), the line-order sketch on a copy, placement / escape / copper-sketch checks, measured trials
+              (placement.layout_probe, [probe])
   copper      placement, pours, the power groups on the board and on the sketch copy, refill, measures, pictures, table
   route       every [[route.group]] stripped, placement, pours, the groups rebuilt in order (--upto GROUP: only up to
               that one), refill, DRC, measures, plane slots, escape check, canary, pictures, placement check, table
@@ -39,6 +40,7 @@ from Tools.KiCadDesignTools.core import config, heavy, paths
 STEPS = ("project", "rules", "sch", "pcb-update", "layout", "copper", "route", "finish", "checks", "publish", "all",
          "compare", "init")
 PROJECT = "Tools.KiCadDesignTools.project.make_project"      # the project file, after every SaveBoard too
+SPEC_CHECK = "Tools.KiCadDesignTools.project.spec_check"     # SPEC.md's table 本板取值 against the profile and the data
 PLACE = "Tools.KiCadDesignTools.placement.place"             # every part from <board dir>/place.toml
 BOARDTEXT = "Tools.KiCadDesignTools.core.boardtext"          # unfill / strip / orphans (text edits of the board file)
 SLOTS = "Tools.KiCadDesignTools.copper.plane_slots"          # plane slots, cut-off vias, feed necks ([copper.slots])
@@ -338,6 +340,12 @@ class Build:
 
     def step_layout(self):
         O, T0 = self.out("layout"), time.time()
+        # PROC-8: the SPEC's 本板取值 complete and in line with the data files before anything is placed
+        SC, data = self.r.py(SPEC_CHECK, self.D, filt=quiet, out=O + "/spec_check.txt")
+        self.pr(data)
+        if SC == 1:
+            print("layout step: stopped, SPEC.md's table 本板取值 is incomplete or disagrees with the data (%s/spec_check.txt)" % O)
+            return 1
         lay = self.cfg.need("layout")
         sk = lay["sketch"]
         SKO = self.D + "/" + sk["out"]

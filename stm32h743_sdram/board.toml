@@ -16,6 +16,7 @@ title = "STM32H743 + SDRAM six-layer test board"
 rev = "A"
 profile = "C"                    # docs/rule-profiles/C-bga-065.md
 template = "C-bga-065"           # templates/C-bga-065: the profile's project file, rule file and six-layer board (RUL-1)
+spec_table = false               # SPEC.md predates the "本板取值" table: spec_check warns instead of failing
 lib = "h743"                     # project symbol and footprint library
 origin = [100.0, 100.0]
 stackup = "JLC06161H-3313E"
