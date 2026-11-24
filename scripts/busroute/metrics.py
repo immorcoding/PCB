@@ -41,9 +41,15 @@ def external(pcb, nets, refill=True, canary=True):
     jobs = [("drc", lambda: dp.run_drc(pcb, refill=refill)), ("probe", lambda: dp.run_drc(pcb, PROBE)), ("shape", shape)]
     if canary and os.path.isfile(os.path.splitext(pcb)[0] + ".kicad_dru"):
         jobs.append(("canary", can))
-    th = [threading.Thread(target=job, args=j) for j in jobs]
-    [t.start() for t in th]
-    [t.join() for t in th]
+    # One after the other: these are three kicad-cli DRC runs plus a pcbnew script; started together on a routed
+    # board they load every core (the PC hard-reset under parallel DRC on 2026-11-23). BUSROUTE_PARALLEL=1 restores it.
+    if os.environ.get("BUSROUTE_PARALLEL") == "1":
+        th = [threading.Thread(target=job, args=j) for j in jobs]
+        [t.start() for t in th]
+        [t.join() for t in th]
+    else:
+        for j in jobs:
+            job(*j)
     if err:
         raise RuntimeError("; ".join(err))
     drc = res["drc"]
