@@ -1,15 +1,20 @@
 """Ground stitching vias of the STM32H743 + SDRAM board (finish.py stitch / pieces; stop 8, FIN-4 step 1).
 
-Ground has one plane (L2); the L1 and L6 ground pours hang on vias. This adds 0.45 / 0.2 through vias of GND:
-  1. every pour piece (L1 or L6) of at least PIECE_MIN mm2 that is held by fewer than two vias / through-hole ground
-     pads gets one at the legal point farthest from its existing anchor (the end of a finger);
-  2. then greedy coverage: every point of the two ground pours should lie within D of a ground via (anchor), D = D_OPEN
+Ground has one plane (L2); the ground pours of L1, L6 and (since 2026-11-24, finish_pour.py) of the inner signal layers
+L3 / L4 hang on vias. This adds 0.45 / 0.2 through vias of GND:
+  1. every pour piece (L1, L3, L4 or L6) of at least PIECE_MIN mm2: a long thin one (longer than LONG, mean width
+     area / length under THIN) gets one within END_R of each of its two ends (the farthest pair of its points) where
+     none is; then one held by fewer than two vias / through-hole ground pads gets one at the legal point farthest
+     from its existing anchor (the end of a finger);
+  2. then greedy coverage: every point of the ground pours should lie within D of a ground via (anchor), D = D_OPEN
      in open pour, D_DENSE within EDGE_BAND of the board edge and in the DENSE boxes (Ethernet, audio, the two
      switching regulators), D_RIM along a pour piece's rim; the candidate that covers the most uncovered pour is
      taken until no candidate covers MIN_GAIN mm2.
+A piece (or a long piece's end) where no legal site is found is listed in stitch.txt ("no legal site"); `finish.py
+clean <board> <out> anchor` then takes an inner piece that nothing holds away with a keep-out.
 A candidate point is legal when (all measured on a raster of 0.05 mm, from KiCad's saved fill):
-  - its via (r 0.225) lies inside the GND fill of L1 or of L6 with GND_IN of fill round it, and on L1 and L6 no copper
-    of another net within r + OUTER (pour clearance) where it is not in the GND fill;
+  - its via (r 0.225) lies inside the GND fill of L1, L3, L4 or L6 with GND_IN of fill round it, and on L1 and L6 no
+    copper of another net within r + OUTER (pour clearance) where it is not in the GND fill;
   - on L3 / L4 (signal layers) no copper of another net within r + LANE (so it does not take a lane);
   - on L5 it lies inside a power fill with r + L5_WEB of fill round it (no notch in a block edge, no chain with other
     vias' antipads) and outside the two BGA feed tongues (FEED_KEEP);
@@ -31,6 +36,8 @@ D_OPEN, D_DENSE, D_RIM = 4.0, 3.0, 3.5
 EDGE_BAND = 4.0
 MIN_GAIN = 6.0                             # mm2 of uncovered pour a new via must cover
 PIECE_MIN = 1.5                            # mm2: smaller pieces are left as they are (listed)
+LONG, THIN, END_R = 5.0, 2.5, 2.5          # longer than LONG with a mean width under THIN: long and thin, a via
+                                           # within END_R of each end
 GRID = 0.5                                 # candidate grid (mm)
 # local mm boxes (x0, y0, x1, y1)
 DENSE = {"Ethernet": (0, 37, 32, 62), "audio": (0, 0, 36, 34), "buck 3.3 V": (62, 27, 85, 39),
@@ -108,7 +115,7 @@ def scene(path):
     for k, lid in enumerate(ids):
         gnd[k], foreign[k] = R.new(), R.new()
         draw_g[k], draw_f[k] = ImageDraw.Draw(gnd[k]), ImageDraw.Draw(foreign[k])
-    pieces = {0: [], 5: []}                      # GND pour pieces on L1 / L6: list of point lists (px)
+    pieces = {0: [], 2: [], 3: [], len(ids) - 1: []}   # GND pour pieces on L1, L3, L4, L6: list of point lists (px)
     l5 = R.new(); d5 = ImageDraw.Draw(l5)
     for z in b.Zones():
         if z.GetIsRuleArea():
@@ -174,8 +181,9 @@ def scene(path):
                 hr = max(mm(p.GetDrillSize().x), mm(p.GetDrillSize().y)) / 2
                 c = Pp(q)
                 dp.ellipse([c[0] - hr * RES, c[1] - hr * RES, c[0] + hr * RES, c[1] + hr * RES], fill=1)
-                if p.GetNetname() == "GND":
-                    anchors_pad.append((mm(q.x) - OX, mm(q.y) - OY, ref + "." + p.GetNumber()))
+                if p.GetNetname() == "GND":           # with its reach: the fill meets it by thermal spokes
+                    sz = p.GetSize(pcbnew.F_Cu)
+                    anchors_pad.append((mm(q.x) - OX, mm(q.y) - OY, ref + "." + p.GetNumber(), max(mm(sz.x), mm(sz.y)) / 2 + 0.3))
         for lay in (pcbnew.F_CrtYd, pcbnew.B_CrtYd):
             cy = fp.GetCourtyard(lay)
             for i in range(cy.OutlineCount()):
@@ -236,7 +244,11 @@ def legal_mask(S, xtal_box=True):
     L6 = S["nlayers"] - 1
     ok = erode(S["inside"], EDGE)
     in1, in6 = erode(g1, R_VIA + GND_IN), erode(g6, R_VIA + GND_IN)
-    ok &= in1 | in6
+    inner = np.zeros_like(in1)
+    for k in S["pieces"]:
+        if k not in (0, L6):
+            inner |= erode(S["gnd"][k], R_VIA + GND_IN)
+    ok &= in1 | in6 | inner
     for k in (0, L6):                                          # outer layers: clear of other nets where not in own pour
         gin = in1 if k == 0 else in6
         ok &= gin | ~dilate(f[k], R_VIA + OUTER)
@@ -292,22 +304,40 @@ def piece_masks(S, k):
 
 def anchors(S):
     a = [(x, y) for x, y, r, dr, net in S["vias"] if net == "GND"]
-    return a + [(x, y) for x, y, ref in S["anchors_pad"]]
+    return a + [(x, y) for x, y, ref, reach in S["anchors_pad"]]
+
+
+def anchors_reach(S):
+    """[(x, y, reach)]: ground vias (0) and through-hole ground pads (the pad's half size + 0.3: thermal spokes)"""
+    return [(x, y, 0.0) for x, y, r, dr, net in S["vias"] if net == "GND"] + [(x, y, reach) for x, y, ref, reach in S["anchors_pad"]]
+
+
+def in_piece(m, x, y, R, reach=0.0):
+    """Does piece mask m hold (x, y), or with reach any point within that square round it?"""
+    px, py = int(round((x - R.x0) * RES)), int(round((y - R.y0) * RES))
+    k = int(math.ceil(reach * RES))
+    y0, y1, x0, x1 = max(0, py - k), min(m.shape[0], py + k + 1), max(0, px - k), min(m.shape[1], px + k + 1)
+    return y1 > y0 and x1 > x0 and bool(m[y0:y1, x0:x1].any())
+
+
+def ends_of(m, R):
+    """The two far ends of a piece (the point farthest from its centroid, then the one farthest from that), length."""
+    ys, xs = np.nonzero(m)
+    X, Y = xs / RES + R.x0, ys / RES + R.y0
+    i = int(np.argmax((X - X.mean()) ** 2 + (Y - Y.mean()) ** 2))
+    j = int(np.argmax((X - X[i]) ** 2 + (Y - Y[i]) ** 2))
+    return (float(X[i]), float(Y[i])), (float(X[j]), float(Y[j])), float(math.hypot(X[j] - X[i], Y[j] - Y[i]))
 
 
 def piece_table(S):
     """[(layer index, piece index, area mm2, anchors inside, bbox, mask)]"""
     R = S["R"]
-    A = anchors(S)
+    A = anchors_reach(S)
     rows = []
-    for k in (0, S["nlayers"] - 1):
+    for k in sorted(S["pieces"]):
         for i, m in enumerate(piece_masks(S, k)):
             area = m.sum() / RES / RES
-            n = 0
-            for x, y in A:
-                px, py = int(round((x - R.x0) * RES)), int(round((y - R.y0) * RES))
-                if 0 <= py < m.shape[0] and 0 <= px < m.shape[1] and m[py, px]:
-                    n += 1
+            n = sum(1 for x, y, reach in A if in_piece(m, x, y, R, reach))
             ys, xs = np.nonzero(m)
             bb = (xs.min() / RES + R.x0, ys.min() / RES + R.y0, xs.max() / RES + R.x0, ys.max() / RES + R.y0) if len(xs) else (0, 0, 0, 0)
             rows.append((k, i, area, n, bb, m))
@@ -317,7 +347,7 @@ def piece_table(S):
 def pieces_report(path, out, name):
     S = scene(path)
     rows = piece_table(S)
-    lines = ["GND pour pieces of %s (L1 / L6): layer, area mm2, ground anchors (vias and through-hole ground pads), bbox local mm" % os.path.basename(path)]
+    lines = ["GND pour pieces of %s (L1, L3, L4, L6): layer, area mm2, ground anchors (vias and through-hole ground pads), bbox local mm" % os.path.basename(path)]
     hist = {}
     for k, i, area, n, bb, m in rows:
         L = "L%d" % (k + 1)
@@ -357,17 +387,19 @@ def main(path, out, pieces_only=False):
     R = S["R"]
     ok, X, Y = legal_mask(S)
     L6 = S["nlayers"] - 1
+    PL = sorted(S["pieces"])                                   # the pour layers: L1, L3, L4, L6
     pour = S["gnd"][0] & ~dilate(S["ko"], 0) | S["gnd"][L6]
     D = dense_radius(X, Y, S["inside"])
     # rim of every piece (within 0.5 mm of its edge) asks for D_RIM where that is tighter
-    rim = (S["gnd"][0] & ~erode(S["gnd"][0], 0.5)) | (S["gnd"][L6] & ~erode(S["gnd"][L6], 0.5))
+    rim = np.zeros_like(pour)
+    for k in PL:
+        rim |= S["gnd"][k] & ~erode(S["gnd"][k], 0.5)
     D = np.where(rim, np.minimum(D, D_RIM), D)
     step = int(round(0.5 * RES))
     samp = np.zeros_like(pour); samp[::step, ::step] = True
-    s1 = samp & S["gnd"][0]
-    s6 = samp & S["gnd"][L6]
-    sy = np.concatenate([np.nonzero(s1)[0], np.nonzero(s6)[0]])
-    sx = np.concatenate([np.nonzero(s1)[1], np.nonzero(s6)[1]])
+    sl = [samp & S["gnd"][k] for k in PL]
+    sy = np.concatenate([np.nonzero(a)[0] for a in sl])
+    sx = np.concatenate([np.nonzero(a)[1] for a in sl])
     SX, SY = sx / RES + R.x0, sy / RES + R.y0
     SD = D[sy, sx]
     A = anchors(S)
@@ -380,28 +412,47 @@ def main(path, out, pieces_only=False):
     cy, cx = np.nonzero(ok & cm)
     CX, CY = cx / RES + R.x0, cy / RES + R.y0
     alive = np.ones(len(CX), dtype=bool)
-    added, why = [], []
+    added, why, stuck = [], [], []
 
     def take(i, reason):
         x, y = float(round(CX[i], 3)), float(round(CY[i], 3))
         added.append((x, y)); why.append(reason)
         cov[:] |= (SX - x) ** 2 + (SY - y) ** 2 <= SD ** 2
         alive[(CX - x) ** 2 + (CY - y) ** 2 < GND_SPACING ** 2] = False
-    # 1. pieces with fewer than two anchors
+    AR = anchors_reach(S)
+    # 1. long thin pieces: a via near each end; then pieces with fewer than two anchors
     for k, i, area, n, bb, m in piece_table(S):
-        if n >= 2 or area < PIECE_MIN:
+        if area < PIECE_MIN:
+            continue
+        held = lambda: [(x, y) for x, y, reach in AR if in_piece(m, x, y, R, reach)] + [(x, y) for x, y in added if in_piece(m, x, y, R)]
+        e0, e1, length = ends_of(m, R)
+        if length > LONG and area / length < THIN:
+            for ex, ey in (e0, e1):
+                if any(math.hypot(x - ex, y - ey) <= END_R for x, y in held()):
+                    continue
+                inside = alive & m[cy, cx]
+                d = (CX - ex) ** 2 + (CY - ey) ** 2
+                if inside.any() and d[inside].min() <= (length / 2) ** 2:
+                    j = int(np.argmin(np.where(inside, d, np.inf)))
+                    take(j, "end of long piece L%d #%d (%.1f mm long, %.1f mm2; end (%.2f, %.2f), %.2f mm away)" % (
+                        k + 1, i, length, area, ex, ey, math.sqrt(d[j])))
+                else:
+                    stuck.append("L%d #%d (%.1f mm2, %.1f mm long): none near its end (%.2f, %.2f)" % (k + 1, i, area, length, ex, ey))
+        pts = held()
+        if len(pts) >= 2:
             continue
         inside = alive & m[cy, cx]
         if not inside.any():
+            if not pts:
+                stuck.append("L%d #%d (%.1f mm2) at (%.2f, %.2f)-(%.2f, %.2f): no anchor" % (k + 1, i, area, *bb))
             continue
-        pts = [(x, y) for x, y in A if m[int(round((y - R.y0) * RES)), int(round((x - R.x0) * RES))]] + added
         if pts:
             dist = np.min([(CX - x) ** 2 + (CY - y) ** 2 for x, y in pts], axis=0)
         else:
             dist = np.zeros(len(CX))
         j = int(np.argmax(np.where(inside, dist, -1)))
-        if n == 0 or dist[j] >= 1.5 ** 2:
-            take(j, "piece L%d #%d (%.1f mm2, %d anchor%s)" % (k + 1, i, area, n, "" if n == 1 else "s"))
+        if not pts or dist[j] >= 1.5 ** 2:
+            take(j, "piece L%d #%d (%.1f mm2, %d anchor%s)" % (k + 1, i, area, len(pts), "" if len(pts) == 1 else "s"))
     # 2. greedy coverage (lazy: a candidate's gain only falls as vias are added)
     import heapq
     if pieces_only:
@@ -445,10 +496,16 @@ def main(path, out, pieces_only=False):
     total = len(SX)
     with open(os.path.join(out, "stitch2.txt" if pieces_only else "stitch.txt"), "w", encoding="utf-8") as f:
         f.write("ground stitching vias added: %d (0.45 / 0.2, F.Cu-B.Cu)\n" % len(added))
-        f.write("pour sample points (0.5 mm grid, L1 + L6): %d; within reach of a ground via before %.1f %%, after %.1f %%\n"
-                % (total, 100.0 * cov0.sum() / total, 100.0 * cov.sum() / total))
-        f.write("rule areas avoided: %s\n" % ", ".join(sorted(set(S["areas"]))))
+        f.write("pour sample points (0.5 mm grid, %s): %d; within reach of a ground via before %.1f %%, after %.1f %%\n"
+                % (" + ".join("L%d" % (k + 1) for k in PL), total, 100.0 * cov0.sum() / total, 100.0 * cov.sum() / total))
+        names = sorted(set(S["areas"]))
+        f.write("rule areas avoided: %s%s\n" % (", ".join(n for n in names if not n.startswith(("FIN_KO_", "FIN_TUNE_"))),
+                "; %d serpentine keep-outs (FIN_TUNE_*), %d clean-up keep-outs (FIN_KO_*)" % (
+                    sum(1 for n in names if n.startswith("FIN_TUNE_")), sum(1 for n in names if n.startswith("FIN_KO_")))))
         for (x, y), w in zip(added, why):
             f.write("  (%.3f, %.3f)  %s\n" % (x, y, w))
-    print("stitch%s: %d ground vias added; pour within reach of a ground via %.1f %% -> %.1f %% (%s)" % (" (second pass, pieces)" if pieces_only else "", len(added), 100.0 * cov0.sum() / total, 100.0 * cov.sum() / total,
+        for l in stuck:
+            f.write("  no legal site: %s\n" % l)
+    print("stitch%s: %d ground vias added; pour within reach of a ground via %.1f %% -> %.1f %%; no legal site: %d (%s)" % (
+          " (second pass, pieces)" if pieces_only else "", len(added), 100.0 * cov0.sum() / total, 100.0 * cov.sum() / total, len(stuck),
           os.path.join(out, "stitch2.txt" if pieces_only else "stitch.txt")))

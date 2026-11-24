@@ -1,8 +1,16 @@
-"""Finishing of the STM32H743 + SDRAM board (stop 8, FIN-1 to FIN-4): fiducials, ground stitching vias, silkscreen,
-teardrops. Run by `sh stm32h743_sdram/build.sh finish` after route2; every sub-step is repeatable (strip first).
+"""Finishing of the STM32H743 + SDRAM board (stop 8, FIN-1 to FIN-4): fiducials, inner ground pours and their clean-up
+(finish_pour.py), ground stitching vias, silkscreen, teardrops. Run by `sh stm32h743_sdram/build.sh finish` after
+route2; every sub-step is repeatable (strip first).
 
     D:\\KiCad\\bin\\python.exe stm32h743_sdram\\finish.py strip      <board>                remove what finish wrote last time
     D:\\KiCad\\bin\\python.exe stm32h743_sdram\\finish.py fiducials  <board>                three fiducials and their keep-outs
+    D:\\KiCad\\bin\\python.exe stm32h743_sdram\\finish.py pours      <board> <out>          L3 / L4 ground pours and the pour keep-outs
+    D:\\KiCad\\bin\\python.exe stm32h743_sdram\\finish.py clean      <refilled board> <out> shape|anchor   keep-outs over narrow
+                                                                          ground copper and small pieces (shape, before the stitching) or
+                                                                          over inner pieces no via holds (anchor, after it); exit 10:
+                                                                          some were added, refill again
+    D:\\KiCad\\bin\\python.exe stm32h743_sdram\\finish.py report     <refilled board> <out> <name>   pour pieces, narrow copper,
+                                                                          return paths over the L5 gaps
     D:\\KiCad\\bin\\python.exe stm32h743_sdram\\finish.py stitch     <refilled board> <out>  ground stitching vias (text write)
     D:\\KiCad\\bin\\python.exe stm32h743_sdram\\finish.py pieces     <refilled board> <out> <name>   GND pour pieces and their vias
     D:\\KiCad\\bin\\python.exe stm32h743_sdram\\finish.py silk       <board> <out>          references to Fab, labels, icons, title
@@ -126,11 +134,12 @@ def strip(path):
     silk = (pcbnew.F_SilkS, pcbnew.B_SilkS)
     old = [d for d in b.GetDrawings() if d.GetLayer() in silk]
     fps = [fp for fp in b.GetFootprints() if fp.GetReference().startswith("FID")]
-    zones = [z for z in b.Zones() if (z.GetIsRuleArea() and z.GetZoneName().startswith("FIN_")) or z.IsTeardropArea()]
+    # FIN_: the fiducials' and the pours' keep-outs and the inner ground pours (finish_pour.py)
+    zones = [z for z in b.Zones() if z.GetZoneName().startswith("FIN_") or z.IsTeardropArea()]
     for item in old + fps + zones:
         b.Remove(item)
     save_board(b, path)
-    print("strip: %d stitching vias, %d silkscreen drawings, %d fiducials, %d keep-outs / teardrop areas removed; teardrops off on %d pads / vias"
+    print("strip: %d stitching vias, %d silkscreen drawings, %d fiducials, %d pours / keep-outs / teardrop areas removed; teardrops off on %d pads / vias"
           % (nv, len(old), len(fps), len(zones), nt))
 
 
@@ -202,6 +211,15 @@ if __name__ == "__main__":
         strip(sys.argv[2])
     elif cmd == "fiducials":
         fiducials(sys.argv[2])
+    elif cmd == "pours":
+        import finish_pour
+        finish_pour.pours(sys.argv[2], sys.argv[3])
+    elif cmd == "clean":
+        import finish_pour
+        sys.exit(10 if finish_pour.clean(sys.argv[2], sys.argv[3], sys.argv[4] if len(sys.argv) > 4 else "anchor") else 0)
+    elif cmd == "report":
+        import finish_pour
+        finish_pour.report(sys.argv[2], sys.argv[3], sys.argv[4])
     elif cmd == "stitch":
         import finish_stitch
         finish_stitch.main(sys.argv[2], sys.argv[3], pieces_only="--pieces" in sys.argv)

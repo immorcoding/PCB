@@ -29,6 +29,7 @@
 | 出线通道（LAY-2） | `D:\KiCad\bin\python.exe scripts\escape_check.py <板> --ref U1 [--ref ...] [--window x0 y0 x1 y1] [--debug U1.A1 <png>]`：每个焊盘单独查能否走出去（到窗口边、到同网络的别的器件、电源网络能否打孔），最多两个过孔；不算容量。两颗 BGA 加 40 mm 窗口约 15 秒 |
 | H743 板布局一步 | `sh stm32h743_sdram/build.sh layout`（摆位 → 线序草图重建 → 上面两个检查 → 铜皮草图检查 → `layout_probe.py` 的实测试走；约 70 秒） |
 | H743 板走线二一步 | `sh stm32h743_sdram/build.sh route2`（route1 的全部，再按 `build.sh` 里 `ROUTE2_GROUPS` 的顺序把各组局部走线写入真板（`LOCAL_BOARD`=真板，`--write-board`），填充、DRC、布局检查，`route2_report.py` 出一张表 `out/route2/table.txt`：每个走线描述文件一行、以太网差分对、布局和铜皮草图，后面接 route1 的 SDRAM 表；约 4–5 分钟）。加一组 = 在 `ROUTE2_GROUPS` 加一行“组名 文件名”，描述文件从 `LOCAL_BOARD` 读板。平面开槽量 L2、L5（总线窗口 `slots.json`，L5 全板每块 `slots_l5.json`），外层地铺铜每块有没有地过孔 `pour_islands.txt`；图：信号层 L1 / L3 / L4 / L6，平面 `L2_planes.png`、`L5_planes.png`、`L5_board.png` |
+| H743 板收尾一步 | `sh stm32h743_sdram/build.sh finish`（route2 之后，可重复：剥掉上次收尾写的东西 → 光学定位点 → L3 / L4 铺地和禁止铺铜区（`finish_pour.py`：两颗 BGA 的规则区；每块蛇形外扩 0.5 mm，蛇形从板上的圆弧找，只有 `tune.py` 写圆弧）→ 窄铜和小碎片加禁止铺铜区（`finish.py clean <板> <目录> shape`，最多两轮）→ 缝合地过孔两轮（L1、L3、L4、L6 的每片；长条两端各一个）→ 没处放过孔的内层碎片加禁止铺铜区（`clean ... anchor`）→ 铜皮报告 `pours_after.txt`（每层碎片、最窄、窄条、L4 / L6 在 L5 块缝上的线旁边有没有地）→ 阻焊和丝印 → 泪滴 → 带原理图一致性的 DRC、金丝雀、渲染图；约 8.5 分钟，2026-11-24 实测 496 s）。整步低优先级跑：`cmd //c "start /low /affinity F /wait /b sh stm32h743_sdram/build.sh finish"`。`FINISH_BOARD=<副本>` 在副本上跑：副本目录里要有同名的 `.kicad_pro`、`.kicad_dru`，查原理图一致性还要原理图和库表；这时不看锁文件、不重写工程文件 |
 | H743 板电源与铜皮一步 | `sh stm32h743_sdram/build.sh copper`（摆位 → 铺铜区 → `routes_power.py`（BGA 区外）和 `routes_power_bga.py`（两颗 BGA 的电源球、背面去耦）写真板 → 填充 → 同样两组写线序草图副本、填充、平面开槽（U31）→ 出线检查 → 图 → `out/copper/table.txt`；约 3.5 分钟） |
 | 原理图构建并检查 | `sh scripts/sch_build.sh <工程目录> <输出目录>`（生成 → 升级到 KiCad 10 格式 → ERC → 网表 → PDF） |
 | H743 板的原理图 | `sh stm32h743_sdram/build.sh sch`（上一行，加网表对意图、对 `pins.csv`、对 `swap.csv` 的检查和 kicad-happy 审查；约 15 秒）；单独试一页：`sh stm32h743_sdram/sch/try_page.sh <输出目录> <页名>` |
@@ -111,12 +112,15 @@
 - **KiCad 的 `power` 库没有 `+3V3A`**（有 `+3V3`、`+3.3VA`）：H743 板在工程符号库里放了一个改名的副本。电源符号的网络名取自它的 Value。
 - **读写板子时网络会被旧的铺铜填充带偏**：过孔落在别的网络的旧填充里、自己那块铜上又没有本网络的焊盘时，`LoadBoard` / `SaveBoard` 会把它改成填充的网络（加在旧 GND 填充里的 `+5V` 过孔存出来是 GND）。脚本往板上加铜之前先清填充（`zone.UnFill()`），`cu_sketch.py apply` 就是这么做的。
 - **规则文件里的 `zone_connection` 压过铺铜区自己的焊盘连接设置**（10.0.8 实测：区设成花焊盘、全连接、不连接，填充结果相同）。
-- **孤岛的判定只看焊盘**：一块填充所在的铜上没有焊盘就算孤岛，只有过孔不算；“总是移除孤岛”只在同一个区另有连通的块时才删。
+- **孤岛按连通判定，不是只看焊盘**（2026-11-24 在 H743 板上实测修正；这里以前写“只有过孔不算”）：一块填充经过本网络的过孔、线、别的铜皮能连到焊盘就不算孤岛。L1 上一块 7.8 mm²、只有一个缝合地过孔（过孔连到 L2 整层地）的碎片在“总是移除”下留着；内层铺地里带地过孔的块 DRC 不报 `isolated_copper`，一个过孔都没有的块才报。所以内层铺地用“总是移除”会把没有过孔的块全删掉，缝合过孔来不及接；用按面积移除（`ISLAND_REMOVAL_MODE_AREA`，`SetMinIslandArea` 的单位是 nm²，2 mm² 写 `int(2e12)`）只删小于门槛的无连接块；有过孔连着的小块哪种模式都不删，要脚本去（`finish_pour.py` 的 `clean`）。“总是移除”只在同一个区另有连通的块时才删。
 - **新建 `ZONE()` 的默认值**：间距 0.5 mm、最小宽度 0.25 mm、花焊盘间隙和辐条 0.5 mm、移除孤岛。脚本建区要逐项写明。
 - **`kicad-cli` 的 DRC 报告最多列 499 条未连接**：没布线的板子上别从报告里数某一组的未连接（H743 板 pcbnew 数出来是 633 条）。
 - **KiCad 10 的板文件里走线和过孔按网络名记**（没有网络表），可以当文本增删；`busroute` 就是这样写板的，其余内容逐字节不变。
 - **规则区内 0.30 / 0.15 的过孔，中心距至少 0.425 mm**：卡住的是孔到铜（0.075 + 0.15 + 0.2），不是焊盘间距。
 - **`pcbnew` 的 `GetLayerName` 返回的是自定义层名**（`L2_GND`），文件里是 `In1.Cu`。
+- **route2 不剥收尾写的铺铜区和禁止铺铜区**（`FIN_` 开头：L3 / L4 铺地、蛇形和碎铜的禁止区、光学定位点的禁止区）：route2 的填充和表里会带着上一次收尾的内层铺地和旧位置的禁止区（缝合过孔被当无主铜删了，内层铺地的块会报 `isolated_copper`）。route2 之后总要再跑 `finish`，它先全部剥掉再按新走线重做。
+- **pcbnew 的 `FromMM` 不收 `numpy.float64`**（报 `TypeError`）：从 numpy 数组算出来的坐标先 `float()`。
+- **Bash 工具的前台命令过 3 分钟会被自动移到后台**（输出管到 `tail` 时文件里一直是空的，结束才有）：`build.sh finish` 这类长步骤照样只跑一个、等它结束的通知再动下一步，不要以为它停了又起一个。
 - **`kicad-cli` 的控制台输出不是 UTF-8**：`subprocess.run(..., text=True)` 会在读线程里解码出错，按字节取。
 - **`place.py` 这类脚本里 `board.Remove()` 要放在所有读取之后**：第二次运行时先删旧板框再遍历铺铜区会段错误（上面那条 pcbnew 的坑的又一例）。
 - **工程文件已存在时 `SaveBoard` 照样重写 `.kicad_pro`**：填进 pcbnew 的默认值、重排网络类（规则值不变）。H743 板的工程文件由 `make_project.py` 生成，`place.py` 存板前读下工程文件的字节、存完写回（2026-11-21）。

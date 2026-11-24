@@ -84,10 +84,16 @@ def main(argv):
         for g in range(int(y0 // 5 * 5), int(y1) + 1, 5):
             d.line([X(x0, g), X(x1, g)], fill=(232, 232, 232)); d.text(X(x0, g + 0.1), str(g), fill=(160, 160, 160), font=font)
         nets = []
+        def in_window(z):                                        # the legend names only the zones the picture shows
+            if not win:
+                return True
+            bb = z.GetFilledPolysList(layer).BBox()
+            return bb.GetWidth() > 0 and mm(bb.GetLeft()) - OX < x1 and mm(bb.GetRight()) - OX > x0 and \
+                mm(bb.GetTop()) - OY < y1 and mm(bb.GetBottom()) - OY > y0
         zones = sorted((z for z in b.Zones() if not z.GetIsRuleArea() and z.IsOnLayer(layer)), key=lambda z: z.GetAssignedPriority())
         for z in zones:
             c = colour(z.GetNetname())
-            if z.GetNetname() not in nets:
+            if z.GetNetname() not in nets and not z.IsTeardropArea() and in_window(z):   # teardrops drawn, not named
                 nets.append(z.GetNetname())
             f = z.GetFilledPolysList(layer)
             f = pcbnew.SHAPE_POLY_SET(f)
@@ -95,15 +101,16 @@ def main(argv):
             for i in range(f.OutlineCount()):
                 o = f.Outline(i)
                 d.polygon([P(o.CPoint(k)) for k in range(o.PointCount())], fill=c + (150,))
-        for z in b.Zones():                                     # rule areas
-            if z.GetIsRuleArea() and z.GetZoneName():
+        for z in b.Zones():                                     # rule areas of this layer; pour keep-outs (FIN_) in red
+            if z.GetIsRuleArea() and z.GetZoneName() and z.IsOnLayer(layer):
                 o = z.Outline().Outline(0)
                 pts = [P(o.CPoint(k)) for k in range(o.PointCount())]
+                ink = (220, 0, 0) if z.GetZoneName().startswith("FIN_") and not z.GetZoneName().startswith("FIN_FID") else (0, 0, 0)
                 for a, c2 in zip(pts, pts[1:] + pts[:1]):
                     n = int(max(abs(a[0] - c2[0]), abs(a[1] - c2[1])) / 8) + 1
                     for k in range(0, n, 2):
                         d.line([(a[0] + (c2[0] - a[0]) * k / n, a[1] + (c2[1] - a[1]) * k / n),
-                                (a[0] + (c2[0] - a[0]) * (k + 1) / n, a[1] + (c2[1] - a[1]) * (k + 1) / n)], fill=(0, 0, 0), width=1)
+                                (a[0] + (c2[0] - a[0]) * (k + 1) / n, a[1] + (c2[1] - a[1]) * (k + 1) / n)], fill=ink, width=1)
         for f in b.GetFootprints():
             for p in f.Pads():
                 if not p.IsOnLayer(layer):
@@ -119,6 +126,11 @@ def main(argv):
             if t.Type() == pcbnew.PCB_VIA_T:
                 c, r = P(t.GetPosition()), mm(t.GetWidth(pcbnew.F_Cu)) / 2 * sc
                 d.ellipse([c[0] - r, c[1] - r, c[0] + r, c[1] + r], fill=(255, 255, 255), outline=colour(t.GetNetname()) if t.GetNetname() != "GND" else (40, 90, 40), width=2)
+            elif t.GetLayer() == layer and t.Type() == pcbnew.PCB_ARC_T:     # serpentine arcs as arcs, not chords
+                import finish_pour
+                s_, m_, e_ = t.GetStart(), t.GetMid(), t.GetEnd()
+                pts = finish_pour.arc_pts((mm(s_.x), mm(s_.y)), (mm(m_.x), mm(m_.y)), (mm(e_.x), mm(e_.y)), 12)
+                d.line([X(x - OX, y - OY) for x, y in pts], fill=colour(t.GetNetname()) + (255,), width=max(1, int(mm(t.GetWidth()) * sc)))
             elif t.GetLayer() == layer:
                 d.line([P(t.GetStart()), P(t.GetEnd())], fill=colour(t.GetNetname()) + (255,), width=max(1, int(mm(t.GetWidth()) * sc)))
         for dr in b.GetDrawings():
@@ -160,7 +172,7 @@ def main(argv):
             d.rectangle([tx, ty + 2, tx + 12, ty + 14], fill=colour(n))
             d.text((tx + 15, ty), n, fill=(0, 0, 0), font=font)
             tx += wn
-        d.text((6, ty + 18), "vias: rings in the net colour (ground dark green); BGA rule areas dashed; grid 5 mm, local coordinates"
+        d.text((6, ty + 18), "vias: rings in the net colour (ground dark green); rule areas of the layer dashed, pour keep-outs red; grid 5 mm, local coordinates"
                + ("; via labels: net name, FMC_ left out" if via_labels else ""), fill=(90, 90, 90), font=font)
         for k, s in enumerate(marked):
             (ax, ay), (cx, cy) = s["ends"]

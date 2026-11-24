@@ -24,8 +24,9 @@
 
 origin 100 100
 # Layer order signal / ground / signal / signal / power / signal (user 2026-11-23, SPEC 6): L2 the only ground
-# plane, L5 the power plane with the five blocks (they were on L3 until 2026-11-23, same shapes), L3 a signal layer
-# with no pour.
+# plane, L5 the power plane with the five blocks (they were on L3 until 2026-11-23, same shapes), L3 and L4 signal
+# layers. Their ground pours are not drawn here: the finishing step makes them (finish_pour.py, user 2026-11-24), after
+# the routing, with keep-outs over the two BGA via fields and over every serpentine the route2 groups wrote.
 planes L2 L5
 gap 0.5                   # L5: distance between blocks of different nets (PWR-8)
 clearance 0.2             # outer layers: local pour to anything else (user 2026-11-21, U33)
