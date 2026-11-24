@@ -10,6 +10,8 @@
 #                                                   silkscreen, teardrops, final checks
 #   sh stm32h743_sdram/build.sh finish-checks       stop 8: rules that match nothing (dru_match, 30-40 min), once
 #                                                   (after route2; FINISH_BOARD=<copy> runs it on a copy)
+#   sh stm32h743_sdram/build.sh publish             release pictures with net names into stm32h743_sdram/publish/
+#                                                   (publish.py; reads a copy of the board, about 15 minutes)
 # Later stages add their steps here (schematic, sketches, placement, copper, routing).
 set -e
 D=$(cd "$(dirname "$0")" && pwd); R=$(dirname "$D"); N=stm32h743_sdram
@@ -346,6 +348,13 @@ finish-checks)
   $PY "$R/scripts/dru_match.py" "$D/$N.kicad_pcb" --json "$O/dru_match.json" > "$O/dru_match.txt" 2>&1 || true
   tail -1 "$O/dru_match.txt"
   echo "finish-checks step: $(( $(date +%s) - T0 )) s"
+  ;;
+publish)
+  # release pictures (per layer, close-ups, layers stacked) with net names; publish.py copies the board to
+  # out/publish_work/ and runs every heavy command itself, one at a time, at low priority on four cores, 20 s apart
+  T0=$(date +%s)
+  $PY "$D/publish.py" --rest 20 2>&1 | quiet
+  echo "publish step: $(( $(date +%s) - T0 )) s"
   ;;
 *) echo "unknown step: $STEP"; exit 2 ;;
 esac
