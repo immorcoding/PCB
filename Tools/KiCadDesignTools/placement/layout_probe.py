@@ -9,8 +9,8 @@ not counting the escape inside the BGA); they decide whether a part is close eno
 
   rails      every pad of a copper-class net that has drawn regions in the sketch: does a region of its net
              reach it (any of nine points spread over the pad inside the region) (outer-layer pour on its own side, or
-             a region on [probe] via_layers, which it reaches by a via). [probe] plane_net counts as covered where no
-             power block (sketch region on the power layer) is.
+             a region on the power layer ([layers] roles), which it reaches by a via). [probe] plane_net counts as
+             covered where no power block (sketch region on the power layer) is.
   crystals   ball - crystal pad and crystal pad - load capacitor ([probe.crystals]); the crystal parts inside the L1
              window the SDRAM sketch keeps free ([probe] xtal_window, open to the west)
   loops      the high-current loops of the switchers ([probe.loops]): input capacitor to VIN and GND pins (bucks),
@@ -49,7 +49,7 @@ def main(argv):
     BW, BH = ol["width"], ol["height"]
     NL = len(cfg.layers)
     power = [i + 1 for i, l in enumerate(cfg.layers) if l.role == "power"]
-    via_layers = tuple(P.get("via_layers", []))
+    via_layers = tuple(power)       # a pad reaches the power blocks by a via
 
     board = pcbnew.LoadBoard(argv[argv.index("--pcb") + 1] if "--pcb" in argv else PCB)
     fps = {f.GetReference(): f for f in board.GetFootprints()}

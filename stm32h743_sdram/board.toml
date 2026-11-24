@@ -205,7 +205,6 @@ json = "escape_parts.json"
 mcu = "U201"                     # the balls the crystals, buses and LCD fan start from
 ground = "GND"                   # not a rail; left out of the LCD fan
 plane_net = "+3V3"               # rails: counts as covered where no other power block is (the rest of L5 is +3V3)
-via_layers = [3]                 # rails: sketch regions on these layers also reach a pad (by a via); 3 as the code had it
 xtal_window = [29.0, 33.5, 34.0, 38.5]   # x0 y0 x1 y1, the L1 window the SDRAM sketch keeps free (open to the west)
 loop_pad_by_net = ["D701"]       # loops: these parts' first pad is found by the net, not the pad number
 net_limit = { RMII_REF_CLK = 40.0 }      # Manhattan limits of single nets (SPEC 9)
