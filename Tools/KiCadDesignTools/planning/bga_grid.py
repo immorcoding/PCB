@@ -408,7 +408,7 @@ class Maze:
         of them are open."""
         f = self.f
         vol = np.full((5, f.ny, f.nx), np.inf)
-        for k, l in zip((0, 2, 4), LAYERS):
+        for k, l in zip((0, 2, 4), self.layers):           # the maze's own three layers, as route() names the planes
             vol[k][masks[l]] = 1.0
         c = self.VIA_COST / (2 * STEP) - 1.0                # two vertical steps of length STEP through a cell of cost c + neighbours of cost 1
         I, J = S.I[sel], S.J[sel]
