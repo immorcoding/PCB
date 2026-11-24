@@ -114,6 +114,9 @@ class Runner:
             self.show(argv, env, out, append, note)
             return 0, b""
         e = dict(os.environ)
+        # set iteration over strings follows Python's per-process hash seed: escape_check's choice among equivalent
+        # layers / partners (and bga_fan's program order) changed from run to run; a fixed seed makes them repeat
+        e.setdefault("PYTHONHASHSEED", "0")
         e.update({k: str(v) for k, v in (env or {}).items()})
         try:
             r = subprocess.run(argv, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, stdin=subprocess.DEVNULL, env=e, creationflags=CHILD_FLAGS,
