@@ -27,6 +27,7 @@ KiCad 10.0.8 在 `D:\KiCad\bin\`（`kicad-cli.exe`，带 pcbnew 的 `python.exe`
 | 走线和布局的整齐度评判 | 子任务 | Opus | high |
 | 按既定格式写原理图页面 | 子任务 | Sonnet | medium |
 | 按已分好的层和方向写线束，构建到通过 | 子任务 | Opus | high |
+| 按已有工具做等长规划（量长度、找补线区、排蛇形）；报做不到或两轮后仍差得远，换 Fable 重排，不让它反复小修 | 子任务 | Opus | high |
 | 给已有基准的工具加功能、改脚本 | 子任务 | Opus | high |
 | 按铜皮草图摆器件 | 子任务 | Opus | high |
 | 独立复核（规则、网表对手册、交付前检查） | 子任务 | Opus | high |
