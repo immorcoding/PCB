@@ -27,10 +27,13 @@ RES = 20                                  # raster: px per mm (0.05 mm)
 # 3.35 mm from the board edge including the keep-out. KiCad's Fiducial_1mm_Mask2mm (pad clearance 0.6) plus an F.Cu
 # keep-out of 3 mm diameter (no track, via or pour). Centres chosen in free corners of the top side (not under a
 # part, not in a routed lane; checked by `fiducials`), keep-out edge >= 3.35 mm from the edge.
-FIDUCIALS = {"FID1": (8.8, 14.4), "FID2": (75.5, 67.0), "FID3": (6.0, 64.5)}   # top left, bottom right, bottom left
-# the bottom carries parts too (35 SMD, the 0402 decoupling under both BGAs): the same three on the bottom, so that each
+# 2026-11-23: FID2 / FID3 moved off the mounting holes' 6 mm keep-out (courtyard edge 5.55 mm from H804 / H803; now
+# 6.42 / 7.67 mm) and the bottom set off the top one (LAY-5: no bottom pad under a top pad; now 2.2-3.3 mm apart).
+# Each spot has >= 0.35 mm to spare against copper of its side, vias, courtyards and silkscreen (out/stage0/fid_scan.py).
+FIDUCIALS = {"FID1": (8.8, 14.4), "FID2": (75.55, 65.6), "FID3": (6.7, 62.5)}   # top left, bottom right, bottom left
+# the bottom carries parts too (35 SMD, the 0402 decoupling under both BGAs): three on the bottom as well, so that each
 # assembly side has its own set (kicad-happy FD-001 on the first run: no fiducials on B.Cu)
-FIDUCIALS_B = {"FID4": (8.8, 14.4), "FID5": (75.5, 67.0), "FID6": (6.0, 64.5)}
+FIDUCIALS_B = {"FID4": (6.4, 15.45), "FID5": (73.5, 66.5), "FID6": (10.0, 62.6)}
 FID_KO = 1.5                              # keep-out radius
 
 
