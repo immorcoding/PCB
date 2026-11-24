@@ -1,6 +1,6 @@
 """Build driver: one board folder, one step; the board's data is <board dir>/board.toml.
 
-    python -m Tools.KiCadDesignTools.build <board dir> <step> [--out DIR] [--skip-match] [--upto GROUP] [--dry-run]
+    python -m Tools.KiCadDesignTools.build <board dir> <step> [--out DIR] [--skip-match] [--upto GROUP] [--no-render] [--dry-run]
     python -m Tools.KiCadDesignTools.build <board dir> compare <out A> <out B>
 
 Run it from the repository root, with KiCad's python (D:\\KiCad\\bin\\python.exe) or any Python >= 3.11; every tool
@@ -74,6 +74,11 @@ def grep(data, pattern, invert=False):
     return [l for l in text(data).splitlines() if bool(rx.search(l)) != invert]
 
 
+# every child below normal priority whatever the driver's own class; the affinity (four cores) is inherited from
+# the driver (heavy.low_priority)
+CHILD_FLAGS = getattr(subprocess, "BELOW_NORMAL_PRIORITY_CLASS", 0)
+
+
 class Stop(Exception):
     def __init__(self, code, why=""):
         super().__init__(why)
@@ -102,7 +107,7 @@ class Runner:
         e = dict(os.environ)
         e.update({k: str(v) for k, v in (env or {}).items()})
         try:
-            r = subprocess.run(argv, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, stdin=subprocess.DEVNULL, env=e,
+            r = subprocess.run(argv, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, stdin=subprocess.DEVNULL, env=e, creationflags=CHILD_FLAGS,
                                cwd=paths.REPO, timeout=timeout)
             data, rc = r.stdout, r.returncode
         except subprocess.TimeoutExpired as x:
@@ -170,8 +175,8 @@ def echo(lines):
 
 # ---------------------------------------------------------------------------------------------------- the steps
 class Build:
-    def __init__(self, cfg, out_root, dry=False, skip_match=False, upto=None):
-        self.cfg, self.dry, self.skip_match, self.upto = cfg, dry, skip_match, upto
+    def __init__(self, cfg, out_root, dry=False, skip_match=False, upto=None, render=True):
+        self.cfg, self.dry, self.skip_match, self.upto, self.render = cfg, dry, skip_match, upto, render
         self.r = Runner(dry)
         self.D = fw(cfg.dir)
         self.N = cfg.name
@@ -567,7 +572,15 @@ class Build:
             echo(grep(data, s["show"]))
         print("== pictures")
         rd = fin.get("render") or {}
-        for side in rd.get("sides", ["top", "bottom"]):
+        # 3D renders (user 2026-11-24): only under the limits every child gets here (below-normal priority, the
+        # driver's four cores, one heavy run), a pause before and after each; --no-render or render.enabled = false
+        # leaves them out
+        sides = rd.get("sides", ["top", "bottom"]) if (rd.get("enabled", True) and self.render) else []
+        if not sides:
+            print("3D renders left out (--no-render / [finish] render.enabled = false)")
+        elif not self.dry:
+            self.r.rest(rest)
+        for side in sides:
             rc, _ = self.r.cli("pcb", "render", "--side", side, "--width", rd.get("width", 1600), "--height", rd.get("height", 1410),
                                "--quality", rd.get("quality", "basic"), "--background", "opaque", "-o", O + "/render_%s.png" % side, BRD,
                                timeout=int(rd.get("timeout", 180)))
@@ -630,7 +643,7 @@ def compare(a, b, name):
 
 
 def main(argv):
-    flags = {"--dry-run": False, "--skip-match": False}
+    flags = {"--dry-run": False, "--skip-match": False, "--no-render": False}
     out = upto = None
     args = []
     i = 0
@@ -677,7 +690,8 @@ def main(argv):
     if len(args) != 2:
         print(__doc__)
         return 2
-    b = Build(cfg, out or os.path.join(cfg.dir, "out"), dry=flags["--dry-run"], skip_match=flags["--skip-match"], upto=upto)
+    b = Build(cfg, out or os.path.join(cfg.dir, "out"), dry=flags["--dry-run"], skip_match=flags["--skip-match"], upto=upto,
+              render=not flags["--no-render"])
     if flags["--dry-run"]:
         print("# dry run: %s %s (out %s)" % (cfg.name, step, b.out_root))
         return getattr(b, "step_" + step.replace("-", "_"))()
