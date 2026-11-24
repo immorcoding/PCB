@@ -75,7 +75,9 @@ def match(board_path):
                 jobs.append(probe % ('  (condition "%s")\n' % pc))
         rows.append(row)
     count = lambda text: sum(v["type"] == "assertion_failure" for v in drc_probe.run_drc(board_path, text)["violations"])
-    with ThreadPoolExecutor(max_workers=min(8, os.cpu_count() or 2)) as ex:
+    # One DRC at a time by default: every kicad-cli DRC is multi-threaded and takes over 1 GB on a routed board;
+    # eight of them at once hard-reset the PC twice on 2026-11-23. DRU_MATCH_JOBS raises it for small boards.
+    with ThreadPoolExecutor(max_workers=max(1, int(os.environ.get("DRU_MATCH_JOBS", "1")))) as ex:
         counts = list(ex.map(count, jobs))
     for row in rows:
         j = row.pop("job")

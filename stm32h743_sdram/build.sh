@@ -6,6 +6,9 @@
 #   sh stm32h743_sdram/build.sh copper [out dir]    stop 5: pours, power groups on the board and on the sketch copy
 #   sh stm32h743_sdram/build.sh route1 [out dir]    stop 6 part A: SDRAM group on the board, power groups after it, table
 #   sh stm32h743_sdram/build.sh route2 [out dir]    stop 7: route1, then the groups of ROUTE2_GROUPS on the board, table
+#   sh stm32h743_sdram/build.sh finish [out dir]    stop 8: fiducials, ground stitching, silkscreen, teardrops, final checks
+#   sh stm32h743_sdram/build.sh finish-checks       stop 8: rules that match nothing (dru_match, 30-40 min), once
+#                                                   (after route2; FINISH_BOARD=<copy> runs it on a copy)
 # Later stages add their steps here (schematic, sketches, placement, copper, routing).
 set -e
 D=$(cd "$(dirname "$0")" && pwd); R=$(dirname "$D"); N=stm32h743_sdram
@@ -239,6 +242,77 @@ route1|route2)
     quiet < "$O/table.log"
     echo "route1 step: $(( $(date +%s) - T0 )) s; sdram build exit $SB, power build exit $PB / $PG (BGA), table exit $RT"
   fi
+  ;;
+finish)
+  # stop 8, finishing (FIN-1 to FIN-4), on the board route2 left: strip what the last finish wrote, fiducials and their
+  # keep-outs, refill, ground stitching vias (text write), refill, silkscreen (references to Fab, fine-pitch mask
+  # expansion, labels, glyphs, title), teardrops outside the BGA areas (refill and save), then the final checks:
+  # DRC with schematic parity, canary, rules that match nothing, pour pieces, pictures. Repeatable; route2 removes
+  # the stitching vias again (orphans) and keeps the rest, so run finish after every route2. finish.py has the details.
+  T0=$(date +%s)
+  BRD="${FINISH_BOARD:-$D/$N.kicad_pcb}"                                 # FINISH_BOARD: a copy to try it on
+  ls "$D"/~*.lck > /dev/null 2>&1 && { echo "KiCad has the project open (~*.lck): nothing written"; exit 2; }
+  CLI=/d/KiCad/bin/kicad-cli.exe
+  q2() { sed 's/swig\/python detected a memory leak[^.]*found\.//g' | grep -v "image handler" | grep . || true; }
+  # one heavy process at a time with a pause after each (the PC hard-reset under full load, 2026-11-23); run the whole
+  # step at low priority on four cores: cmd //c "start /low /affinity F /wait /b sh stm32h743_sdram/build.sh finish"
+  rest() { sleep 20; }
+  refill() { $CLI pcb drc --refill-zones --save-board --severity-all --units mm --format json -o "$1" "$BRD" > /dev/null 2>&1 || true; rest; }
+  echo "== strip, fiducials"
+  $PY "$D/copper_report.py" unfill "$BRD" 2>&1 | q2
+  $PY "$D/finish.py" strip "$BRD" 2>&1 | q2
+  $PY "$D/finish.py" fiducials "$BRD" 2>&1 | q2
+  refill "$O/drc_fid.json"
+  echo "== ground stitching vias"
+  $PY "$D/finish.py" pieces "$BRD" "$O" before 2>&1 | q2
+  $PY "$D/finish.py" stitch "$BRD" "$O" 2>&1 | q2
+  refill "$O/drc_stitch.json"
+  $PY "$D/finish.py" stitch "$BRD" "$O" --pieces 2>&1 | q2             # the pieces the first pass's vias made or left on one via
+  refill "$O/drc_stitch2.json"
+  $PY "$D/finish.py" pieces "$BRD" "$O" after 2>&1 | q2
+  $PY "$R/scripts/pour_islands.py" "$BRD" "cu-whole:L1_GND" "cu-whole:L6_GND" 2>&1 | q2 > "$O/pour_islands.txt" || true
+  cat "$O/pour_islands.txt"
+  echo "== silkscreen"
+  $PY "$D/copper_report.py" unfill "$BRD" 2>&1 | q2
+  $PY "$D/finish.py" silk "$BRD" "$O" 2>&1 | q2
+  echo "== teardrops"
+  $PY "$D/finish.py" teardrops "$BRD" 2>&1 | q2
+  rest
+  [ -z "$FINISH_BOARD" ] && $PY "$D/make_project.py" > /dev/null 2>&1   # SaveBoard may have rewritten the project file
+  echo "== final DRC (schematic parity), canary, rules matching nothing"
+  $CLI pcb drc --refill-zones --save-board --severity-all --schematic-parity --units mm --format json -o "$O/drc.json" "$BRD" > /dev/null 2>&1 || true
+  rest
+  [ -z "$FINISH_BOARD" ] && $PY "$D/make_project.py" > /dev/null 2>&1
+  python -c "
+import json, collections, sys
+d = json.load(open(sys.argv[1]))
+c = collections.Counter(v['type'] for v in d['violations'])
+p = collections.Counter(v['type'] for v in d.get('schematic_parity', []))
+print('DRC by type:', ', '.join('%s %d' % kv for kv in sorted(c.items())) or 'none')
+print('unconnected:', len(d['unconnected_items']))
+print('schematic parity by type:', ', '.join('%s %d' % kv for kv in sorted(p.items())) or 'none')" "$(cygpath -m "$O/drc.json")" | tee "$O/drc_summary.txt"
+  $PY "$R/scripts/dru_canary.py" "$BRD" 2>&1 | quiet | tee "$O/canary.txt"
+  # scripts/dru_match.py (one DRC per rule, about 30-40 minutes now that it runs one at a time) is not run here:
+  # `build.sh finish-checks` runs it once, when asked
+  echo "== pictures"
+  # 3D: basic quality (no ray tracing: a full-load run reset the PC), 1600 px, 3 minutes at most each; the 2D
+  # pictures below are the fallback
+  for S in top bottom; do
+    timeout 180 $CLI pcb render --side $S --width 1600 --height 1410 --quality basic --background opaque -o "$O/render_$S.png" "$BRD" > /dev/null 2>&1 || echo "render $S failed or took over 3 minutes"
+    rest
+  done
+  $PY "$D/finish_view.py" "$BRD" "$O" 2>&1 | q2
+  echo "finish step: $(( $(date +%s) - T0 )) s"
+  ;;
+finish-checks)
+  # the slow check of the finished board, run once when asked: every rule of the rule file matches at least one object
+  # (RUL-2; scripts/dru_match.py, one DRC per rule, one at a time: about 30-40 minutes on the routed board). Run it at
+  # low priority on four cores like finish.
+  T0=$(date +%s)
+  O=${2:-$D/out/finish}
+  $PY "$R/scripts/dru_match.py" "$D/$N.kicad_pcb" --json "$O/dru_match.json" > "$O/dru_match.txt" 2>&1 || true
+  tail -1 "$O/dru_match.txt"
+  echo "finish-checks step: $(( $(date +%s) - T0 )) s"
   ;;
 *) echo "unknown step: $STEP"; exit 2 ;;
 esac

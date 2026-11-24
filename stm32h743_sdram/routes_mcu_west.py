@@ -117,12 +117,15 @@ def routes(job):
     jog = {n: [(x2, r4(JOG + 0.0947 * k)), (JX[n], r4(JOG + 0.0947 * k + x2 - JX[n]))]
            for k, (n, (pcs, l4, x2)) in enumerate((n, fin[n]) for n in ("LCD_G3", "QSPI_BK1_NCS"))}
     pcs, l4, x2 = fin["LCD_DISP"]
-    # (the via 0.34 lower than before, reached by a 0.36 mm vertical; L4 leaves it south-east and runs east at y 68.05,
-    # stepping up to y 67.79 before VSYNC's FPC via; L1 from the via one NE step and east into R705.1)
-    R["LCD_DISP"] = [pcs + [L("L4", l4 + [(x2, 66.79), (26.9, r4(66.79 + x2 - 26.9)), (26.9, 67.85)]), V(26.9, 67.85),
-                            L("L4", [(26.9, 67.85), (27.1, 68.05), (34.0, 68.05), (34.26, 67.79), (35.34, 67.79), (35.75, 68.2)]),
+    # stop 8 (review 2, b3): L4 runs east along y 67.79 (0.134 mm under VSYNC's FPC via) straight from the via's SE
+    # step, without the hat (the step from y 68.05 up to 67.79, 2 bends; the crowded item). The via 0.26 higher (26.9,
+    # 67.59) for it, the SW diagonal 0.25 higher (G3's via (26.65, 66.9) 0.14 mm off it) so that the vertical into the
+    # via keeps 0.35. Tried first: the via at (26.9, 67.79) and L4 straight east from it: DRC track_angle (90 degrees
+    # across the via, the corner_angle rule sees both L4 legs)
+    R["LCD_DISP"] = [pcs + [L("L4", l4 + [(x2, 66.54), (26.9, r4(66.54 + x2 - 26.9)), (26.9, 67.59)]), V(26.9, 67.59),
+                            L("L4", [(26.9, 67.59), (27.1, 67.79), (35.34, 67.79), (35.75, 68.2)]),
                             V(35.75, 68.2), L("L1", [(35.75, 68.2), "J701.10"])],
-                     [L("L1", [(26.9, 67.85), (27.24, 67.51), "R705.1"])]]
+                     [L("L1", [(26.9, 67.59), (26.98, 67.51), "R705.1"])]]
 
     # NCS and G3 (west of DISP) step west and drop to L3 below the I2C4 / touch rows; L3 east in two rows south of
     # everything (y 66.4 / 66.65; G7 and G4 have left L3 at y 65.9): NCS north at x 39.245 to a via south of the flash's

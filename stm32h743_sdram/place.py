@@ -310,7 +310,8 @@ def main():
     for ref in BGA_REFS:
         for pad in fps[ref].Pads():
             pad.SetLocalSolderMaskMargin(0)
-    park(board, [fp for ref, fp in fps.items() if ref not in PLACE])
+    # the fiducials are finish.py's (stop 8, board-only footprints): they stay where finish put them
+    park(board, [fp for ref, fp in fps.items() if ref not in PLACE and not ref.startswith("FID")])
     # Everything that is read from the board is read above: after the first board.Remove() pcbnew's
     # collections are unusable in this process (docs/tools.md), so the old outline and rule areas are
     # listed first, removed together, and only then are the new ones added.

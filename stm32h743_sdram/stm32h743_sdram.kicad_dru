@@ -187,18 +187,18 @@
 (rule "qspi_window"
   (condition "A.NetName == 'QSPI_BK1_IO*'")
   (constraint length (min 21.1196mm) (opt 26.1196mm) (max 30.0000mm)))
-# sdmmc_window: reference SDMMC1_CK = 36.7080 mm
+# sdmmc_window: reference SDMMC1_CK = 36.7084 mm
 (rule "sdmmc_window"
   (condition "A.NetClass == 'SDMMC' && A.NetName != 'SDMMC1_CK'")
-  (constraint length (min 36.7080mm) (opt 36.7080mm) (max 41.7080mm)))
+  (constraint length (min 36.7084mm) (opt 36.7084mm) (max 41.7084mm)))
 # rmii_rx_min: reference RMII_REF_CLK = 20.5576 mm
 (rule "rmii_rx_min"
   (condition "A.NetName == 'RMII_RXD*' || A.NetName == 'RMII_CRS_DV'")
   (constraint length (min 20.5576mm) (opt 20.5576mm) (max 60.0000mm)))
-# sdram_addr_window: reference FMC_SDCLK + FMC_SDCLK_R = 39.3375 mm
+# sdram_addr_window: reference FMC_SDCLK + FMC_SDCLK_R = 39.4135 mm
 (rule "sdram_addr_window"
   (condition "A.NetName == 'FMC_A*' || A.NetName == 'FMC_BA*' || A.NetName == 'FMC_SDNRAS' || A.NetName == 'FMC_SDNCAS' || A.NetName == 'FMC_SDNWE' || A.NetName == 'FMC_SDCKE0' || A.NetName == 'FMC_SDNE0'")
-  (constraint length (min 19.3375mm) (opt 39.3375mm) (max 59.3375mm)))
+  (constraint length (min 19.4135mm) (opt 39.4135mm) (max 59.4135mm)))
 # ltdc_spread_45: fixed (user 2026-11-23: LTDC longest minus shortest relaxed from 30 to a working target of 45 mm, replaces ltdc_spread)
 (rule "ltdc_spread_45"
   (condition "A.NetClass == 'LTDC'")

@@ -418,7 +418,9 @@ def codec_i2c():
     # (22.6, 23.85)); a branch at the via, one via less
     # opt1 (look 10): the east run 0.25 lower (y 24.5): the ground pour now passes south of the codec's +3V3 vias into
     # the wedge between this line and SDA's (was cut off there and left a void)
-    scl_pu = [Lp("L6", [(22.1875, 23.5), (23.1875, 24.5), (29.25, 24.5), (31.26, 22.49), (36.5, 22.49)]), V(36.5, 22.49),
+    # stop 8 (review 2, b7): the east run one lane lower again (y 24.75): at y 24.5 it lay on the +3V3A lobe's gap on L5
+    # (lobe bottom y 24.0, gap 24.0 - 24.5); same diagonals
+    scl_pu = [Lp("L6", [(22.1875, 23.5), (23.4375, 24.75), (29.0, 24.75), (31.26, 22.49), (36.5, 22.49)]), V(36.5, 22.49),
               Lp("L1", [(36.5, 22.49), "R601.2"])]
     return {"I2C4_SCL": [scl, scl_pu], "I2C4_SDA": [sda, sda_pu]}
 

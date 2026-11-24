@@ -96,7 +96,9 @@ def power():
         # opt1 (review 1): R108's branch leaves the west via (67.25, 32.4) on L4, south first (no turn-back across the
         # via) and east along y 33.0 (was U102.5 -> a second via under the IC body (69.5, 32.4) -> L4: one via less;
         # a branch at the via, accepted for this enable line)
-        [("L4", [(67.25, 32.4), (67.25, 32.75), (67.5, 33.0), (73.61, 33.0), (74.11, 33.5)]), V(74.11, 33.5),
+        # stop 8 (review 2, b4): R108's leg leaves the via south-east on the line of the arriving NW leg (one straight
+        # diagonal through the via, 2 bends fewer; was S 0.35 then SE 0.25)
+        [("L4", [(67.25, 32.4), (67.85, 33.0), (73.61, 33.0), (74.11, 33.5)]), V(74.11, 33.5),
          ("L1", [(74.11, 33.5), "R108.2"])],
     ]
     R["EN_1V8"] = [
