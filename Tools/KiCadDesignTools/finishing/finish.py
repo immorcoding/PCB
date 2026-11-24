@@ -1,53 +1,33 @@
-"""Finishing of the STM32H743 + SDRAM board (stop 8, FIN-1 to FIN-4): fiducials, inner ground pours and their clean-up
-(finish_pour.py), ground stitching vias, silkscreen, teardrops. Run by `sh stm32h743_sdram/build.sh finish` after
-route2; every sub-step is repeatable (strip first).
+"""Finishing of a board (stop 8, FIN-1 to FIN-4): fiducials, inner ground pours and their clean-up (finishing.pour),
+ground stitching vias (finishing.stitch), silkscreen (finishing.silk), teardrops (finishing.teardrops). Run by the
+build driver's finish step after the route step; every sub-step is repeatable (strip first).
 
-    D:\\KiCad\\bin\\python.exe stm32h743_sdram\\finish.py strip      <board>                remove what finish wrote last time
-    D:\\KiCad\\bin\\python.exe stm32h743_sdram\\finish.py fiducials  <board>                three fiducials and their keep-outs
-    D:\\KiCad\\bin\\python.exe stm32h743_sdram\\finish.py pours      <board> <out>          L3 / L4 ground pours and the pour keep-outs
-    D:\\KiCad\\bin\\python.exe stm32h743_sdram\\finish.py clean      <refilled board> <out> shape|anchor   keep-outs over narrow
+    python -m Tools.KiCadDesignTools.finishing.finish <board dir> strip      <board>                remove what finish wrote last time
+    python -m Tools.KiCadDesignTools.finishing.finish <board dir> fiducials  <board>                fiducials and their keep-outs
+    python -m Tools.KiCadDesignTools.finishing.finish <board dir> pours      <board> <out>          inner ground pours and the pour keep-outs
+    python -m Tools.KiCadDesignTools.finishing.finish <board dir> clean      <refilled board> <out> shape|anchor   keep-outs over narrow
                                                                           ground copper and small pieces (shape, before the stitching) or
                                                                           over inner pieces no via holds (anchor, after it); exit 10:
                                                                           some were added, refill again
-    D:\\KiCad\\bin\\python.exe stm32h743_sdram\\finish.py report     <refilled board> <out> <name>   pour pieces, narrow copper,
-                                                                          return paths over the L5 gaps
-    D:\\KiCad\\bin\\python.exe stm32h743_sdram\\finish.py stitch     <refilled board> <out>  ground stitching vias (text write)
-    D:\\KiCad\\bin\\python.exe stm32h743_sdram\\finish.py pieces     <refilled board> <out> <name>   GND pour pieces and their vias
-    D:\\KiCad\\bin\\python.exe stm32h743_sdram\\finish.py silk       <board> <out>          references to Fab, labels, icons, title
-    D:\\KiCad\\bin\\python.exe stm32h743_sdram\\finish.py teardrops  <board>                teardrops outside the BGA areas (text write)
+    python -m Tools.KiCadDesignTools.finishing.finish <board dir> report     <refilled board> <out> <name>   pour pieces, narrow copper,
+                                                                          return paths over the power-plane gaps
+    python -m Tools.KiCadDesignTools.finishing.finish <board dir> stitch     <refilled board> <out> [--pieces]   ground stitching vias (text write)
+    python -m Tools.KiCadDesignTools.finishing.finish <board dir> pieces     <refilled board> <out> <name>   ground pour pieces and their vias
+    python -m Tools.KiCadDesignTools.finishing.finish <board dir> silk       <board> <out>          references to Fab, labels, icons, title
+    python -m Tools.KiCadDesignTools.finishing.finish <board dir> teardrops  <board>                teardrops outside the skip boxes (text write)
 
-Local mm = board-file mm - 100 (x right, y down). The board file is written by text where copper is added (vias,
-teardrop settings: no pcbnew save, so no stale fill can pull a via's net, docs/tools.md) and by pcbnew SaveBoard for
-footprints and drawings (the project file's bytes are kept: make_project.py is its source). What finish wrote is
+Local mm = board-file mm - [board] origin (x right, y down). The board file is written by text where copper is added
+(vias, teardrop settings: no pcbnew save, so no stale fill can pull a via's net, docs/tools.md) and by pcbnew SaveBoard
+for footprints and drawings (the project file's bytes are kept: make_project is its source). What finish wrote is
 listed in <board>.finish.json, so that `strip` can take exactly that away again.
+
+board.toml [finish] pour_layers (the layers with ground pours), [finish.fiducials] (footprint, keep-out radius, the
+fab's minimum edge distance of the keep-out, top / bottom {reference: [x, y]}), [finish.pour], [finish.stitch],
+[finish.teardrops]; silk.toml for the silkscreen; [power] ground; the board extent from place.toml [outline].
 """
-import json, math, os, re, subprocess, sys, uuid
+import json, math, os, re, sys
 
-HERE = os.path.dirname(os.path.abspath(__file__))
-sys.path.insert(0, os.path.dirname(HERE))                     # interim (Tools/ consolidation stage 1): the repository root, for Tools.KiCadDesignTools
-OX, OY = 100.0, 100.0
-KICAD_CLI = r"D:\KiCad\bin\kicad-cli.exe"
-RES = 20                                  # raster: px per mm (0.05 mm)
-
-# ---------------------------------------------------------------------------------------------------- fiducials
-# JLCPCB (https://jlcpcb.com/help/article/how-to-add-edge-rails-fiducials-for-pcb-assembly-order, read 2026-11-23):
-# 1 mm bare copper, solder-mask opening twice the copper (2 mm), three to four along the board edges, at least
-# 3.35 mm from the board edge including the keep-out. KiCad's Fiducial_1mm_Mask2mm (pad clearance 0.6) plus an F.Cu
-# keep-out of 3 mm diameter (no track, via or pour). Centres chosen in free corners of the top side (not under a
-# part, not in a routed lane; checked by `fiducials`), keep-out edge >= 3.35 mm from the edge.
-# 2026-11-23: FID2 / FID3 moved off the mounting holes' 6 mm keep-out (courtyard edge 5.55 mm from H804 / H803; now
-# 6.42 / 7.67 mm) and the bottom set off the top one (LAY-5: no bottom pad under a top pad; now 2.2-3.3 mm apart).
-# Each spot has >= 0.35 mm to spare against copper of its side, vias, courtyards and silkscreen (out/stage0/fid_scan.py).
-FIDUCIALS = {"FID1": (8.8, 14.4), "FID2": (75.55, 65.6), "FID3": (6.7, 62.5)}   # top left, bottom right, bottom left
-# the bottom carries parts too (35 SMD, the 0402 decoupling under both BGAs): three on the bottom as well, so that each
-# assembly side has its own set (kicad-happy FD-001 on the first run: no fiducials on B.Cu)
-FIDUCIALS_B = {"FID4": (6.4, 15.45), "FID5": (73.5, 66.5), "FID6": (10.0, 62.6)}
-FID_KO = 1.5                              # keep-out radius
-
-
-def P(x, y):
-    import pcbnew
-    return pcbnew.VECTOR2I(pcbnew.FromMM(OX + x), pcbnew.FromMM(OY + y))
+from Tools.KiCadDesignTools.core import config, paths
 
 
 def side_file(path):
@@ -73,8 +53,9 @@ def save_board(board, path):
 
 
 # ---------------------------------------------------------------------------------------------------- strip
-def strip_vias_text(path):
+def strip_vias_text(path, origin, ground):
     """Remove the stitching vias of the last run (positions in <board>.finish.json) from the file text."""
+    OX, OY = origin
     rec = record(path)
     want = {(round(x + OX, 4), round(y + OY, 4)) for x, y in rec.get("vias", [])}
     if not want:
@@ -82,10 +63,11 @@ def strip_vias_text(path):
     text = open(path, encoding="utf-8", newline="").read()
     pat = re.compile(r"\t\(via\r?\n\t\t\(at ([-\d.]+) ([-\d.]+)\)\r?\n(?:\t\t[^\n]*\r?\n)*?\t\)\r?\n")
     n = 0
+    net = '(net "%s")' % ground
 
     def drop(m):
         nonlocal n
-        if (round(float(m.group(1)), 4), round(float(m.group(2)), 4)) in want and '(net "GND")' in m.group(0):
+        if (round(float(m.group(1)), 4), round(float(m.group(2)), 4)) in want and net in m.group(0):
             n += 1
             return ""
         return m.group(0)
@@ -126,15 +108,15 @@ def teardrops_off_text(path):
     return n
 
 
-def strip(path):
+def strip(cfg, path):
     import pcbnew
-    nv = strip_vias_text(path)
+    nv = strip_vias_text(path, cfg.origin, cfg.need("power.ground"))
     nt = teardrops_off_text(path)
     b = pcbnew.LoadBoard(path)
     silk = (pcbnew.F_SilkS, pcbnew.B_SilkS)
     old = [d for d in b.GetDrawings() if d.GetLayer() in silk]
     fps = [fp for fp in b.GetFootprints() if fp.GetReference().startswith("FID")]
-    # FIN_: the fiducials' and the pours' keep-outs and the inner ground pours (finish_pour.py)
+    # FIN_: the fiducials' and the pours' keep-outs and the inner ground pours (finishing.pour)
     zones = [z for z in b.Zones() if z.GetZoneName().startswith("FIN_") or z.IsTeardropArea()]
     for item in old + fps + zones:
         b.Remove(item)
@@ -144,13 +126,24 @@ def strip(path):
 
 
 # ---------------------------------------------------------------------------------------------------- fiducials
-def fiducials(path):
+def fiducials(cfg, path):
+    """The fiducials of [finish.fiducials] (top ones on F.Cu, bottom ones flipped to B.Cu), each with a round keep-out
+    on its copper layer (no track, via or pour); what already lies in a keep-out is listed, nothing is moved."""
     import pcbnew
+    OX, OY = cfg.origin
+    fid = cfg.need("finish.fiducials")
+    FID_KO = fid["keepout_r"]
+    outline = cfg.datafile("place.toml")["outline"]
+    W, H = outline["width"], outline["height"]
+
+    def P(x, y):
+        return pcbnew.VECTOR2I(pcbnew.FromMM(OX + x), pcbnew.FromMM(OY + y))
     b = pcbnew.LoadBoard(path)
-    lib = r"D:\KiCad\share\kicad\footprints\Fiducial.pretty"
-    sides = [(r, xy, "F") for r, xy in FIDUCIALS.items()] + [(r, xy, "B") for r, xy in FIDUCIALS_B.items()]
+    nick, name = fid["footprint"].split(":")
+    lib = os.path.join(paths.KICAD_FP, nick + ".pretty")
+    sides = [(r, xy, "F") for r, xy in fid["top"].items()] + [(r, xy, "B") for r, xy in fid["bottom"].items()]
     for ref, (x, y), side in sides:
-        fp = pcbnew.FootprintLoad(lib, "Fiducial_1mm_Mask2mm")
+        fp = pcbnew.FootprintLoad(lib, name)
         fp.SetReference(ref)
         fp.SetValue("Fiducial")
         fp.SetPosition(P(x, y))
@@ -197,40 +190,53 @@ def fiducials(path):
                 if p.IsOnLayer(cu) and p.GetEffectiveShape(cu).Collide(
                         pcbnew.VECTOR2I(pcbnew.FromMM(OX + x), pcbnew.FromMM(OY + y)), pcbnew.FromMM(FID_KO)):
                     hits.append("%s: pad %s.%s" % (ref, fp.GetReference(), p.GetNumber()))
-        edge = min(x, y, 85.0 - x, 75.0 - y) - FID_KO
-        if edge < 3.35:
-            hits.append("%s: keep-out %.2f mm from the board edge (JLCPCB: 3.35)" % (ref, edge))
+        edge = min(x, y, W - x, H - y) - FID_KO
+        if edge < fid["edge_min"]:
+            hits.append("%s: keep-out %.2f mm from the board edge (JLCPCB: %g)" % (ref, edge, fid["edge_min"]))
     save_board(b, path)
     print("fiducials: %s; in the keep-outs: %s" % (", ".join("%s %s (%.2f, %.2f)" % (r, sd, x, y) for r, (x, y), sd in sides),
                                                   "; ".join(hits) or "nothing"))
 
 
-if __name__ == "__main__":
-    cmd = sys.argv[1]
+# ---------------------------------------------------------------------------------------------------- dispatcher
+def main(argv):
+    if len(argv) < 3:
+        print(__doc__)
+        return 2
+    cfg = config.load(argv[0])
+    cmd, a = argv[1], argv[2:]
     if cmd == "strip":
-        strip(sys.argv[2])
+        strip(cfg, a[0])
     elif cmd == "fiducials":
-        fiducials(sys.argv[2])
-    elif cmd == "pours":
-        import finish_pour
-        finish_pour.pours(sys.argv[2], sys.argv[3])
-    elif cmd == "clean":
-        import finish_pour
-        sys.exit(10 if finish_pour.clean(sys.argv[2], sys.argv[3], sys.argv[4] if len(sys.argv) > 4 else "anchor") else 0)
-    elif cmd == "report":
-        import finish_pour
-        finish_pour.report(sys.argv[2], sys.argv[3], sys.argv[4])
-    elif cmd == "stitch":
-        import finish_stitch
-        finish_stitch.main(sys.argv[2], sys.argv[3], pieces_only="--pieces" in sys.argv)
-    elif cmd == "pieces":
-        import finish_stitch
-        finish_stitch.pieces_report(sys.argv[2], sys.argv[3], sys.argv[4])
+        fiducials(cfg, a[0])
+    elif cmd in ("pours", "clean", "report"):
+        from Tools.KiCadDesignTools.finishing import pour
+        pour.setup(cfg)
+        if cmd == "pours":
+            pour.pours(a[0], a[1])
+        elif cmd == "clean":
+            return 10 if pour.clean(a[0], a[1], a[2] if len(a) > 2 else "anchor") else 0
+        else:
+            pour.report(a[0], a[1], a[2])
+    elif cmd in ("stitch", "pieces"):
+        from Tools.KiCadDesignTools.finishing import stitch
+        stitch.setup(cfg)
+        if cmd == "stitch":
+            stitch.main(a[0], a[1], pieces_only="--pieces" in argv)
+        else:
+            stitch.pieces_report(a[0], a[1], a[2])
     elif cmd == "silk":
-        import finish_silk
-        finish_silk.main(sys.argv[2], sys.argv[3])
+        from Tools.KiCadDesignTools.finishing import silk
+        silk.setup(cfg)
+        silk.main(a[0], a[1])
     elif cmd == "teardrops":
-        import finish_td
-        finish_td.main(sys.argv[2])
+        from Tools.KiCadDesignTools.finishing import teardrops
+        teardrops.board_teardrops(cfg, a[0])
     else:
-        sys.exit(__doc__)
+        print(__doc__)
+        return 2
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main(sys.argv[1:]))

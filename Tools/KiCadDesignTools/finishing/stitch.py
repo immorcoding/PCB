@@ -1,50 +1,72 @@
-"""Ground stitching vias of the STM32H743 + SDRAM board (finish.py stitch / pieces; stop 8, FIN-4 step 1).
+"""Ground stitching vias (finishing stop 8, FIN-4 step 1; run through finishing.finish stitch / pieces).
 
-Ground has one plane (L2); the ground pours of L1, L6 and (since 2026-11-24, finish_pour.py) of the inner signal layers
-L3 / L4 hang on vias. This adds 0.45 / 0.2 through vias of GND:
-  1. every pour piece (L1, L3, L4 or L6) of at least PIECE_MIN mm2: a long thin one (longer than LONG, mean width
-     area / length under THIN) gets one within END_R of each of its two ends (the farthest pair of its points) where
-     none is; then one held by fewer than two vias / through-hole ground pads gets one at the legal point farthest
-     from its existing anchor (the end of a finger);
-  2. then greedy coverage: every point of the ground pours should lie within D of a ground via (anchor), D = D_OPEN
-     in open pour, D_DENSE within EDGE_BAND of the board edge and in the DENSE boxes (Ethernet, audio, the two
-     switching regulators), D_RIM along a pour piece's rim; the candidate that covers the most uncovered pour is
-     taken until no candidate covers MIN_GAIN mm2.
-A piece (or a long piece's end) where no legal site is found is listed in stitch.txt ("no legal site"); `finish.py
-clean <board> <out> anchor` then takes an inner piece that nothing holds away with a keep-out.
+    -m Tools.KiCadDesignTools.finishing.finish <board dir> stitch <refilled board> <out> [--pieces]
+    -m Tools.KiCadDesignTools.finishing.finish <board dir> pieces <refilled board> <out> <name>
+
+The ground plane layers carry no pour pieces; the ground pours of the pour layers ([finish] pour_layers: the outer
+ones of the copper sketch, the inner ones of finishing.pour) hang on vias. This adds through vias of the ground net
+(size / drill of [finish.stitch] via):
+  1. every pour piece of at least piece_min mm2: a long thin one (longer than long, mean width area / length under
+     thin) gets one within end_r of each of its two ends (the farthest pair of its points) where none is; then one
+     held by fewer than two vias / through-hole ground pads gets one at the legal point farthest from its existing
+     anchor (the end of a finger);
+  2. then greedy coverage: every point of the ground pours should lie within D of a ground via (anchor), D = d_open
+     in open pour, d_dense within edge_band of the board edge and in the dense boxes, d_rim along a pour piece's rim;
+     the candidate that covers the most uncovered pour is taken until no candidate covers min_gain mm2.
+A piece (or a long piece's end) where no legal site is found is listed in stitch.txt ("no legal site"); `finish clean
+<board> <out> anchor` then takes an inner piece that nothing holds away with a keep-out.
 A candidate point is legal when (all measured on a raster of 0.05 mm, from KiCad's saved fill):
-  - its via (r 0.225) lies inside the GND fill of L1, L3, L4 or L6 with GND_IN of fill round it, and on L1 and L6 no
-    copper of another net within r + OUTER (pour clearance) where it is not in the GND fill;
-  - on L3 / L4 (signal layers) no copper of another net within r + LANE (so it does not take a lane);
-  - on L5 it lies inside a power fill with r + L5_WEB of fill round it (no notch in a block edge, no chain with other
-    vias' antipads) and outside the two BGA feed tongues (FEED_KEEP);
-  - no pad of any net (any side) within r + PAD; not inside a courtyard (top or bottom) grown by CRT; not in a rule area
-    (the BGA areas, their no-pour areas, footprint keep-outs, the fiducials' keep-outs); not in the crystals' L1 area
-    (XTAL boxes); board edge >= EDGE; other vias: centre distance >= r + r_other + VIA_GAP (GND vias >= GND_SPACING).
+  - its via (r = size / 2) lies inside the ground fill of a pour layer with gnd_in of fill round it, and on the outer
+    layers no copper of another net within r + outer (pour clearance) where it is not in the ground fill;
+  - on the inner signal layers no copper of another net within r + lane (so it does not take a lane);
+  - on the power plane it lies inside a power fill with r + plane_web of fill round it (no notch in a block edge, no
+    chain with other vias' antipads) and outside the feed_keep boxes (the BGA feed tongues);
+  - no pad of any net (any side) within r + pad; not inside a courtyard (top or bottom) grown by crt; not in a rule
+    area (the BGA areas of place.toml [rule_areas], their no-pour areas, footprint keep-outs, the fiducials'
+    keep-outs); not near the crystals (courtyards of xtal_refs grown by xtal_grow); board edge >= edge; other vias:
+    centre distance >= r + r_other + via_gap (ground vias >= gnd_spacing); not in the silkscreen's label boxes
+    (finishing.silk.reserved).
+
+board.toml [finish.stitch] holds the values named above; [finish] pour_layers; [power] ground; plane layers from the
+layer roles. setup(cfg) first (it sets up finishing.silk too).
 """
 import json, math, os, re, sys, uuid
 import numpy as np
 
-OX, OY = 100.0, 100.0
 RES = 20                                   # px per mm
-R_VIA, DRILL = 0.225, 0.2
-GND_IN = 0.05
-OUTER, LANE, PAD, CRT, EDGE = 0.2, 0.25, 0.25, 0.1, 0.8
-L5_WEB = 0.6
-VIA_GAP, GND_SPACING = 0.3, 1.2
-D_OPEN, D_DENSE, D_RIM = 4.0, 3.0, 3.5
-EDGE_BAND = 4.0
-MIN_GAIN = 6.0                             # mm2 of uncovered pour a new via must cover
-PIECE_MIN = 1.5                            # mm2: smaller pieces are left as they are (listed)
-LONG, THIN, END_R = 5.0, 2.5, 2.5          # longer than LONG with a mean width under THIN: long and thin, a via
-                                           # within END_R of each end
 GRID = 0.5                                 # candidate grid (mm)
-# local mm boxes (x0, y0, x1, y1)
-DENSE = {"Ethernet": (0, 37, 32, 62), "audio": (0, 0, 36, 34), "buck 3.3 V": (62, 27, 85, 39),
-         "buck 5 V": (60, 37, 85, 52), "12 V input": (60, 50, 85, 70), "backlight boost": (47, 46, 60, 64)}
-FEED_KEEP = {"+3V3_MCU tongue": (39.1, 24.5, 44.7, 31.5), "+3V3_SDRAM tongue": (55.1, 24.5, 61.5, 30.7)}
-XTAL_REFS = ("Y201", "Y202", "C225", "C226", "C227", "C228", "Y501", "C508", "C509")
-XTAL_GROW = 0.6
+
+
+def setup(cfg):
+    """The board's values (board.toml, place.toml, silk.toml) as this module's globals."""
+    from Tools.KiCadDesignTools.copper.power_ties import power_plane
+    from Tools.KiCadDesignTools.finishing import silk
+    global OX, OY, VIA, R_VIA, GND_IN, OUTER, LANE, PAD, CRT, EDGE, L5_WEB, VIA_GAP, GND_SPACING, D_OPEN, D_DENSE, D_RIM
+    global EDGE_BAND, MIN_GAIN, PIECE_MIN, LONG, THIN, END_R, DENSE, FEED_KEEP, XTAL_REFS, XTAL_GROW, GND, POUR_K, PLANE_K
+    global PWR_K, BGA_AREAS
+    s = cfg.need("finish.stitch")
+    OX, OY = cfg.origin
+    VIA = s["via"]                                             # {size, drill}
+    R_VIA = s["via"]["size"] / 2
+    GND_IN = s["gnd_in"]
+    OUTER, LANE, PAD, CRT, EDGE = s["outer"], s["lane"], s["pad"], s["crt"], s["edge"]
+    L5_WEB = s["plane_web"]
+    VIA_GAP, GND_SPACING = s["via_gap"], s["gnd_spacing"]
+    D_OPEN, D_DENSE, D_RIM = s["d_open"], s["d_dense"], s["d_rim"]
+    EDGE_BAND = s["edge_band"]
+    MIN_GAIN = s["min_gain"]                                   # mm2 of uncovered pour a new via must cover
+    PIECE_MIN = s["piece_min"]                                 # mm2: smaller pieces are left as they are (listed)
+    LONG, THIN, END_R = s["long"], s["thin"], s["end_r"]       # long and thin: a via within END_R of each end
+    DENSE = {k: tuple(v) for k, v in s["dense"].items()}       # local mm boxes (x0, y0, x1, y1)
+    FEED_KEEP = {k: tuple(v) for k, v in s["feed_keep"].items()}
+    XTAL_REFS = tuple(s["xtal_refs"])
+    XTAL_GROW = s["xtal_grow"]
+    GND = cfg.need("power.ground")
+    POUR_K = [int(L[1:]) - 1 for L in cfg.need("finish.pour_layers")]   # copper layer indexes (L1 = 0)
+    PLANE_K = [int(L[1:]) - 1 for L in cfg.plane_layers()]
+    PWR_K = int(power_plane(cfg)[1:]) - 1
+    BGA_AREAS = {a["name"] for a in cfg.datafile("place.toml")["rule_areas"]["areas"]}
+    silk.setup(cfg)
 
 
 def board_box(b):
@@ -115,7 +137,7 @@ def scene(path):
     for k, lid in enumerate(ids):
         gnd[k], foreign[k] = R.new(), R.new()
         draw_g[k], draw_f[k] = ImageDraw.Draw(gnd[k]), ImageDraw.Draw(foreign[k])
-    pieces = {0: [], 2: [], 3: [], len(ids) - 1: []}   # GND pour pieces on L1, L3, L4, L6: list of point lists (px)
+    pieces = {k: [] for k in POUR_K}                   # ground pour pieces per pour layer: list of point lists (px)
     l5 = R.new(); d5 = ImageDraw.Draw(l5)
     for z in b.Zones():
         if z.GetIsRuleArea():
@@ -130,13 +152,13 @@ def scene(path):
                 pts = [Pp(o.CPoint(j)) for j in range(o.PointCount())]
                 if len(pts) < 3:
                     continue
-                if z.GetNetname() == "GND":
+                if z.GetNetname() == GND:
                     draw_g[k].polygon(pts, fill=1)
                     if k in pieces and not z.IsTeardropArea():
                         pieces[k].append(pts)
                 else:
                     draw_f[k].polygon(pts, fill=1)
-                    if k == 4:
+                    if k == PWR_K:
                         d5.polygon(pts, fill=1)
     vias = []
     for t in b.GetTracks():
@@ -147,7 +169,7 @@ def scene(path):
             continue
         k = ids.index(t.GetLayer())
         w = mm(t.GetWidth()) * RES
-        dr = draw_g[k] if net == "GND" else draw_f[k]
+        dr = draw_g[k] if net == GND else draw_f[k]
         if t.Type() == pcbnew.PCB_ARC_T:
             a = pcbnew.Cast_to_PCB_ARC(t) if hasattr(pcbnew, "Cast_to_PCB_ARC") else t
             s, m, e = a.GetStart(), a.GetMid(), a.GetEnd()
@@ -173,15 +195,15 @@ def scene(path):
                 except Exception:
                     continue
                 pts = [Pp(o.CPoint(j)) for j in range(o.PointCount())]
-                if k in (0, 5):
+                if k in (0, len(ids) - 1):
                     dp.polygon(pts, fill=1)
-                (draw_g[k] if p.GetNetname() == "GND" else draw_f[k]).polygon(pts, fill=1)
+                (draw_g[k] if p.GetNetname() == GND else draw_f[k]).polygon(pts, fill=1)
             if p.HasHole():
                 q = p.GetPosition()
                 hr = max(mm(p.GetDrillSize().x), mm(p.GetDrillSize().y)) / 2
                 c = Pp(q)
                 dp.ellipse([c[0] - hr * RES, c[1] - hr * RES, c[0] + hr * RES, c[1] + hr * RES], fill=1)
-                if p.GetNetname() == "GND":           # with its reach: the fill meets it by thermal spokes
+                if p.GetNetname() == GND:           # with its reach: the fill meets it by thermal spokes
                     sz = p.GetSize(pcbnew.F_Cu)
                     anchors_pad.append((mm(q.x) - OX, mm(q.y) - OY, ref + "." + p.GetNumber(), max(mm(sz.x), mm(sz.y)) / 2 + 0.3))
         for lay in (pcbnew.F_CrtYd, pcbnew.B_CrtYd):
@@ -200,7 +222,7 @@ def scene(path):
     names = []
     for z in areas:
         if not (z.GetDoNotAllowVias() or z.GetDoNotAllowZoneFills() or z.GetDoNotAllowTracks()
-                or z.GetZoneName().startswith("BGA_")):
+                or z.GetZoneName() in BGA_AREAS):
             continue
         names.append(z.GetZoneName() or "(footprint keep-out)")
         o = z.Outline()
@@ -213,8 +235,8 @@ def scene(path):
     for i in range(ol.OutlineCount()):
         ch = ol.Outline(i)
         de.polygon([Pp(ch.CPoint(j)) for j in range(ch.PointCount())], fill=1)
-    import finish_silk
-    labels = finish_silk.reserved(b)
+    from Tools.KiCadDesignTools.finishing import silk
+    labels = silk.reserved(b)
     return {"labels": labels, "R": R, "gnd": {k: R.arr(v) for k, v in gnd.items()}, "foreign": {k: R.arr(v) for k, v in foreign.items()},
             "l5": R.arr(l5), "pads": R.arr(pad_img), "crt": R.arr(crt), "xtal": R.arr(xtal), "ko": R.arr(ko),
             "inside": R.arr(edge), "vias": vias, "anchors_pad": anchors_pad, "pieces": pieces, "areas": names,
@@ -253,7 +275,7 @@ def legal_mask(S, xtal_box=True):
         gin = in1 if k == 0 else in6
         ok &= gin | ~dilate(f[k], R_VIA + OUTER)
     for k in range(1, L6):
-        if k in (1, 4):                                        # L2 ground plane, L5 power plane (below)
+        if k in PLANE_K:                                       # the ground and power planes (the power plane below)
             continue
         ok &= ~dilate(f[k], R_VIA + LANE)
     ok &= erode(S["l5"], R_VIA + L5_WEB)
@@ -271,7 +293,7 @@ def legal_mask(S, xtal_box=True):
     img = Image.new("1", (W, H), 0)
     dv = ImageDraw.Draw(img)
     for x, y, r, dr, net in S["vias"]:
-        gap = (GND_SPACING if net == "GND" else r + R_VIA + VIA_GAP) * RES
+        gap = (GND_SPACING if net == GND else r + R_VIA + VIA_GAP) * RES
         cx, cy = R.px(x, y)
         dv.ellipse([cx - gap, cy - gap, cx + gap, cy + gap], fill=1)
     ok &= ~np.array(img, dtype=bool)
@@ -303,13 +325,13 @@ def piece_masks(S, k):
 
 
 def anchors(S):
-    a = [(x, y) for x, y, r, dr, net in S["vias"] if net == "GND"]
+    a = [(x, y) for x, y, r, dr, net in S["vias"] if net == GND]
     return a + [(x, y) for x, y, ref, reach in S["anchors_pad"]]
 
 
 def anchors_reach(S):
     """[(x, y, reach)]: ground vias (0) and through-hole ground pads (the pad's half size + 0.3: thermal spokes)"""
-    return [(x, y, 0.0) for x, y, r, dr, net in S["vias"] if net == "GND"] + [(x, y, reach) for x, y, ref, reach in S["anchors_pad"]]
+    return [(x, y, 0.0) for x, y, r, dr, net in S["vias"] if net == GND] + [(x, y, reach) for x, y, ref, reach in S["anchors_pad"]]
 
 
 def in_piece(m, x, y, R, reach=0.0):
@@ -347,7 +369,8 @@ def piece_table(S):
 def pieces_report(path, out, name):
     S = scene(path)
     rows = piece_table(S)
-    lines = ["GND pour pieces of %s (L1, L3, L4, L6): layer, area mm2, ground anchors (vias and through-hole ground pads), bbox local mm" % os.path.basename(path)]
+    lines = ["%s pour pieces of %s (%s): layer, area mm2, ground anchors (vias and through-hole ground pads), bbox local mm" % (
+        GND, os.path.basename(path), ", ".join("L%d" % (k + 1) for k in sorted(S["pieces"])))]
     hist = {}
     for k, i, area, n, bb, m in rows:
         L = "L%d" % (k + 1)
@@ -368,8 +391,8 @@ def write_vias(path, pts):
     nl = "\r\n" if "\r\n" in text else "\n"
     blocks = []
     for x, y in pts:
-        blocks.append(nl.join(["\t(via", "\t\t(at %s %s)" % (fmt(x + OX), fmt(y + OY)), "\t\t(size 0.45)", "\t\t(drill 0.2)",
-                               '\t\t(layers "F.Cu" "B.Cu")', '\t\t(net "GND")', '\t\t(uuid "%s")' % uuid.uuid4(), "\t)"]))
+        blocks.append(nl.join(["\t(via", "\t\t(at %s %s)" % (fmt(x + OX), fmt(y + OY)), "\t\t(size %s)" % VIA["size"], "\t\t(drill %s)" % VIA["drill"],
+                               '\t\t(layers "F.Cu" "B.Cu")', '\t\t(net "%s")' % GND, '\t\t(uuid "%s")' % uuid.uuid4(), "\t)"]))
     k = text.rstrip().rfind(")")
     text = text[:k] + nl.join(blocks) + nl + text[k:]
     open(path, "w", encoding="utf-8", newline="").write(text)
@@ -382,12 +405,12 @@ def fmt(v):
 
 def main(path, out, pieces_only=False):
     """pieces_only: a second pass after the refill, for the pieces the first pass's vias created or left with one via"""
-    import finish
+    from Tools.KiCadDesignTools.finishing import finish
     S = scene(path)
     R = S["R"]
     ok, X, Y = legal_mask(S)
     L6 = S["nlayers"] - 1
-    PL = sorted(S["pieces"])                                   # the pour layers: L1, L3, L4, L6
+    PL = sorted(S["pieces"])                                   # the pour layers
     pour = S["gnd"][0] & ~dilate(S["ko"], 0) | S["gnd"][L6]
     D = dense_radius(X, Y, S["inside"])
     # rim of every piece (within 0.5 mm of its edge) asks for D_RIM where that is tighter
@@ -495,7 +518,7 @@ def main(path, out, pieces_only=False):
     os.makedirs(out, exist_ok=True)
     total = len(SX)
     with open(os.path.join(out, "stitch2.txt" if pieces_only else "stitch.txt"), "w", encoding="utf-8") as f:
-        f.write("ground stitching vias added: %d (0.45 / 0.2, F.Cu-B.Cu)\n" % len(added))
+        f.write("ground stitching vias added: %d (%s / %s, F.Cu-B.Cu)\n" % (len(added), VIA["size"], VIA["drill"]))
         f.write("pour sample points (0.5 mm grid, %s): %d; within reach of a ground via before %.1f %%, after %.1f %%\n"
                 % (" + ".join("L%d" % (k + 1) for k in PL), total, 100.0 * cov0.sum() / total, 100.0 * cov.sum() / total))
         names = sorted(set(S["areas"]))

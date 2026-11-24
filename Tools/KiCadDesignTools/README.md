@@ -56,11 +56,16 @@ modules here plus data files.
 | planning | `bga_fan` | `-m ...planning.bga_fan <board dir> --geo <geo.json> --out <dir> [--slot-max] [--time] [--only] [--staged] [--fixa]` (system python: numpy, scipy) | offline BGA block plan (the H743's `bga_fan.json`): supply / ground vias, bottom decoupling, MCU signal fan-out, one MILP on the ball lattice (`bga_block.toml [block]`, `[fan]`) | U31, LAY-2 | |
 | planning | `bga_plan` | `-m ...planning.bga_plan <board dir> dump/plan/check ...` (system python: numpy, scipy, scikit-image) | offline whole-BGA model with the SDRAM line order (try/fanout-first; `check` needs `bga_check`, not in the repository) (`bga_block.toml [block]`, `[plan]`) | | |
 | planning | `bga_grid` | (library) | exact clearance fields on a 0.025 mm grid, via sites, plane-slot chains, grid escapes (layers from `board.toml`) | | |
-| finishing | `teardrops` | `-m ...finishing.teardrops <board>` | teardrops (last; earlier boards) | FIN | |
+| finishing | `finish` | `-m ...finishing.finish <board dir> strip/fiducials/pours/clean/report/stitch/pieces/silk/teardrops <board> [<out> ...]` | the finish step's sub-steps: strip what the last run wrote (`<board>.finish.json`), fiducials (`[finish.fiducials]`), dispatch to the modules below | FIN-1..4 | |
+| finishing | `pour` | (library; `finish pours/clean/report`) | inner ground pours, keep-outs over the BGA rule areas and serpentines, clean-up of narrow copper and small pieces, pour report (`[finish.pour]`, `[finish] pour_layers`) | FIN, PWR | |
+| finishing | `stitch` | (library; `finish stitch/pieces`) | ground stitching vias: piece anchors, then greedy coverage (`[finish.stitch]`) | FIN-4 | |
+| finishing | `silk` | (library; `finish silk`) | references to Fab, fine-pitch mask expansion, labels, glyphs, title blocks (`<board dir>/silk.toml`) | FIN-1..3 | |
+| finishing | `teardrops` | `-m ...finishing.teardrops <board>` or `<board dir> <board>` | teardrops (last): every pad and via (earlier boards), or outside `[finish.teardrops] skip_boxes` and footprints with own keep-outs | FIN | |
 | finishing | `silk_refs` | `-m ...finishing.silk_refs ...` | reference designators on sparse boards | FIN | |
 | views | `pcb_view`, `layer_view` | `-m ...views.<tool> ...` | pictures (qualitative only) | PROC-14 | |
 | views | `copper_view` | `-m ...views.copper_view <board dir> <board> <out> [L1 ...] [--scale] [--window ... --name] [--slots] [--via-labels]` | the filled copper per layer (`[copper_view]`) | PROC-14 | |
 | views | `place_view` | `-m ...views.place_view <board dir> dump [board]` (KiCad's python), then `... draw [x0 y0 x1 y1 name]` (matplotlib) | pads and courtyards of the placement, whole board or a window, into `<board dir>/out/layout/` | PROC-14 | |
+| views | `finish_view` | `-m ...views.finish_view <board dir> <board> <out>` (Edge) | the silkscreen over copper, both sides, close-ups of `[finish.view] close` | PROC-14 | |
 | views | `sketch_view` | `-m ...views.sketch_view <board dir> <out>` (matplotlib) | the copper sketch per layer with the package bodies, rule areas and holes of `place.toml` | PROC-14 | |
 | analysis | `track_shape` | `-m ...analysis.track_shape <board>` | track shapes DRC does not check | RTE-8 | `tests/track_shape` |
 | analysis | `board_diff` | `-m ...analysis.board_diff <a> <b>` | two board files item by item (uuids aside, fills as areas) | | |

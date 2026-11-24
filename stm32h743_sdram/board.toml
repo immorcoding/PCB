@@ -8,7 +8,7 @@
 # [netclass_patterns], [[footprints.derived]]) moved in stage 3A, the schematic's ([schematic]) in stage 3B, the
 # placement's (place.toml, [probe]) in stage 3C, the copper reports' and power planners' ([copper.slots],
 # [copper.table], [copper_view], [power], [bga.<ref>], [tune_sites], place.toml [fan] ref) in stage 3D, the offline
-# BGA planners' (bga_block.toml) in stage 3E.
+# BGA planners' (bga_block.toml) in stage 3E, the finishing's ([finish.*], silk.toml) in stage 3F.
 
 [board]
 name = "stm32h743_sdram"
@@ -107,8 +107,6 @@ checks = "finish"                # build.sh finish-checks wrote into out/finish
 
 [scripts]                        # this folder's scripts the driver calls (stage 3: Tools modules plus data files)
 route_report = "route2_report.py"
-finish = "finish.py"             # strip, fiducials, pours, clean, pieces, stitch, report, silk, teardrops
-finish_view = "finish_view.py"
 publish = "publish.py"
 
 # The schematic (Tools.KiCadDesignTools.schematic: generate, build, check). Title and revision from [board], the
@@ -526,11 +524,80 @@ scale = 45
 window = [11, 58, 36, 73]
 name = "user_lcd"
 
+# The finish step (Tools.KiCadDesignTools.finishing.finish: strip, fiducials, pours, clean, pieces, stitch, report, silk,
+# teardrops; views.finish_view); the silkscreen's items are in silk.toml.
 [finish]
 rest = 20                        # seconds of pause after each refill, DRC and render (the PC hard-reset under load)
 clean_passes = 2                 # narrow copper / small pieces: keep-outs, refill, at most this many passes
 slots = { name = "BOARD", window = [-1, -1, 86, 76], stem = "slots_board", part_b = "power_bga_sites.json", show = "切断|L5 \\+3V3_|每层最长" }
 render = { sides = ["top", "bottom"], width = 1600, height = 1410, quality = "basic", timeout = 180 }   # no ray tracing
+pour_layers = ["L1", "L3", "L4", "L6"]   # layers with ground pours (copper.sketch's L1 / L6, [finish.pour]'s): pieces,
+                                         # narrow copper, stitching
+
+# Fiducials. JLCPCB (https://jlcpcb.com/help/article/how-to-add-edge-rails-fiducials-for-pcb-assembly-order, read
+# 2026-11-23): 1 mm bare copper, solder-mask opening twice the copper (2 mm), three to four along the board edges, at
+# least 3.35 mm from the board edge including the keep-out. KiCad's Fiducial_1mm_Mask2mm (pad clearance 0.6) plus a
+# copper keep-out of 3 mm diameter (no track, via or pour). Centres chosen in free corners (not under a part, not in a
+# routed lane; checked by `fiducials`), keep-out edge >= 3.35 mm from the edge.
+# 2026-11-23: FID2 / FID3 moved off the mounting holes' 6 mm keep-out (courtyard edge 5.55 mm from H804 / H803; now
+# 6.42 / 7.67 mm) and the bottom set off the top one (LAY-5: no bottom pad under a top pad; now 2.2-3.3 mm apart).
+# Each spot has >= 0.35 mm to spare against copper of its side, vias, courtyards and silkscreen (out/stage0/fid_scan.py).
+[finish.fiducials]
+footprint = "Fiducial:Fiducial_1mm_Mask2mm"
+keepout_r = 1.5                  # keep-out radius
+edge_min = 3.35                  # keep-out edge to board edge (JLCPCB)
+top = { FID1 = [8.8, 14.4], FID2 = [75.55, 65.6], FID3 = [6.7, 62.5] }     # top left, bottom right, bottom left
+# the bottom carries parts too (35 SMD, the 0402 decoupling under both BGAs): three on the bottom as well, so that each
+# assembly side has its own set (kicad-happy FD-001 on the first run: no fiducials on B.Cu)
+bottom = { FID4 = [6.4, 15.45], FID5 = [73.5, 66.5], FID6 = [10.0, 62.6] }
+
+# Ground pours on the inner signal layers and their clean-up (Tools.KiCadDesignTools.finishing.pour; SPEC 8, user
+# 2026-11-24). Keep-outs over the BGA rule areas of place.toml [rule_areas] and over every serpentine block.
+[finish.pour]
+layers = ["L3", "L4"]            # the inner signal layers poured with ground here
+clearance = 0.2                  # pour to every other net (no single-ended line turned coplanar closer than this)
+min_width = 0.3
+island_min = 2.0                 # mm2: smaller pieces without a pad are dropped by KiCad
+thermal = 0.254                  # gap and spoke of the rule file's tht_thermal
+tune_margin = 0.5                # serpentine copper -> pour
+sliver_w = 0.6                   # narrow ground copper: narrower than this (twice the pour minimum width) ...
+sliver_len = 1.0                 # ... a spike / sliver this long
+neck_len = 3.0                   # ... or a neck between two wide parts this long
+gap_reach = 0.5                  # return path report: ground copper this close to the track edge
+report_min_width = { L1 = 0.3, L2 = 0.2, L3 = 0.3, L4 = 0.3, L5 = 0.2, L6 = 0.3 }   # narrow copper below this per layer
+
+# Ground stitching vias (Tools.KiCadDesignTools.finishing.stitch, FIN-4 step 1): coverage radii, clearances of a site.
+[finish.stitch]
+via = { size = 0.45, drill = 0.2 }   # through vias of the ground net
+gnd_in = 0.05                    # ground fill round the via on a pour layer
+outer = 0.2                      # outer layers: other nets' copper (pour clearance)
+lane = 0.25                      # inner signal layers: other nets' copper (do not take a lane)
+pad = 0.25                       # any pad
+crt = 0.1                        # courtyards grown by this
+edge = 0.8                       # board edge
+plane_web = 0.6                  # power plane: fill round the via (no notch in a block edge, no antipad chain)
+via_gap = 0.3                    # other vias, edge to edge
+gnd_spacing = 1.2                # ground vias, centre to centre
+d_open = 4.0                     # coverage radius in open pour
+d_dense = 3.0                    # ... within edge_band of the board edge and in the dense boxes
+d_rim = 3.5                      # ... along a pour piece's rim
+edge_band = 4.0
+min_gain = 6.0                   # mm2 of uncovered pour a new via must cover
+piece_min = 1.5                  # mm2: smaller pieces are left as they are (listed)
+long = 5.0                       # longer than this with a mean width under thin: long and thin, a via within end_r
+thin = 2.5                       # of each end
+end_r = 2.5
+# local mm boxes x0 y0 x1 y1: d_dense in these (Ethernet, audio, the switching regulators) and no via in feed_keep
+dense = { Ethernet = [0, 37, 32, 62], audio = [0, 0, 36, 34], "buck 3.3 V" = [62, 27, 85, 39], "buck 5 V" = [60, 37, 85, 52], "12 V input" = [60, 50, 85, 70], "backlight boost" = [47, 46, 60, 64] }
+feed_keep = { "+3V3_MCU tongue" = [39.1, 24.5, 44.7, 31.5], "+3V3_SDRAM tongue" = [55.1, 24.5, 61.5, 30.7] }
+xtal_refs = ["Y201", "Y202", "C225", "C226", "C227", "C228", "Y501", "C508", "C509"]   # no via near these courtyards
+xtal_grow = 0.6
+
+[finish.teardrops]               # Tools.KiCadDesignTools.finishing.teardrops <board dir> <board>
+skip_boxes = [[34.0, 31.0, 46.0, 43.0], [52.0, 29.5, 62.0, 44.5]]   # x0 y0 x1 y1: the BGA rule areas (body + 1 mm)
+
+[finish.view]                    # close-ups of the top silkscreen (Tools.KiCadDesignTools.views.finish_view), x0 y0 x1 y1
+close = { title = [3.5, 32.0, 27.5, 41.0], northeast = [61.0, 0.0, 85.0, 30.0], dc_input = [56.0, 46.0, 85.0, 62.0], lcd_uart = [24.0, 59.0, 70.0, 75.0], codec_mcu_north = [20.0, 12.0, 50.0, 33.0], west = [0.0, 0.0, 26.0, 42.0] }
 
 [publish]
 rest = 20

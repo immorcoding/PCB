@@ -14,7 +14,7 @@ with the length and both ends in local and board-file coordinates; --via-labels 
 (without the prefix [copper_view] label_strip).
 
 board.toml [copper_view]: layers (drawn when none are given), colours ({net: [r, g, b]}; other nets get a colour from
-their name), label_strip; the origin is [board] origin. Arcs are drawn by the board folder's finish_pour.arc_pts.
+their name), label_strip; the origin is [board] origin. Arcs are drawn by finishing.pour.arc_pts.
 """
 import colorsys, json, os, sys, zlib
 import pcbnew
@@ -138,7 +138,7 @@ def main(argv):
                 c, r = P(t.GetPosition()), mm(t.GetWidth(pcbnew.F_Cu)) / 2 * sc
                 d.ellipse([c[0] - r, c[1] - r, c[0] + r, c[1] + r], fill=(255, 255, 255), outline=colour(t.GetNetname()) if t.GetNetname() != "GND" else (40, 90, 40), width=2)
             elif t.GetLayer() == layer and t.Type() == pcbnew.PCB_ARC_T:     # serpentine arcs as arcs, not chords
-                finish_pour = cfg.module("finish_pour")       # the board folder's (moves to Tools in a later batch)
+                from Tools.KiCadDesignTools.finishing import pour as finish_pour
                 s_, m_, e_ = t.GetStart(), t.GetMid(), t.GetEnd()
                 pts = finish_pour.arc_pts((mm(s_.x), mm(s_.y)), (mm(m_.x), mm(m_.y)), (mm(e_.x), mm(e_.y)), 12)
                 d.line([X(x - OX, y - OY) for x, y in pts], fill=colour(t.GetNetname()) + (255,), width=max(1, int(mm(t.GetWidth()) * sc)))

@@ -1,94 +1,50 @@
-"""Silkscreen of the STM32H743 + SDRAM board (finish.py silk; stop 8, FIN-1 to FIN-3).
+"""Silkscreen of a board (finishing stop 8, FIN-1 to FIN-3; run through finishing.finish silk).
 
-Decisions (the user gave the designer the silkscreen, 2026-11-23: "this is your board; pick sizes and icons yourself,
-just make sure JLC can print it"):
-  - Reference designators: none on the silkscreen (FIN-1, all or none: 217 parts on 85 x 75 mm, most of them 0402 and
-    0603 in the BGA fan-outs and round the QFNs, do not take a legible 1.0 mm designator each). Every reference field
-    moves to the Fab layer of its side (assembly drawing); values that were on the silkscreen are hidden.
-  - Sizes (JLCPCB, https://jlcpcb.com/capabilities/pcb-capabilities, read 2026-11-23: character height >= 1.0 mm,
-    line width >= 0.15 mm, width : height 1 : 6 preferred, pad to silkscreen >= 0.15 mm): three sizes of one family,
-    stroke about 1/6.5 of the height: S 1.0 / 0.8 / 0.15 (labels), M 1.3 / 1.0 / 0.2 (connector names), L 1.8 / 1.4 /
-    0.28 (the title). Icons are drawn with 0.15 mm lines (0.2 for the larger ones) in a box of about 2.4 mm.
-  - What is printed: the function of every header / terminal pin (both sides for the through-hole ones), test point
-    names, button and LED names, connector names with a small glyph, the LCD panel's pin 1 and 40 at the FPC ends
-    (SPEC 10), the DC jack's polarity (centre positive, schematic page "Input 12 V ... centre positive") and a warning
-    triangle, DNP beside R707, the A1 corners of the two BGAs (dot), the title block and the designer's mark on the
-    top and a short version on the bottom. Pin-1 marks of the ICs and the polarity marks of the diodes and the
-    tantalum / electrolytic capacitors are the footprints' own silkscreen (kept).
-  - Fine-pitch footprints (U601, U501, J701, J801, pad gaps 0.229 - 0.25 mm): solder-mask expansion 0.06 mm on the
-    footprint (board default 0.1016), so the web between pads is 0.109 - 0.13 mm >= JLCPCB's 0.10 mm minimum
-    (1 oz, green; same page) and >= the board's 0.0813 minimum: no solder-mask bridge, no gang opening.
+    -m Tools.KiCadDesignTools.finishing.finish <board dir> silk <board> <out>
 
-Placement: every item has an anchor (local mm, the wanted centre) and slides up to REACH to clear the pads' solder-
-mask openings + PAD_SILK, other footprints' silkscreen + SILK_GAP, part bodies (courtyard shrunk by BODY_IN: text is
-not printed under a part), the board edge + EDGE and the items placed before it. Vias are tented: a spot clear of
-vias is preferred, one over a via is taken when there is no other. An item that finds no spot is not printed and is
-listed in <out>/silk.txt (fix its anchor here).
+What it does: every reference field moves to the Fab layer of its side (assembly drawing; a footprint that has a Fab
+copy of its reference gets the silkscreen one hidden), values that were on the silkscreen are hidden; the Gerbers
+subtract the solder mask from the silkscreen; the footprints of silk.toml [mask] fine get their own solder-mask
+expansion; then it prints the title blocks ([[title]]), a dot at the A1 corner of each part of [a1] parts, and the
+labels ([texts]) and glyphs ([icons]) of silk.toml. Pin-1 marks and polarity marks are the footprints' own silkscreen
+(kept). The decisions behind the H743 board's choices are in its silk.toml.
+
+Placement: every item has an anchor (local mm, the wanted centre) and slides up to reach ([place] reach, or the item's
+own) to clear the pads' solder-mask openings + pad_silk, other footprints' silkscreen + silk_gap, part bodies
+(courtyard shrunk by body_in: text is not printed under a part), the board edge + edge and the items placed before it
+(+ item_gap). Vias are tented: a spot clear of vias is preferred, one over a via is taken when there is no other. An
+item that finds no spot is not printed and is listed in <out>/silk.txt (fix its anchor in silk.toml).
+
+silk.toml: [sizes] (name -> [height, width, stroke]), [place] (icon_width, pad_silk, silk_gap, body_in, edge,
+item_gap, reach), [mask] fine ({reference: expansion}), [a1] parts ([[reference, ball]]), [labels] texts ([text, x, y, rot,
+size name, side]; rot 90 reads upwards, "B" items are mirrored on the bottom), icons ([glyph, x, y, scale, side,
+reach?]; the glyphs are drawn by glyph() below), [[title]] (side, at, reserve box round the anchor, items: text or
+icon with d = [dx, dy] from the anchor, size or scale, reach). setup(cfg) first.
 """
 import math, os, sys
 import numpy as np
 
-OX, OY = 100.0, 100.0
 RES = 20
-S = (1.0, 0.8, 0.15)
-M = (1.3, 1.0, 0.2)
-L = (1.8, 1.4, 0.28)
-ICON_W = 0.15
-PAD_SILK, SILK_GAP, BODY_IN, EDGE, ITEM_GAP = 0.15, 0.12, 0.25, 0.35, 0.2
-REACH = 1.6
-MASK_FINE = {"U601": 0.06, "U501": 0.06, "J701": 0.06, "J801": 0.06}
 
-# ------------------------------------------------------------------------------------------------ the items
-# text items: (text, x, y, rot, size, side) ; rot 90 = reading upwards. "B" items are mirrored on the bottom.
-TEXT = [
-    # ---- debug UART J804 (pins at y 71.0, x 57.80 / 60.34 / 62.88 / 65.42: GND TX RX 3V3 as seen from the board),
-    # names below the pins between the header and the board edge, both sides
-    ("GND", 57.80, 73.85, 0, S, "F"), ("TX", 60.34, 73.85, 0, S, "F"), ("RX", 62.88, 73.85, 0, S, "F"), ("3V3", 65.42, 73.85, 0, S, "F"),
-    ("UART", 55.2, 71.0, 90, S, "F"),
-    ("GND", 57.80, 73.85, 0, S, "B"), ("TX", 60.34, 73.85, 0, S, "B"), ("RX", 62.88, 73.85, 0, S, "B"), ("3V3", 65.42, 73.85, 0, S, "B"),
-    ("UART", 55.2, 71.0, 90, S, "B"),
-    # ---- SWD J803 (pin 1 +3V3 at (38.65, 2.46), top left): name below it, "1" left of pin 1
-    ("SWD", 40.4, 9.5, 0, M, "F"), ("1", 35.75, 2.46, 0, S, "F"),
-    # ---- CAN terminal J802 (pins at x 79.05: 1 CANH y 21.0, 2 CANL y 17.5, 3 GND y 14.0). On the top the strip
-    # between the ESD diode D801 and the terminal body is 1.2 mm wide: one letter each (H, L, a ground glyph) under
-    # the name CAN; the bottom carries the full names. JP801 closes the 120 ohm termination (TERM, east of it).
-    ("H", 74.65, 21.0, 0, S, "F"), ("L", 74.65, 17.5, 0, S, "F"),
-    ("CANH", 74.75, 21.0, 90, S, "B"), ("CANL", 74.75, 17.5, 90, S, "B"), ("GND", 74.75, 14.0, 90, S, "B"),
-    ("CAN", 79.6, 10.6, 0, M, "F"), ("CAN", 79.6, 10.6, 0, M, "B"),
-    ("TERM", 82.5, 26.2, 0, S, "F"), ("TERM", 82.5, 26.2, 0, S, "B"),
-    # ---- DC input J101 (centre pin 1 = +12V_JACK at (71.3, 59.0); sleeve GND): warning, name, centre-positive symbol
-    ("12V DC", 77.3, 51.35, 0, M, "F"),
-    # ---- connector names
-    ("LINE IN", 35.75, 9.0, 90, S, "F"),
-    ("PHONES", 5.3, 12.4, 0, S, "F"),
-    ("microSD", 64.0, 4.8, 90, S, "F"),
-    ("ETH", 1.5, 35.6, 90, M, "F"),
-    ("LCD", 44.5, 67.9, 0, M, "F"),
-    ("40", 26.6, 70.3, 0, S, "F"), ("1", 50.75, 68.2, 0, S, "F"),     # panel pins (pad 1 = panel 40, left)
-    # ---- test points (TestPoint_Pad 1.5 / 1.0 mm, loops 2.5 mm)
-    ("+12V", 61.3, 50.6, 0, S, "F"), ("+5V", 68.3, 49.5, 0, S, "F"), ("+3V3", 82.7, 36.0, 0, S, "F"),
-    ("+3V3A", 31.8, 22.55, 0, S, "F"), ("+1V8", 29.2, 31.0, 0, S, "F"), ("LED_A", 61.2, 59.0, 0, S, "F"),
-    ("EN3V3", 74.4, 38.1, 0, S, "F"), ("EN3V3A", 37.6, 18.45, 0, S, "F"), ("EN1V8", 7.95, 31.9, 90, S, "F"),
-    ("BOOT0", 44.6, 21.6, 0, S, "F"),
-    ("GND", 60.4, 57.1, 0, S, "F"), ("GND", 4.0, 28.1, 0, S, "F"), ("GND", 51.5, 24.0, 0, S, "F"),
-    ("GND", 60.4, 57.1, 0, S, "B"), ("GND", 4.0, 28.1, 0, S, "B"), ("GND", 51.5, 24.0, 0, S, "B"),
-    # ---- buttons, LEDs, DNP
-    ("RESET", 45.75, 12.0, 90, S, "F"), ("USER", 16.0, 70.4, 0, S, "F"),
-    ("PWR", 71.0, 10.0, 0, S, "F"), ("LED1", 14.0, 61.3, 0, S, "F"), ("LED2", 17.9, 61.3, 0, S, "F"),
-    ("DNP", 55.2, 65.6, 0, S, "F"),
-]
-# icons: (kind, x, y, scale, side[, reach])
-ICONS = [
-    ("headphones", 5.3, 9.9, 1.0, "F"), ("linein", 35.75, 14.3, 0.8, "F"), ("sdcard", 64.0, 9.3, 0.8, "F"),
-    ("ethernet", 3.5, 36.0, 1.0, "F"), ("display", 41.3, 67.9, 1.0, "F"), ("dcjack", 82.3, 51.35, 0.95, "F"),
-    ("warning", 73.3, 51.3, 0.8, "F"), ("bug", 43.9, 9.5, 0.9, "F"), ("can", 76.3, 10.6, 0.9, "F"),
-    ("reset", 45.75, 15.4, 0.8, "F"), ("button", 13.0, 70.4, 0.8, "F"),
-    ("ground", 74.65, 14.0, 0.5, "F"),
-    # (TP109's loop at (60.4, 54.4) has its GND name but no glyph: no free spot within 2.5 mm of it)
-("ground", 6.4, 28.3, 0.7, "F"), ("ground", 53.6, 24.0, 0.7, "F"),
-]
-TITLE_F = (15.5, 34.9)          # top: centre of the title's first line (free strip x 4.6 - 26, y 33.8 - 39.8)
-TITLE_B = (40.0, 50.5)          # bottom: short version (centre of its first line)
+
+def setup(cfg):
+    """silk.toml as this module's globals."""
+    global OX, OY, SIZES, ICON_W, PAD_SILK, SILK_GAP, BODY_IN, EDGE, ITEM_GAP, REACH, MASK_FINE, A1, TEXT, ICONS, TITLES
+    d = cfg.datafile("silk.toml")
+    if not d:
+        raise ValueError("%s: no silk.toml" % cfg.dir)
+    OX, OY = cfg.origin
+    SIZES = {k: tuple(v) for k, v in d["sizes"].items()}
+    p = d["place"]
+    ICON_W = p["icon_width"]
+    PAD_SILK, SILK_GAP, BODY_IN, EDGE, ITEM_GAP = p["pad_silk"], p["silk_gap"], p["body_in"], p["edge"], p["item_gap"]
+    REACH = p["reach"]
+    MASK_FINE = dict(d["mask"]["fine"])
+    A1 = [tuple(r) for r in d["a1"]["parts"]]
+    # text items: (text, x, y, rot, size, side); icons: (kind, x, y, scale, side[, reach])
+    TEXT = [(s, x, y, rot, SIZES[size], side) for s, x, y, rot, size, side in d["labels"]["texts"]]
+    ICONS = [tuple(r) for r in d["labels"]["icons"]]
+    TITLES = d["title"]
 
 
 def mm_box(bb):
@@ -183,14 +139,15 @@ class Field:
             return False, False
         return not self.hard[r0:r1, c0:c1].any(), not self.soft[r0:r1, c0:c1].any()
 
-    def block(self, box, grow=ITEM_GAP):
-        r0, r1, c0, c1 = self.rect(box, grow)
+    def block(self, box, grow=None):
+        r0, r1, c0, c1 = self.rect(box, ITEM_GAP if grow is None else grow)
         self.hard[r0:r1, c0:c1] = True
 
 
-def spot(field, box_at, x, y, reach=REACH):
+def spot(field, box_at, x, y, reach=None):
     """Nearest position to (x, y) (0.05 steps, within reach) where box_at(x, y) is free of hard obstacles; a spot also
     clear of vias is taken when it is at most 0.6 mm further. -> (x, y, distance, over_via) or None"""
+    reach = REACH if reach is None else reach
     n = int(round(reach / 0.05))
     cands = sorted((i * i + j * j, i, j) for i in range(-n, n + 1) for j in range(-n, n + 1) if i * i + j * j <= n * n)
     first = None
@@ -287,8 +244,9 @@ def glyph_box(kind, s):
     return (min(xs) * s - pad, min(ys) * s - pad, max(xs) * s + pad, max(ys) * s + pad)
 
 
-def draw_glyph(b, kind, x, y, s, side, width=ICON_W):
+def draw_glyph(b, kind, x, y, s, side, width=None):
     import pcbnew
+    width = ICON_W if width is None else width
     layer = pcbnew.F_SilkS if side == "F" else pcbnew.B_SilkS
     fx = -1 if side == "B" else 1          # the bottom is seen mirrored: draw the glyph mirrored so it reads right
     V = lambda px, py: pcbnew.VECTOR2I(pcbnew.FromMM(OX + x + fx * px * s), pcbnew.FromMM(OY + y + py * s))
@@ -376,10 +334,10 @@ def mask_fine(b):
 
 
 def a1_dots(b):
-    """A1 corner dots of the two BGAs, outside the body, at the corner nearest ball A1"""
+    """A1 corner dots of the parts of [a1] (the BGAs), outside the body, at the corner nearest that ball"""
     import pcbnew
     res = []
-    for ref, ball in (("U201", "A1"), ("U301", "A1")):
+    for ref, ball in A1:
         fp = b.FindFootprintByReference(ref)
         x0, y0, x1, y1 = mm_box(fp.GetCourtyard(pcbnew.F_CrtYd).BBox())
         p = next(q for q in fp.Pads() if q.GetNumber() == ball)
@@ -392,8 +350,7 @@ def a1_dots(b):
 
 def main(path, out):
     import pcbnew
-    sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-    import finish
+    from Tools.KiCadDesignTools.finishing import finish
     b = pcbnew.LoadBoard(path)
     moved, hidden = fields_to_fab(b)
     b.GetPlotOptions().SetSubtractMaskFromSilk(True)           # Gerbers: silkscreen clipped at solder-mask openings
@@ -469,15 +426,15 @@ def main(path, out):
 
 
 def title_block(b, field, place_text, place_icon, log, stuck):
-    x, y = TITLE_F
-    place_text("STM32H743 + SDRAM", x, y, 0, M, "F", reach=0.6)
-    place_text("rev A  2026-11  6 layers", x, y + 1.75, 0, S, "F", reach=0.4)
-    place_icon("mark", x - 6.6, y + 3.55, 0.85, "F", reach=0.4)
-    place_text("Designed by Claude", x + 1.2, y + 3.6, 0, S, "F", reach=0.4)
-    bx, by = TITLE_B
-    place_text("STM32H743 + SDRAM rev A", bx, by, 0, M, "B", reach=3.0)
-    place_icon("mark", bx + 9.9, by + 2.0, 0.85, "B", reach=3.0)     # seen from below: left of the text
-    place_text("Designed by Claude 2026-11", bx + 1.0, by + 2.0, 0, S, "B", reach=3.0)
+    """The [[title]] blocks of silk.toml in order, each item at the block's anchor + d."""
+    for tb in TITLES:
+        x, y = tb["at"]
+        for it in tb["items"]:
+            dx, dy = it["d"]
+            if "text" in it:
+                place_text(it["text"], x + dx, y + dy, 0, SIZES[it["size"]], tb["side"], reach=it["reach"])
+            else:
+                place_icon(it["icon"], x + dx, y + dy, it["scale"], tb["side"], reach=it["reach"])
 
 
 def reserved(b, grow=0.4):
@@ -490,8 +447,8 @@ def reserved(b, grow=0.4):
     for kind, x, y, sc, side, *reach in ICONS:
         bx = glyph_box(kind, sc)
         out.append((x - max(-bx[0], bx[2]) - grow, y + bx[1] - grow, x + max(-bx[0], bx[2]) + grow, y + bx[3] + grow))
-    x, y = TITLE_F
-    out.append((x - 9.5, y - 1.2, x + 9.5, y + 4.4))
-    x, y = TITLE_B
-    out.append((x - 12.0, y - 1.2, x + 12.0, y + 2.9))
+    for tb in TITLES:
+        x, y = tb["at"]
+        r0, r1, r2, r3 = tb["reserve"]
+        out.append((x + r0, y + r1, x + r2, y + r3))
     return out

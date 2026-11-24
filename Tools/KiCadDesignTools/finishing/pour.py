@@ -1,68 +1,83 @@
-"""Ground pours on the inner signal layers, pour keep-outs, and the clean-up of fragments and narrow copper of the
-STM32H743 + SDRAM board (finish.py pours / clean / report; stop 8, SPEC section 8, user 2026-11-24: "pour ground on the
-inner signal layers too, it shortens the return paths; keep-outs first; remove fragments and narrow copper on every
-layer; part of the finishing, before the stitching vias and the silkscreen").
+"""Ground pours on the inner signal layers, pour keep-outs, and the clean-up of fragments and narrow copper (finishing
+stop 8, run through finishing.finish pours / clean / report; the H743 board: SPEC section 8, user 2026-11-24: "pour
+ground on the inner signal layers too, it shortens the return paths; keep-outs first; remove fragments and narrow
+copper on every layer; part of the finishing, before the stitching vias and the silkscreen").
 
-    finish.py pours   <unfilled board> <out>        keep-outs and the L3 / L4 ground pours (pcbnew save)
-    finish.py clean   <refilled board> <out>        keep-outs over the ground pieces no via holds (pcbnew save)
-    finish.py report  <refilled board> <out> <name> pieces, widths, areas, return paths (reads only)
+    -m Tools.KiCadDesignTools.finishing.finish <board dir> pours   <unfilled board> <out>        keep-outs and the inner ground pours (pcbnew save)
+    -m Tools.KiCadDesignTools.finishing.finish <board dir> clean   <refilled board> <out>        keep-outs over the ground pieces no via holds (pcbnew save)
+    -m Tools.KiCadDesignTools.finishing.finish <board dir> report  <refilled board> <out> <name> pieces, widths, areas, return paths (reads only)
 
-Why here and not in copper.sketch: the inner pours only make sense with their keep-outs, and the keep-outs over the
-serpentines come from the tuning blocks the route2 groups wrote (a re-tune moves them). route2 applies copper.sketch
-before any group is built, so a sketch region would be filled in route2 without those keep-outs and without the
-stitching vias that hold its pieces. The outline is the whole board, as for the `whole` regions of copper.sketch
-(nothing to draw by hand, PWR-3 / PWR-7 untouched); the sketch's comment on L3 points here.
+Why here and not in the copper sketch: the inner pours only make sense with their keep-outs, and the keep-outs over the
+serpentines come from the tuning blocks the route groups wrote (a re-tune moves them). The route step applies the
+sketch before any group is built, so a sketch region would be filled there without those keep-outs and without the
+stitching vias that hold its pieces. The outline is the whole board, as for the `whole` regions of the copper sketch
+(nothing to draw by hand, PWR-3 / PWR-7 untouched).
 
-Keep-outs (rule areas that forbid zone fills only; names start with FIN_ so that `finish.py strip` takes them away):
-  FIN_NOPOUR_IN_MCU / _SDRAM  L3 + L4, the outline of the BGA rule area (the via field would shred the pour; the user
-                              keeps outer pours out of the ball field too, NOPOUR_L1_*)
-  FIN_TUNE_<layer>_<net>[_k]  every serpentine block on its layer, TUNE_MARGIN from its copper. A block is found on the
-                              board, not typed: the arcs only busroute's tune.py writes (routes_sdram.py, routes_mcu_nw.py,
-                              routes_local_eth.py TUNING), joined through the legs between them; its box is the smaller
-                              of the 0 / 45 degree rectangles round that copper.
-  FIN_KO_<layer>_<k>[_j]      clean-up (`clean`): a ground piece smaller than ISLAND_MIN without a pad (any pour layer),
+Keep-outs (rule areas that forbid zone fills only; names start with FIN_ so that `finish strip` takes them away):
+  FIN_NOPOUR_IN_<label>       the inner pour layers, the outline of each BGA rule area (place.toml [rule_areas]: the
+                              via field would shred the pour; the user keeps outer pours out of the ball field too)
+  FIN_TUNE_<layer>_<net>[_k]  every serpentine block on its layer, tune_margin from its copper. A block is found on the
+                              board, not typed: the arcs only busroute's tune.py writes, joined through the legs
+                              between them; its box is the smaller of the 0 / 45 degree rectangles round that copper.
+  FIN_KO_<layer>_<k>[_j]      clean-up (`clean`): a ground piece smaller than island_min without a pad (any pour layer),
                               or an inner one no via or through-hole ground pad holds after the stitching (no legal via
-                              site): the piece's outline grown by KO_GROW; narrow ground copper (below SLIVER_W) that is
-                              a spike / sliver of SLIVER_LEN or more or a neck of NECK_LEN or more: 0 / 45 degree boxes
+                              site): the piece's outline grown by KO_GROW; narrow ground copper (below sliver_w) that is
+                              a spike / sliver of sliver_len or more or a neck of neck_len or more: 0 / 45 degree boxes
                               over it (one, or one per 0.6 / 0.3 mm chunk where a single box would cover other ground)
-Pours FIN_GND_L3 / FIN_GND_L4: net GND, priority 0, clearance CLEARANCE to every other net (a single-ended line is not
-turned into a coplanar one closer than that), minimum width MIN_WIDTH, islands removed below ISLAND_MIN mm2 (KiCad's
-area mode: an island is a piece with no pad, docs/tools.md; "always" would drop every piece held only by vias, which
-on an inner layer is nearly all of them), pads by the rule file's zone_connection (the zone's own setting is only
-the fallback), thermal gap and spoke 0.254 as the rule file, solid fill, no smoothing.
+Pours FIN_GND_<layer>: the ground net, priority 0, clearance to every other net (a single-ended line is not turned into
+a coplanar one closer than that), minimum width, islands removed below island_min mm2 (KiCad's area mode: an island is
+a piece with no pad, docs/tools.md; "always" would drop every piece held only by vias, which on an inner layer is
+nearly all of them), pads by the rule file's zone_connection (the zone's own setting is only the fallback), thermal gap
+and spoke as the rule file, solid fill, no smoothing.
 
-`report` measures every pour layer from the saved fill: per layer the ground pieces (area, ground vias / through-hole
-ground pads in it, whether a pad of GND is in it), the local power regions' pieces, the area, and the narrow copper:
+`report` measures every copper layer from the saved fill: per layer the ground pieces (area, ground vias / through-hole
+ground pads in it, whether a ground pad is in it), the local power regions' pieces, the area, and the narrow copper:
 the parts of the fill that an opening with a disc of the layer's minimum width removes and that reach more than
 DEPTH beyond the opened fill (a corner rounded by the disc is not narrow copper), with a ring round every
-through-hole pad left out (its thermal spokes are 0.254 by the rule file). A narrow part that touches the wide copper
-in one place only is a spike, in two or more a neck, in none a sliver piece. For L4 / L6 tracks that run in a gap
-between the L5 blocks (route2_report.py's [跨缝] run) it gives the length with ground copper within 0.5 mm beside it
-on its own layer.
+through-hole pad left out (its thermal spokes come from the rule file). A narrow part that touches the wide copper
+in one place only is a spike, in two or more a neck, in none a sliver piece. For tracks on the power plane's
+neighbouring signal layers ([copper.slots] ref_layers) that run in a gap between the power plane's sketch blocks
+(the route report's [跨缝] run) it gives the length with ground copper within gap_reach beside it on its own layer.
+
+board.toml [finish.pour]: layers (the inner layers poured here), clearance, min_width, island_min, thermal, tune_margin,
+sliver_w, sliver_len, neck_len, gap_reach, report_min_width ({layer: minimum width}); [finish] pour_layers (every layer
+with ground pours: pieces and narrow copper); [power] ground; the BGA rule areas from place.toml [rule_areas]; the
+power plane from the layer roles; the copper sketch from [copper] sketch. setup(cfg) first.
 """
 import json, math, os, sys, uuid
 
 import numpy as np
 
-HERE = os.path.dirname(os.path.abspath(__file__))
-sys.path.insert(0, os.path.dirname(HERE))                     # interim (Tools/ consolidation stage 1): the repository root, for Tools.KiCadDesignTools
-OX, OY = 100.0, 100.0
-INNER = ("L3", "L4")
-CLEARANCE, MIN_WIDTH = 0.2, 0.3
-ISLAND_MIN = 2.0                       # mm2: smaller pieces without a pad are dropped by KiCad
-THERMAL = 0.254                        # gap and spoke of the rule file's tht_thermal
-TUNE_MARGIN = 0.5                      # serpentine copper -> pour
 KO_GROW = 0.05                         # an unheld piece's keep-out: its outline grown by this
-BGA = {"MCU": "BGA_MCU", "SDRAM": "BGA_SDRAM"}
-POUR_LAYERS = ("L1", "L3", "L4", "L6")
-MINW = {"L1": 0.3, "L3": MIN_WIDTH, "L4": MIN_WIDTH, "L6": 0.3, "L2": 0.2, "L5": 0.2}
 RES = 40                               # report raster: px per mm (0.025 mm)
 DEPTH = 0.1                            # a narrow part reaches this far beyond the opened fill
 TH_RING = 0.6                          # around a through-hole pad: spokes, not measured
-SLIVER_W = 0.6                         # narrow ground copper: narrower than this (twice the pour minimum width) ...
-SLIVER_LEN, NECK_LEN = 1.0, 3.0        # ... a spike / sliver this long, or a neck between two wide parts this long
-GAP_REACH = 0.5                        # return path: ground copper this close to the track edge
 UUID_NS = uuid.UUID("0c9d8a52-7a43-4f0e-9b8e-5f2d1c7e4a11")
+
+
+def setup(cfg):
+    """The board's values (board.toml, place.toml) as this module's globals."""
+    from Tools.KiCadDesignTools.copper.power_ties import power_plane
+    global CFG, OX, OY, INNER, CLEARANCE, MIN_WIDTH, ISLAND_MIN, THERMAL, TUNE_MARGIN, BGA, POUR_LAYERS, ALL_LAYERS, MINW
+    global SLIVER_W, SLIVER_LEN, NECK_LEN, GAP_REACH, GND, PLANE, GAP_LAYERS
+    p = cfg.need("finish.pour")
+    CFG = cfg
+    OX, OY = cfg.origin
+    INNER = tuple(p["layers"])
+    CLEARANCE, MIN_WIDTH = p["clearance"], p["min_width"]
+    ISLAND_MIN = p["island_min"]           # mm2: smaller pieces without a pad are dropped by KiCad
+    THERMAL = p["thermal"]                 # gap and spoke of the rule file's tht_thermal
+    TUNE_MARGIN = p["tune_margin"]         # serpentine copper -> pour
+    BGA = {a["label"]: a["name"] for a in cfg.datafile("place.toml")["rule_areas"]["areas"]}
+    POUR_LAYERS = tuple(cfg.need("finish.pour_layers"))
+    ALL_LAYERS = tuple(l.L for l in cfg.layers)
+    MINW = dict(p["report_min_width"])
+    SLIVER_W = p["sliver_w"]               # narrow ground copper: narrower than this (twice the pour minimum width) ...
+    SLIVER_LEN, NECK_LEN = p["sliver_len"], p["neck_len"]   # ... a spike / sliver this long, or a neck this long
+    GAP_REACH = p["gap_reach"]             # return path: ground copper this close to the track edge
+    GND = cfg.need("power.ground")
+    PLANE = power_plane(cfg)
+    GAP_LAYERS = tuple(cfg.need("copper.slots.ref_layers")[PLANE])
 
 
 def _p():
@@ -186,8 +201,8 @@ def block_box(pts, grow):
 # ---------------------------------------------------------------------------------------------------- pours
 def pours(path, out):
     """Keep-outs over the BGA via fields (L3 / L4) and over every serpentine block (its layer), then the L3 / L4
-    ground pours. Expects an unfilled board (finish.py strip took the last run's away)."""
-    import finish
+    ground pours. Expects an unfilled board (finish strip took the last run's away)."""
+    from Tools.KiCadDesignTools.finishing import finish
     pcbnew = _p()
     b = pcbnew.LoadBoard(path)
     lid = layer_ids(b)
@@ -223,7 +238,7 @@ def pours(path, out):
         made.append({"name": name, "layers": [blk["layer"]], "box": [min(xs), min(ys), max(xs), max(ys)], "angle": ang,
                      "size": [lu, lv], "arcs": blk["arcs"],
                      "why": "serpentine of %s (%d arcs), %.1f mm from its copper" % (blk["net"], blk["arcs"], TUNE_MARGIN)})
-    gnd = b.FindNet("GND")
+    gnd = b.FindNet(GND)
     for L in INNER:
         name = "FIN_GND_%s" % L
         z = pcbnew.ZONE(b)
@@ -250,27 +265,28 @@ def pours(path, out):
         x0, y0, x1, y1 = m["box"]
         lines.append("  %-28s %-6s box (%.2f, %.2f)-(%.2f, %.2f)%s  %s" % (
             m["name"], "+".join(m["layers"]), x0, y0, x1, y1, "  45 deg, %.2f x %.2f" % tuple(m["size"]) if m.get("angle") else "", m["why"]))
-    lines.append("ground pours FIN_GND_L3 / FIN_GND_L4: clearance %.2f, minimum width %.2f, islands without a pad below %.1f mm2 removed, thermal %.3f"
-                 % (CLEARANCE, MIN_WIDTH, ISLAND_MIN, THERMAL))
+    lines.append("ground pours %s: clearance %.2f, minimum width %.2f, islands without a pad below %.1f mm2 removed, thermal %.3f"
+                 % (" / ".join("FIN_GND_" + L for L in INNER), CLEARANCE, MIN_WIDTH, ISLAND_MIN, THERMAL))
     lines += log
     open(os.path.join(out, "keepouts.txt"), "w", encoding="utf-8").write("\n".join(lines) + "\n")
     n_t = sum(1 for m in made if m["name"].startswith("FIN_TUNE_"))
-    print("pours: FIN_GND_L3, FIN_GND_L4; keep-outs: %d BGA (L3 + L4), %d serpentine blocks (%s)%s" % (
-        len(bga), n_t, ", ".join("%s %d" % (L, sum(1 for m in made if m["name"].startswith("FIN_TUNE_%s_" % L))) for L in POUR_LAYERS),
+    print("pours: %s; keep-outs: %d BGA (%s), %d serpentine blocks (%s)%s" % (
+        ", ".join("FIN_GND_" + L for L in INNER), len(bga), " + ".join(INNER), n_t, ", ".join("%s %d" % (L, sum(1 for m in made if m["name"].startswith("FIN_TUNE_%s_" % L))) for L in POUR_LAYERS),
         "; " + "; ".join(log) if log else ""))
 
 
 # ---------------------------------------------------------------------------------------------------- pieces
-def gnd_pieces(b, layers=POUR_LAYERS):
-    """Ground pour pieces from the saved fill: [{layer, zone, area, anchors, pad, poly, bbox}]."""
+def gnd_pieces(b, layers=None):
+    """Ground pour pieces from the saved fill: [{layer, zone, area, anchors, pad, poly, bbox}] (default: the pour layers)."""
+    layers = layers or POUR_LAYERS
     pcbnew = _p()
     mm = pcbnew.ToMM
     lid = layer_ids(b)
-    vias = [t.GetPosition() for t in b.GetTracks() if t.Type() == pcbnew.PCB_VIA_T and t.GetNetname() == "GND"]
+    vias = [t.GetPosition() for t in b.GetTracks() if t.Type() == pcbnew.PCB_VIA_T and t.GetNetname() == GND]
     th, smd = [], {}
     for fp in b.GetFootprints():
         for p in fp.Pads():
-            if p.GetNetname() != "GND":
+            if p.GetNetname() != GND:
                 continue
             if p.HasHole():                   # reached by thermal spokes: the fill touches a circle round the pad
                 sz = p.GetSize(pcbnew.F_Cu)
@@ -280,7 +296,7 @@ def gnd_pieces(b, layers=POUR_LAYERS):
                     smd.setdefault(L, []).append(p)
     out = []
     for z in b.Zones():
-        if z.GetIsRuleArea() or z.IsTeardropArea() or z.GetNetname() != "GND":
+        if z.GetIsRuleArea() or z.IsTeardropArea() or z.GetNetname() != GND:
             continue
         for L in layers:
             if not z.IsOnLayer(lid[L]):
@@ -328,17 +344,17 @@ def scene_masks(b):
             if p.HasHole():
                 rr = (max(mm(p.GetSize(pcbnew.F_Cu).x), mm(p.GetSize(pcbnew.F_Cu).y)) / 2 + TH_RING) * R.res
                 dr.ellipse([c[0] - rr, c[1] - rr, c[0] + rr, c[1] + rr], fill=1)
-            elif p.GetNetname() == "GND":
+            elif p.GetNetname() == GND:
                 for L in POUR_LAYERS:
                     if p.IsOnLayer(lid[L]):
                         o = p.GetEffectivePolygon(lid[L], pcbnew.ERROR_OUTSIDE).Outline(0)
                         dp[L].polygon([R.px(mm(o.CPoint(k).x) - OX, mm(o.CPoint(k).y) - OY) for k in range(o.PointCount())], fill=1)
     vias = R.img(); dv = ImageDraw.Draw(vias)
     for t in b.GetTracks():
-        if t.Type() == pcbnew.PCB_VIA_T and t.GetNetname() == "GND":
+        if t.Type() == pcbnew.PCB_VIA_T and t.GetNetname() == GND:
             c = R.px(mm(t.GetPosition().x) - OX, mm(t.GetPosition().y) - OY); rr = mm(t.GetWidth(pcbnew.F_Cu)) / 2 * R.res
             dv.ellipse([c[0] - rr, c[1] - rr, c[0] + rr, c[1] + rr], fill=1)
-    gnd = {L: fill_mask(b, R, L, lambda z: z.GetNetname() == "GND") for L in POUR_LAYERS}
+    gnd = {L: fill_mask(b, R, L, lambda z: z.GetNetname() == GND) for L in POUR_LAYERS}
     return R, gnd, np.array(ring, dtype=bool), {L: np.array(v, dtype=bool) for L, v in pads.items()}, np.array(vias, dtype=bool)
 
 
@@ -390,7 +406,7 @@ def clean(path, out, stage):
     stitching): keep-outs over the inner ground pieces that no via or through-hole ground pad holds (no legal via site
     was found in them) or that are smaller than ISLAND_MIN without a pad; outer-layer pieces without a via are listed
     (they hold a pad). Returns the number of keep-outs added."""
-    import finish
+    from Tools.KiCadDesignTools.finishing import finish
     pcbnew = _p()
     b = pcbnew.LoadBoard(path)
     lid = layer_ids(b)
@@ -610,10 +626,10 @@ def gap_runs(b, R, gnd_masks):
     from Tools.KiCadDesignTools.copper import cu_sketch
     from Tools.KiCadDesignTools.routing.busroute.geom import in_poly, pt_seg
     mm = pcbnew.ToMM
-    sk = cu_sketch.load_sketch(os.path.join(HERE, "copper.sketch"), 6)
+    sk = cu_sketch.load_sketch(CFG.path(CFG.need("copper.sketch")), len(ALL_LAYERS))
     gap = sk.p["gap"] / 1e6
     ox, oy = sk.origin[0] / 1e6 - OX, sk.origin[1] / 1e6 - OY
-    blocks = [[(x / 1e6 + ox, y / 1e6 + oy) for x, y in r.pts] for r in sk.regions if not r.whole and r.layer == 5]
+    blocks = [[(x / 1e6 + ox, y / 1e6 + oy) for x, y in r.pts] for r in sk.regions if not r.whole and r.layer == int(PLANE[1:])]
     boxes = [(min(q[0] for q in p) - gap, min(q[1] for q in p) - gap, max(q[0] for q in p) + gap, max(q[1] for q in p) + gap) for p in blocks]
 
     def in_gap(p):
@@ -625,9 +641,9 @@ def gap_runs(b, R, gnd_masks):
     near = {}
     res = {}
     for t in b.GetTracks():
-        if t.Type() != pcbnew.PCB_TRACE_T or t.GetNetname() == "GND":
+        if t.Type() != pcbnew.PCB_TRACE_T or t.GetNetname() == GND:
             continue
-        L = {lid["L4"]: "L4", lid["L6"]: "L6"}.get(t.GetLayer())
+        L = {lid[G]: G for G in GAP_LAYERS}.get(t.GetLayer())
         if not L:
             continue
         a = (mm(t.GetStart().x) - OX, mm(t.GetStart().y) - OY); c = (mm(t.GetEnd().x) - OX, mm(t.GetEnd().y) - OY)
@@ -642,7 +658,7 @@ def gap_runs(b, R, gnd_masks):
                 continue
             px, py = R.px(*p)
             covered = bool(near[(L, w)][int(round(py)), int(round(px))])
-            r = res.setdefault(t.GetNetname(), {"L4": [0.0, 0.0], "L6": [0.0, 0.0]})
+            r = res.setdefault(t.GetNetname(), {G: [0.0, 0.0] for G in GAP_LAYERS})
             r[L][0] += Ln / k
             r[L][1] += Ln / k if covered else 0.0
     return res
@@ -665,12 +681,12 @@ def report(path, out, name):
                 rr = (max(mm(p.GetSize(pcbnew.F_Cu).x), mm(p.GetSize(pcbnew.F_Cu).y)) / 2 + TH_RING) * R.res
                 dr.ellipse([c[0] - rr, c[1] - rr, c[0] + rr, c[1] + rr], fill=1)
     ring = np.array(ring, dtype=bool)
-    pieces = gnd_pieces(b, layers=("L1", "L2", "L3", "L4", "L5", "L6"))
+    pieces = gnd_pieces(b, layers=ALL_LAYERS)
     rep = {"board": os.path.basename(path), "layers": {}}
     gnd_masks = {}
     lines = ["pour copper of %s (saved fill; local mm)" % os.path.basename(path)]
-    for L in ("L1", "L2", "L3", "L4", "L5", "L6"):
-        gm = fill_mask(b, R, L, lambda z: z.GetNetname() == "GND")
+    for L in ALL_LAYERS:
+        gm = fill_mask(b, R, L, lambda z: z.GetNetname() == GND)
         gnd_masks[L] = gm
         own = [p for p in pieces if p["layer"] == L]
         row = {"gnd_pieces": len(own), "gnd_area": round(sum(p["area"] for p in own), 2)}
@@ -685,7 +701,7 @@ def report(path, out, name):
         # other nets' zones on the layer (local power regions, plane blocks)
         others = {}
         for z in b.Zones():
-            if z.GetIsRuleArea() or z.IsTeardropArea() or z.GetNetname() == "GND" or not z.IsOnLayer(lid[L]):
+            if z.GetIsRuleArea() or z.IsTeardropArea() or z.GetNetname() == GND or not z.IsOnLayer(lid[L]):
                 continue
             f = z.GetFilledPolysList(lid[L])
             others[z.GetZoneName()] = [round(f.Outline(i).Area() / 1e12, 3) for i in range(f.OutlineCount())]
@@ -722,7 +738,7 @@ def report(path, out, name):
     # serpentine copper to the ground fill of its layer (TUNE_MARGIN asked): exact, by bisection on KiCad's collision test
     fills = {}
     for z in b.Zones():
-        if z.GetIsRuleArea() or z.IsTeardropArea() or z.GetNetname() != "GND":
+        if z.GetIsRuleArea() or z.IsTeardropArea() or z.GetNetname() != GND:
             continue
         for l in lid.values():
             if z.IsOnLayer(l):
@@ -749,13 +765,14 @@ def report(path, out, name):
     lines.append("serpentine copper to the ground fill of its layer (nearest; - = none within 1.5 mm): %s" % (
         ", ".join("%s %s" % (L, "-" if v is None else "%.3f mm (%s at %.2f, %.2f)" % v) for L, v in sorted(tune_gap.items()))))
     runs = gap_runs(b, R, gnd_masks)
-    tot = {L: [sum(r[L][0] for r in runs.values()), sum(r[L][1] for r in runs.values())] for L in ("L4", "L6")}
+    ga, gb = GAP_LAYERS
+    tot = {L: [sum(r[L][0] for r in runs.values()), sum(r[L][1] for r in runs.values())] for L in GAP_LAYERS}
     rep["gap_runs"] = {"total": tot, "nets": {n: r for n, r in runs.items()}}
-    lines.append("tracks in a gap between the L5 blocks: L4 %.2f mm (%.2f with ground within %.1f mm beside), L6 %.2f mm (%.2f); total %.2f mm, %.2f covered" % (
-        tot["L4"][0], tot["L4"][1], GAP_REACH, tot["L6"][0], tot["L6"][1], tot["L4"][0] + tot["L6"][0], tot["L4"][1] + tot["L6"][1]))
-    for n in sorted(runs, key=lambda n: -(runs[n]["L4"][0] + runs[n]["L6"][0])):
+    lines.append("tracks in a gap between the %s blocks: %s %.2f mm (%.2f with ground within %.1f mm beside), %s %.2f mm (%.2f); total %.2f mm, %.2f covered" % (
+        PLANE, ga, tot[ga][0], tot[ga][1], GAP_REACH, gb, tot[gb][0], tot[gb][1], tot[ga][0] + tot[gb][0], tot[ga][1] + tot[gb][1]))
+    for n in sorted(runs, key=lambda n: -(runs[n][ga][0] + runs[n][gb][0])):
         r = runs[n]
-        for L in ("L4", "L6"):
+        for L in GAP_LAYERS:
             if r[L][0] > 0.05:
                 lines.append("      %-14s %s %.2f mm in a gap, %.2f with ground beside" % (n, L, r[L][0], r[L][1]))
     os.makedirs(out, exist_ok=True)

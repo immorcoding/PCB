@@ -506,7 +506,7 @@ class Build:
         copy = os.environ.get("FINISH_BOARD")
         BRD = fw(copy) if copy else self.BRD
         rest = int(fin.get("rest", 20))
-        F = self.script("finish")
+        F, D = "Tools.KiCadDesignTools.finishing.finish", self.D
 
         def refill(js):
             self.r.cli("pcb", "drc", "--refill-zones", "--save-board", "--severity-all", "--units", "mm", "--format", "json", "-o", js, BRD)
@@ -518,14 +518,14 @@ class Build:
         self.r.remove(O + "/clean_shape.txt", O + "/clean_anchor.txt")
         print("== strip, fiducials")
         p(self.r.py(BOARDTEXT, self.D, "unfill", BRD, filt=q2))
-        p(self.r.py(F, "strip", BRD, filt=q2))
+        p(self.r.py(F, D, "strip", BRD, filt=q2))
         # the fiducials stay first: their keep-outs must be on the board before the pours, the vias and the silkscreen
-        p(self.r.py(F, "fiducials", BRD, filt=q2))
+        p(self.r.py(F, D, "fiducials", BRD, filt=q2))
         print("== pours on the inner signal layers, pour keep-outs, clean-up of narrow copper and small pieces")
-        p(self.r.py(F, "pours", BRD, O, filt=q2))
+        p(self.r.py(F, D, "pours", BRD, O, filt=q2))
         refill(O + "/drc_pour.json")
         for P in range(1, int(fin.get("clean_passes", 2)) + 1):
-            CL, data = self.r.py(F, "clean", BRD, O, "shape", out=O + "/clean.log")
+            CL, data = self.r.py(F, D, "clean", BRD, O, "shape", out=O + "/clean.log")
             self.pr(q2(data))
             if self.dry:
                 print("# exit 10 (keep-outs added): refill %s/drc_clean%d.json and run the next pass" % (O, P))
@@ -533,27 +533,27 @@ class Build:
                 break
             refill(O + "/drc_clean%d.json" % P)
         print("== ground stitching vias")
-        p(self.r.py(F, "pieces", BRD, O, "before", filt=q2))
-        p(self.r.py(F, "stitch", BRD, O, filt=q2))
+        p(self.r.py(F, D, "pieces", BRD, O, "before", filt=q2))
+        p(self.r.py(F, D, "stitch", BRD, O, filt=q2))
         refill(O + "/drc_stitch.json")
-        p(self.r.py(F, "stitch", BRD, O, "--pieces", filt=q2))      # the pieces the first pass's vias made or left on one via
+        p(self.r.py(F, D, "stitch", BRD, O, "--pieces", filt=q2))      # the pieces the first pass's vias made or left on one via
         refill(O + "/drc_stitch2.json")
         # an inner piece the stitching could not hold (no legal site) goes by a keep-out
-        CL, data = self.r.py(F, "clean", BRD, O, "anchor", out=O + "/clean.log")
+        CL, data = self.r.py(F, D, "clean", BRD, O, "anchor", out=O + "/clean.log")
         self.pr(q2(data))
         if self.dry:
             print("# exit 10 (keep-outs added): refill %s/drc_anchor.json" % O)
         if CL == 10:
             refill(O + "/drc_anchor.json")
-        p(self.r.py(F, "pieces", BRD, O, "after", filt=q2))
+        p(self.r.py(F, D, "pieces", BRD, O, "after", filt=q2))
         rc, data = self.r.py("Tools.KiCadDesignTools.copper.pour_islands", BRD, *self.cfg.need("copper.pour_check"), filt=q2, out=O + "/pour_islands.txt")
         self.pr(data)
-        p(self.r.py(F, "report", BRD, O, "after", filt=q2))
+        p(self.r.py(F, D, "report", BRD, O, "after", filt=q2))
         print("== silkscreen")
         p(self.r.py(BOARDTEXT, self.D, "unfill", BRD, filt=q2))
-        p(self.r.py(F, "silk", BRD, O, filt=q2))
+        p(self.r.py(F, D, "silk", BRD, O, filt=q2))
         print("== teardrops")
-        p(self.r.py(F, "teardrops", BRD, filt=q2))
+        p(self.r.py(F, D, "teardrops", BRD, filt=q2))
         self.r.rest(rest)
         if not copy:
             self.project_quiet()                                    # SaveBoard may have rewritten the project file
@@ -591,7 +591,7 @@ class Build:
             if rc:
                 print("render %s failed or took over %d s" % (side, int(rd.get("timeout", 180))))
             self.r.rest(rest)
-        p(self.r.py(self.script("finish_view"), BRD, O, filt=q2))
+        p(self.r.py("Tools.KiCadDesignTools.views.finish_view", D, BRD, O, filt=q2))
         print("finish step: %d s" % (time.time() - T0))
         return 0
 
