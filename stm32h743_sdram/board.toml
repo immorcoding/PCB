@@ -1,0 +1,281 @@
+# Board data of the STM32H743 + SDRAM six-layer test board, read by the build driver:
+#   D:\KiCad\bin\python.exe -m Tools.KiCadDesignTools.build stm32h743_sdram <step>          (from the repository root)
+# Coordinates are local mm (board-file mm - origin), x right, y down. Paths are relative to this folder. Numbers that
+# end up on a command line are written as the command line had them (27, not 27.0).
+# Stage 2 of the Tools/ consolidation (2026-11-24): the driver reads the sections below and still calls this folder's
+# scripts ([scripts]) with the arguments build.sh gave them. The constants still hard-coded in make_project.py,
+# place.py, finish*.py, gen_sch.py and the report scripts move into this file (and place.toml, silk.toml) in stage 3.
+
+[board]
+name = "stm32h743_sdram"
+title = "STM32H743 + SDRAM six-layer test board"
+rev = "A"
+profile = "C"                    # docs/rule-profiles/C-bga-065.md
+template = "common"              # templates/common (profile C has no template of its own yet: RUL-1)
+lib = "h743"                     # project symbol and footprint library
+origin = [100.0, 100.0]
+stackup = "JLC06161H-3313E"
+
+[layers]
+# top to bottom: L1 = F.Cu ... L6 = B.Cu (user 2026-11-23, SPEC 6: signal / ground / signal / signal / power / signal)
+roles = ["signal", "ground", "signal", "signal", "power", "signal"]
+names = ["", "L2_GND", "L3_SIG", "L4_SIG", "L5_PWR", ""]
+
+[build.out]                      # report folders under out/ when they are not named after the step
+route = "route2"                 # build.sh's step was route2 (stop 7); finish reads route2/power_bga_sites.json
+checks = "finish"                # build.sh finish-checks wrote into out/finish
+
+[scripts]                        # this folder's scripts the driver calls (stage 3: Tools modules plus data files)
+project = "make_project.py"      # .kicad_pro, derived footprint, the board's layer table
+fixture = "rules_fixture.py"     # every rule has a violating and a passing case on a fixture board
+sch_check = "sch_check.py"       # netlist against the drawing's intent, pins.csv and swap.csv
+place = "place.py"
+layout_probe = "layout_probe.py"
+copper_report = "copper_report.py"   # unfill / strip / orphans / slots / table
+copper_view = "copper_view.py"   # pictures (qualitative only, PROC-14)
+route_report = "route2_report.py"
+finish = "finish.py"             # strip, fiducials, pours, clean, pieces, stitch, report, silk, teardrops
+finish_view = "finish_view.py"
+publish = "publish.py"
+
+[schematic]
+review = true                    # kicad-happy analyze_schematic.py when it is installed (RUL-9)
+
+[layout]
+allow_under = ["U201", "U301"]   # bottom parts under these (the decoupling under the BGAs, SPEC 6)
+not_supply = ["U101.5", "U103.5", "U104.5"]
+silk_refs = "^(TP|JP|J80[234])"
+sketch = { routes = "routes_sdram.py", out = "out/sketch/rot0" }   # the SDRAM line-order sketch, on a copy
+
+[layout.edges]                   # connector -> board edge it faces (L R T B), LAY-6; command-line order
+J101 = "R"
+J501 = "L"
+J601 = "T"
+J602 = "T"
+J701 = "B"
+J801 = "T"
+J802 = "R"
+J803 = "T"
+J804 = "B"
+
+[[layout.escape]]                # escape_check runs (LAY-2) on the sketch copy; window = x0 y0 x1 y1
+refs = ["U201", "U301"]
+window = [27, 25, 66, 51]
+json = "escape_bga.json"
+
+[[layout.escape]]
+refs = ["U501", "U601", "U701", "J701", "U401"]
+json = "escape_parts.json"
+
+[copper]
+sketch = "copper.sketch"
+skip_areas = ["BGA_MCU", "BGA_SDRAM"]                  # cu_sketch measure leaves the BGA rule areas out
+pour_check = ["cu-whole:L1_GND", "cu-whole:L6_GND"]    # pour_islands: every outer ground piece holds a via (PWR-6)
+
+# the copper step (stop 5): the power groups on the board, then on the line-order sketch copy ({sketch})
+[[copper.group]]
+name = "power"
+file = "routes_power.py"
+out = "power"
+flags = ["--ignore-lock"]
+env = { POWER_LOG = "{out}/power_sites.txt" }
+
+[[copper.group]]
+name = "power_bga"
+file = "routes_power_bga.py"
+out = "power_bga"
+flags = ["--ignore-lock"]
+env = { POWER_BGA_LOG = "{out}/power_bga_sites.txt" }
+after = "refill_board"           # then refill the board, measure, pour pieces
+
+[[copper.group]]
+name = "power"
+file = "routes_power.py"
+out = "sketch_power"
+board = "sketch"
+env = { POWER_BOARD = "{sketch}", POWER_LOG = "{out}/sketch_power/power_sites.txt" }
+
+[[copper.group]]
+name = "power_bga"
+file = "routes_power_bga.py"
+out = "sketch_power_bga"
+board = "sketch"
+env = { POWER_BOARD = "{sketch}", POWER_BGA_LOG = "{out}/sketch_power_bga/power_bga_sites.txt" }
+
+[[copper.views]]                 # layers, px per mm, window x0 y0 x1 y1 (none = the whole board), name, options
+layers = ["L1", "L2", "L3", "L5", "L6"]
+
+[[copper.views]]
+board = "sketch"
+layers = ["L1", "L2", "L3", "L5", "L6"]
+scale = 40
+window = [33, 30, 47, 45]
+name = "mcu"
+
+[[copper.views]]
+board = "sketch"
+layers = ["L1", "L2", "L3", "L5", "L6"]
+scale = 40
+window = [51, 28.5, 63, 45.5]
+name = "sdram"
+
+[[copper.views]]                 # the longest L2 slot under the MCU marked, every via labelled with its net
+board = "sketch"
+layers = ["L2"]
+scale = 90
+window = [36, 36, 46, 45]
+name = "slot_mcu"
+slots = "slots.json"
+via_labels = true
+rename = ["L2_slot_mcu.png", "slot_L2_mcu.png"]
+
+[route]
+obstacles_group = "sdram"        # built on a copy without its own copper: its serpentines see the later groups
+orphans = true                   # copper no group claims is removed and listed (orphans.txt)
+report_env = "ROUTE2_GROUPS"     # the groups with in_report, one "name file" per line, for route2_report.py
+
+[[route.escape]]
+refs = ["U201", "U301"]
+window = [27, 25, 66, 51]
+json = "escape_bga.json"
+
+[[route.slots]]                  # plane slots (U31): the whole bus region
+name = "BUS"
+window = [27, 25, 66, 51]
+part_b = "power_bga_sites.json"
+tail = 8
+
+[[route.slots]]                  # the power plane L5 over the whole board: the antipad chains in each block
+name = "BOARD"
+window = [-1, -1, 86, 76]
+layers = ["L5"]
+stem = "slots_l5"
+part_b = "power_bga_sites.json"
+show = "每块最长"
+
+# Groups in build order. env: the busroute build's environment; {board} = the board file, {out} = the step's out
+# folder, {obstacles} = the obstacle copy.
+[[route.group]]
+name = "sdram"
+file = "routes_sdram.py"
+env = { SDRAM_TUNE_OBSTACLES = "{obstacles}" }
+
+[[route.group]]
+name = "power"
+file = "routes_power.py"
+env = { SDRAM_OBSTACLES = "{board}", POWER_LOG = "{out}/power_sites.txt" }
+
+[[route.group]]
+name = "power_bga"
+file = "routes_power_bga.py"
+env = { SDRAM_OBSTACLES = "{board}", POWER_BGA_LOG = "{out}/power_bga_sites.txt" }
+
+[[route.group]]
+name = "local"
+file = "routes_local.py"
+env = { LOCAL_BOARD = "{board}" }
+in_report = true
+
+[[route.group]]
+name = "local_eth"
+file = "routes_local_eth.py"
+env = { LOCAL_BOARD = "{board}" }
+in_report = true
+
+[[route.group]]
+name = "mcu_east"
+file = "routes_mcu_east.py"
+env = { LOCAL_BOARD = "{board}" }
+in_report = true
+
+[[route.group]]
+name = "mcu_south"
+file = "routes_mcu_south.py"
+env = { LOCAL_BOARD = "{board}" }
+in_report = true
+
+[[route.group]]
+name = "mcu_nw"
+file = "routes_mcu_nw.py"
+env = { LOCAL_BOARD = "{board}" }
+in_report = true
+
+[[route.group]]
+name = "mcu_sw"
+file = "routes_mcu_sw.py"
+env = { LOCAL_BOARD = "{board}" }
+in_report = true
+
+[[route.group]]
+name = "mcu_w"
+file = "routes_mcu_west.py"
+env = { LOCAL_BOARD = "{board}" }
+in_report = true
+
+[[route.views]]
+layers = ["L1", "L3", "L4", "L6"]
+scale = 40
+window = [29, 26, 66, 50]
+name = "bus"
+
+[[route.views]]
+layers = ["L1", "L2", "L3", "L4", "L6"]
+scale = 90
+window = [36, 37, 46, 47]
+name = "mcu_south"
+via_labels = true
+
+[[route.views]]
+layers = ["L1", "L3", "L6"]
+scale = 80
+window = [51, 28.5, 63, 45.5]
+name = "sdram"
+via_labels = true
+
+[[route.views]]                  # the two planes (L2 ground, L5 the power blocks) over the bus region
+layers = ["L2", "L5"]
+scale = 40
+window = [27, 25, 66, 51]
+name = "planes"
+slots = "slots.json"
+
+[[route.views]]                  # L5 over the whole board with its longest slot
+layers = ["L5"]
+scale = 14
+name = "board"
+slots = "slots_l5.json"
+
+[[route.views]]                  # the Ethernet block
+layers = ["L1", "L4", "L6"]
+scale = 45
+window = [0, 38, 32, 63]
+name = "phy"
+via_labels = true
+
+[[route.views]]
+layers = ["L1", "L6"]
+scale = 45
+window = [60, 8, 82, 28]
+name = "can"
+
+[[route.views]]
+layers = ["L1", "L6"]
+scale = 60
+window = [61, 36, 70, 47]
+name = "fb5v"
+via_labels = true
+
+[[route.views]]
+layers = ["L1"]
+scale = 45
+window = [11, 58, 36, 73]
+name = "user_lcd"
+
+[finish]
+rest = 20                        # seconds of pause after each refill, DRC and render (the PC hard-reset under load)
+clean_passes = 2                 # narrow copper / small pieces: keep-outs, refill, at most this many passes
+slots = { name = "BOARD", window = [-1, -1, 86, 76], stem = "slots_board", part_b = "power_bga_sites.json", show = "切断|L5 \\+3V3_|每层最长" }
+render = { sides = ["top", "bottom"], width = 1600, height = 1410, quality = "basic", timeout = 180 }   # no ray tracing
+
+[publish]
+rest = 20

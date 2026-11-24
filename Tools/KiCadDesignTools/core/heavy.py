@@ -28,12 +28,17 @@ def low_priority(cores=CORES):
             pass
         return "nice +10"
     import ctypes
-    k = ctypes.windll.kernel32
+    from ctypes import wintypes
+    k = ctypes.WinDLL("kernel32", use_last_error=True)
+    k.GetCurrentProcess.restype = wintypes.HANDLE                  # the pseudo-handle -1: a 64-bit value on x64
+    k.SetPriorityClass.argtypes = [wintypes.HANDLE, wintypes.DWORD]
+    k.SetProcessAffinityMask.argtypes = [wintypes.HANDLE, ctypes.c_size_t]
     h = k.GetCurrentProcess()
-    k.SetPriorityClass(h, BELOW_NORMAL)
+    pr = k.SetPriorityClass(h, BELOW_NORMAL)
     mask = (1 << cores) - 1
-    ok = k.SetProcessAffinityMask(h, ctypes.c_size_t(mask))
-    return "below-normal priority, affinity 0x%X%s" % (mask, "" if ok else " (affinity refused)")
+    ok = k.SetProcessAffinityMask(h, mask)
+    return "below-normal priority%s, affinity 0x%X%s" % ("" if pr else " (refused)", mask,
+                                                         "" if ok else " (refused, error %d)" % ctypes.get_last_error())
 
 
 def _alive(pid):
