@@ -568,7 +568,9 @@ class Fan:
                     new_cuts.update(got)
                 else:
                     self.log("  ! fixed vias alone make a %.2f mm chain on %s: %s" % (ln, pl, mem[:4]))
-            new_cuts = [c for c in new_cuts if c not in cuts]
+            # sorted: a set of (site, plane) tuples iterates in the order of the string hash seed, and the order of
+            # the rows changes the solver's answer (PYTHONHASHSEED)
+            new_cuts = sorted((c for c in new_cuts if c not in cuts), key=str)
             self.log("  %s round %d: %d vars, %d rows (%d staircase), objective %.2f, %.1f s; chains over %.2f: %d (%s)" % (
                 ref, rnd + 1, len(lp.c), len(lp.lo), nst, res.fun, time.time() - t1, self.slot_max, len(bad),
                 ", ".join("%.2f %s" % (b_[0], b_[1]) for b_ in bad[:6])))
