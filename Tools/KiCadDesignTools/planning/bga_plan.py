@@ -19,8 +19,8 @@ plan   one candidate: writes out/plan/<N>/plan.json and plan.txt. The geo must b
        with the SDRAM, MCU-signal and power-BGA groups stripped (bga_plan_proof.py base makes it; that script and
        bga_check.py are on branch try/fanout-first, not in this package).
 check  the grid model's verdict per MCU signal ball for a state (bga_check.py, see above: planning.bga_check when
-       it is brought over); with --plan the state is the geo plus the plan's copper and every planned net is
-       re-checked against all the others. Every check stops with a message while bga_check is missing (as before).
+       it is brought over; without it this check stops with a message). With --plan the state is the geo plus the
+       plan's copper and every planned net is re-checked against all the others (check_plan: this package only).
 
 The model (plan), in the order the user set (issue #22, 2026-11-22). Every step is a mixed-integer program
 (scipy / HiGHS, deterministic) over the same lattice; no trial routing decides anything.
@@ -2304,7 +2304,6 @@ def main(argv):
         print(plan_text(plan).split("\n\nRIVERS")[0])
         print("wrote", os.path.join(out, "plan.txt"))
         return 0
-    bga_check = _optional("bga_check")
     if "--board" in argv:
         from Tools.KiCadDesignTools.core import paths
         from Tools.KiCadDesignTools.planning import bga_dump
@@ -2320,6 +2319,7 @@ def main(argv):
     geo = json.load(open(opt("--geo"), encoding="utf-8"))
     if "--plan" in argv:
         return check_plan(geo, json.load(open(opt("--plan"), encoding="utf-8")))
+    bga_check = _optional("bga_check")                       # the per-ball verdict only; check --plan does without it
     nets = opt("--nets").split(",") if "--nets" in argv else None
     r = bga_check.check_state(geo, float(opt("--slot-max", SLOT_MAX)), nets, log=None, joint="--joint" in argv)
     if "--out" in argv:
@@ -2342,6 +2342,8 @@ def check_plan(geo, plan):
             p["net"] = "<swapped away>"
     f = G.Field(g, WINDOW)
     padpos = {"%s.%s" % (p["ref"], p["num"]): tuple(p["pos"]) for p in g["pads"]}
+    # the parts the plan places are not in the state: their pads as the plan names them in power_routes (<ref>.<k + 1>)
+    padpos.update({"%s.%d" % (c["ref"], k + 1): tuple(p) for c in plan["caps"] for k, p in enumerate(c["pads"])})
     items = []
     for c in plan["caps"]:
         off, hl, hw = CAP_GEOM[c["size"]]
