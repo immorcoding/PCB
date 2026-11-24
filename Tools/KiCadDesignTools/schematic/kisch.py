@@ -12,7 +12,7 @@ the library geometry, so every wire end lands exactly on a pin.
 The output is written in the KiCad 9 file format; run
 `kicad-cli sch upgrade` afterwards to bring it to the installed version.
 Connectivity must always be confirmed from the exported netlist
-(see stm32h743_sdram/sch_check.py), never from this script's intent.
+(see Tools.KiCadDesignTools.schematic.check), never from this script's intent.
 
 Coordinates: mm, schematic convention (Y grows downward). Keep everything on
 the 1.27 mm grid.

@@ -31,7 +31,7 @@ FACTS (DS12110 Rev 11, Jan 2026; AN4938 Rev 7; AN2867 Rev 25; read from rendered
   SDCLK     One 0402 series resistor at the MCU ball, 22-33 Ohm, value settled at bring-up (SPEC 9).
 """
 import csv, os
-from .common import NC, FP
+from Tools.KiCadDesignTools.schematic.sheet import NC, FP
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 FP_MCU = "Package_BGA:UFBGA-201_10x10mm_Layout15x15_P0.65mm"

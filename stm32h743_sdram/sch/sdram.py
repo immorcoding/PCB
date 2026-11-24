@@ -17,7 +17,7 @@ Decoupling: one 100 nF per two supply balls plus one bulk capacitor is a startin
 in the 5 mm gap to the MCU is checked at placement (unverified item U21).
 """
 import csv, os
-from .common import NC, symbol
+from Tools.KiCadDesignTools.schematic.sheet import NC, symbol
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 

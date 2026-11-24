@@ -63,7 +63,7 @@ Inductor arithmetic ([TPS] eq. 3-5; VIN = 5 V, VOUT = VLED + 0.2 V):
   4.7 uH for inputs of 5 V and above (peak current and loop stability) and its application circuit uses 4.7 uH.
   D701: mean current = LED current (20-40 mA); worst peak 0.72 A against 1 A average rating; VRRM 60 V against OVP 39 V max.
 """
-from .common import FP, NC, symbol
+from Tools.KiCadDesignTools.schematic.sheet import FP, NC, symbol
 
 # panel pin -> (Rocktech name, Innolux name, net).  LCD_P37..40 are the panel side of the 0 ohm links.
 PANEL = {

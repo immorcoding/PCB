@@ -10,7 +10,8 @@ repository root. Reports go to <out>/<step folder>/, <out> = <board dir>/out unl
   project     the project file, the derived footprints, the board's layer table (project.make_project)
   rules       project, rule fixture board, canary, rule matching on the board (--skip-match: left out, run `checks`
               once at the end), length-window rules
-  sch         schematic: generate, upgrade, ERC, netlist, PDF; netlist checks ([scripts] sch_check); kicad-happy review
+  sch         schematic: generate, upgrade, ERC, netlist, PDF (schematic.build); netlist checks (schematic.check);
+              kicad-happy review
   layout      placement, the line-order sketch on a copy, placement / escape / copper-sketch checks, measured trials
   copper      placement, pours, the power groups on the board and on the sketch copy, refill, measures, pictures, table
   route       every [[route.group]] stripped, placement, pours, the groups rebuilt in order (--upto GROUP: only up to
@@ -297,14 +298,14 @@ class Build:
 
     def step_sch(self):
         O, T0 = self.out("sch"), time.time()
-        rc, data = self.r.run(["sh", fw(os.path.join(paths.PACKAGE, "schematic", "sch_build.sh")), self.D, O], filt=quiet,
-                              out=O + "/sch_build.log", note="Git Bash sh")
+        rc, data = self.r.py("Tools.KiCadDesignTools.schematic.build", self.D, O, filt=quiet, out=O + "/sch_build.log")
         self.pr(data, 1)
         echo(grep(data, "ERC messages"))
         if not self.dry and os.path.isfile(O + "/erc.rpt"):
             c = collections.Counter(l for l in open(O + "/erc.rpt", encoding="utf-8", errors="replace").read().splitlines() if l.startswith("["))
             echo("%7d %s" % (n, l) for l, n in sorted(c.items()))
-        SC, data = self.r.py(self.script("sch_check"), O + "/" + self.N + ".net", filt=quiet, out=O + "/sch_check.txt")
+        SC, data = self.r.py("Tools.KiCadDesignTools.schematic.check", self.D, O + "/" + self.N + ".net", filt=quiet,
+                             out=O + "/sch_check.txt")
         echo(l[:400] for l in text(data).splitlines() if l)
         if self.cfg.get("schematic.review", False):
             if os.path.isfile(KH):

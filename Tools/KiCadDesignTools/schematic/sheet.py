@@ -1,38 +1,52 @@
-"""Shared drawing helpers for the schematic pages of the STM32H743 + SDRAM board.
+"""Page-drawing helpers for a multi-page generated schematic (kisch.Design), one module per page.
 
-A page module (sch/<page>.py) defines   build(sh)   where `sh` is a Sheet. Style, same on every page:
+A page module (<board dir>/sch/<page>.py) defines   build(sh)   where `sh` is a Sheet; it imports what it needs
+from here (`from Tools.KiCadDesignTools.schematic.sheet import FP, NC, P, U, symbol, kisch`). The pages are listed
+in the board's board.toml [schematic] and drawn by Tools.KiCadDesignTools.schematic.generate. Style, same on every
+page:
 
   - Every pin gets a short stub that ends in a power symbol or a GLOBAL label. There are no long wires
     and no local labels, so every named net has the same bare name on every page ("FMC_D0", "FB_5V").
   - Nets in POWER use the stock power symbols; any other rail (VDDA_MCU, +12V_IN, LED_A ...) is a label.
   - Coordinates are grid units of 2.54 mm: P(i, j). Everything stays on the 1.27 mm grid (RUL-8).
-  - References are page-numbered: page n uses R<n>01.., C<n>01.., U<n>01.. (see PAGES in gen_sch.py).
+  - References are page-numbered: page n uses R<n>01.., C<n>01.., U<n>01.. ([schematic] pages in board.toml).
   - A pin left out of `nets` is an error unless the symbol marks it no_connect; write NC explicitly.
 
-Connectivity is judged from the exported netlist (RUL-6), never from the drawing.
-"""
-import math, os, sys
+The board's values come from board.toml through configure(cfg), which generate calls before it imports the pages:
+  LIB      [board] lib: the project symbol library (<lib>.kicad_sym) and footprint library (<lib>.pretty)
+  POWER    [schematic] power_symbols: nets drawn with power symbols
+  FP       [schematic.footprints]: short name -> footprint; the helpers use the keys C0402 C0603 C0805 C1206
+           (cap_fp), R0402 (R), R0603 R0805 (link), TP_1.5 (tp)
+  COPIES   [schematic.power_copies]: a power net without a stock symbol -> the stock one copied under its name
+FP and POWER are filled in place, so `from ...sheet import FP` in a page sees the board's table.
 
-HERE = os.path.dirname(os.path.abspath(__file__))
-sys.path.insert(0, os.path.dirname(os.path.dirname(HERE)))                     # interim (Tools/ consolidation stage 1): the repository root, for Tools.KiCadDesignTools
+Connectivity is judged from the exported netlist (RUL-6, Tools.KiCadDesignTools.schematic.check), never from the
+drawing.
+"""
+import math
+
 from Tools.KiCadDesignTools.schematic import kisch
 from Tools.KiCadDesignTools.schematic.kisch import find, find_all, xform
 
 U = 2.54
 NC = None
-LIB = "h743"                         # project symbol library (h743.kicad_sym) and footprint library (h743.pretty)
-POWER = {"GND", "+3V3", "+5V", "+12V", "+3V3A", "+1V8"}      # nets drawn with stock power symbols
+LIB = None                           # project symbol library and footprint library ([board] lib)
+POWER = set()                        # nets drawn with power symbols ([schematic] power_symbols)
+FP = {}                              # footprints by short name ([schematic.footprints])
+COPIES = {}                          # power net -> stock power symbol it is a renamed copy of ([schematic.power_copies])
 
-FP = {
-    "C0402": "Capacitor_SMD:C_0402_1005Metric", "C0603": "Capacitor_SMD:C_0603_1608Metric",
-    "C0805": "Capacitor_SMD:C_0805_2012Metric", "C1206": "Capacitor_SMD:C_1206_3216Metric",
-    "R0402": "Resistor_SMD:R_0402_1005Metric", "R0603": "Resistor_SMD:R_0603_1608Metric",
-    "R0805": "Resistor_SMD:R_0805_2012Metric", "R1206": "Resistor_SMD:R_1206_3216Metric",
-    "L0603": "Inductor_SMD:L_0603_1608Metric", "L0805": "Inductor_SMD:L_0805_2012Metric",
-    "LED0603": "LED_SMD:LED_0603_1608Metric",
-    "TP_1.5": "TestPoint:TestPoint_Pad_D1.5mm", "TP_1.0": "TestPoint:TestPoint_Pad_D1.0mm",
-    "TP_LOOP": "TestPoint:TestPoint_Loop_D2.50mm_Drill1.0mm",
-}
+
+def configure(cfg):
+    """The board's library name, power nets, footprint table and power-symbol copies from board.toml."""
+    global LIB
+    LIB = cfg.need("board.lib")
+    POWER.clear()
+    POWER.update(cfg.need("schematic.power_symbols"))
+    FP.clear()
+    FP.update(cfg.need("schematic.footprints"))
+    COPIES.clear()
+    COPIES.update(cfg.get("schematic.power_copies", {}))
+
 
 PWR_ROT = {  # (is GND, direction away from the pin) -> power symbol rotation
     (True, (-1, 0)): 270, (True, (1, 0)): 90, (True, (0, -1)): 180, (True, (0, 1)): 0,
@@ -130,18 +144,20 @@ class Sheet:
                 group = [pt]
 
     def power(self, net, pt, rot=0, **kw):
-        """A power symbol for a net in POWER. +3V3A has no stock symbol: the project library has a copy of
-        power:+3V3 under that name (the net name of a power symbol is its value)."""
-        if net == "+3V3A":
-            lib_id = LIB + ":+3V3A"
+        """A power symbol for a net in POWER. A net in COPIES has no stock symbol (e.g. +3V3A): the project library
+        has a copy of the stock one (power:+3V3) under that name (the net name of a power symbol is its value)."""
+        if net in COPIES:
+            lib_id = LIB + ":" + net
             if lib_id not in SYMBOLS:
+                src = COPIES[net]
+
                 def ren(node):
                     if isinstance(node, list):
                         return [ren(c) for c in node]
-                    if isinstance(node, str) and (node == "+3V3" or node.startswith("+3V3_")):
-                        return type(node)("+3V3A" + node[4:])
+                    if isinstance(node, str) and (node == src or node.startswith(src + "_")):
+                        return type(node)(net + node[len(src):])
                     return node
-                SYMBOLS[lib_id] = ren(kisch.load_symbol("power:+3V3"))
+                SYMBOLS[lib_id] = ren(kisch.load_symbol("power:" + src))
                 kisch.register_symbol(lib_id, SYMBOLS[lib_id])
             return self.page.sym(lib_id, "#PWR%03d" % self.page._next_pwr(), net, pt[0], pt[1], rot, **kw)
         return self.page.power(net, pt, rot, **kw)
@@ -254,30 +270,9 @@ SYMBOLS = {}
 
 
 def symbol(name, **kw):
-    """Define a rectangular project symbol (see kisch.box_symbol) and return its lib id "h743:<name>"."""
+    """Define a rectangular project symbol (see kisch.box_symbol) and return its lib id "<lib>:<name>"."""
     lib_id = "%s:%s" % (LIB, name)
     if lib_id not in SYMBOLS:
         SYMBOLS[lib_id] = kisch.box_symbol(name, **kw)
         kisch.register_symbol(lib_id, SYMBOLS[lib_id])
     return lib_id
-
-
-# ---- nets that cross pages. The name is the contract between page modules; the page in the comment
-# owns the circuit that creates or terminates the net. MCU signals are the pins.csv signal names
-# (FMC_*, QSPI_*, LCD_*, RMII_*, ETH_MDC, ETH_MDIO, SDMMC1_*, FDCAN1_*, SAI1_*, I2C4_*, USART1_*,
-# SWDIO, SWCLK, SWO, and the auxiliary pins LCD_BL_PWM, USER_KEY, LCD_DISP, TP_INT, TP_RST, PHY_NRST,
-# SD_CD, CAN_STB, CODEC_NRST, LED1, LED2); they are not repeated here.
-SHARED_NETS = {
-    "GND": "power symbol; one ground net, analog and digital are not split",
-    "+12V": "power symbol; after reverse-polarity protection (power)",
-    "+5V": "power symbol; LMR51420 output (power). Also feeds the CAN transceiver, backlight boost, analog LDO",
-    "+3V3": "power symbol; TPS62A02 output (power)",
-    "+3V3A": "power symbol; TPS7A2033 output (power); codec AVDD / DRVDD only",
-    "+1V8": "power symbol; TPS7A2018 output (power); codec DVDD only",
-    "VDDA_MCU": "label; +3V3 through a ferrite bead (mcu); VREF+ ties to it",
-    "VDDA_PHY": "label; +3V3 through a ferrite bead (eth); PHY VDD1A / VDD2A",
-    "NRST": "label; MCU reset (mcu: button, capacitor; io: SWD connector pin 10)",
-    "FMC_SDCLK_R": "label; SDRAM side of the SDCLK series resistor (resistor on mcu page, pin on sdram page)",
-    "I2C4_SCL": "pull-ups are on the audio page; the lcd page only taps it through 0 ohm links",
-    "I2C4_SDA": "as I2C4_SCL",
-}

@@ -3,9 +3,10 @@
 # Coordinates are local mm (board-file mm - origin), x right, y down. Paths are relative to this folder. Numbers that
 # end up on a command line are written as the command line had them (27, not 27.0).
 # Stage 2 of the Tools/ consolidation (2026-11-24): the driver reads the sections below and still calls this folder's
-# scripts ([scripts]) with the arguments build.sh gave them. The constants still hard-coded in place.py, finish*.py,
-# gen_sch.py and the report scripts move into this file (and place.toml, silk.toml) in stage 3; the project file's
-# ([project], [netclasses], [netclass_patterns], [[footprints.derived]]) moved in stage 3A.
+# scripts ([scripts]) with the arguments build.sh gave them. The constants still hard-coded in place.py, finish*.py
+# and the report scripts move into this file (and place.toml, silk.toml) in stage 3; the project file's
+# ([project], [netclasses], [netclass_patterns], [[footprints.derived]]) moved in stage 3A, the schematic's
+# ([schematic]) in stage 3B.
 
 [board]
 name = "stm32h743_sdram"
@@ -103,7 +104,6 @@ route = "route2"                 # build.sh's step was route2 (stop 7); finish r
 checks = "finish"                # build.sh finish-checks wrote into out/finish
 
 [scripts]                        # this folder's scripts the driver calls (stage 3: Tools modules plus data files)
-sch_check = "sch_check.py"       # netlist against the drawing's intent, pins.csv and swap.csv
 place = "place.py"
 layout_probe = "layout_probe.py"
 copper_report = "copper_report.py"   # unfill / strip / orphans / slots / table
@@ -113,8 +113,73 @@ finish = "finish.py"             # strip, fiducials, pours, clean, pieces, stitc
 finish_view = "finish_view.py"
 publish = "publish.py"
 
+# The schematic (Tools.KiCadDesignTools.schematic: generate, build, check). Title and revision from [board], the
+# project symbol library is [board] lib.
 [schematic]
 review = true                    # kicad-happy analyze_schematic.py when it is installed (RUL-9)
+date = "2026-11-20"
+power_symbols = ["GND", "+3V3", "+5V", "+12V", "+3V3A", "+1V8"]   # nets drawn with power symbols, the rest are labels
+# Pages in order: module sch/<name>.py, number = hundreds digit of its references, title.
+pages = [
+    { name = "power", number = 1, title = "Power: input, 5 V, 3.3 V, LDOs" },
+    { name = "mcu", number = 2, title = "MCU STM32H743IIK6" },
+    { name = "sdram", number = 3, title = "SDRAM 8M x 32" },
+    { name = "qspi", number = 4, title = "QSPI flash" },
+    { name = "eth", number = 5, title = "Ethernet PHY and RJ45" },
+    { name = "audio", number = 6, title = "Audio codec and jacks" },
+    { name = "lcd", number = 7, title = "LCD connector, touch, backlight" },
+    { name = "io", number = 8, title = "microSD, CAN, debug, misc" },
+]
+
+[schematic.power_copies]         # power nets without a stock symbol: a copy of the stock one in the project library
+"+3V3A" = "+3V3"
+
+[schematic.footprints]           # footprints by short name (sheet.FP); C0402..C1206 by value, R0402 default, R0805 links
+C0402 = "Capacitor_SMD:C_0402_1005Metric"
+C0603 = "Capacitor_SMD:C_0603_1608Metric"
+C0805 = "Capacitor_SMD:C_0805_2012Metric"
+C1206 = "Capacitor_SMD:C_1206_3216Metric"
+R0402 = "Resistor_SMD:R_0402_1005Metric"
+R0603 = "Resistor_SMD:R_0603_1608Metric"
+R0805 = "Resistor_SMD:R_0805_2012Metric"
+R1206 = "Resistor_SMD:R_1206_3216Metric"
+L0603 = "Inductor_SMD:L_0603_1608Metric"
+L0805 = "Inductor_SMD:L_0805_2012Metric"
+LED0603 = "LED_SMD:LED_0603_1608Metric"
+"TP_1.5" = "TestPoint:TestPoint_Pad_D1.5mm"
+"TP_1.0" = "TestPoint:TestPoint_Pad_D1.0mm"
+TP_LOOP = "TestPoint:TestPoint_Loop_D2.50mm_Drill1.0mm"
+
+[schematic.pin_table]            # netlist check 2: the MCU's balls against the pin table, when its page is drawn
+file = "pins.csv"
+ref = "U201"
+page = "mcu"
+
+[schematic.swap]                 # netlist check 3: SDRAM byte lanes (SPEC 9); the page's ball_map() reads swap.csv
+ref = "U301"
+page = "sdram"
+lanes = 4
+data_net = "FMC_D"               # MCU data bit n = <data_net>n, byte mask m = <mask_net>m
+mask_net = "FMC_NBL"
+
+# Nets that cross pages. The name is the contract between page modules; the page in the text owns the circuit
+# that creates or terminates the net. MCU signals are the pins.csv signal names (FMC_*, QSPI_*, LCD_*, RMII_*,
+# ETH_MDC, ETH_MDIO, SDMMC1_*, FDCAN1_*, SAI1_*, I2C4_*, USART1_*, SWDIO, SWCLK, SWO, and the auxiliary pins
+# LCD_BL_PWM, USER_KEY, LCD_DISP, TP_INT, TP_RST, PHY_NRST, SD_CD, CAN_STB, CODEC_NRST, LED1, LED2); they are not
+# repeated here. Documentation only: no tool reads it.
+[schematic.shared_nets]
+GND = "power symbol; one ground net, analog and digital are not split"
+"+12V" = "power symbol; after reverse-polarity protection (power)"
+"+5V" = "power symbol; LMR51420 output (power). Also feeds the CAN transceiver, backlight boost, analog LDO"
+"+3V3" = "power symbol; TPS62A02 output (power)"
+"+3V3A" = "power symbol; TPS7A2033 output (power); codec AVDD / DRVDD only"
+"+1V8" = "power symbol; TPS7A2018 output (power); codec DVDD only"
+VDDA_MCU = "label; +3V3 through a ferrite bead (mcu); VREF+ ties to it"
+VDDA_PHY = "label; +3V3 through a ferrite bead (eth); PHY VDD1A / VDD2A"
+NRST = "label; MCU reset (mcu: button, capacitor; io: SWD connector pin 10)"
+FMC_SDCLK_R = "label; SDRAM side of the SDCLK series resistor (resistor on mcu page, pin on sdram page)"
+I2C4_SCL = "pull-ups are on the audio page; the lcd page only taps it through 0 ohm links"
+I2C4_SDA = "as I2C4_SCL"
 
 [layout]
 allow_under = ["U201", "U301"]   # bottom parts under these (the decoupling under the BGAs, SPEC 6)

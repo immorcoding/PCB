@@ -33,7 +33,10 @@ modules here plus data files.
 | rules | `len_rules` | `-m ...rules.len_rules <board> [--check]` | length-window rules from `length_groups.json` | RTE-2 | `tests/drc_tools` |
 | rules | `impedance` | `-m ...rules.impedance` | trace impedance on the JLC06161H-3313E stackup (computed; the fab's calculator rules, RUL-3) | RUL-3 | `tests/impedance` |
 | schematic | `kisch` | (library) | schematic generation (one sheet or pages) | RUL-6 | `tests/kisch` |
-| schematic | `sch_build.sh` | `sh Tools/KiCadDesignTools/schematic/sch_build.sh <board dir> <out>` | generate, upgrade, ERC, netlist, PDF | RUL-6 | |
+| schematic | `sheet` | (library) | page-drawing helpers for the board's `sch/<page>.py` (stubs to power symbols or global labels, page-numbered references, grid units; `[schematic]` power_symbols, footprints, power_copies) | RUL-6, 8 | |
+| schematic | `generate` | `-m ...schematic.generate <board dir> [page ...] [--out DIR]` | the multi-page schematic from `[schematic]` pages, project symbol library, sym-lib-table | PROC-13 | |
+| schematic | `build` | `-m ...schematic.build <board dir> <out> [--page NAME ...]` | generate, upgrade, ERC, netlist, PDF; `--page`: some pages alone in `<out>`; a folder without board.toml runs its own `gen_sch.py` | RUL-6 | |
+| schematic | `check` | `-m ...schematic.check <board dir> <netlist>` | netlist against the drawing's intent, the pin table (`[schematic.pin_table]`), the SDRAM byte lanes (`[schematic.swap]`) | RUL-6 | |
 | schematic | `net2pcb` | `-m ...schematic.net2pcb <netlist> <board>` | netlist into the board | | |
 | placement | `place_check` | `-m ...placement.place_check <board> [...]` | placement metrics | LAY-2, 5, 6, 8 | `tests/place_check` |
 | placement | `escape_check` | `-m ...placement.escape_check <board> --ref U1 [...]` | ways out of fine-pitch parts | LAY-2 | `tests/place_check` |

@@ -10,7 +10,7 @@
 
 | 步骤 | 命令 |
 |---|---|
-| 原理图 | `sh Tools/KiCadDesignTools/schematic/sch_build.sh steval_fcu001v2 <输出目录>` |
+| 原理图 | `D:\KiCad\bin\python.exe -m Tools.KiCadDesignTools.schematic.build steval_fcu001v2 <输出目录>` |
 | 网表进板 | `D:\KiCad\bin\python.exe -m Tools.KiCadDesignTools.schematic.net2pcb <输出目录>\steval_fcu001v2.net steval_fcu001v2\steval_fcu001v2.kicad_pcb` |
 | 整板（布局、走线、丝印、泪滴、DRC） | `sh steval_fcu001v2/build_pcb.sh <报告目录>` |
 

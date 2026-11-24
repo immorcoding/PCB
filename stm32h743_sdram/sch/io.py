@@ -39,7 +39,7 @@ Key SW801, Omron B3U-1000P (B3U datasheet p.1-2, img): SPST-NO, 1..50 mA at 3..1
   contact), then 10k + 100nF to PA0: USER_KEY high = pressed.
 Terminal J802, Phoenix Contact PT 1,5/3-3,5-H (1984620): datasheet NOT read (site refuses download).
 """
-from .common import FP, NC
+from Tools.KiCadDesignTools.schematic.sheet import FP, NC
 
 SD = "Connector_Card:microSD_HC_Hirose_DM3AT-SF-PEJM5"
 HDR = "Connector_PinHeader_2.54mm:PinHeader_1x%02d_P2.54mm_Vertical"

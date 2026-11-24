@@ -6,7 +6,7 @@ The -IM part ships with QE = 0: until firmware sets QE, pins 3 and 7 are /WP and
 pull-up. /CS is pulled up so the flash stays deselected while the MCU is in reset.
 The exposed pad carries no signal; it is grounded, with no vias or tracks under it (datasheet p.96-97).
 """
-from .common import FP
+from Tools.KiCadDesignTools.schematic.sheet import FP
 
 
 def build(sh):

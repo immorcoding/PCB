@@ -51,7 +51,7 @@ SJ-3523-SMT, Same Sky drawing sj-352x-smt.pdf rev 1.07 p.2: terminal 1 = sleeve,
 293D227X96R3D2TE3, Vishay 293D (doc 40002, rev 02-Jul-2025) p.1 ordering code, p.5 ratings: 220 uF, 6.3 V,
   case D (7343-31), max leakage 13.2 uA at rated voltage. R604 / R605 hold the jack side at 0 V.
 """
-from .common import FP, NC, P, kisch, symbol
+from Tools.KiCadDesignTools.schematic.sheet import FP, NC, P, kisch, symbol
 
 CODEC_FP = "Package_DFN_QFN:Texas_RHB0032E_VQFN-32-1EP_5x5mm_P0.5mm_EP3.45x3.45mm"
 JACK_FP = "Connector_Audio:Jack_3.5mm_CUI_SJ-3523-SMT_Horizontal"
