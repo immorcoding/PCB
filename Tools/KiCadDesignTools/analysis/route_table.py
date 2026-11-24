@@ -11,9 +11,12 @@ lengths, vias, findings, serpentines), [route.table] sites (the BGA power group'
 [[route.slots]] files with a stem, [route.table.escape] json (and its `before`, the copper step's, to compare),
 measure.txt, pour_islands.txt, dru_match.txt, and the environment ROUTE1_SECONDS / ROUND. Runs
 analysis.track_shape on the board. Exit code 1 when a hard number is off (unconnected, clearance-type DRC items,
-copper-class unconnected, a crossing, a net over its length or via limit, a sharp corner, a byte lane over its skew
-rule <lane_rule>0..n, a serpentine in a reserved corridor, a via of a plane's own net cut off from it). Plane slot
-lengths are reported only: the user removed the slot limit ([route.table] slot_mark, still the mark in the table).
+length-rule DRC items, copper-class unconnected, a crossing, a net over its length limit, a data / NBL / clock net
+over the via limit, a sharp corner, a byte lane over its skew rule <lane_rule>0..n, a serpentine in a reserved
+corridor, a via of a plane's own net cut off from it). Plane slot lengths are reported only: the user removed the
+slot limit ([route.table] slot_mark, still the mark in the table). Isolated copper of the finish step's zones (FIN_*,
+on the board from the last finish, whose stitching vias this step removes) is listed, not judged: the finish step
+pours, stitches and judges it.
 
 Added by the full table (table):
   [每组]   one row per routes file on the board (the [[route.group]]s without in_report, then every ROUTE2_GROUPS
@@ -44,6 +47,20 @@ from Tools.KiCadDesignTools.routing.busroute.metrics import LEN_TOL
 HARD_DRC = ("clearance", "hole_clearance", "annular_width", "copper_edge_clearance", "hole_to_hole", "shorting_items", "tracks_crossing",
             "track_width", "via_diameter", "track_angle", "isolated_copper", "starved_thermal")
 PAIR_TYPES = ("diff_pair_gap_out_of_range", "diff_pair_uncoupled_length_too_long", "skew_out_of_range")
+LENGTH_DRC = ("length_out_of_range", "skew_out_of_range")       # the length rules (SPEC 14 stop 6: none may report)
+# The route step runs on the board as the last finish left it: the finish step's zones (names FINISH_PREFIX...: the
+# inner ground pours and their keep-outs) stay, its stitching vias belong to no routes file and are removed with the
+# orphans. The pours' pieces that only those vias held are then isolated; the finish step strips its zones, pours them
+# again, stitches them and judges isolated copper in its own refilled DRC. Such items are listed here, not judged.
+FINISH_PREFIX = "FIN_"           # finishing.finish strip: every zone named so is the finish step's
+LEFT_TO_FINISH = ("isolated_copper",)
+
+
+def finish_item(v):
+    """True for a DRC item of a LEFT_TO_FINISH type whose items are all zones of the finish step (their names, quoted
+    in the item descriptions, start with FINISH_PREFIX)."""
+    names = [re.search(r"'([^']+)'", i.get("description", "")) for i in v["items"]]
+    return v["type"] in LEFT_TO_FINISH and bool(names) and all(m and m.group(1).startswith(FINISH_PREFIX) for m in names)
 
 
 def straights(b, nets, areas, straight):
@@ -124,14 +141,21 @@ def bus_table(cfg, board_path, odir):
     A("       DRC（填充后，kicad-cli 每类最多列 499 条未连接）：本组未连接 %d；全板未连接 %d；本组的其他项 %s" % (
         len(ug), len(d["unconnected_items"]), " ".join("%s %d" % kv for kv in sorted(by_grp.items())) or "0"))
     A("       全板 DRC 按类型：%s" % (" ".join("%s %d" % kv for kv in sorted(by_all.items())) or "0"))
-    hard = {k: n for k, n in by_all.items() if k in HARD_DRC}
+    fin = [v for v in d["violations"] if finish_item(v)]
+    judged = [v for v in d["violations"] if v["type"] in HARD_DRC and not finish_item(v)]
+    hard = dict(sorted(collections.Counter(v["type"] for v in judged).items()))
     A("       间距 / 孔 / 焊环 / 板边 / 线宽 / 角度 / 孤铜类（全板）：%s" % (" ".join("%s %d" % kv for kv in sorted(hard.items())) or "0"))
+    if fin:
+        A("       收尾步骤的铺铜（%s*）上的 %s %d 项，不在这里判：这一步的板带着上次收尾的铺铜，没有它的缝合地过孔（无主的过孔已删），"
+          "收尾时重铺、缝合，在收尾的 DRC 里判" % (FINISH_PREFIX, " ".join(sorted({v["type"] for v in fin})), len(fin)))
     if ug or len(full) < len(nets):
         bad.append("unconnected")
     if hard:
         bad.append("DRC " + " ".join(hard))
-    for v in [v for v in d["violations"] if v["type"] in HARD_DRC][:20]:
+    for v in judged[:20]:
         A("  ! %s: %s | %s" % (v["type"], v["description"], " / ".join(i["description"] for i in v["items"])))
+    for v in fin[:20]:
+        A("  - %s: %s | %s" % (v["type"], v["description"], " / ".join(i["description"] for i in v["items"])))
     # copper-class unconnected (pcbnew's connectivity of the refilled board)
     bb = pcbnew.LoadBoard(board_path)
     cl = CR.clusters(bb, CR.copper_nets(cfg))
@@ -203,7 +227,7 @@ def bus_table(cfg, board_path, odir):
     lon = max(Ln["nets"].items(), key=lambda kv: kv[1]["length"])
     A("       最长的网络 %s %.3f mm（上限 %s）；超过的 %d 根；DRC 量的长度对几何最大相差 %s mm" % (
         lon[0], lon[1]["length"], Ln["limit"], len(Ln["over_limit"]), Ln.get("max_abs_geometry_minus_drc")))
-    lr = {k: n for k, n in by_all.items() if k in ("length_out_of_range", "skew_out_of_range")}
+    lr = {k: n for k, n in by_all.items() if k in LENGTH_DRC}
     if tu:
         # the columns of docs/tools.md: per group inside window / total, worst net and by how much, blocks and added
         # length, missing list; spread before (natural, geometry) -> after (DRC-measured lengths)
@@ -251,6 +275,8 @@ def bus_table(cfg, board_path, odir):
                                                 len(tu["blocks"]) if tu else 0, tu["arcs"] if tu else 0))
     if Ln["over_limit"]:
         bad.append("length")
+    if lr:
+        bad.append("DRC " + " ".join(sorted(lr)))
     # straights >= <straight> mm outside the BGA rule areas (place.toml [rule_areas]) on data / mask nets (serpentine
     # candidates). Only these areas are read: the others (the finish step's FIN_ keep-outs, not axis-parallel
     # rectangles) are not the table's and busroute's rule_areas() would refuse them.
@@ -264,12 +290,17 @@ def bus_table(cfg, board_path, odir):
     v = sd["vias"]
     per = {n: x["vias"] for n, x in Ln["nets"].items()}
     clock = set(cfg.need("tune_sites.clock"))
-    A("[过孔] 每根最多 %d，合计 %d；上限 %s 超过的 %d 根；目标 %s 超过的 %d 根%s；数据 / NBL / 时钟用到 3 个的：%s" % (
-        v["max"], v["total"], v["limit"], len(v["over_limit"]), v["target"], len(v["above_target"]),
+    # the via limit holds for the data lanes, their NBL and the clock only (SPEC 9, rule sdram_via_max); address and
+    # command lines over it are reported
+    tight = [n for n in v["over_limit"] if n in data or n in clock]
+    A("[过孔] 每根最多 %d，合计 %d；上限 %s 超过的 %d 根%s；目标 %s 超过的 %d 根%s；数据 / NBL / 时钟用到 3 个的：%s" % (
+        v["max"], v["total"], v["limit"], len(v["over_limit"]),
+        "（数据 / NBL / 时钟 %d 根%s；地址命令线不设上限，只报告）" % (len(tight), "：" + " ".join(tight) if tight else "") if len(tight) < len(v["over_limit"]) else "",
+        v["target"], len(v["above_target"]),
         "（" + " ".join(v["above_target"]) + "）" if v["above_target"] else "",
         " ".join(n for n, k in sorted(per.items()) if k >= 3 and (n in data or n in clock)) or "无"))
     A("       本组放的地过孔（换层处的回流，RTE-5）%d 个：%s" % (len(stitch), " ".join("(%.2f, %.2f)" % (x, y) for n, x, y in stitch)))
-    if v["over_limit"]:
+    if tight:
         bad.append("vias")
     # ---- order
     od = sd["order"]
@@ -566,7 +597,7 @@ def table(cfg, board_path, odir):
             " ".join("%s %d" % kv for kv in sorted(shp.items())) or "0"))
         if ug:
             bad.append("%s unconnected %d" % (name, len(ug)))
-        hard = {k: n for k, n in other.items() if k in HARD_DRC}
+        hard = sorted({v["type"] for v in d["violations"] if mine(v) and v["type"] in HARD_DRC and not finish_item(v)})
         if hard:
             bad.append("%s DRC %s" % (name, " ".join(hard)))
     # the shape items of the local groups, one by one (RTE-9: each is looked at and given its reason in the report)
