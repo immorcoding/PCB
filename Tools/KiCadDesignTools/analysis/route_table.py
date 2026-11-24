@@ -252,11 +252,12 @@ def bus_table(cfg, board_path, odir):
     if Ln["over_limit"]:
         bad.append("length")
     # straights >= <straight> mm outside the BGA rule areas (place.toml [rule_areas]) on data / mask nets (serpentine
-    # candidates)
-    areas = b.rule_areas()
+    # candidates). Only these areas are read: the others (the finish step's FIN_ keep-outs, not axis-parallel
+    # rectangles) are not the table's and busroute's rule_areas() would refuse them.
     own = [a["name"] for a in cfg.datafile("place.toml").get("rule_areas", {}).get("areas", [])]
+    areas = b.rule_areas(own)
     data = [n for n in nets if re.match(r"(%s\d+|%s\d)$" % (re.escape(DN), re.escape(MN)), n)]
-    st = straights(b, data, {k: v for k, v in areas.items() if k in own}, STRAIGHT)
+    st = straights(b, data, areas, STRAIGHT)
     A("       数据 / NBL 线在规则区外 >= %.1f mm 的直线段：%d 段，%d 根线有（明细在 straights.json）" % (STRAIGHT, sum(len(v) for v in st.values()), len(st)))
     json.dump({n: v for n, v in sorted(st.items())}, open(os.path.join(odir, "straights.json"), "w", encoding="utf-8"), indent=0)
     # ---- vias
