@@ -118,6 +118,36 @@ class Board:
     def groups(self):
         return list(self.get("route.group", []))
 
+    def datafile(self, name):
+        """Another TOML data file of the board folder (place.toml, silk.toml, bga_block.toml), read once; {} when the
+        file does not exist."""
+        cache = self.__dict__.setdefault("_data", {})
+        if name not in cache:
+            p = os.path.join(self.dir, name)
+            if os.path.isfile(p):
+                with open(p, "rb") as f:
+                    try:
+                        cache[name] = tomllib.load(f)
+                    except tomllib.TOMLDecodeError as e:
+                        raise ConfigError("%s: %s" % (p, e))
+            else:
+                cache[name] = {}
+        return cache[name]
+
+    @property
+    def package(self):
+        """The board folder as a Python package name, relative to the repository root ("stm32h743_sdram",
+        "templates.demo_board"): routes files, rules_cases.py and schematic pages are imported as its modules."""
+        rel = os.path.relpath(self.dir, paths.REPO)
+        if rel.startswith(".."):
+            raise ConfigError("%s is not inside the repository %s" % (self.dir, paths.REPO))
+        return rel.replace(os.sep, ".").replace("/", ".")
+
+    def module(self, name):
+        """Import a Python data module of the board folder (e.g. "rules_cases", "routes_sdram", "sch.mcu")."""
+        import importlib
+        return importlib.import_module(self.package + "." + name)
+
     # ------------------------------------------------------------------ checks
     def _check(self):
         d = self.data
