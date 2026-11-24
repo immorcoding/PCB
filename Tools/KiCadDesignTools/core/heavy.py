@@ -4,6 +4,7 @@
                          inherit both, so a driver calls it once at its start
     HeavyLock(name)      a machine-wide lock file: only one driver (build, regress) runs KiCad work at a time; a second
                          one waits or gives up (the file names the holder's PID and command)
+    run_low(args)        one heavy command in the foreground at that priority, output captured
     rest(seconds)        a pause between heavy commands (build.sh's finish step pauses 20 s after each refill)
     kicad_lock(folder)   the KiCad lock files (*.lck, hidden ones too) in a board folder: KiCad has the project open,
                          so nothing may write the board or the project file
@@ -87,6 +88,15 @@ class HeavyLock:
             except OSError:
                 pass
         return False
+
+
+def run_low(args, timeout=None, cwd=None):
+    """One heavy command in the foreground, output captured (subprocess.CompletedProcess): this process is set to
+    below-normal priority on four cores first (low_priority), the child starts below normal and inherits the
+    affinity."""
+    low_priority()
+    return subprocess.run(args, capture_output=True, timeout=timeout, cwd=cwd, stdin=subprocess.DEVNULL,
+                          creationflags=getattr(subprocess, "BELOW_NORMAL_PRIORITY_CLASS", 0))
 
 
 def rest(seconds=20):

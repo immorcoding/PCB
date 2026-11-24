@@ -14,9 +14,9 @@ of that folder's package (`<board>.<stem>`). Commands, usage and the known pitfa
 `docs/shape/`.
 
 Status (2026-11-24, branch `tools-consolidation`): stages 1-2 done: the generic tools moved here from `scripts/`, the
-benchmarks carry their own fixtures, `build.py` reads `<board dir>/board.toml`. The H743 board folder still holds
-its own mixed scripts (placement, copper report, finish, reports), which the driver calls; stage 3 splits them into
-modules here plus data files.
+benchmarks carry their own fixtures, `build.py` reads `<board dir>/board.toml`. Stage 3 (batches A-G) moved the H743
+board folder's scripts that the driver called here, their constants into its data files; the driver calls Tools
+modules only (no `[scripts]` section any more).
 
 | Category | Tool | Command | When | Rules | Benchmark |
 |---|---|---|---|---|---|
@@ -67,6 +67,8 @@ modules here plus data files.
 | views | `place_view` | `-m ...views.place_view <board dir> dump [board]` (KiCad's python), then `... draw [x0 y0 x1 y1 name]` (matplotlib) | pads and courtyards of the placement, whole board or a window, into `<board dir>/out/layout/` | PROC-14 | |
 | views | `finish_view` | `-m ...views.finish_view <board dir> <board> <out>` (Edge) | the silkscreen over copper, both sides, close-ups of `[finish.view] close` | PROC-14 | |
 | views | `sketch_view` | `-m ...views.sketch_view <board dir> <out>` (matplotlib) | the copper sketch per layer with the package bodies, rule areas and holes of `place.toml` | PROC-14 | |
+| views | `publish` | `-m ...views.publish <board dir> [--rest 20] [--stage all/dump/svg/png] [--only ...]` (Edge) | release pictures with net names: every copper layer, outer layers with silkscreen, close-ups, layers stacked (`[publish]`) | PROC-14 | |
+| analysis | `route_table` | `-m ...analysis.route_table <board dir> <board> <out>` (env ROUTE2_GROUPS) | the route step's table: the bus group's lengths, serpentines, vias, order, copper, escape; one row per routes file, gap crossings, pairs, placement (`[route.table]`) | PROC-4 | |
 | analysis | `track_shape` | `-m ...analysis.track_shape <board>` | track shapes DRC does not check | RTE-8 | `tests/track_shape` |
 | analysis | `board_diff` | `-m ...analysis.board_diff <a> <b>` | two board files item by item (uuids aside, fills as areas) | | |
 | analysis | `compare_runs` | `-m ...analysis.compare_runs <out A> <out B>` | two builds' reports number by number | | |

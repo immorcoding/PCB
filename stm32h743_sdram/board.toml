@@ -2,13 +2,13 @@
 #   D:\KiCad\bin\python.exe -m Tools.KiCadDesignTools.build stm32h743_sdram <step>          (from the repository root)
 # Coordinates are local mm (board-file mm - origin), x right, y down. Paths are relative to this folder. Numbers that
 # end up on a command line are written as the command line had them (27, not 27.0).
-# Stage 2 of the Tools/ consolidation (2026-11-24): the driver reads the sections below and still calls this folder's
-# scripts ([scripts]) with the arguments build.sh gave them. The constants still hard-coded in finish*.py and the
-# report scripts move into this file (and silk.toml) in stage 3; the project file's ([project], [netclasses],
-# [netclass_patterns], [[footprints.derived]]) moved in stage 3A, the schematic's ([schematic]) in stage 3B, the
-# placement's (place.toml, [probe]) in stage 3C, the copper reports' and power planners' ([copper.slots],
-# [copper.table], [copper_view], [power], [bga.<ref>], [tune_sites], place.toml [fan] ref) in stage 3D, the offline
-# BGA planners' (bga_block.toml) in stage 3E, the finishing's ([finish.*], silk.toml) in stage 3F.
+# Tools/ consolidation (2026-11-24): the driver reads the sections below and calls Tools modules only (stage 2 made
+# the driver, stage 3 moved this folder's scripts into Tools/KiCadDesignTools/ and their constants here). The project
+# file's data ([project], [netclasses], [netclass_patterns], [[footprints.derived]]) moved in stage 3A, the
+# schematic's ([schematic]) in stage 3B, the placement's (place.toml, [probe]) in stage 3C, the copper reports' and
+# power planners' ([copper.slots], [copper.table], [copper_view], [power], [bga.<ref>], [tune_sites], place.toml [fan]
+# ref) in stage 3D, the offline BGA planners' (bga_block.toml) in stage 3E, the finishing's ([finish.*], silk.toml)
+# in stage 3F, the route table's ([route.table]) and the release pictures' ([publish]) in stage 3G.
 
 [board]
 name = "stm32h743_sdram"
@@ -104,10 +104,6 @@ pads = 90                          # how many such pads the stock footprint has 
 [build.out]                      # report folders under out/ when they are not named after the step
 route = "route2"                 # build.sh's step was route2 (stop 7); finish reads route2/power_bga_sites.json
 checks = "finish"                # build.sh finish-checks wrote into out/finish
-
-[scripts]                        # this folder's scripts the driver calls (stage 3: Tools modules plus data files)
-route_report = "route2_report.py"
-publish = "publish.py"
 
 # The schematic (Tools.KiCadDesignTools.schematic: generate, build, check). Title and revision from [board], the
 # project symbol library is [board] lib.
@@ -385,7 +381,39 @@ box = [0.3, 0.3, 84.7, 74.7]     # x0 y0 x1 y1: the board (85 x 75) less 0.3 mm
 [route]
 obstacles_group = "sdram"        # built on a copy without its own copper: its serpentines see the later groups
 orphans = true                   # copper no group claims is removed and listed (orphans.txt)
-report_env = "ROUTE2_GROUPS"     # the groups with in_report, one "name file" per line, for route2_report.py
+
+# The route step's table (Tools.KiCadDesignTools.analysis.route_table): the bus group's part (stop 6), then one row per
+# routes file ([[route.group]]; in_report: the ROUTE2_GROUPS the driver passes), gap crossings, pairs, placement.
+# Byte lanes from [schematic.swap], clock nets from [tune_sites] clock, BGA rule areas from place.toml [rule_areas],
+# slot files from [[route.slots]] (the runs with a stem), the escape run's refs from [[route.escape]].
+[route.table]
+bus = "sdram"                    # the group of the first part (lengths, serpentines, vias, order: <out>/<bus>/metrics.json)
+label = "SDRAM"                  # the first part in the verdict
+title = "== 走线一 A 部分（build.sh route1）：SDRAM 组写入真板，两组电源在它之后重建，KiCad 填充后量 =="
+part_title = "== SDRAM 组（route1 的表，同一块板、同一次填充和 DRC）=="   # the first part's heading inside the full table
+lane_rule = "sdram_lane"         # the byte lanes' skew rules <lane_rule>0..3 of the rule file
+straight = 2.5                   # data / mask straights at least this long are serpentine candidates (straights.json)
+slot_mark = 3.0                  # plane slots longer than this are named (the old slot limit; report only)
+sites = "power_bga_sites.json"   # the BGA power group's via sites (balls without a site, [[route.table.ball_via]])
+place_refs = ["U501", "U101", "U102", "U601", "U801"]   # their pin lines of place_check.txt go into the table
+
+[route.table.escape]             # escape_check now against the copper step (stop 5)
+json = "escape_bga.json"         # in the out folder; the [[route.escape]] run that writes it gives the refs
+before = "out/copper/escape_bga.json"
+skip = ["FMC_", "+", "GND", "VCAP", "VDDA"]   # nets left out (the bus, supplies): signal balls are the rest
+title = "escape_check（两颗 BGA，窗口 27 25 66 51），非 SDRAM、非电源的信号球，现在对停点 5："
+
+[[route.table.ball_via]]         # U58: a ball's via in the sites file
+name = "U58"
+ball = "U301.P2"
+net = "+3V3_SDRAM"
+
+[route.table.pairs]              # the differential pairs (local groups' DRC lengths and serpentines)
+title = "以太网两对（100 Ω，L1，线宽 0.1194、对内间距 0.2032；对内差上限 1.27 mm，eth_skew）"
+prefix = "ETH_"
+pairs = [["ETH_TX_P", "ETH_TX_N"], ["ETH_RX_P", "ETH_RX_N"]]
+skew_max = 1.27                  # intra-pair difference limit (rule eth_skew)
+layer = "L1"
 
 [[route.escape]]
 refs = ["U201", "U301"]
@@ -599,5 +627,15 @@ skip_boxes = [[34.0, 31.0, 46.0, 43.0], [52.0, 29.5, 62.0, 44.5]]   # x0 y0 x1 y
 [finish.view]                    # close-ups of the top silkscreen (Tools.KiCadDesignTools.views.finish_view), x0 y0 x1 y1
 close = { title = [3.5, 32.0, 27.5, 41.0], northeast = [61.0, 0.0, 85.0, 30.0], dc_input = [56.0, 46.0, 85.0, 62.0], lcd_uart = [24.0, 59.0, 70.0, 75.0], codec_mcu_north = [20.0, 12.0, 50.0, 33.0], west = [0.0, 0.0, 26.0, 42.0] }
 
+# Release pictures with net names (Tools.KiCadDesignTools.views.publish): every copper layer, the outer ones with their
+# silkscreen, close-ups, the layers stacked. Windows x0 y0 x1 y1 in local mm.
 [publish]
-rest = 20
+rest = 20                        # seconds of pause between heavy commands (kicad-cli, Edge)
+out = "publish"                  # the pictures (layers/, closeups/, combined/)
+work = "out/publish_work"        # the board copy, geom.json, kicad-cli's plots, the silkscreen SVGs
+view = [-1, -1, 86, 76]          # the whole board plus 1 mm
+px = 100                         # px per mm of the whole-board pictures
+close_px = 250                   # px per mm of the close-ups
+close = { mcu_sdram = [26, 20, 66, 52] }   # close-ups of the signal layers and the stacked views: name -> window
+# picture titles per layer
+titles = { L1 = "top signal", L2 = "GND plane", L3 = "signal + GND pour", L4 = "signal + GND pour", L5 = "power plane (blocks)", L6 = "bottom signal" }

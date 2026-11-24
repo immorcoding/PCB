@@ -20,7 +20,7 @@ repository root. Reports go to <out>/<step folder>/, <out> = <board dir>/out unl
   finish      after every route: fiducials, inner pours and clean-up, stitching, silkscreen, teardrops, final DRC with
               schematic parity, canary, pictures (FINISH_BOARD=<copy> runs it on a copy, as build.sh did)
   checks      every rule of the rule file matches something (one DRC per rule, one at a time: about 30 minutes)
-  publish     release pictures with net names ([scripts] publish)
+  publish     release pictures with net names (views.publish, [publish])
   all         rules, sch, route, finish
   compare     compare_runs on two out trees, and board_diff on the board copies they hold (<name>.kicad_pcb)
   init NAME, pcb-update: not yet (stages 3 and 5 of the Tools/ consolidation)
@@ -29,8 +29,8 @@ Every step first looks for KiCad's lock files in the board folder (hidden ones t
 runs below normal priority on four cores (inherited by every child) and holds the machine-wide heavy lock, so that
 only one KiCad process runs at a time (Tools.KiCadDesignTools.core.heavy). --dry-run prints the commands instead of running them.
 
-Stage 2 of the consolidation: the steps still call the board folder's own scripts ([scripts] in board.toml) with the
-arguments stm32h743_sdram/build.sh gave them; stage 3 replaces those with Tools modules and data files.
+Every step calls Tools modules only, with the board folder as their first argument where they read board data
+(stage 3 of the consolidation); the commands and their order are those of stm32h743_sdram/build.sh.
 """
 import json, os, re, shutil, subprocess, sys, time, collections
 
@@ -44,6 +44,8 @@ BOARDTEXT = "Tools.KiCadDesignTools.core.boardtext"          # unfill / strip / 
 SLOTS = "Tools.KiCadDesignTools.copper.plane_slots"          # plane slots, cut-off vias, feed necks ([copper.slots])
 COPPER_TABLE = "Tools.KiCadDesignTools.copper.copper_table"  # the copper step's table ([copper.table])
 COPPER_VIEW = "Tools.KiCadDesignTools.views.copper_view"     # pictures of the filled copper ([copper_view])
+ROUTE_TABLE = "Tools.KiCadDesignTools.analysis.route_table"  # the route step's table ([route.table])
+PUBLISH = "Tools.KiCadDesignTools.views.publish"             # release pictures with net names ([publish])
 KH = os.path.join(os.path.expanduser("~"), ".claude", "plugins", "marketplaces", "kicad-happy", "skills", "kicad", "scripts",
                   "analyze_schematic.py")
 
@@ -197,10 +199,6 @@ class Build:
         if not self.dry:
             os.makedirs(O, exist_ok=True)
         return O
-
-    def script(self, key):
-        rel = self.cfg.need("scripts.%s" % key)
-        return self.D + "/" + rel
 
     def L(self, text_):
         print(text_)
@@ -490,12 +488,13 @@ class Build:
         PC = self.place_check(O, lambda d: grep(d, r"^\[(outside|overlap|keepout|under)\]"))
         print("== route table")
         listed = "\n" + "".join("%s %s\n" % (g["name"], g["file"]) for g in groups if g.get("in_report") and g["name"] in build)
-        RT, data = self.r.py(self.script("route_report"), BRD, O, out=O + "/table.log",
-                             env={rt.get("report_env", "ROUTE2_GROUPS"): listed, "ROUTE2_SECONDS": "%d s" % (time.time() - T0)})
+        RT, data = self.r.py(ROUTE_TABLE, self.D, BRD, O, out=O + "/table.log",
+                             env={"ROUTE2_GROUPS": listed, "ROUTE2_SECONDS": "%d s" % (time.time() - T0)})
         lines = text(quiet(data)).splitlines()
+        part = rt.get("table", {}).get("part_title")         # the full table's own part ends here; the bus part follows
         for l in lines:
             print(l)
-            if l.startswith("== SDRAM"):
+            if l == part:
                 break
         print("route step: %d s; group exits %s, place_check exit %s, table exit %s" % (time.time() - T0, codes, PC, RT))
         return 0
@@ -617,7 +616,7 @@ class Build:
 
     def step_publish(self):
         T0 = time.time()
-        rc, data = self.r.py(self.script("publish"), "--rest", int(self.cfg.get("publish.rest", 20)), filt=quiet)
+        rc, data = self.r.py(PUBLISH, self.D, "--rest", int(self.cfg.get("publish.rest", 20)), filt=quiet)
         self.pr(data)
         print("publish step: %d s" % (time.time() - T0))
         return rc

@@ -1,43 +1,62 @@
-"""Release pictures of the H743 board with net names, in the look of the KiCad PCB editor (default dark theme).
+"""Release pictures of a board with net names, in the look of the KiCad PCB editor (default dark theme).
 
-    D:\\KiCad\\bin\\python.exe stm32h743_sdram\\publish.py [--rest 20] [--stage all|dump|svg|png]
+    python -m Tools.KiCadDesignTools.views.publish <board dir> [--rest 20] [--stage all|dump|svg|png] [--only ...]
 
-Reads the board only: it is copied to out/publish_work/ first, every step works on the copy. Writes stm32h743_sdram/publish/:
-  layers/L1_F.Cu.svg|png ... L6_B.Cu.svg|png   one copper layer each, whole board, 100 px/mm
+Reads the board only: it is copied to [publish] work (out/publish_work/) first, every step works on the copy. Writes
+[publish] out (<board dir>/publish/):
+  layers/L1_F.Cu.svg|png ... L6_B.Cu.svg|png   one copper layer each, whole board ([publish] view), [publish] px px/mm
   layers/L1_F.Cu_silk.png, L6_B.Cu_silk_bottom_view.png   outer layers with their silkscreen (bottom mirrored, seen from below)
-  closeups/L1|L3|L4|L6_mcu_sdram.png        MCU / SDRAM region (local x 26-66, y 20-52), 250 px/mm
-  combined/all_layers.svg|png, signal_layers.svg|png and their *_mcu_sdram.png close-ups
+  closeups/<signal layer>_<name>.png        each window of [publish] close, [publish] close_px px/mm
+  combined/all_layers.svg|png, signal_layers.svg|png and their *_<name>.png close-ups
+--only: a comma list of outputs to make (layer tags L1.., silk, combined, all_layers, signal_layers).
 
 How: 1. dump (KiCad python, pcbnew): tracks, arcs, vias, pads (polygons per layer), zone fills, board outline -> geom.json;
 2. kicad-cli pcb export svg of the copper, silkscreen and edge layers in the editor's colour theme (layer colours are taken
 from these plots, the silkscreen is inlined from them); 3. the SVGs are drawn here (copper in layer colours, zone fills
 slightly transparent, vias as rings, net names as text, rules in label_* below); 4. headless Edge turns each SVG into a PNG,
-in tiles of at most 4000 px that PIL puts together. Every heavy command runs alone, at low priority on four cores, with a
-pause between them (--rest seconds).
-"""
-import argparse, json, math, os, re, shutil, subprocess, sys, time
+in tiles of at most 4000 px that PIL puts together. Every heavy command runs alone, below normal priority on four cores
+(core.heavy.run_low), with a pause between them (--rest seconds).
 
-HERE = os.path.dirname(os.path.abspath(__file__))
-NAME = "stm32h743_sdram"
-BOARD = os.path.join(HERE, NAME + ".kicad_pcb")
-WORK = os.path.join(HERE, "out", "publish_work")
-PUB = os.path.join(HERE, "publish")
-CLI = r"D:\KiCad\bin\kicad-cli.exe"
-KPY = r"D:\KiCad\bin\python.exe"
-EDGE = r"C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe"
+board.toml [publish]: out, work, view, px, close_px, close ({name: window}), titles ({L: picture title}); the layers
+and the signal layers from [layers].
+"""
+import argparse, json, math, os, re, shutil, sys, time
+
+from Tools.KiCadDesignTools.core import config, heavy, paths
+
+CLI = paths.KICAD_CLI
+KPY = paths.KICAD_PY
+EDGE = paths.EDGE
 FONT = r"C:\Windows\Fonts\arial.ttf"
 THEME = "_builtin_default"           # the editor's setting on this machine (pcbnew.json color_theme)
-
-# board file coordinates (mm); local = board - 100
-VIEW = (99.0, 99.0, 87.0, 77.0)       # whole board plus 1 mm
-CLOSE = (126.0, 120.0, 40.0, 32.0)    # local x 26-66, y 20-52
-PX_BOARD, PX_CLOSE = 100, 250
 TILE = 4000
 
-CU = [("F.Cu", "L1"), ("In1.Cu", "L2"), ("In2.Cu", "L3"), ("In3.Cu", "L4"), ("In4.Cu", "L5"), ("B.Cu", "L6")]
-ROLE = {"L1": "top signal", "L2": "GND plane", "L3": "signal + GND pour", "L4": "signal + GND pour",
-        "L5": "power plane (blocks)", "L6": "bottom signal"}
-SIGNAL = ["F.Cu", "In2.Cu", "In3.Cu", "B.Cu"]
+# the board's data (setup): board file coordinates (mm) of the views, x, y, width, height
+HERE = NAME = WORK = PUB = None
+VIEW = None                          # whole board
+CLOSE = {}                           # name -> close-up view
+PX_BOARD = PX_CLOSE = None
+CU = []                              # [(KiCad layer, L name)] top to bottom
+ROLE = {}                            # L name -> picture title
+SIGNAL = []                          # KiCad names of the signal layers
+
+
+def setup(cfg):
+    global HERE, NAME, WORK, PUB, VIEW, CLOSE, PX_BOARD, PX_CLOSE, CU, ROLE, SIGNAL
+    P = cfg.need("publish")
+    ox, oy = cfg.origin
+
+    def view(w):
+        x0, y0, x1, y1 = (float(v) for v in w)
+        return (ox + x0, oy + y0, x1 - x0, y1 - y0)
+    HERE, NAME = cfg.dir, cfg.name
+    WORK, PUB = cfg.path(P["work"]), cfg.path(P["out"])
+    VIEW = view(P["view"])
+    CLOSE = {name: view(w) for name, w in P.get("close", {}).items()}
+    PX_BOARD, PX_CLOSE = P["px"], P["close_px"]
+    CU = [(l.kicad, l.L) for l in cfg.layers]
+    ROLE = dict(P["titles"])
+    SIGNAL = [cfg.kicad(L) for L in cfg.signal_layers()]
 
 # KiCad default theme colours that the plots do not carry (builtin "KiCad Default" theme, KiCad 6-10)
 BG = "#001023"           # LAYER_PCB_BACKGROUND
@@ -59,15 +78,12 @@ CAP = 0.716               # Arial cap height / em
 
 
 def run_low(args, timeout=None):
-    """One heavy command, low priority, four cores, in the foreground."""
-    # one string: a list would make Python escape the quotes for cmd ("Access is denied")
-    cmd = 'cmd /c start "" /low /affinity F /wait /b ' + subprocess.list2cmdline(args)
-    return subprocess.run(cmd, capture_output=True, timeout=timeout)
+    """One heavy command, below normal priority, four cores, in the foreground (from the repository root)."""
+    return heavy.run_low(args, timeout=timeout, cwd=paths.REPO)
 
 
 def rest(s):
-    if s:
-        time.sleep(s)
+    heavy.rest(s)
 
 
 # ---------------------------------------------------------------- 1. dump (KiCad python)
@@ -554,8 +570,9 @@ def outline(g, col):
     return '<path fill="none" stroke="%s" stroke-width="0.1" d="%s"/>' % (col, path_d(g["outline"]))
 
 
-def svg_doc(body, title, view=VIEW, px=PX_BOARD):
-    x, y, w, h = view
+def svg_doc(body, title, view=None, px=None):
+    x, y, w, h = view or VIEW
+    px = px or PX_BOARD
     return ('<?xml version="1.0" encoding="UTF-8"?>\n<svg xmlns="http://www.w3.org/2000/svg" version="1.1" '
             'width="%dpx" height="%dpx" viewBox="%s %s %s %s">\n<title>%s</title>\n<rect x="%s" y="%s" width="%s" '
             'height="%s" fill="%s"/>\n%s\n</svg>\n' % (round(w * px), round(h * px), f4(x), f4(y), f4(w), f4(h), esc(title),
@@ -650,12 +667,14 @@ def to_png(svg, png, view, px, work, pause):
 
 
 # ---------------------------------------------------------------- driver
-def main():
-    ap = argparse.ArgumentParser()
+def main(argv):
+    ap = argparse.ArgumentParser(prog="python -m Tools.KiCadDesignTools.views.publish")
+    ap.add_argument("board_dir")
     ap.add_argument("--stage", default="all", choices=["all", "dump", "svg", "png"])
     ap.add_argument("--rest", type=float, default=20.0, help="pause in seconds between heavy commands")
     ap.add_argument("--only", default="", help="comma list of outputs to make (layer tags, silk, close, combined)")
-    a = ap.parse_args()
+    a = ap.parse_args(argv)
+    setup(config.load(a.board_dir))
     os.makedirs(WORK, exist_ok=True)
     board = os.path.join(WORK, NAME + ".kicad_pcb")
     gj = os.path.join(WORK, "geom.json")
@@ -663,7 +682,7 @@ def main():
         for ext in (".kicad_pcb", ".kicad_pro", ".kicad_prl", ".kicad_dru"):
             if os.path.exists(os.path.join(HERE, NAME + ext)):
                 shutil.copyfile(os.path.join(HERE, NAME + ext), os.path.join(WORK, NAME + ext))
-        r = run_low([KPY, os.path.abspath(__file__), "--dump-to", gj, board], timeout=900)
+        r = run_low([KPY, "-m", "Tools.KiCadDesignTools.views.publish", "--dump-to", gj, board], timeout=900)
         print(r.stdout.decode("utf-8", "replace").strip().splitlines()[-1:])
         if r.returncode or not os.path.exists(gj):
             print(r.stderr.decode("utf-8", "replace")[-3000:])
@@ -694,10 +713,12 @@ def main():
             print("%s: %d names, %d zone names" % (stem, nl, nz))
         jobs.append((f, os.path.join(PUB, "layers", stem + ".png"), VIEW, PX_BOARD))
         if n in SIGNAL:
-            jobs.append((f, os.path.join(PUB, "closeups", tag + "_mcu_sdram.png"), CLOSE, PX_CLOSE))
+            for cn, cv in CLOSE.items():
+                jobs.append((f, os.path.join(PUB, "closeups", "%s_%s.png" % (tag, cn)), cv, PX_CLOSE))
     if want("silk"):
-        for n, tag, silk, mirror, stem in (("F.Cu", "L1", "F.SilkS", False, "L1_F.Cu_silk"),
-                                          ("B.Cu", "L6", "B.SilkS", True, "L6_B.Cu_silk_bottom_view")):
+        top, bot = CU[0][1], CU[-1][1]           # the outer layers' tags (L1, Ln)
+        for n, tag, silk, mirror, stem in (("F.Cu", top, "F.SilkS", False, top + "_F.Cu_silk"),
+                                          ("B.Cu", bot, "B.SilkS", True, bot + "_B.Cu_silk_bottom_view")):
             sg = '<g fill="%s" stroke="%s">%s</g>' % (col[silk], col[silk], silk_group(pd, silk))
             body, nl, nz = build_layer(g, n, col, silk=sg, mirror=mirror)
             f = os.path.join(WORK, stem + ".svg")
@@ -712,7 +733,8 @@ def main():
                 open(f, "w", encoding="utf-8").write(svg_doc(body, stem))
                 print("%s: %d names" % (stem, nl))
             jobs.append((f, os.path.join(PUB, "combined", stem + ".png"), VIEW, PX_BOARD))
-            jobs.append((f, os.path.join(PUB, "combined", stem + "_mcu_sdram.png"), CLOSE, PX_CLOSE))
+            for cn, cv in CLOSE.items():
+                jobs.append((f, os.path.join(PUB, "combined", "%s_%s.png" % (stem, cn)), cv, PX_CLOSE))
     if a.stage == "svg":
         return
     for svg, png, view, px in jobs:
@@ -722,7 +744,7 @@ def main():
 
 
 if __name__ == "__main__":
-    if len(sys.argv) > 1 and sys.argv[1] == "--dump-to":
+    if len(sys.argv) > 1 and sys.argv[1] == "--dump-to":       # step 1 under KiCad's python: --dump-to <geom.json> <board>
         dump(sys.argv[3], sys.argv[2])
     else:
-        main()
+        main(sys.argv[1:])
