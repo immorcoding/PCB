@@ -30,8 +30,10 @@ A candidate point is legal when (all measured on a raster of 0.05 mm, from KiCad
 board.toml [finish.stitch] holds the values named above; [finish] pour_layers; [power] ground; plane layers from the
 layer roles. setup(cfg) first (it sets up finishing.silk too).
 """
-import json, math, os, re, sys, uuid
+import json, math, os, re, sys
 import numpy as np
+
+from Tools.KiCadDesignTools.core import uuids
 
 RES = 20                                   # px per mm
 GRID = 0.5                                 # candidate grid (mm)
@@ -390,9 +392,11 @@ def write_vias(path, pts):
     text = open(path, encoding="utf-8", newline="").read()
     nl = "\r\n" if "\r\n" in text else "\n"
     blocks = []
+    keys = uuids.Keys()                       # uuid key: the via's position in the file
     for x, y in pts:
+        uid = uuids.make(keys.unique("stitch:via:%s,%s" % (fmt(x + OX), fmt(y + OY))))
         blocks.append(nl.join(["\t(via", "\t\t(at %s %s)" % (fmt(x + OX), fmt(y + OY)), "\t\t(size %s)" % VIA["size"], "\t\t(drill %s)" % VIA["drill"],
-                               '\t\t(layers "F.Cu" "B.Cu")', '\t\t(net "%s")' % GND, '\t\t(uuid "%s")' % uuid.uuid4(), "\t)"]))
+                               '\t\t(layers "F.Cu" "B.Cu")', '\t\t(net "%s")' % GND, '\t\t(uuid "%s")' % uid, "\t)"]))
     k = text.rstrip().rfind(")")
     text = text[:k] + nl.join(blocks) + nl + text[k:]
     open(path, "w", encoding="utf-8", newline="").write(text)

@@ -19,6 +19,7 @@ The netlist is the kicadsexpr export:
 import os, sys
 import pcbnew
 
+from Tools.KiCadDesignTools.core import uuids
 from Tools.KiCadDesignTools.schematic.kisch import parse, find, find_all
 
 FP_DIR = r"D:\KiCad\share\kicad\footprints"
@@ -72,6 +73,7 @@ def main(net_path, pcb_path):
             if fp is None:
                 raise SystemExit(f"{ref}: footprint {c['footprint']} not found")
             fp.SetFPID(pcbnew.LIB_ID(lib, name))
+            uuids.stamp_footprint(fp, "net2pcb:footprint:%s:%s:%s" % (ref, lib, name))   # else random (or the library file's)
             fp.SetReference(ref)
             board.Add(fp)
             if old is not None:

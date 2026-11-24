@@ -27,7 +27,7 @@ fab's minimum edge distance of the keep-out, top / bottom {reference: [x, y]}), 
 """
 import json, math, os, re, sys
 
-from Tools.KiCadDesignTools.core import config, paths
+from Tools.KiCadDesignTools.core import config, paths, uuids
 
 
 def side_file(path):
@@ -150,6 +150,7 @@ def fiducials(cfg, path):
         fp.SetBoardOnly(True)                     # not in the schematic: no parity item
         fp.SetExcludedFromBOM(True)
         fp.SetExcludedFromPosFiles(True)
+        uuids.stamp_footprint(fp, "finish:fiducial:%s" % ref)      # the library file has no uuids: pcbnew made random ones
         fp.Reference().SetLayer(pcbnew.F_Fab)
         fp.Reference().SetTextSize(pcbnew.VECTOR2I(pcbnew.FromMM(0.5), pcbnew.FromMM(0.5)))
         fp.Reference().SetTextThickness(pcbnew.FromMM(0.08))
@@ -157,7 +158,7 @@ def fiducials(cfg, path):
         b.Add(fp)
         if side == "B":                                   # after Add: flipping a footprint that has no board crashes pcbnew
             fp.Flip(fp.GetPosition(), pcbnew.FLIP_DIRECTION_LEFT_RIGHT)
-        z = pcbnew.ZONE(b)
+        z = pcbnew.ZONE(b); uuids.stamp(z, "finish:keepout:FIN_FID_%s" % ref)
         z.SetIsRuleArea(True); z.SetZoneName("FIN_FID_%s" % ref)
         ls = pcbnew.LSET(); ls.AddLayer(pcbnew.F_Cu if side == "F" else pcbnew.B_Cu); z.SetLayerSet(ls)
         z.SetDoNotAllowTracks(True); z.SetDoNotAllowVias(True); z.SetDoNotAllowZoneFills(True)

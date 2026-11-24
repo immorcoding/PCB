@@ -24,6 +24,7 @@ modules only (no `[scripts]` section any more).
 | core | `config` | `-m ...core.config <board dir>` | read and check `board.toml` (layer roles -> L1..Ln, KiCad names) | | |
 | core | `heavy` | (library) | low priority on four cores, one heavy run at a time, KiCad lock files, pauses | | |
 | core | `stackup` | (library) | a fab stackup from `data/stackups/<name>.toml` (`[board] stackup`): thickness, via heights | | |
+| core | `uuids` | (library) | deterministic uuids (uuid5 of a stable key) for what the board writers add: the same build gives the same board file | | |
 | core | `boardtext` | `-m ...core.boardtext <board dir> unfill/strip/orphans <board> [GROUP ...]` | text edits of a `.kicad_pcb`: copper rows of the layer table; drop the saved fills; remove what busroute groups wrote (`<board>.busroute.json`); remove copper no group owns | | |
 | project | `make_project` | `-m ...project.make_project <board dir> [--new-pcb]` | `.kicad_pro`, empty board with the stackup, derived footprints, layer table (`[project]`, `[netclasses]`, `[netclass_patterns]`, `[[footprints.derived]]`) | RUL-1, PROC-13 | |
 | rules | `fixture` | `-m ...rules.fixture <board dir> <out>` | every rule breaks and passes on a fixture board (cases: `<board dir>/rules_cases.py`) | RUL-2 | (it is one) |

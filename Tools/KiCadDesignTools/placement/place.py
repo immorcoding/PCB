@@ -15,7 +15,7 @@ file next to the board keeps its bytes (SaveBoard rewrites it).
 """
 import json, math, os, sys
 
-from Tools.KiCadDesignTools.core import config
+from Tools.KiCadDesignTools.core import config, uuids
 
 EDGE_WIDTH = 0.1                      # Edge.Cuts line width, mm
 PARK_BELOW, PARK_ROW, PARK_GAP = 12.0, 160.0, 1.0   # parked rows: start below the board, row length, gap between parts
@@ -87,11 +87,15 @@ def outline(board, plan, V):
     import pcbnew
     from pcbnew import FromMM as mm
     w, h, r = plan.width, plan.height, plan.corner_r
+    n = {"seg": 0, "arc": 0}                  # uuid keys: kind + index in drawing order
+    def key(kind):
+        n[kind] += 1
+        return "place:outline:%s:%d" % (kind, n[kind] - 1)
     def seg(p, q):
-        s = pcbnew.PCB_SHAPE(board); s.SetShape(pcbnew.SHAPE_T_SEGMENT)
+        s = pcbnew.PCB_SHAPE(board); s.SetShape(pcbnew.SHAPE_T_SEGMENT); uuids.stamp(s, key("seg"))
         s.SetStart(V(*p)); s.SetEnd(V(*q)); s.SetLayer(pcbnew.Edge_Cuts); s.SetWidth(mm(EDGE_WIDTH)); board.Add(s)
     def arc(c, a0):
-        s = pcbnew.PCB_SHAPE(board); s.SetShape(pcbnew.SHAPE_T_ARC)
+        s = pcbnew.PCB_SHAPE(board); s.SetShape(pcbnew.SHAPE_T_ARC); uuids.stamp(s, key("arc"))
         pt = lambda a: (c[0] + r * math.cos(math.radians(a)), c[1] + r * math.sin(math.radians(a)))
         s.SetArcGeometry(V(*pt(a0)), V(*pt(a0 + 45)), V(*pt(a0 + 90)))
         s.SetLayer(pcbnew.Edge_Cuts); s.SetWidth(mm(EDGE_WIDTH)); board.Add(s)
@@ -107,7 +111,7 @@ def rule_areas(board, plan):
     f_cu = pcbnew.LSET(); f_cu.AddLayer(pcbnew.F_Cu)
     areas += [(a["no_pour"], (a["centre"], a["size"]), f_cu, True) for a in plan.areas if a["no_pour"]]
     for name, ((cx, cy), (bw, bh)), layers, no_fill in areas:
-        z = pcbnew.ZONE(board)
+        z = pcbnew.ZONE(board); uuids.stamp(z, "place:rule_area:%s" % name)
         z.SetIsRuleArea(True); z.SetZoneName(name); z.SetLayerSet(layers)
         for f in ("SetDoNotAllowTracks", "SetDoNotAllowVias", "SetDoNotAllowPads", "SetDoNotAllowFootprints"):
             getattr(z, f)(False)

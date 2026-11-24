@@ -32,7 +32,7 @@ DRU = """(version 1)
 %s
 # (nothing generated yet)
 %s
-""" % (len_rules.BEGIN, len_rules.END)
+""" % (len_rules.OLD_BEGINS[0], len_rules.END)          # an earlier marker: len_rules replaces its block
 GROUPS = ('{"groups": [{"rule": "d_window", "members": "A.NetName == \'D*\'", "ref": ["CLK", "CLK_R"], "lo": -2.5, "hi": 2.5}], "sums": [], '
           '"fixed": [{"rule": "d_spread", "members": "A.NetName == \'D*\'", "constraint": "skew (max 2mm)", "why": "bench"}]}')
 
@@ -75,6 +75,7 @@ def main():
         code, out = run("len_rules.py", pcb)
         text = open(os.path.join(tmp, "t.kicad_dru"), encoding="utf-8").read()
         want(code == 0 and "(constraint length (min 9.5000mm) (opt 12.0000mm) (max 14.5000mm))" in text, "len_rules block: %s\n%s" % (out, text[-400:]))
+        want(text.count("# >>> generated") == 1 and len_rules.BEGIN in text, "block under an earlier marker not replaced:\n%s" % text[-400:])
         want('(rule "d_spread"\n  (condition "A.NetName == \'D*\'")\n  (constraint skew (max 2mm)))' in text, "fixed rule not written:\n%s" % text[-400:])
         drc = drc_probe.run_drc(pcb)
         bad = sorted(drc_probe.net_of(v["items"][0]) for v in drc["violations"] if v["type"] == "length_out_of_range")

@@ -207,7 +207,7 @@ def tuning(tmp, want):
     # report it, the tuned one (spread 4.2) must not
     dru_path = os.path.join(tt, "bench.kicad_dru")
     dru = open(dru_path, encoding="utf-8").read()
-    i = dru.index(len_rules.BEGIN)
+    i = len_rules.begin_index(dru)                       # the fixture's block still has the scripts/ marker
     open(dru_path, "w", encoding="utf-8", newline="\n").write(dru[:i] + BENCH_LANE_RULE + dru[i:])
     shutil.copy(os.path.join(HERE, "bench_tune.py"), os.path.join(tt, "bench_tune.py"))
     rt = os.path.join(tt, "bench_tune.py")

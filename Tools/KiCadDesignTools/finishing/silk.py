@@ -24,6 +24,8 @@ icon with d = [dx, dy] from the anchor, size or scale, reach). setup(cfg) first.
 import math, os, sys
 import numpy as np
 
+from Tools.KiCadDesignTools.core import uuids
+
 RES = 20
 
 
@@ -244,7 +246,8 @@ def glyph_box(kind, s):
     return (min(xs) * s - pad, min(ys) * s - pad, max(xs) * s + pad, max(ys) * s + pad)
 
 
-def draw_glyph(b, kind, x, y, s, side, width=None):
+def draw_glyph(b, kind, x, y, s, side, width=None, key=None):
+    """key: the glyph's uuid key; shape n gets key:n"""
     import pcbnew
     width = ICON_W if width is None else width
     layer = pcbnew.F_SilkS if side == "F" else pcbnew.B_SilkS
@@ -253,6 +256,8 @@ def draw_glyph(b, kind, x, y, s, side, width=None):
     n = 0
     for g in glyph(kind):
         sh = pcbnew.PCB_SHAPE(b)
+        if key is not None:
+            uuids.stamp(sh, "%s:%d" % (key, n))
         sh.SetLayer(layer); sh.SetWidth(pcbnew.FromMM(width))
         if g[0] == "seg":
             sh.SetShape(pcbnew.SHAPE_T_SEGMENT); sh.SetStart(V(*g[1])); sh.SetEnd(V(*g[2]))
@@ -357,6 +362,7 @@ def main(path, out):
     masks = mask_fine(b)
     fields = {"F": Field(b, "F"), "B": Field(b, "B")}
     log, stuck, n_items = [], [], 0
+    keys = uuids.Keys()                # uuid keys: kind, side, text or glyph, the anchor (silk.toml), not the spot found
 
     def place_text(s, x, y, rot, size, side, reach=REACH):
         nonlocal n_items
@@ -367,7 +373,9 @@ def main(path, out):
             stuck.append("%s text %r at (%.2f, %.2f)" % (side, s, x, y))
             return None
         px, py, d, over = r
-        b.Add(make_text(b, s, px, py, rot, size, side))
+        t = make_text(b, s, px, py, rot, size, side)
+        uuids.stamp(t, keys.unique("silk:text:%s:%s:%.3f,%.3f" % (side, s, x, y)))
+        b.Add(t)
         f.block((px + bx[0], py + bx[1], px + bx[2], py + bx[3]))
         n_items += 1
         if d > 0.01 or over:
@@ -385,7 +393,7 @@ def main(path, out):
             stuck.append("%s icon %s at (%.2f, %.2f)" % (side, kind, x, y))
             return None
         px, py, d, over = r
-        draw_glyph(b, kind, px, py, s, side, width)
+        draw_glyph(b, kind, px, py, s, side, width, key=keys.unique("silk:icon:%s:%s:%.3f,%.3f" % (side, kind, x, y)))
         f.block((px + bx[0], py + bx[1], px + bx[2], py + bx[3]))
         n_items += 1
         if d > 0.01 or over:
@@ -399,6 +407,7 @@ def main(path, out):
         f = fields["F"]
         ok, _ = f.free((cx - 0.3, cy - 0.3, cx + 0.3, cy + 0.3))
         sh = pcbnew.PCB_SHAPE(b); sh.SetShape(pcbnew.SHAPE_T_CIRCLE); sh.SetLayer(pcbnew.F_SilkS)
+        uuids.stamp(sh, keys.unique("silk:a1:%s" % ref))
         sh.SetWidth(pcbnew.FromMM(0.15)); sh.SetFilled(True)
         sh.SetCenter(pcbnew.VECTOR2I(pcbnew.FromMM(OX + cx), pcbnew.FromMM(OY + cy)))
         sh.SetEnd(pcbnew.VECTOR2I(pcbnew.FromMM(OX + cx + 0.2), pcbnew.FromMM(OY + cy)))

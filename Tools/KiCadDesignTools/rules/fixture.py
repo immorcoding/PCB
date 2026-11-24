@@ -183,7 +183,7 @@ def main(board_dir, out):
     # the static phase is the hand-written part only: the real board's generated block (its windows and fixed rules)
     # is emptied here and regenerated for the fixture by len_rules before the window phase
     dru = open(cfg.dru, encoding="utf-8").read()
-    i, j = dru.index(len_rules.BEGIN), dru.index(len_rules.END)
+    i, j = len_rules.begin_index(dru), dru.index(len_rules.END)
     open(stem + ".kicad_dru", "w", encoding="utf-8", newline="\n").write(dru[:i] + len_rules.BEGIN + "\n" + dru[j:])
     shutil.copy(os.path.join(cfg.dir, "length_groups.json"), os.path.join(out, "length_groups.json"))
     # fill the pour once and keep it in the board file

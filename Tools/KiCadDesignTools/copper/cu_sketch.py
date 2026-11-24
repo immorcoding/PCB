@@ -853,7 +853,7 @@ def read_board(board, old=None):
     by_name = {r.name: r for r in new.regions}
     out = []
     if old is None:
-        out += ["# Copper region sketch, read back from %s by scripts/cu_sketch.py (format: see that script)." % os.path.basename(board.path),
+        out += ["# Copper region sketch, read back from %s by Tools.KiCadDesignTools.copper.cu_sketch (format: see that module)." % os.path.basename(board.path),
                 "layers %d" % board.layers] + ["%s %s" % (k, fmt(v)) for k, v in new.p.items()] + [""]
         todo = new.regions
     else:
