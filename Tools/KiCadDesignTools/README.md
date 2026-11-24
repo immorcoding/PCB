@@ -8,7 +8,8 @@ The workspace's own schematic and board tools. Everything runs from the reposito
     D:\KiCad\bin\python.exe -m Tools.KiCadDesignTools.regress            (every benchmark, PROC-15)
 
 No tool edits `sys.path`; board files (routes files, schematic pages) import
-`from Tools.KiCadDesignTools.routing.busroute import ...`. Commands, usage and the known pitfalls are in
+`from Tools.KiCadDesignTools.routing.busroute import ...`. busroute loads a routes file of a board folder as a module
+of that folder's package (`<board>.<stem>`). Commands, usage and the known pitfalls are in
 `docs/tools.md` (its paths still say `scripts/` until stage 4 of the consolidation); the rules the tools serve are in
 `docs/shape/`.
 
@@ -23,7 +24,7 @@ modules here plus data files.
 | core | `config` | `-m ...core.config <board dir>` | read and check `board.toml` (layer roles -> L1..Ln, KiCad names) | | |
 | core | `heavy` | (library) | low priority on four cores, one heavy run at a time, KiCad lock files, pauses | | |
 | core | `stackup` | (library) | a fab stackup from `data/stackups/<name>.toml` (`[board] stackup`): thickness, via heights | | |
-| core | `boardtext` | (library) | text edits of a `.kicad_pcb` (copper rows of the layer table) | | |
+| core | `boardtext` | `-m ...core.boardtext <board dir> unfill/strip/orphans <board> [GROUP ...]` | text edits of a `.kicad_pcb`: copper rows of the layer table; drop the saved fills; remove what busroute groups wrote (`<board>.busroute.json`); remove copper no group owns | | |
 | project | `make_project` | `-m ...project.make_project <board dir> [--new-pcb]` | `.kicad_pro`, empty board with the stackup, derived footprints, layer table (`[project]`, `[netclasses]`, `[netclass_patterns]`, `[[footprints.derived]]`) | RUL-1, PROC-13 | |
 | rules | `fixture` | `-m ...rules.fixture <board dir> <out>` | every rule breaks and passes on a fixture board (cases: `<board dir>/rules_cases.py`) | RUL-2 | (it is one) |
 | (driver) | `build` | `-m ...build <board dir> <step>` | rules, sch, layout, copper, route, finish, checks, publish, all, compare | PROC-4, PROC-6 | `--dry-run` |
@@ -44,11 +45,17 @@ modules here plus data files.
 | placement | `escape_check` | `-m ...placement.escape_check <board> --ref U1 [...]` | ways out of fine-pitch parts | LAY-2 | `tests/place_check` |
 | placement | `via_spots` | `-m ...placement.via_spots ...` | legal via spots (ignores footprint keep-outs) | | |
 | copper | `cu_sketch` | `-m ...copper.cu_sketch check/apply/read/measure ...` | copper region sketch: check, write zones, read back, measures | PWR-3, 6, 7 | `tests/cu_sketch` |
+| copper | `plane_slots` | `-m ...copper.plane_slots <board dir> <refilled board> <out> [--window NAME x0 y0 x1 y1] [--layers L5] [--stem S] [--part-b F]` | plane slots (merged antipads), cut-off own-net vias, the BGA blocks' feed necks (`[copper.slots]`) | U31 | |
+| copper | `copper_table` | `-m ...copper.copper_table <board dir> <board> <out>` | the copper step's table: copper-class connectivity, feed vias per rail, ground vias, part B (`[copper.table]`) | PROC-4 | |
+| copper | `power_ties`, `bga_power` | (library) | the power groups' site planners for the routes files: vias, ties, hops beside pads; BGA supply/ground fan-out and bottom decoupling (`[power]`, `[bga.<ref>]`, layer roles) | PWR | |
 | copper | `pour_islands` | `-m ...copper.pour_islands <board> <zone> ...` | pour pieces without a via or through-hole pad | PWR-6 | |
+| routing | `fan_plan` | (library) | a BGA block plan (`place.toml [fan]`) as busroute pieces for the routes files | | |
+| routing | `tune_sites` | `-m ...routing.tune_sites <board dir> [board] [--spread 5] [--window 20] [--natural M] [--json F]` | room for serpentines beside each straight of the SDRAM nets (`[tune_sites]`) | RTE-2 | |
 | routing | `busroute` | `-m ...routing.busroute.build <routes.py> [--fast] [--write-board] ...` | bundles, BGA fan-out, serpentines, metrics | RTE-2, 7, 13 | `tests/busroute` |
 | finishing | `teardrops` | `-m ...finishing.teardrops <board>` | teardrops (last; earlier boards) | FIN | |
 | finishing | `silk_refs` | `-m ...finishing.silk_refs ...` | reference designators on sparse boards | FIN | |
 | views | `pcb_view`, `layer_view` | `-m ...views.<tool> ...` | pictures (qualitative only) | PROC-14 | |
+| views | `copper_view` | `-m ...views.copper_view <board dir> <board> <out> [L1 ...] [--scale] [--window ... --name] [--slots] [--via-labels]` | the filled copper per layer (`[copper_view]`) | PROC-14 | |
 | views | `place_view` | `-m ...views.place_view <board dir> dump [board]` (KiCad's python), then `... draw [x0 y0 x1 y1 name]` (matplotlib) | pads and courtyards of the placement, whole board or a window, into `<board dir>/out/layout/` | PROC-14 | |
 | views | `sketch_view` | `-m ...views.sketch_view <board dir> <out>` (matplotlib) | the copper sketch per layer with the package bodies, rule areas and holes of `place.toml` | PROC-14 | |
 | analysis | `track_shape` | `-m ...analysis.track_shape <board>` | track shapes DRC does not check | RTE-8 | `tests/track_shape` |

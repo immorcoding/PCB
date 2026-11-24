@@ -13,7 +13,7 @@ SDRAM track outside the ball fields, so every lane is clear of the bus as soon a
           buses (issue 22): that file draws them from the ball to the FPC / link resistors.
 """
 import os
-from fan_leads import plan, lead, ext
+from Tools.KiCadDesignTools.routing.fan_plan import plan, lead, ext
 
 BOARD = os.environ.get("LOCAL_BOARD", "stm32h743_sdram.kicad_pcb")
 ORIGIN = (100, 100)

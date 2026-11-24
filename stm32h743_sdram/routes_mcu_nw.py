@@ -31,7 +31,7 @@ through the band (x 39.0-40.0, 41.57-41.62, 42.43-43.87); vias are allowed east 
   CAN_STB L6 north at x 42.6, east along y 14.3 (north of the FDCAN_TX via) to a via north of U801.8
 """
 import os
-from fan_leads import plan, lead, ext
+from Tools.KiCadDesignTools.routing.fan_plan import plan, lead, ext
 
 BOARD = os.environ.get("LOCAL_BOARD", "stm32h743_sdram.kicad_pcb")
 ORIGIN = (100, 100)

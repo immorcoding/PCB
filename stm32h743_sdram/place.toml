@@ -47,6 +47,7 @@ skip = ["FID"]                   # reference prefixes never parked: the fiducial
 # plan does not place keep the positions in [parts] (VCAP and VDDA parts when they are not in the plan).
 [fan]
 file = "bga_fan.json"
+ref = "U201"                     # the package whose signal fan-out the routes files draw (routing.fan_plan)
 
 # try/eth-west (user 2026-11-21: room for the MCU crystals, use the board edge). Four blocks moved as rigid bodies;
 # [parts] keeps their stop-4 coordinates and the shift (dx, dy) is added to the parts listed here.

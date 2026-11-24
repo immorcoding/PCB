@@ -10,7 +10,7 @@ IO0 / IO1 routes that used to be here).
              beside USART1_RX (complete)
 """
 import os
-from fan_leads import plan, lead, ext
+from Tools.KiCadDesignTools.routing.fan_plan import plan, lead, ext
 
 BOARD = os.environ.get("LOCAL_BOARD", "stm32h743_sdram.kicad_pcb")
 ORIGIN = (100, 100)

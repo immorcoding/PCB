@@ -6,7 +6,8 @@
 # scripts ([scripts]) with the arguments build.sh gave them. The constants still hard-coded in finish*.py and the
 # report scripts move into this file (and silk.toml) in stage 3; the project file's ([project], [netclasses],
 # [netclass_patterns], [[footprints.derived]]) moved in stage 3A, the schematic's ([schematic]) in stage 3B, the
-# placement's (place.toml, [probe]) in stage 3C.
+# placement's (place.toml, [probe]) in stage 3C, the copper reports' and power planners' ([copper.slots],
+# [copper.table], [copper_view], [power], [bga.<ref>], [tune_sites], place.toml [fan] ref) in stage 3D.
 
 [board]
 name = "stm32h743_sdram"
@@ -104,8 +105,6 @@ route = "route2"                 # build.sh's step was route2 (stop 7); finish r
 checks = "finish"                # build.sh finish-checks wrote into out/finish
 
 [scripts]                        # this folder's scripts the driver calls (stage 3: Tools modules plus data files)
-copper_report = "copper_report.py"   # unfill / strip / orphans / slots / table
-copper_view = "copper_view.py"   # pictures (qualitative only, PROC-14)
 route_report = "route2_report.py"
 finish = "finish.py"             # strip, fiducials, pours, clean, pieces, stitch, report, silk, teardrops
 finish_view = "finish_view.py"
@@ -306,6 +305,83 @@ name = "slot_mcu"
 slots = "slots.json"
 via_labels = true
 rename = ["L2_slot_mcu.png", "slot_L2_mcu.png"]
+
+# Pictures of the filled copper (Tools.KiCadDesignTools.views.copper_view; qualitative only, PROC-14).
+[copper_view]
+layers = ["L1", "L2", "L5", "L6"]   # when none are given: L2 ground plane, L5 power blocks, L1 / L6 ground fill
+label_strip = "FMC_"             # via labels without this prefix
+
+[copper_view.colours]            # net -> RGB; other nets get a colour from their name
+GND = [150, 170, 150]
+"+3V3" = [205, 220, 120]
+"+5V" = [235, 150, 60]
+"+3V3A" = [90, 190, 230]
+"+3V3_MCU" = [225, 90, 160]
+"+3V3_SDRAM" = [200, 70, 60]
+"+12V" = [120, 90, 220]
+
+# Plane slots (Tools.KiCadDesignTools.copper.plane_slots, U31). The power plane is the layer of role power ([layers]).
+[copper.slots]
+# default windows: rule area +- 2 mm (the via column at x 59-60, y 28.5-37 that the stop-3 review saw lies in SDRAM)
+windows = { MCU = [32.0, 29.0, 48.0, 45.0], SDRAM = [50.0, 27.5, 64.0, 46.5] }
+ref_layers = { L2 = ["L1", "L3"], L5 = ["L4", "L6"] }   # plane -> signal layers whose return current runs on it
+report = 2.0                     # slots longer than this are listed
+blocks = { "+3V3_MCU" = "BGA_MCU", "+3V3_SDRAM" = "BGA_SDRAM" }   # BGA blocks on the power plane -> their rule area
+part_b = "sketch_power_bga/power_bga_sites.json"   # part-B vias when no --part-b is given (relative to the out folder)
+
+# The copper table of the copper step (Tools.KiCadDesignTools.copper.copper_table).
+[copper.table]
+nets = ["GND", "+3V3", "+5V", "+3V3A", "+3V3_MCU", "+3V3_SDRAM", "+3V3_QSPI", "+3V3_PHY", "+3V3_AUD", "+3V3_LCD", "+3V3_SD",
+        "+3V3_CAN", "+5V_BL", "+5V_CAN", "+5V_LDO", "+3V3_LDO", "+5V_REG", "+3V3_REG", "+12V_IN", "+12V", "+12V_JACK", "SW_5V",
+        "SW_3V3", "SW_BL", "LED_A", "+1V8", "VDDA_MCU", "VDDA_PHY"]   # copper-class nets (SPEC 5): connectivity
+# per rail: label, feed pads, vias required (1 per 0.5 A of the rail, at least 2 per output / side)
+rails = [
+    ["+5V (1.2 A) R110 -> L5", ["R110.2"], 3], ["+3V3 (1.1 A) R111 -> L5", ["R111.2"], 3],
+    ["+5V -> 3.3 V buck input (U102, C108)", ["U102.4", "C108.1"], 2],
+    ["+3V3A LDO output -> L5 block (U103, C111)", ["U103.5", "C111.1"], 2],
+    ["+3V3_MCU R203 -> L5 tongue (+ C217)", ["R203.2", "C217.1"], 2], ["+3V3_SDRAM R301 -> L5 tongue (+ C309)", ["R301.2", "C309.1"], 2],
+    ["VDDA_PHY L1 north piece <-> L6", ["L1_VDDA_PHY_N"], 1], ["VDDA_PHY L1 west piece <-> L6", ["L1_VDDA_PHY_W"], 1],
+    ["VDDA_PHY L1 south piece <-> L6", ["L1_VDDA_PHY_S"], 1], ["VDDA_PHY FB501 <-> L6", ["FB501.2"], 2],
+    ["+3V3_PHY L6 strip <-> L1 pour", ["L1_3V3_PHY - L6 strip"], 1],
+    ["+5V link R112.1", ["R112.1"], 2], ["+5V link R710.1", ["R710.1"], 2], ["+5V link R814.1", ["R814.1"], 2],
+    ["+3V3 link R203.1", ["R203.1"], 2], ["+3V3 link R301.1", ["R301.1"], 2], ["+3V3 link R404.1", ["R404.1"], 2],
+    ["+3V3 link R514.1", ["R514.1"], 2], ["+3V3 link R610.1", ["R610.1"], 2], ["+3V3 link R709.1", ["R709.1"], 2],
+    ["+3V3 link R812.1", ["R812.1"], 2], ["+3V3 link R813.1", ["R813.1"], 2], ["+3V3 link R113.1", ["R113.1"], 2],
+]
+no_vias = "  +12V 链（0.94 A）、+5V_REG、+3V3_REG、+1V8、LED_A、+5V_BL: 全在 L1，不换层，没有供电过孔"
+loops = ["C104.2", "U101.1", "C102.2", "C103.2", "C705.2", "U701.2", "C703.2", "C704.2", "C108.2", "U102.2"]   # U56
+crystal_ground = ["Y201.2", "Y201.4"]                 # U54
+ground_skip = ["U601.33"]        # ground pads that need no via of their own: the codec's exposed pad (vias in it)
+ground_skip_refs = ["U501"]      # and every ground pad of the PHY
+part_a = "routes_power"          # routes modules of the two power groups (PART_B / PLANE_NETS, POWER)
+part_b = "routes_power_bga"
+decap_skip = ["GND", "VCAP1", "VCAP2"]                # balls left out of the distance to the nearest 100 nF
+clusters = ["VCAP1", "VCAP2", "VDDA_MCU"]             # listed piece by piece
+bga_areas = ["BGA_MCU", "BGA_SDRAM"]                  # the BGA rule areas: outer-layer pours inside them
+
+# The power planners (Tools.KiCadDesignTools.copper.power_ties for routes_power.py, copper.bga_power for
+# routes_power_bga.py). Power plane = the layer of role power, ground planes = role ground ([layers]).
+[power]
+ground = "GND"                   # the ground net (never routed: a via at each pad)
+bus_prefix = "FMC_"              # nets of the SDRAM line-order sketch: the BGA group's obstacles, balls left to the sketch
+
+[bga.U201]                       # the MCU
+supply = "+3V3_MCU"              # its supply net with a block on the power plane
+lattice = true                   # own capacitor vias stay on ball-gap sites (unrouted signal balls escape through the channels)
+parity = { GND = 0, "+3V3_MCU" = 1 }   # checkerboard colour of a net's vias (no two orthogonal neighbours)
+
+[bga.U301]                       # the SDRAM (every signal is in the line-order sketch)
+supply = "+3V3_SDRAM"
+
+# Survey of serpentine sites for the SDRAM bus (Tools.KiCadDesignTools.routing.tune_sites, RTE-2); the byte lanes
+# from [schematic.swap].
+[tune_sites]
+layers = ["L1", "L3", "L4"]      # the SDRAM's signal layers
+clock = ["FMC_SDCLK", "FMC_SDCLK_R"]   # the clock's pieces (across the series resistor), summed
+addr = ["FMC_A0", "FMC_A1", "FMC_A2", "FMC_A3", "FMC_A4", "FMC_A5", "FMC_A6", "FMC_A7", "FMC_A8", "FMC_A9", "FMC_A10",
+        "FMC_A11", "FMC_A12", "FMC_BA0", "FMC_BA1", "FMC_SDNRAS", "FMC_SDNCAS", "FMC_SDNWE", "FMC_SDCKE0", "FMC_SDNE0"]
+area_prefix = "BGA_"             # rule areas the sites stay out of
+box = [0.3, 0.3, 84.7, 74.7]     # x0 y0 x1 y1: the board (85 x 75) less 0.3 mm
 
 [route]
 obstacles_group = "sdram"        # built on a copy without its own copper: its serpentines see the later groups

@@ -43,7 +43,7 @@ The routes file is a Python file in the board's folder:
                             Not with SHARED. `build.py <routes> --tuning-budget` prints targets, needs and the RTE-2
                             capacity of every site at amp and amp_max, and draws nothing.
 """
-import importlib.util, json, os, shutil, sys, time
+import importlib, importlib.util, json, os, shutil, time
 from .geom import RouteError
 from .board import Board, write, old_items
 from .profile import Profile
@@ -87,14 +87,38 @@ class Job:
             self.findings.append(F(kind if kind != "GAP" else "FAN", "fan-out %s.%s (%s) refused: %s" % (result.ref, ball, p.net if p else "?", why), p.net if p else None, p.pos if p else None))
 
 
-def load(path):
-    spec = importlib.util.spec_from_file_location("busroute_routes_" + os.path.splitext(os.path.basename(path))[0], path)
-    mod = importlib.util.module_from_spec(spec)
-    sys.path.insert(0, os.path.dirname(os.path.abspath(path)))
+ROUTES_FILE = None      # the routes file loaded last, i.e. the one being built: helpers the routes files call
+                        # (routing.fan_plan) find their board folder by it
+
+
+def board_package(path):
+    """The dotted package of the folder that holds `path` when that folder is inside the repository and every part of
+    its path is a Python name ("stm32h743_sdram"); else None."""
+    from Tools.KiCadDesignTools.core import paths
     try:
-        spec.loader.exec_module(mod)
-    finally:
-        sys.path.pop(0)
+        rel = os.path.relpath(os.path.dirname(os.path.abspath(path)), paths.REPO)
+    except ValueError:                                  # another drive (the benchmarks' temp folders)
+        return None
+    parts = rel.replace("\\", "/").split("/")
+    if rel.startswith("..") or os.path.isabs(rel) or rel == "." or not all(p.isidentifier() for p in parts):
+        return None
+    return ".".join(parts)
+
+
+def load(path):
+    """The routes file as a fresh module (executed anew on every call, never cached in sys.modules). In a board folder
+    of the repository it is a module of that folder's package (<package>.<stem>, the package imported first), so it
+    imports the Tools modules and its own package absolutely or relatively; elsewhere (the benchmarks' temp folders)
+    a module of its own. Nothing is added to sys.path."""
+    global ROUTES_FILE
+    stem = os.path.splitext(os.path.basename(path))[0]
+    pkg = board_package(path)
+    if pkg:
+        importlib.import_module(pkg)
+    spec = importlib.util.spec_from_file_location(pkg + "." + stem if pkg else "busroute_routes_" + stem, path)
+    mod = importlib.util.module_from_spec(spec)
+    ROUTES_FILE = os.path.abspath(path)
+    spec.loader.exec_module(mod)
     for a in ("BOARD", "GROUP", "routes"):
         if not hasattr(mod, a):
             raise RouteError("%s: %s is missing" % (path, a))

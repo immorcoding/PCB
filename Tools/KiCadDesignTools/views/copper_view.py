@@ -1,27 +1,28 @@
 """Pictures of the filled copper, one per layer, for the reviewer (qualitative only: necks, planes cut by via rows,
 islands; every number comes from the board file, PROC-14).
 
-    D:\\KiCad\\bin\\python.exe stm32h743_sdram\\copper_view.py <board> <out dir> [L1 L2 L5 L6 ...] [--scale 14]
-                                                          [--window x0 y0 x1 y1 --name <suffix>]
-                                                          [--slots <slots.json> [--slot-min 3.0]] [--via-labels]
+    python -m Tools.KiCadDesignTools.views.copper_view <board dir> <board> <out dir> [L1 L2 L5 L6 ...] [--scale 14]
+                                                       [--window x0 y0 x1 y1 --name <suffix>]
+                                                       [--slots <slots.json> [--slot-min 3.0]] [--via-labels]
 
 Reads the fills KiCad saved (kicad-cli pcb drc --refill-zones --save-board). Each net's fill has its own colour
 (ground grey-green, the rails in strong colours, named once in the legend); pads of the layer, tracks and vias on
 top; vias of the power group as rings; the two BGA rule areas dashed; a 5 mm grid in local coordinates
-(board mm - 100). --slots marks the plane slots of copper_report.py slots (slots.json) on the drawn layer that are
+(board mm - origin). --slots marks the plane slots of copper.plane_slots (slots.json) on the drawn layer that are
 at least --slot-min long (default: the longest of the layer) with a red line between their two far ends, labelled
 with the length and both ends in local and board-file coordinates; --via-labels writes each via's net beside it
-(FMC_ left out).
+(without the prefix [copper_view] label_strip).
+
+board.toml [copper_view]: layers (drawn when none are given), colours ({net: [r, g, b]}; other nets get a colour from
+their name), label_strip; the origin is [board] origin. Arcs are drawn by the board folder's finish_pour.arc_pts.
 """
 import colorsys, json, os, sys, zlib
 import pcbnew
 from PIL import Image, ImageDraw, ImageFont
 
-OX = OY = 100.0
+from Tools.KiCadDesignTools.core import config
 
-
-FIXED = {"GND": (150, 170, 150), "+3V3": (205, 220, 120), "+5V": (235, 150, 60), "+3V3A": (90, 190, 230),
-         "+3V3_MCU": (225, 90, 160), "+3V3_SDRAM": (200, 70, 60), "+12V": (120, 90, 220)}
+FIXED = {}                       # net -> colour, from [copper_view] colours (main)
 
 
 def colour(net):
@@ -33,6 +34,16 @@ def colour(net):
 
 
 def main(argv):
+    if len(argv) < 3:
+        print(__doc__)
+        return 2
+    cfg = config.load(argv[0])
+    argv = argv[1:]
+    cv = cfg.need("copper_view")
+    FIXED.clear()
+    FIXED.update({n: tuple(c) for n, c in cv.get("colours", {}).items()})
+    OX, OY = cfg.origin
+    strip = cv.get("label_strip", "")
     args = [a for a in argv if not a.startswith("--")]
     sc = float(argv[argv.index("--scale") + 1]) if "--scale" in argv else 14.0
     if "--scale" in argv:
@@ -59,7 +70,7 @@ def main(argv):
     except OSError:
         small = ImageFont.load_default()
     path, out = args[0], args[1]
-    layers = args[2:] or ["L1", "L2", "L5", "L6"]          # the pours: L2 ground plane, L5 power blocks, L1 / L6 ground fill
+    layers = args[2:] or list(cv["layers"])
     b = pcbnew.LoadBoard(path)
     mm = pcbnew.ToMM
     ids = list(b.GetEnabledLayers().CuStack())
@@ -127,7 +138,7 @@ def main(argv):
                 c, r = P(t.GetPosition()), mm(t.GetWidth(pcbnew.F_Cu)) / 2 * sc
                 d.ellipse([c[0] - r, c[1] - r, c[0] + r, c[1] + r], fill=(255, 255, 255), outline=colour(t.GetNetname()) if t.GetNetname() != "GND" else (40, 90, 40), width=2)
             elif t.GetLayer() == layer and t.Type() == pcbnew.PCB_ARC_T:     # serpentine arcs as arcs, not chords
-                import finish_pour
+                finish_pour = cfg.module("finish_pour")       # the board folder's (moves to Tools in a later batch)
                 s_, m_, e_ = t.GetStart(), t.GetMid(), t.GetEnd()
                 pts = finish_pour.arc_pts((mm(s_.x), mm(s_.y)), (mm(m_.x), mm(m_.y)), (mm(e_.x), mm(e_.y)), 12)
                 d.line([X(x - OX, y - OY) for x, y in pts], fill=colour(t.GetNetname()) + (255,), width=max(1, int(mm(t.GetWidth()) * sc)))
@@ -144,7 +155,7 @@ def main(argv):
                     if x0 <= x <= x1 and y0 <= y <= y1:
                         r = mm(t.GetWidth(pcbnew.F_Cu)) / 2
                         n = t.GetNetname()
-                        n = n[4:] if n.startswith("FMC_") else n
+                        n = n[len(strip):] if strip and n.startswith(strip) else n
                         d.text(X(x + r * 0.7, y - r * 0.7 - 0.28), n, fill=(20, 20, 20), font=small)
         marked = []
         if slots:
@@ -173,7 +184,7 @@ def main(argv):
             d.text((tx + 15, ty), n, fill=(0, 0, 0), font=font)
             tx += wn
         d.text((6, ty + 18), "vias: rings in the net colour (ground dark green); rule areas of the layer dashed, pour keep-outs red; grid 5 mm, local coordinates"
-               + ("; via labels: net name, FMC_ left out" if via_labels else ""), fill=(90, 90, 90), font=font)
+               + ("; via labels: net name, %s left out" % strip if via_labels else ""), fill=(90, 90, 90), font=font)
         for k, s in enumerate(marked):
             (ax, ay), (cx, cy) = s["ends"]
             d.text((6, ty + 36 + 17 * k), "red: plane slot %.2f mm (%s, %d vias) from (%.2f, %.2f) to (%.2f, %.2f) local = (%.2f, %.2f) to (%.2f, %.2f) in the board file"

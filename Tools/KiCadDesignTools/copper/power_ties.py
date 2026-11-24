@@ -11,25 +11,27 @@ What a site has to keep (checked here; DRC in the build stays the authority):
     own net (hole to hole), 0.9 mm to plated holes of the connectors (hole to hole 0.45)
   - outer layers: a via or a track of net N stays `REGION_MARGIN` clear of every drawn region of another net on
     that layer (copper.sketch), so no local pour is cut by foreign copper
-  - power plane (`PWR_PLANE`, L5 since 2026-11-23; it was L3): a via that must reach the plane lands inside the
-    block of its net with `PLANE_MARGIN` to spare; +3V3 is the rest of the plane (outside every drawn block of that
-    layer grown by the sketch's gap). L2 is the ground plane; every through via reaches it
+  - power plane (the board's layer of role "power" in board.toml [layers], `power_plane(cfg)`; L5 on the H743 board):
+    a via that must reach the plane lands inside the block of its net with `PLANE_MARGIN` to spare; the net of the
+    plane's `whole` region is the rest of the plane (outside every drawn block of that layer grown by the sketch's
+    gap). The ground plane is reached by every through via
 Ties are straight from the pad centre (0/45/90) or have one 45 degree bend; the shortest legal one is taken,
 ties that point at the part's own centre cost a little more (vias go beside the part, not under it).
-"""
-import math, os, sys
 
-HERE = os.path.dirname(os.path.abspath(__file__))
-sys.path.insert(0, os.path.dirname(HERE))                     # interim (Tools/ consolidation stage 1): the repository root, for Tools.KiCadDesignTools
-from Tools.KiCadDesignTools.copper import cu_sketch                                            # noqa: E402
-from Tools.KiCadDesignTools.routing.busroute.board import Board                            # noqa: E402
-from Tools.KiCadDesignTools.routing.busroute.checks import Scene                           # noqa: E402
-from Tools.KiCadDesignTools.routing.busroute.geom import in_poly, seg_poly_dist, seg_rect_dist, seg_dist, pt_seg, R2  # noqa: E402
+The board's configuration: `cfg` (Tools.KiCadDesignTools.core.config), by default the board.toml of the folder that
+holds the copper sketch (sketch_path).
+"""
+import math, os
+
+from Tools.KiCadDesignTools.copper import cu_sketch
+from Tools.KiCadDesignTools.core import config
+from Tools.KiCadDesignTools.routing.busroute.board import Board
+from Tools.KiCadDesignTools.routing.busroute.checks import Scene
+from Tools.KiCadDesignTools.routing.busroute.geom import in_poly, seg_poly_dist, seg_rect_dist, seg_dist, pt_seg, R2
 
 DIRS = [(1, 0), (1, 1), (0, 1), (-1, 1), (-1, 0), (-1, -1), (0, -1), (1, -1)]
 STEP = 0.025                 # search step along a direction (keeps the 0.1 um grid from a pad centre on it)
 REGION_MARGIN = 0.1          # foreign copper to a drawn region of another net on an outer layer, beyond its own size
-PWR_PLANE = "L5"            # the layer of the power blocks in copper.sketch (signal / GND / signal / signal / power / signal)
 PLANE_MARGIN = 0.15          # a via that must hit its power block: inside it by radius + this
 OWN_VIA = 0.5                # centre distance between two vias of one net (hole to hole 0.254 + 0.2)
 PTH_VIA = 0.75               # via centre to a plated hole of another part (hole to hole 0.45 + radii)
@@ -37,6 +39,19 @@ PTH_VIA = 0.75               # via centre to a plated hole of another part (hole
 
 def r4(v):
     return round(v * 10000) / 10000
+
+
+def board_config(sketch_path, cfg=None):
+    """cfg, or the board.toml of the folder that holds the copper sketch."""
+    return cfg or config.load(os.path.dirname(os.path.abspath(sketch_path)))
+
+
+def power_plane(cfg):
+    """The layer of the power blocks ("L5"): the one layer of role "power" in board.toml [layers]."""
+    ls = [l.L for l in cfg.layers if l.role == "power"]
+    if len(ls) != 1:
+        raise config.ConfigError("%s: one layer of role power expected, found %s" % (cfg.toml, ls or "none"))
+    return ls[0]
 
 
 def pad_dist(p, pad):
@@ -49,8 +64,9 @@ def pad_dist(p, pad):
 
 
 class Planner:
-    def __init__(self, board, profile, sketch_path, obstacle_board=None, obstacle_nets=(), via=(0.45, 0.2), allow=(), protect=()):
+    def __init__(self, board, profile, sketch_path, obstacle_board=None, obstacle_nets=(), via=(0.45, 0.2), allow=(), protect=(), cfg=None):
         self.b, self.pr, self.via = board, profile, tuple(via)
+        self.pwr_plane = power_plane(board_config(sketch_path, cfg))
         self.allow = set(allow)
         self.protect = list(protect)                          # (net, (x0, y0, x1, y1)): narrow plane strips no via of another net may cut
         self.sc = Scene(board, profile, skip_nets=set(board.nets))           # pads only
@@ -71,7 +87,7 @@ class Planner:
         for r in sk.regions:
             if not r.whole:
                 self.regions.append((r.name, r.net, "L%d" % r.layer, [(x / 1e6 + ox, y / 1e6 + oy) for x, y in r.pts]))
-        self.pwr_whole = next((r.net for r in sk.regions if r.whole and "L%d" % r.layer == PWR_PLANE), None)
+        self.pwr_whole = next((r.net for r in sk.regions if r.whole and "L%d" % r.layer == self.pwr_plane), None)
         xs = [p[0] for e in board.edges for p in e]
         ys = [p[1] for e in board.edges for p in e]
         self.box = (min(xs), min(ys), max(xs), max(ys))
@@ -95,7 +111,7 @@ class Planner:
     def pwr_net(self, p, margin):
         """The power-plane block net at p when p is inside it by `margin`; None in a gap or near an edge of one."""
         for name, net, lay, poly in self.regions:
-            if lay == PWR_PLANE:
+            if lay == self.pwr_plane:
                 d = self._rdist(p, poly)
                 if d <= -margin:
                     return net
@@ -146,7 +162,7 @@ class Planner:
         if why:
             return why
         if plane and self.pwr_net(p, r + PLANE_MARGIN) != (plane_net or net):
-            return "not inside the %s block of %s" % (PWR_PLANE, plane_net or net)
+            return "not inside the %s block of %s" % (self.pwr_plane, plane_net or net)
         for lay in outer:
             if not self.inside(net, lay, p, r + 0.05):
                 return "not inside a %s region of %s" % (lay, net)

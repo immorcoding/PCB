@@ -40,6 +40,10 @@ STEPS = ("project", "rules", "sch", "pcb-update", "layout", "copper", "route", "
          "compare", "init")
 PROJECT = "Tools.KiCadDesignTools.project.make_project"      # the project file, after every SaveBoard too
 PLACE = "Tools.KiCadDesignTools.placement.place"             # every part from <board dir>/place.toml
+BOARDTEXT = "Tools.KiCadDesignTools.core.boardtext"          # unfill / strip / orphans (text edits of the board file)
+SLOTS = "Tools.KiCadDesignTools.copper.plane_slots"          # plane slots, cut-off vias, feed necks ([copper.slots])
+COPPER_TABLE = "Tools.KiCadDesignTools.copper.copper_table"  # the copper step's table ([copper.table])
+COPPER_VIEW = "Tools.KiCadDesignTools.views.copper_view"     # pictures of the filled copper ([copper_view])
 KH = os.path.join(os.path.expanduser("~"), ".claude", "plugins", "marketplaces", "kicad-happy", "skills", "kicad", "scripts",
                   "analyze_schematic.py")
 
@@ -236,7 +240,7 @@ class Build:
             args += ["--slots", O + "/" + v["slots"]]
         if v.get("via_labels"):
             args += ["--via-labels"]
-        rc, data = self.r.py(self.script("copper_view"), *args, filt=quiet)
+        rc, data = self.r.py(COPPER_VIEW, self.D, *args, filt=quiet)
         if data:
             print(" ".join(text(data).splitlines()) + " ")
         if v.get("rename"):
@@ -361,16 +365,15 @@ class Build:
         BRD = self.BRD
         SKO = self.D + "/" + lay["sketch"]["out"]
         SK = SKO + "/" + self.N + ".kicad_pcb"
-        CR = self.script("copper_report")
         sketch = self.D + "/" + cu["sketch"]
         print("== placement and pours")
-        self.r.py(CR, "unfill", BRD, filt=quiet)
+        self.r.py(BOARDTEXT, self.D, "unfill", BRD, filt=quiet)
         self.r.py(PLACE, self.D, filt=quiet)
         rc, data = self.r.py("Tools.KiCadDesignTools.copper.cu_sketch", "check", sketch, "--board", BRD, filt=quiet, out=O + "/sketch_check.txt")
         rc, data = self.r.py("Tools.KiCadDesignTools.copper.cu_sketch", "apply", sketch, BRD, filt=quiet)
         echo(grep(data, r"^warning: a ~", invert=True))
         print("== line-order sketch on a copy of the board (the obstacles of the power groups)")
-        self.r.py(CR, "unfill", SK, filt=quiet)
+        self.r.py(BOARDTEXT, self.D, "unfill", SK, filt=quiet)
         SB, data = self.busroute(lay["sketch"]["routes"], ["--sketch"], SKO, O + "/sketch_build.txt", after=["--no-refill", "--no-pictures"])
         echo(grep(data, r"^\[间距\]|^结论") or text(data).splitlines()[-3:])
         codes = []
@@ -391,7 +394,7 @@ class Build:
                 echo(grep(data, " 0 without", invert=True))
         self.r.cli("pcb", "drc", "--refill-zones", "--save-board", "--severity-all", "--units", "mm", "--format", "json", "-o",
                    O + "/sketch_drc.json", SK)
-        rc, data = self.r.py(CR, "slots", SK, O, filt=quiet)
+        rc, data = self.r.py(SLOTS, self.D, SK, O, filt=quiet)
         echo(text(data).splitlines()[-12:])
         first = True
         for run in lay.get("escape", []):
@@ -403,7 +406,7 @@ class Build:
             self.view(SK if v.get("board") == "sketch" else BRD, O, v)
         self.project_quiet()
         print("== copper table")
-        rc, data = self.r.py(CR, "table", BRD, O, filt=quiet, env={"COPPER_SECONDS": "%d s" % (time.time() - T0)})
+        rc, data = self.r.py(COPPER_TABLE, self.D, BRD, O, filt=quiet, env={"COPPER_SECONDS": "%d s" % (time.time() - T0)})
         self.pr(data)
         print("copper step: %d s; sketch build exit %s, group exits %s" % (time.time() - T0, SB, codes))
         return 0
@@ -423,8 +426,7 @@ class Build:
         rc, data = self.r.py(PROJECT, self.D, filt=quiet)
         echo(grep(data, "layer table"))
         print("== placement and pours (the groups are stripped first, then rebuilt in order)")
-        CR = self.script("copper_report")
-        self.r.py(CR, "unfill", BRD, filt=quiet)
+        self.r.py(BOARDTEXT, self.D, "unfill", BRD, filt=quiet)
         obst_group = rt.get("obstacles_group")
         OBST = O + "/obstacles.kicad_pcb"
         if obst_group:
@@ -432,10 +434,10 @@ class Build:
             # of the board as the last build left it, without the group's own copper
             self.r.copy(BRD, OBST)
             self.r.copy(self.D + "/" + self.N + ".busroute.json", O + "/obstacles.busroute.json")
-            self.r.py(CR, "strip", OBST, obst_group, filt=quiet)
-        self.r.py(CR, "strip", BRD, *names, filt=quiet)
+            self.r.py(BOARDTEXT, self.D, "strip", OBST, obst_group, filt=quiet)
+        self.r.py(BOARDTEXT, self.D, "strip", BRD, *names, filt=quiet)
         if rt.get("orphans", True):
-            rc, data = self.r.py(CR, "orphans", BRD, filt=quiet, out=O + "/orphans.txt")
+            rc, data = self.r.py(BOARDTEXT, self.D, "orphans", BRD, filt=quiet, out=O + "/orphans.txt")
             self.pr(data)
         self.r.py(PLACE, self.D, filt=quiet)
         sketch = self.D + "/" + self.cfg.need("copper.sketch")
@@ -460,14 +462,14 @@ class Build:
         self.r.py("Tools.KiCadDesignTools.copper.cu_sketch", "measure", BRD, "--drc", O + "/drc.json", "--json", O + "/measure.json", "--skip-areas",
                   ",".join(cu["skip_areas"]), out=O + "/measure.txt")
         for s in rt.get("slots", []):
-            args = ["slots", BRD, O, "--window", s["name"]] + [_num(v) for v in s["window"]]
+            args = [self.D, BRD, O, "--window", s["name"]] + [_num(v) for v in s["window"]]
             if s.get("layers"):
                 args += ["--layers"] + list(s["layers"])
             if s.get("stem"):
                 args += ["--stem", s["stem"]]
             if s.get("part_b"):
                 args += ["--part-b", O + "/" + s["part_b"]]
-            rc, data = self.r.py(CR, *args, filt=quiet)
+            rc, data = self.r.py(SLOTS, *args, filt=quiet)
             echo(grep(data, s["show"]) if s.get("show") else text(data).splitlines()[-int(s.get("tail", 8)):])
         rc, data = self.r.py("Tools.KiCadDesignTools.copper.pour_islands", BRD, *cu["pour_check"], filt=quiet, out=O + "/pour_islands.txt")
         self.pr(data)
@@ -505,7 +507,6 @@ class Build:
         BRD = fw(copy) if copy else self.BRD
         rest = int(fin.get("rest", 20))
         F = self.script("finish")
-        CR = self.script("copper_report")
 
         def refill(js):
             self.r.cli("pcb", "drc", "--refill-zones", "--save-board", "--severity-all", "--units", "mm", "--format", "json", "-o", js, BRD)
@@ -516,7 +517,7 @@ class Build:
             return rc_data[0]
         self.r.remove(O + "/clean_shape.txt", O + "/clean_anchor.txt")
         print("== strip, fiducials")
-        p(self.r.py(CR, "unfill", BRD, filt=q2))
+        p(self.r.py(BOARDTEXT, self.D, "unfill", BRD, filt=q2))
         p(self.r.py(F, "strip", BRD, filt=q2))
         # the fiducials stay first: their keep-outs must be on the board before the pours, the vias and the silkscreen
         p(self.r.py(F, "fiducials", BRD, filt=q2))
@@ -549,7 +550,7 @@ class Build:
         self.pr(data)
         p(self.r.py(F, "report", BRD, O, "after", filt=q2))
         print("== silkscreen")
-        p(self.r.py(CR, "unfill", BRD, filt=q2))
+        p(self.r.py(BOARDTEXT, self.D, "unfill", BRD, filt=q2))
         p(self.r.py(F, "silk", BRD, O, filt=q2))
         print("== teardrops")
         p(self.r.py(F, "teardrops", BRD, filt=q2))
@@ -568,10 +569,10 @@ class Build:
         s = fin.get("slots")
         if s:
             # the planes after the new ground vias: no plane-net via cut off, feed necks, longest slots
-            args = ["slots", BRD, O, "--window", s["name"]] + [_num(v) for v in s["window"]] + ["--stem", s["stem"]]
+            args = [self.D, BRD, O, "--window", s["name"]] + [_num(v) for v in s["window"]] + ["--stem", s["stem"]]
             if s.get("part_b"):
                 args += ["--part-b", self.out_root + "/" + self.cfg.get("build.out.route", "route") + "/" + s["part_b"]]
-            rc, data = self.r.py(CR, *args, filt=quiet)
+            rc, data = self.r.py(SLOTS, *args, filt=quiet)
             echo(grep(data, s["show"]))
         print("== pictures")
         rd = fin.get("render") or {}

@@ -22,7 +22,7 @@ its pull-up R401, RMII_TX_EN / RMII_TXD0 to the PHY's north pins, and PHY_NRST r
        before into R501.1 and pin 15
 """
 import os
-from fan_leads import plan, lead, ext
+from Tools.KiCadDesignTools.routing.fan_plan import plan, lead, ext
 
 BOARD = os.environ.get("LOCAL_BOARD", "stm32h743_sdram.kicad_pcb")
 ORIGIN = (100, 100)

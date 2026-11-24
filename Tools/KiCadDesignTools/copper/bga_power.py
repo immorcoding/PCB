@@ -17,22 +17,26 @@ Per supply or ground ball (GND, +3V3_MCU, +3V3_SDRAM, VDDA_MCU, VCAP1, VCAP2):
 Per bottom capacitor pad (and the bead) under the BGAs: a via of its net under the pad (in-pad), else a stub on
 L6 to the nearest via of its net (ball vias first) no longer than STUB_MAX from the pad edge, else a via of its
 own under the pad, else (ground) a via of its own within GND_VIA_MAX of the pad edge.
-"""
-import math, os, sys
 
-HERE = os.path.dirname(os.path.abspath(__file__))
-sys.path.insert(0, os.path.dirname(HERE))                     # interim (Tools/ consolidation stage 1): the repository root, for Tools.KiCadDesignTools
-from Tools.KiCadDesignTools.copper import cu_sketch                                            # noqa: E402
-from Tools.KiCadDesignTools.routing.busroute.board import Board                            # noqa: E402
-from Tools.KiCadDesignTools.routing.busroute.checks import Scene                           # noqa: E402
-from Tools.KiCadDesignTools.routing.busroute.geom import in_poly, seg_poly_dist, pt_seg    # noqa: E402
+The board's names come from its board.toml (`cfg`, by default the one of the folder that holds the copper sketch):
+the power plane (the layer of role "power", L5) and the ground planes (role "ground", L2), the top and bottom layers
+(dog-bones on the top, stubs on the bottom), [power] ground (the ground net) and bus_prefix (the nets of the SDRAM
+line-order sketch: obstacles, and balls left to that sketch), and per package [bga.<ref>]: supply (its net with a
+block on the power plane), lattice (its own capacitor vias stay on ball-gap sites) and parity ({net: colour} of the
+ball-gap checkerboard, parity_ok). The sizes and costs below are the method's (rule profile C's vias and widths).
+"""
+import math, os
+
+from Tools.KiCadDesignTools.copper import cu_sketch
+from Tools.KiCadDesignTools.copper.power_ties import board_config, power_plane
+from Tools.KiCadDesignTools.routing.busroute.board import Board
+from Tools.KiCadDesignTools.routing.busroute.checks import Scene
+from Tools.KiCadDesignTools.routing.busroute.geom import in_poly, seg_poly_dist, pt_seg
 
 VIA_IN = (0.30, 0.15)            # inside the rule areas
 VIA_OUT = (0.45, 0.20)           # outside
 VIA_PITCH = 0.45                 # least centre distance between two vias, any nets (hole to copper 0.2 needs 0.425)
 REGION_MARGIN = 0.1              # foreign copper to a drawn outer-layer region of another net, beyond its own size
-PWR_PLANE = "L5"                # layer of the power blocks (signal / GND / signal / signal / power / signal, user 2026-11-23)
-PLANES = ("L2", PWR_PLANE)        # L2 the whole ground plane, L5 the power blocks
 PLANE_MARGIN = 0.15              # a supply via inside its power block by radius + this
 STUB_MAX = 0.7                   # L6 stub, pad edge to via centre
 GND_VIA_MAX = 1.0                # a capacitor's own ground via: pad edge to via centre
@@ -47,17 +51,19 @@ MERGE_COST = 1200                # per antipad of another via it joins on a plan
 SHARE_90_FIRST = os.environ.get("BGA_SHARE90", "1") == "1"   # a shared via (90 degrees, short dog-bone) before a via that joins antipads
 SHARE_COST = 150                 # sharing a neighbour's via in line (180 degrees) instead of a site of its own
 EDGE_SLIDE = 0.6                 # an edge via may sit up to this much beyond one pitch out, on the ball's own line
-PARITY = {("U201", "GND"): 0, ("U201", "+3V3_MCU"): 1}     # checkerboard colour of a net's vias (parity_ok)
-if os.environ.get("BGA_PARITY"):                 # experiments: "g,s" (colours of GND, +3V3_MCU; "-" = none)
-    _g, _s = os.environ["BGA_PARITY"].split(",")
-    PARITY = {k: int(v) for k, v in ((("U201", "GND"), _g), (("U201", "+3V3_MCU"), _s)) if v != "-"}
-LATTICE = {"U201"}               # packages whose own capacitor vias stay on ball-gap sites (unrouted signal balls
-                                 # escape through the channels); under the SDRAM every signal is in the line-order sketch
-SUPPLY = {"+3V3_MCU", "+3V3_SDRAM"}
 
 
 def r4(v):
     return round(v * 10000) / 10000
+
+
+def parity_table(bga):
+    """{(ref, net): colour} from [bga.<ref>] parity. BGA_PARITY (experiments): "a,b,..." the colours of those entries
+    in their written order instead ("-" = none)."""
+    keys = [(ref, net) for ref, d in bga.items() for net in (d.get("parity") or {})]
+    if os.environ.get("BGA_PARITY"):
+        return {k: int(v) for k, v in zip(keys, os.environ["BGA_PARITY"].split(",")) if v != "-"}
+    return {(ref, net): bga[ref]["parity"][net] for ref, net in keys}
 
 
 def pad_dist(p, pad):
@@ -68,11 +74,24 @@ def pad_dist(p, pad):
 
 
 class BgaPlanner:
-    def __init__(self, board, profile, sketch_path, power, caps, obstacle_board=None, obstacle_prefix="FMC_",
-                 skip_items=None, forbid=(), protect=()):
+    def __init__(self, board, profile, sketch_path, power, caps, obstacle_board=None, obstacle_prefix=None,
+                 skip_items=None, forbid=(), protect=(), cfg=None):
         """power = {ref: [nets]}; caps = [pad names] of the bottom parts under the BGAs (in-pad allowed there);
-        forbid = sites (x, y) no via of this group may take (kept for a signal ball's escape)."""
+        forbid = sites (x, y) no via of this group may take (kept for a signal ball's escape); obstacle_prefix: the
+        obstacle board's nets taken (default [power] bus_prefix)."""
         self.b, self.pr = board, profile
+        cfg = board_config(sketch_path, cfg)
+        self.pwr_plane = power_plane(cfg)
+        self.ground_layers = [l.L for l in cfg.layers if l.role == "ground"]
+        self.planes = tuple(self.ground_layers) + (self.pwr_plane,)     # ("L2", "L5"): ground plane, power blocks
+        self.top, self.bottom = cfg.layers[0].L, cfg.layers[-1].L
+        self.ground = cfg.need("power.ground")
+        self.bus_prefix = cfg.need("power.bus_prefix")
+        obstacle_prefix = obstacle_prefix or self.bus_prefix
+        bga = cfg.get("bga", {})
+        self.supply = {d["supply"] for d in bga.values() if d.get("supply")}
+        self.lattice = {ref for ref, d in bga.items() if d.get("lattice")}
+        self.parity = parity_table(bga)
         self.power = power
         self.caps = [board.pads[n] for n in caps if n in board.pads]
         self.cap_names = {p.name for p in self.caps}
@@ -96,7 +115,7 @@ class BgaPlanner:
         ox, oy = sk.origin[0] / 1e6 - board.origin[0], sk.origin[1] / 1e6 - board.origin[1]
         self.regions = [(r.name, r.net, "L%d" % r.layer, [(x / 1e6 + ox, y / 1e6 + oy) for x, y in r.pts]) for r in sk.regions if not r.whole]
         self.rbox = [(min(q[0] for q in poly), min(q[1] for q in poly), max(q[0] for q in poly), max(q[1] for q in poly)) for _, _, _, poly in self.regions]
-        self.pwr_whole = next((r.net for r in sk.regions if r.whole and "L%d" % r.layer == PWR_PLANE), None)
+        self.pwr_whole = next((r.net for r in sk.regions if r.whole and "L%d" % r.layer == self.pwr_plane), None)
         self._pn = {}
         self.mine = []                       # (net, p, size, kind) vias placed here
         self.chains, self.extras, self.log, self.done = {}, [], [], []
@@ -136,7 +155,7 @@ class BgaPlanner:
     def pwr_net(self, p, margin):
         """The power-plane block net at p when p is inside it by `margin`; None in a gap or near an edge of one."""
         for name, net, lay, poly in self.regions:
-            if lay == PWR_PLANE:
+            if lay == self.pwr_plane:
                 d = self._rdist(p, poly)
                 if d <= -margin:
                     return net
@@ -148,7 +167,9 @@ class BgaPlanner:
         """{layer: net of the plane there} for the planes L2 (ground) and L5 (power blocks)."""
         k = (round(p[0], 4), round(p[1], 4))
         if k not in self._pn:
-            self._pn[k] = {"L2": "GND", PWR_PLANE: self.pwr_net(p, 0.0)}
+            nets = {g: self.ground for g in self.ground_layers}
+            nets[self.pwr_plane] = self.pwr_net(p, 0.0)
+            self._pn[k] = nets
         return self._pn[k]
 
     # ---------------------------------------------------------------- legality
@@ -180,14 +201,14 @@ class BgaPlanner:
                 if dd < r + 0.001 and o.pad.name not in self.cap_names and o.pad.name not in pads_ok:
                     return "on pad %s" % o.pad.name
         for (name, n, lay, poly), bx in zip(self.regions, self.rbox):
-            if (lay in ("L1", "L6") and n != net and bx[0] - 1 < p[0] < bx[2] + 1 and bx[1] - 1 < p[1] < bx[3] + 1
+            if (lay in (self.top, self.bottom) and n != net and bx[0] - 1 < p[0] < bx[2] + 1 and bx[1] - 1 < p[1] < bx[3] + 1
                     and self._rdist(p, poly) < r + REGION_MARGIN):
                 return "in region %s" % name
         why = self.sc.conflict([it])
         if why:
             return why
-        if net in SUPPLY and self.pwr_net(p, r + PLANE_MARGIN) != net:
-            return "not inside the %s block of %s" % (PWR_PLANE, net)
+        if net in self.supply and self.pwr_net(p, r + PLANE_MARGIN) != net:
+            return "not inside the %s block of %s" % (self.pwr_plane, net)
         return None
 
     def seg_why(self, net, layer, a, c, w):
@@ -244,7 +265,7 @@ class BgaPlanner:
         near = [v for v in allv if math.dist(v[1], p) < 2.5]
         tot = 0.0
         pn0 = self.plane_nets(p)
-        for lay in PLANES:
+        for lay in self.planes:
             if pn0[lay] == net:
                 continue
             fv = [v for v in allv if self.plane_nets(v[1])[lay] != v[0]]
@@ -262,7 +283,7 @@ class BgaPlanner:
         n = 0
         pn0 = self.plane_nets(p)
         near = [(m, q, VIA_IN if self._in_area(q) else VIA_OUT) for m, q in self.vias if abs(q[0] - p[0]) < 1 and abs(q[1] - p[1]) < 1]             + [(m, q, s) for m, q, s, k in self.mine if abs(q[0] - p[0]) < 1 and abs(q[1] - p[1]) < 1]
-        for lay in PLANES:
+        for lay in self.planes:
             if pn0[lay] == net:
                 continue
             n += sum(1 for m, q, s in near if self.plane_nets(q)[lay] != m and math.dist(q, p) < self.merge_dist(size, s))
@@ -288,7 +309,7 @@ class BgaPlanner:
         """PARITY: on a package listed there, the vias of a net keep to one colour of the ball-gap checkerboard, so
         two of them are never orthogonal neighbours (0.65 mm: their antipads merge on the planes where they are
         foreign; diagonal ones, 0.92 mm, keep a web)."""
-        want = PARITY.get((ref, net))
+        want = self.parity.get((ref, net))
         if want is None:
             return True
         g = self.grids[ref]
@@ -312,7 +333,7 @@ class BgaPlanner:
                 sides.append([(r4(ball.pos[0] + di * (g["pitch"] + k * 0.025)), r4(ball.pos[1] + dj * (g["pitch"] + k * 0.025)))
                               for k in range(int(EDGE_SLIDE / 0.025) + 1)])
         else:
-            sides = [[s] for s in g["sites"](ball) if (lane or ball.ref not in LATTICE or not self.outside(ball.ref, s))
+            sides = [[s] for s in g["sites"](ball) if (lane or ball.ref not in self.lattice or not self.outside(ball.ref, s))
                      and (not parity or self.parity_ok(ball.ref, ball.net, s))]
         for pts in sides:
             for s in pts:
@@ -320,7 +341,7 @@ class BgaPlanner:
                     continue
                 if self.via_why(ball.net, s) is not None:
                     continue
-                w = next((w for w in BONE_W if self.seg_why(ball.net, "L1", ball.pos, s, w) is None), None)
+                w = next((w for w in BONE_W if self.seg_why(ball.net, self.top, ball.pos, s, w) is None), None)
                 if w is not None:
                     out.append((s, w))
                     break
@@ -328,7 +349,7 @@ class BgaPlanner:
 
     def signal_balls(self, ref):
         nets = set(self.power[ref])
-        return [p for p in self.grids[ref]["pads"] if p.net and p.net not in nets and not p.net.startswith(("unconnected", "FMC_"))
+        return [p for p in self.grids[ref]["pads"] if p.net and p.net not in nets and not p.net.startswith(("unconnected", self.bus_prefix))
                 and self.ring(ref, p.name) >= 1]
 
     def signal_free(self, ball):
@@ -381,13 +402,13 @@ class BgaPlanner:
         for pts in cands:
             if any(math.dist(a, b) < self.pr.min_seg - 1e-9 for a, b in zip(pts, pts[1:])):
                 continue
-            if not self.angle_ok("L6", pts[-1], pts[-2]):
+            if not self.angle_ok(self.bottom, pts[-1], pts[-2]):
                 continue
             out = self._outside(pts, pad)
             if out > STUB_MAX + 1e-9 or (best and out >= best[0] - 1e-9):
                 continue
             for w in widths:
-                if all(self.seg_why(pad.net, "L6", a, b, w) is None for a, b in zip(pts, pts[1:])):
+                if all(self.seg_why(pad.net, self.bottom, a, b, w) is None for a, b in zip(pts, pts[1:])):
                     best = (out, pts, w)
                     break
         return best
@@ -419,7 +440,7 @@ class BgaPlanner:
                 harm1 += k == 1
         sc -= 5000 * harm0 + 20 * harm1
         sc -= MERGE_COST * self.merges(ball.net, s) + SLOT_W * self.slot_growth(ball.net, s)
-        if ball.ref in LATTICE and self.outside(ball.ref, s):
+        if ball.ref in self.lattice and self.outside(ball.ref, s):
             sc -= 600                        # the lane round the package carries the outer rings' escapes on L1
         return sc
 
@@ -435,7 +456,7 @@ class BgaPlanner:
                 self.log.append("note     %s %s (signal) has no free ball-gap site before this group" % (sb.name, sb.net))
         need = {k: v for k, v in need.items() if v}
         # nets without a plane first (their capacitor must reach the ball's own via), then the balls with the fewest sites
-        order = sorted(balls, key=lambda p: (0 if (prefer or {}).get(p.num) else 1, 0 if p.net not in SUPPLY and p.net != "GND" else 1,
+        order = sorted(balls, key=lambda p: (0 if (prefer or {}).get(p.num) else 1, 0 if p.net not in self.supply and p.net != self.ground else 1,
                                              min(len(cand[p.name]), 3), 0 if any(self.cap_pads_at(p.net, s) for s, _ in cand[p.name]) else 1,
                                              len(cand[p.name]), p.pos[1], p.pos[0]))
         def take(ball, opts, kind):
@@ -454,8 +475,8 @@ class BgaPlanner:
             the new dog-bone continues an existing one in line (180 degrees at the via)."""
             out = []
             for s in g["sites"](ball):
-                if self.sites_taken.get(s) == ball.net and (not straight or self.angle_ok("L1", s, ball.pos)):
-                    w = next((w for w in BONE_W if self.seg_why(ball.net, "L1", ball.pos, s, w) is None), None)
+                if self.sites_taken.get(s) == ball.net and (not straight or self.angle_ok(self.top, s, ball.pos)):
+                    w = next((w for w in BONE_W if self.seg_why(ball.net, self.top, ball.pos, s, w) is None), None)
                     if w is not None:
                         out.append((s, w))
             return out
@@ -463,7 +484,7 @@ class BgaPlanner:
         def share(ball, s, w):
             other = [b for b, q in self.ball_via.items() if q == s]
             end = s
-            if not self.angle_ok("L1", s, ball.pos):
+            if not self.angle_ok(self.top, s, ball.pos):
                 # the dog-bone stops inside the via 0.05 mm short of its centre on each axis: two tracks that meet
                 # at the centre at 90 degrees break the corner_angle rule; this one is joined by the via's copper
                 sx, sy = (ball.pos[0] > s[0]) - (ball.pos[0] < s[0]), (ball.pos[1] > s[1]) - (ball.pos[1] < s[1])
@@ -523,15 +544,15 @@ class BgaPlanner:
                 share(ball, *sh[0])
                 continue
             # 6. a straight L1 link to the next ball of the same net in its row or column that has a via (its via is shared)
-            for nb in (balls if ball.net != "GND" else ()):      # ground is not routed (user 2026-11-21)
+            for nb in (balls if ball.net != self.ground else ()):      # ground is not routed (user 2026-11-21)
                 if nb.net != ball.net or nb.name not in self.ball_via or abs(math.dist(nb.pos, ball.pos) - g["pitch"]) > 1e-6:
                     continue
-                w = next((w for w in BONE_W if self.seg_why(ball.net, "L1", ball.pos, nb.pos, w) is None), None)
+                w = next((w for w in BONE_W if self.seg_why(ball.net, self.top, ball.pos, nb.pos, w) is None), None)
                 if w is None:
                     continue
                 s = self.ball_via[nb.name]
-                self._put_seg(ball.net, "L1", ball.pos, nb.pos, w)
-                self.chains.setdefault(ball.net, []).append([("L1", [ball.name, nb.name], w)])
+                self._put_seg(ball.net, self.top, ball.pos, nb.pos, w)
+                self.chains.setdefault(ball.net, []).append([(self.top, [ball.name, nb.name], w)])
                 self.ball_via[ball.name] = s
                 self.shared.append((ball.name, s, [nb.name]))
                 self.done.append({"kind": "shared by link", "pad": ball.name, "net": ball.net, "at": s, "w": w, "via_of": nb.name})
@@ -553,8 +574,8 @@ class BgaPlanner:
 
     def _bone(self, ball, s, w, new_via, kind="ball", end=None):
         end = end or s
-        self._put_seg(ball.net, "L1", ball.pos, end, w)
-        piece = [("L1", [ball.name, end], w)]
+        self._put_seg(ball.net, self.top, ball.pos, end, w)
+        piece = [(self.top, [ball.name, end], w)]
         if new_via:
             self._put_via(ball.net, s, VIA_IN, kind)
             piece.append(("via", s, VIA_IN))
@@ -594,9 +615,9 @@ class BgaPlanner:
             if best:
                 (out, pts, w), q = best
                 for a, b in zip(pts, pts[1:]):
-                    self._put_seg(c.net, "L6", a, b, w)
+                    self._put_seg(c.net, self.bottom, a, b, w)
                 start = c.name if tuple(pts[0]) == tuple(c.pos) else pts[0]
-                self.chains.setdefault(c.net, []).append([("L6", [start] + pts[1:], w)])
+                self.chains.setdefault(c.net, []).append([(self.bottom, [start] + pts[1:], w)])
                 self._conn(c, "stub", q, out, w)
                 continue
             # a via of its own: under the pad (in-pad), else for ground within GND_VIA_MAX
@@ -634,14 +655,14 @@ class BgaPlanner:
         return None
 
     def own_via(self, c, size=None):
-        if c.net != "GND" and c.net not in SUPPLY:          # no plane behind it (VCAP1 / VCAP2, VDDA_MCU): a via alone joins nothing
+        if c.net != self.ground and c.net not in self.supply:          # no plane behind it (VCAP1 / VCAP2, VDDA_MCU): a via alone joins nothing
             return False
         inside = self._in_area(c.pos)
         size = size or (VIA_IN if inside else VIA_OUT)
-        lim = GND_VIA_MAX if c.net == "GND" else STUB_MAX
+        lim = GND_VIA_MAX if c.net == self.ground else STUB_MAX
         raw = []
         ref = next((ref for ref, g in self.grids.items() if g["area"][0] <= c.pos[0] <= g["area"][2] and g["area"][1] <= c.pos[1] <= g["area"][3]), None)
-        if size == VIA_IN and ref in LATTICE:       # only ball-gap sites (the channels stay centred)
+        if size == VIA_IN and ref in self.lattice:       # only ball-gap sites (the channels stay centred)
             g = self.grids[ref]
             x00, y00 = g["pads"][0].pos
             k0, l0 = round((c.pos[0] - x00 - g["h"]) / g["pitch"]), round((c.pos[1] - y00 - g["h"]) / g["pitch"])
@@ -665,7 +686,7 @@ class BgaPlanner:
                 continue
             colour = 1 if ref is not None and size == VIA_IN and not self.parity_ok(ref, c.net, p) else 0
             harm = sum(1 for free in need.values() if p in free and len(free) <= 1)
-            lane = 1 if ref in LATTICE and self.outside(ref, p) else 0     # the lane round the MCU: last but one
+            lane = 1 if ref in self.lattice and self.outside(ref, p) else 0     # the lane round the MCU: last but one
             scored.append((harm, lane, colour, self.merges(c.net, p, size), 0 if e < size[0] / 2 - 1e-6 else 1, round(self.slot_growth(c.net, p, size), 3), e, d, p))
         scored.sort()
         for harm, _, _, _, _, _, e, d, p in scored:
@@ -678,10 +699,10 @@ class BgaPlanner:
             if st:
                 out, path, w = st
                 for a, b in zip(path, path[1:]):
-                    self._put_seg(c.net, "L6", a, b, w)
+                    self._put_seg(c.net, self.bottom, a, b, w)
                 self._put_via(c.net, p, size, "own")
                 start = c.name if tuple(path[0]) == tuple(c.pos) else path[0]
-                self.chains.setdefault(c.net, []).append([("L6", [start] + path[1:], w), ("via", p, size)])
+                self.chains.setdefault(c.net, []).append([(self.bottom, [start] + path[1:], w), ("via", p, size)])
                 self._conn(c, "own via, stub", p, out, w)
                 return True
         return False
@@ -698,7 +719,7 @@ class BgaPlanner:
         """A 0.45 / 0.2 via beside a pad outside the rule areas, stub on the pad's layer (the bead's supply side)."""
         pad = self.b.pads[padname]
         net = net or pad.net
-        lay = sorted(pad.layers)[0] if pad.layers else "L1"
+        lay = sorted(pad.layers)[0] if pad.layers else self.top
         c = (r4(pad.pos[0]), r4(pad.pos[1]))
         best, why0 = None, None
         step = 0.025
@@ -713,8 +734,8 @@ class BgaPlanner:
                 if pad_dist(p, pad) < VIA_OUT[0] / 2 + 0.001:
                     continue
                 why = self.via_why(net, p, VIA_OUT, pads_ok=(padname,))
-                if why is None and plane and net in SUPPLY and self.pwr_net(p, VIA_OUT[0] / 2 + PLANE_MARGIN) != net:
-                    why = "not in the %s block" % PWR_PLANE
+                if why is None and plane and net in self.supply and self.pwr_net(p, VIA_OUT[0] / 2 + PLANE_MARGIN) != net:
+                    why = "not in the %s block" % self.pwr_plane
                 if why is None:
                     why = self.seg_why(net, lay, c, p, w)
                 if why is None:

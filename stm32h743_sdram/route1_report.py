@@ -63,7 +63,8 @@ def straights(b, nets, areas):
 def main(board_path, odir):
     import pcbnew
     from Tools.KiCadDesignTools.routing.busroute.board import Board
-    import copper_report as CR
+    from Tools.KiCadDesignTools.copper import copper_table as CR
+    from Tools.KiCadDesignTools.core import config
     bad = []
     L = []
     A = L.append
@@ -103,7 +104,7 @@ def main(board_path, odir):
         A("  ! %s: %s | %s" % (v["type"], v["description"], " / ".join(i["description"] for i in v["items"])))
     # copper-class unconnected (pcbnew's connectivity of the refilled board)
     bb = pcbnew.LoadBoard(board_path)
-    cl = CR.clusters(bb, CR.COPPER)
+    cl = CR.clusters(bb, CR.copper_nets(config.load(HERE)))
     lost = {n: [g for g in gs if g is not max(gs, key=len)] for n, gs in cl.items() if len(gs) > 1}
     nlost = sum(len(v) for v in lost.values())
     A("       铜皮类未连接（pcbnew 连通块）: %d%s" % (nlost, "".join("\n         %s: %s" % (n, " | ".join(" ".join(g[:6]) for g in gs)) for n, gs in sorted(lost.items()))))

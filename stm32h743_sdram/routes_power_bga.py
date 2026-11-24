@@ -13,7 +13,7 @@ parts and the VCAP capacitors are joined by BgaPlanner.connect_caps (pour, stub 
 routed (user 2026-11-21): a ball goes to its via and nothing else. A SHARED group beside `power` (part A).
 """
 import json, os
-from bga_power import BgaPlanner, WIDE_W, VIA_IN, BONE_W, r4
+from Tools.KiCadDesignTools.copper.bga_power import BgaPlanner, WIDE_W, VIA_IN, BONE_W, r4
 from Tools.KiCadDesignTools.routing.busroute.board import old_items
 
 BOARD = os.environ.get("POWER_BOARD", "stm32h743_sdram.kicad_pcb")

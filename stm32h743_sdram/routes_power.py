@@ -21,7 +21,7 @@ What is drawn, in this order (earlier items take the better sites):
 Via 0.45 / 0.2 everywhere (outside the rule areas); ties are 0.3048 mm (PWR class) or 80 % of a narrow pad.
 """
 import json, os
-from power_ties import Planner
+from Tools.KiCadDesignTools.copper.power_ties import Planner
 
 BOARD = os.environ.get("POWER_BOARD", "stm32h743_sdram.kicad_pcb")
 ORIGIN = (100, 100)
