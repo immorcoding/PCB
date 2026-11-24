@@ -101,7 +101,7 @@ SD_HALF = None                         # SDRAM body half size at rotation 0 (pla
 MARGIN = None                          # place.toml [rule_areas] margin
 AREA = None                            # {ref: its BGA rule area name} (place.toml [rule_areas])
 NOPOUR = None                          # {ref: its F.Cu no-pour area name}
-SD_ZONE = None                         # the SDRAM's block on the power plane, moved with it
+SD_ZONE = None                         # the SDRAM's block on the power plane, moved with it: (power-role layer, SDRAM supply)
 MCU_CAPS = None                        # parts re-placed by the plan (and taken out of the state with the SDRAM's)
 SD_CAPS = None
 CAP_100N = None                        # {ref: the 100 nF parts (SPEC 4)} in the order they are named
@@ -161,7 +161,7 @@ def setup(cfg):
     MARGIN = place["rule_areas"]["margin"]
     AREA = {a["ref"]: a["name"] for a in place["rule_areas"]["areas"]}
     NOPOUR = {a["ref"]: a["no_pour"] for a in place["rule_areas"]["areas"] if a.get("no_pour")}
-    SD_ZONE = p["sdram_zone"]
+    SD_ZONE = (bga_grid.PWR_PLANE, SUPPLY33[1])
     MCU_CAPS = list(p["mcu_caps"])
     SD_CAPS = list(b["sdram_caps"])
     CAP_100N = {r: list(v) for r, v in b["caps_100n"].items()}
@@ -248,7 +248,7 @@ def sdram_area(pos, rot):
 
 
 def planning_state(geo, sd_pos, sd_rot):
-    """A copy of the geo with the SDRAM at its candidate place (pads, rule area, L3 block) and without the bottom
+    """A copy of the geo with the SDRAM at its candidate place (pads, rule area, its power-plane block) and without the bottom
     parts the plan places itself."""
     g = dict(geo)
     gone = set(MCU_CAPS + SD_CAPS)
@@ -261,7 +261,7 @@ def planning_state(geo, sd_pos, sd_rot):
             g["areas"][k]["rect"] = A
     zs = []
     for z in geo["zones"]:
-        if z["name"] == SD_ZONE:
+        if SD_ZONE[0] in z["layers"] and z["net"] == SD_ZONE[1]:
             z = dict(z, poly=[[A[0], A[1]], [A[2], A[1]], [A[2], A[3]], [A[0], A[3]]])
         zs.append(z)
     g["zones"] = zs

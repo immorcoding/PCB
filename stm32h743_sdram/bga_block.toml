@@ -22,8 +22,8 @@ slot_max = 3.0                   # --slot-max default: longest chain of joined p
 U201 = ["C201", "C202", "C203", "C204", "C205", "C206", "C207", "C208", "C209", "C210", "C211", "C212", "C213", "C214", "C215"]
 U301 = ["C301", "C302", "C303", "C304", "C305", "C306", "C307", "C308"]
 
-# bga_plan (branch try/fanout-first, whole-BGA model with the SDRAM line order; written for the old layer order:
-# its zone name below is the L3 block of then, the board's is now cu:L5_3V3_SDRAM)
+# bga_plan (branch try/fanout-first, whole-BGA model with the SDRAM line order; written for the old layer order). The
+# SDRAM's power-plane block it moves with the SDRAM is the zone of [bga.U301] supply on the power-role layer.
 [plan]
 window = [26.0, 22.0, 70.0, 52.0]     # the planning window x0 y0 x1 y1
 layers = ["L1", "L4", "L6"]           # the plan's routing layers, the SDRAM's order first (plan A: the first two)
@@ -34,7 +34,6 @@ cap_kinds.U201 = [{ name = "100n", size = "0402", net = "+3V3_MCU", count = 15 }
                   { name = "C216", size = "0603", net = "+3V3_MCU", count = 1 }]
 cap_kinds.U301 = [{ name = "100n", size = "0402", net = "+3V3_SDRAM", count = 8 }]
 cap_reach = 1.9                       # every 3.3 V ball needs a 100 nF this close
-sdram_zone = "cu:L3_3V3_SDRAM"        # the SDRAM's power-plane block, moved with the SDRAM's candidate place
 identity = "line_order/balls_identity.json"   # the SDRAM's pin functions (line_order.py's identity dump)
 clock = ["FMC_SDCLK", "FMC_SDCLK_R"]  # the SDRAM clock and its piece after the series resistor
 clock_resistor = "R201"
