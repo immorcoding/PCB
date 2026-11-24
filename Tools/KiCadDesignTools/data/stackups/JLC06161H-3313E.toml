@@ -1,0 +1,21 @@
+# JLCPCB six-layer stackup JLC06161H-3313E (1.6 mm), values read 2026-11-15 from jlcpcb.com/impedance (research
+# note, issue 5). A board names it in board.toml: [board] stackup = "JLC06161H-3313E".
+# Rows top to bottom. kind: mask (name, thickness mm, material, epsilon_r), cu (name, thickness mm), di (KiCad type
+# prepreg / core, sublayers = [thickness mm, material, epsilon_r] each). L3-L4 is one dielectric of three sublayers.
+# True thicknesses matter: KiCad's length rules add the height of every via (Tools.KiCadDesignTools.core.stackup).
+
+rows = [
+    { kind = "mask", name = "F.Mask", thickness = 0.01524, material = "Solder mask", epsilon_r = 3.8 },
+    { kind = "cu", name = "F.Cu", thickness = 0.035 },
+    { kind = "di", type = "prepreg", sublayers = [[0.0994, "3313", 4.1]] },
+    { kind = "cu", name = "In1.Cu", thickness = 0.0152 },
+    { kind = "di", type = "core", sublayers = [[0.1, "Core", 4.6]] },
+    { kind = "cu", name = "In2.Cu", thickness = 0.0152 },
+    { kind = "di", type = "prepreg", sublayers = [[0.2104, "7628", 4.4], [0.7, "Core (no copper)", 4.6], [0.2104, "7628", 4.4]] },
+    { kind = "cu", name = "In3.Cu", thickness = 0.0152 },
+    { kind = "di", type = "core", sublayers = [[0.1, "Core", 4.6]] },
+    { kind = "cu", name = "In4.Cu", thickness = 0.0152 },
+    { kind = "di", type = "prepreg", sublayers = [[0.0994, "3313", 4.1]] },
+    { kind = "cu", name = "B.Cu", thickness = 0.035 },
+    { kind = "mask", name = "B.Mask", thickness = 0.01524, material = "Solder mask", epsilon_r = 3.8 },
+]

@@ -22,6 +22,10 @@ modules here plus data files.
 | core | `paths` | (library) | KiCad, Edge and repository paths | | |
 | core | `config` | `-m ...core.config <board dir>` | read and check `board.toml` (layer roles -> L1..Ln, KiCad names) | | |
 | core | `heavy` | (library) | low priority on four cores, one heavy run at a time, KiCad lock files, pauses | | |
+| core | `stackup` | (library) | a fab stackup from `data/stackups/<name>.toml` (`[board] stackup`): thickness, via heights | | |
+| core | `boardtext` | (library) | text edits of a `.kicad_pcb` (copper rows of the layer table) | | |
+| project | `make_project` | `-m ...project.make_project <board dir> [--new-pcb]` | `.kicad_pro`, empty board with the stackup, derived footprints, layer table (`[project]`, `[netclasses]`, `[netclass_patterns]`, `[[footprints.derived]]`) | RUL-1, PROC-13 | |
+| rules | `fixture` | `-m ...rules.fixture <board dir> <out>` | every rule breaks and passes on a fixture board (cases: `<board dir>/rules_cases.py`) | RUL-2 | (it is one) |
 | (driver) | `build` | `-m ...build <board dir> <step>` | rules, sch, layout, copper, route, finish, checks, publish, all, compare | PROC-4, PROC-6 | `--dry-run` |
 | rules | `dru_canary` | `-m ...rules.dru_canary <board>` | the rule file is loaded | RUL-2 | `tests/drc_tools` |
 | rules | `dru_match` | `-m ...rules.dru_match <board> [--json]` | every rule matches something (one DRC per rule, slow) | RUL-2 | `tests/drc_tools` |

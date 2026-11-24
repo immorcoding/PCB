@@ -14,6 +14,7 @@ PACKAGE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))     # Tool
 REPO = os.path.dirname(os.path.dirname(PACKAGE))
 TOOLS = os.path.join(REPO, "Tools")
 TEMPLATES = os.path.join(REPO, "templates")
+DATA = os.path.join(PACKAGE, "data")                                       # shared data files (stackups/)
 
 
 def _kicad_bin():

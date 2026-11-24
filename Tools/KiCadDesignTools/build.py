@@ -7,7 +7,7 @@ Run it from the repository root, with KiCad's python (D:\\KiCad\\bin\\python.exe
 it starts runs under KiCad's python (Tools.KiCadDesignTools.core.paths.KICAD_PY), the Tools modules as `python -m Tools.KiCadDesignTools.<...>` from the
 repository root. Reports go to <out>/<step folder>/, <out> = <board dir>/out unless --out is given.
 
-  project     the project file, the derived footprints, the board's layer table ([scripts] project)
+  project     the project file, the derived footprints, the board's layer table (project.make_project)
   rules       project, rule fixture board, canary, rule matching on the board (--skip-match: left out, run `checks`
               once at the end), length-window rules
   sch         schematic: generate, upgrade, ERC, netlist, PDF; netlist checks ([scripts] sch_check); kicad-happy review
@@ -36,6 +36,7 @@ from Tools.KiCadDesignTools.core import config, heavy, paths
 
 STEPS = ("project", "rules", "sch", "pcb-update", "layout", "copper", "route", "finish", "checks", "publish", "all",
          "compare", "init")
+PROJECT = "Tools.KiCadDesignTools.project.make_project"      # the project file, after every SaveBoard too
 KH = os.path.join(os.path.expanduser("~"), ".claude", "plugins", "marketplaces", "kicad-happy", "skills", "kicad", "scripts",
                   "analyze_schematic.py")
 
@@ -251,8 +252,8 @@ class Build:
         return rc
 
     def project_quiet(self):
-        """The project file again after a SaveBoard (KiCad rewrites it; its source is the project script)."""
-        self.r.py(self.script("project"))
+        """The project file again after a SaveBoard (KiCad rewrites it; its source is make_project and board.toml)."""
+        self.r.py(PROJECT, self.D)
 
     def match_skipped(self, O, tee=True):
         msg = "dru_match skipped (SKIP_DRU_MATCH): run build.sh finish-checks once at the end"
@@ -262,16 +263,16 @@ class Build:
 
     # steps -----------------------------------------------------------------------------------------------------
     def step_project(self):
-        rc, data = self.r.py(self.script("project"), filt=quiet)
+        rc, data = self.r.py(PROJECT, self.D, filt=quiet)
         self.pr(data)
         return rc
 
     def step_rules(self):
         O, T0 = self.out("rules"), time.time()
-        rc, data = self.r.py(self.script("project"), filt=quiet)
+        rc, data = self.r.py(PROJECT, self.D, filt=quiet)
         self.pr(data)
         # 1. every rule behaves as written (fixture board with the project's own rules and stackup)
-        FX, _ = self.r.py(self.script("fixture"), O, out=O + "/fixture.log")
+        FX, _ = self.r.py("Tools.KiCadDesignTools.rules.fixture", self.D, O, out=O + "/fixture.log")
         if not self.dry and os.path.isfile(O + "/rules_fixture.txt"):
             lines = open(O + "/rules_fixture.txt", encoding="utf-8").read().splitlines()
             echo(lines[:1] + [l for l in lines if l.startswith("FAIL")])
@@ -411,7 +412,7 @@ class Build:
         if self.upto and self.upto not in names:
             raise config.ConfigError("--upto %s: no such group (%s)" % (self.upto, ", ".join(names)))
         build = names[:names.index(self.upto) + 1] if self.upto else names
-        rc, data = self.r.py(self.script("project"), filt=quiet)
+        rc, data = self.r.py(PROJECT, self.D, filt=quiet)
         echo(grep(data, "layer table"))
         print("== placement and pours (the groups are stripped first, then rebuilt in order)")
         CR = self.script("copper_report")

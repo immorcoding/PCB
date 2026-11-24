@@ -3,8 +3,9 @@
 # Coordinates are local mm (board-file mm - origin), x right, y down. Paths are relative to this folder. Numbers that
 # end up on a command line are written as the command line had them (27, not 27.0).
 # Stage 2 of the Tools/ consolidation (2026-11-24): the driver reads the sections below and still calls this folder's
-# scripts ([scripts]) with the arguments build.sh gave them. The constants still hard-coded in make_project.py,
-# place.py, finish*.py, gen_sch.py and the report scripts move into this file (and place.toml, silk.toml) in stage 3.
+# scripts ([scripts]) with the arguments build.sh gave them. The constants still hard-coded in place.py, finish*.py,
+# gen_sch.py and the report scripts move into this file (and place.toml, silk.toml) in stage 3; the project file's
+# ([project], [netclasses], [netclass_patterns], [[footprints.derived]]) moved in stage 3A.
 
 [board]
 name = "stm32h743_sdram"
@@ -21,13 +22,87 @@ stackup = "JLC06161H-3313E"
 roles = ["signal", "ground", "signal", "signal", "power", "signal"]
 names = ["", "L2_GND", "L3_SIG", "L4_SIG", "L5_PWR", ""]
 
+# The project file (Tools.KiCadDesignTools.project.make_project): templates/<template> plus the values below. Profile C
+# has no template of its own, so this is templates/common with the profile C values and the board's own data. The
+# rule file is written by hand and not touched there.
+[project]
+track_widths = [0.0, 0.09, 0.1016, 0.1524, 0.2032, 0.254, 0.3048, 0.508, 0.8128, 1.27, 2.54]
+via_dimensions = [{ diameter = 0.0, drill = 0.0 }, { diameter = 0.3, drill = 0.15 }, { diameter = 0.45, drill = 0.2 }, { diameter = 0.6, drill = 0.3 }]
+via_heights = [["L1", "L3"], ["L1", "L4"], ["L1", "L6"], ["L3", "L4"], ["L4", "L6"]]   # printed: the SDRAM's layer changes
+
+# Board-level floors (.kicad_pro "rules"): the absolute minimums anywhere on the board, i.e. the values inside the BGA
+# rule areas; the stricter outside values are in the .kicad_dru.
+[project.floors]
+min_clearance = 0.09               # inside rule areas; outside 0.127 comes from the net classes
+min_track_width = 0.09             # inside rule areas; outside 0.1016 (rule signal_width)
+min_via_diameter = 0.3             # inside rule areas; outside 0.45 (rule via_size)
+min_through_hole_diameter = 0.15   # inside rule areas; outside 0.2 (rule via_size)
+min_via_annular_width = 0.075      # (0.30 - 0.15) / 2
+min_hole_clearance = 0.2           # JLC: via hole to copper 0.2; plated pad holes 0.3 (rule pth_hole_clearance)
+min_hole_to_hole = 0.254           # project value (AD HoleToHoleClearance); JLC via 0.2
+min_copper_edge_clearance = 0.254
+min_text_height = 1.0
+min_text_thickness = 0.15
+solder_mask_to_copper_clearance = 0.0
+use_height_for_length_calcs = true   # off = via heights are 0 and via_count rules silently stop working
+
+[project.diff_pairs.ETH]           # 100 ohm pair PHY - RJ45 on L1, 4.7 / 8 mil: JLC impedance calculator, run by the user 2026-11-20
+width = 0.1194
+gap = 0.2032
+via_gap = 0.25
+
+# Net classes in .kicad_pro order. Bus classes exist so that length / via-count rules can address a whole bus; their
+# width outside the rule areas is the general minimum, as in the routing prototype (issue 21). diff_pair: track and
+# pair width / gap from [project.diff_pairs.<name>].
+[netclasses]
+Default = { track_width = 0.2032, via_diameter = 0.45, via_drill = 0.2, priority = 2147483647, clearance = 0.127 }
+PWR = { track_width = 0.3048, via_diameter = 0.6, via_drill = 0.3, priority = 0, clearance = 0.127 }
+XTAL = { track_width = 0.254, via_diameter = 0.45, via_drill = 0.2, priority = 1, clearance = 0.127 }
+SDRAM = { track_width = 0.1016, via_diameter = 0.45, via_drill = 0.2, priority = 10, clearance = 0.127 }
+QSPI = { track_width = 0.1016, via_diameter = 0.45, via_drill = 0.2, priority = 11, clearance = 0.127 }
+SDMMC = { track_width = 0.1016, via_diameter = 0.45, via_drill = 0.2, priority = 12, clearance = 0.127 }
+LTDC = { track_width = 0.1016, via_diameter = 0.45, via_drill = 0.2, priority = 13, clearance = 0.127 }
+RMII = { track_width = 0.1016, via_diameter = 0.45, via_drill = 0.2, priority = 14, clearance = 0.127 }
+ETH100 = { diff_pair = "ETH", via_diameter = 0.45, via_drill = 0.2, priority = 15, clearance = 0.127 }   # PHY - RJ45
+
+# Net-class patterns, after the template's own (PWR and XTAL by name), in this order: the pins.csv rows whose group is
+# listed in [netclass_patterns.groups] (net name = the signal column, a global label without '/'), then nets.
+# Wildcards: only '*' works.
+[netclass_patterns]
+pins = "pins.csv"
+nets = [
+    ["RMII", "RMII_REF_CLK"], ["RMII", "RMII_CRS_DV"], ["RMII", "RMII_RXD0"], ["RMII", "RMII_RXD1"], ["RMII", "RMII_TX_EN"],
+    ["RMII", "RMII_TXD0"], ["RMII", "RMII_TXD1"],
+    # nets that are not MCU pins. FMC_SDCLK_R is the SDRAM side of the SDCLK series resistor.
+    ["SDRAM", "FMC_SDCLK_R"], ["XTAL", "PHY_XI"], ["XTAL", "PHY_XO"], ["XTAL", "PHY_XO_R"],
+    ["ETH100", "ETH_TX_P"], ["ETH100", "ETH_TX_N"], ["ETH100", "ETH_RX_P"], ["ETH100", "ETH_RX_N"],
+    # copper-type and short-and-wide nets of SPEC section 5 that the template patterns do not catch
+    ["PWR", "SW_*"], ["PWR", "LED_A"], ["PWR", "VCAP*"], ["PWR", "VDDCR"],
+]
+
+[netclass_patterns.groups]         # pins.csv group -> net class
+SDRAM_DATA = "SDRAM"
+SDRAM_ADDR = "SDRAM"
+SDRAM_CLK = "SDRAM"
+QSPI = "QSPI"
+SDMMC = "SDMMC"
+LTDC = "LTDC"
+HSE = "XTAL"
+LSE = "XTAL"
+
+# Footprints derived from KiCad's stock ones into the board's library ([board] lib, <lib>.pretty and fp-lib-table).
+[[footprints.derived]]             # the stock 90-ball BGA with 0.33 mm pads instead of 0.40 (SPEC 2.1; 0.33 is Micron's
+lib = "Package_BGA"                # land for the same package, ISSI gives no land pattern)
+footprint = "BGA-90_8.0x13.0mm_Layout2x3x15_P0.8mm"
+name = "BGA-90_8.0x13.0mm_Layout2x3x15_P0.8mm_Pad0.33mm"
+pad_size = [0.4, 0.33]             # every pad of size 0.4 x 0.4 becomes 0.33 x 0.33
+pads = 90                          # how many such pads the stock footprint has (it must not have changed)
+
 [build.out]                      # report folders under out/ when they are not named after the step
 route = "route2"                 # build.sh's step was route2 (stop 7); finish reads route2/power_bga_sites.json
 checks = "finish"                # build.sh finish-checks wrote into out/finish
 
 [scripts]                        # this folder's scripts the driver calls (stage 3: Tools modules plus data files)
-project = "make_project.py"      # .kicad_pro, derived footprint, the board's layer table
-fixture = "rules_fixture.py"     # every rule has a violating and a passing case on a fixture board
 sch_check = "sch_check.py"       # netlist against the drawing's intent, pins.csv and swap.csv
 place = "place.py"
 layout_probe = "layout_probe.py"
