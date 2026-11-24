@@ -1,0 +1,48 @@
+# Silkscreen of the demo board, written by the finish step (Tools.KiCadDesignTools.finishing.silk).
+# Coordinates are local mm, x right, y down. Sizes as on the H743 board (JLCPCB: character height >= 1.0 mm, stroke
+# >= 0.15 mm, pad to silkscreen >= 0.15 mm). Reference designators go to the Fab layer (all or none, FIN-1: the 0402
+# parts under the BGAs take no legible designator); printed: the header pins' functions (SPEC 10), the reset pad's
+# name, the A1 corners of the two BGAs, the title on the bottom edge.
+
+[sizes]                          # text height, width, stroke (mm)
+S = [1.0, 0.8, 0.15]             # labels
+M = [1.3, 1.0, 0.2]              # connector names, the title
+
+[place]                          # how far items keep from things (mm) and how far they may slide from their anchor
+icon_width = 0.15
+pad_silk = 0.15
+silk_gap = 0.12
+body_in = 0.25
+edge = 0.35
+item_gap = 0.2
+reach = 1.6
+
+[mask]
+fine = {}                        # no fine-pitch footprint needs its own solder-mask expansion
+
+[a1]
+parts = [["U1", "A1"], ["U2", "A1"]]   # a dot outside the body at the corner nearest this ball
+
+[labels]
+# [text, x, y, rot, size, side]; rot 90 = reading upwards
+texts = [
+    # +3V3 header J1 on the left edge (pin 1 +3V3 at y 21.0, pin 2 GND at y 23.54): above and below it
+    ["+3V3", 2.2, 18.9, 0, "S", "F"], ["GND", 2.0, 25.9, 0, "S", "F"],
+    # debug UART J2 on the bottom edge (pins at y 26.6, x 13.96 / 16.50 / 19.04 / 21.58: GND TX RX 3V3), names below
+    ["GND", 13.96, 29.0, 0, "S", "F"], ["TX", 16.5, 29.0, 0, "S", "F"], ["RX", 19.04, 29.0, 0, "S", "F"], ["3V3", 21.58, 29.0, 0, "S", "F"],
+    ["UART", 11.4, 26.6, 90, "S", "F"],
+    # reset test pad TP1 (6.0, 17.8): its name west of it
+    ["NRST", 3.3, 17.8, 0, "S", "F"],
+]
+icons = []
+
+# The title block on the bottom edge under the SDRAM (free strip x 24-39.6, y 24-29.6)
+[[title]]
+side = "F"
+at = [31.8, 25.0]
+reserve = [-7.4, -0.9, 7.4, 3.8]
+items = [
+    { text = "H743 + SDRAM", d = [0, 0], size = "M", reach = 0.8 },
+    { text = "demo rev A 2026-11", d = [0, 1.75], size = "S", reach = 0.6 },
+    { text = "Designed by Claude", d = [0, 3.3], size = "S", reach = 0.6 },
+]

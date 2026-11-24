@@ -11,7 +11,9 @@
 
 - `board.toml`：层的用途、模板、网络类、各步骤的参数。脚本读它，不读本文的表。
 - `pins.csv`：MCU 用到的 22 个球（球号、圈号、信号、AF、总线组），从 `stm32h743_sdram/pins.csv` 摘出。
+- `swap.csv`：SDRAM 一侧的数据位换位（第 9 节）。
 - `unverified.md`：未核对项，一直带到交付。
+- 其余数据（`place.toml`、`silk.toml`、`copper.sketch`、`length_groups.json`、规则文件 `demo_board.kicad_dru`、`rules_cases.py`、`routes_*.py`、`sch/main.py`）见第 11 节。工程文件、板子、原理图都由构建驱动生成，不进仓库。
 
 每节标题后标了类别，改法不同（见第 15 节）：
 
@@ -53,11 +55,12 @@
 | Y1、C1、C2 | HSE 晶振 25 MHz 和两颗负载电容 | 晶振沿用 H743 板的 Y201；电容 0402 | 3225 / 0402 |
 | C3–C8 | BGA 背面去耦，100 nF：U1 下 4 颗，U2 下 2 颗 | 贴片电容 | 0402（第 7.2 节） |
 | C9 | `+3V3` 入口的大电容 4.7 µF | 贴片电容 | 0805 |
+| TP1 | NRST 测试点 | `TestPoint:TestPoint_Pad_D1.0mm` | — |
 | J1 | `+3V3` 供电排针，2 脚 2.54 mm（`+3V3`、`GND`） | 通孔排针 | 1 × 2 |
 | J2 | 调试串口，4 脚 2.54 mm（GND、TX、RX、3V3） | 通孔排针 | 1 × 4 |
 | FID1–FID3 | 光学定位点 | `Fiducial:Fiducial_1mm_Mask2mm` | — |
 
-没有稳压器、复位电路、BOOT 下拉以外的外设；MCU 的 VCAP、VDDA 等按最少接法接到 `+3V3` / 地（画原理图时按 DS12110 定，记进未核对项）。
+没有稳压器、复位电路和别的外设。MCU 的最少接法（画原理图时按 DS12110 定，记进未核对项）：VDD、VDD33USB、VBAT、PDR_ON、VDDA、VREF+ 接 `+3V3`，VSS、VSSA、VREF- 接地；BOOT0 直接接地（不用下拉电阻，U6）；NRST 只引到测试点 TP1（片内上拉）；VCAP1 / VCAP2 悬空（接哪一边都会短路内核稳压器，U2）；其余 IO 球在原理图里标不连接。
 
 来源：H743 板 `stm32h743_sdram/SPEC.md` 第 2 节。
 
@@ -72,10 +75,10 @@
 | SDRAM 时钟 | 1 | `SDRAM_CLK` | FMC_SDCLK（H14），经 R1 后叫 FMC_SDCLK_R |
 | HSE | 2 | `HSE` | G1 / H1，最外圈 |
 | 调试串口 | 2 | `UART` | USART1：TX PB14（R14）、RX PB15（R15） |
-| 其余 | 3 | `AUX` | BOOT0 下拉、NRST 引到测试点、PDR_ON 接 VDD |
+| 其余 | 3 | `AUX` | BOOT0（D6）接地、NRST（J1）引到测试点 TP1、PDR_ON（C6）接 VDD |
 
 - SDRAM 的控制线（RAS、CAS、WE、CKE、片选）不接：演示板只验证走线和等长。
-- 换位：起点是不换位（U2 的 DQ0–DQ7 接 FMC_D0–D7）；线序草图上同层有交叉时在字节内换，换了写进 `swap.csv`（第 9 节）。
+- 换位：起点是不换位；线序草图上 L3 的八根数据线要不交叉，在字节内换了（`swap.csv`：DQ0←D2、DQ1←D7、DQ2←D3、DQ3←D0、DQ4←D1、DQ5←D6、DQ6←D4、DQ7←D5，DQM0←NBL0；第 9 节）。
 
 ## 4. 电源树（已定）
 
@@ -104,8 +107,8 @@ J1 +3V3（外部供电）→ C9 4.7 µF → +3V3（L5 的块）→ U1 的 VDD、
 |---|---|---|
 | L1 | 信号：BGA 外两圈出线、晶振、全部器件；空处铺地 | L2 地 |
 | L2 | 整层地，不走线、不切开 | — |
-| L3 | 信号：SDRAM 数据和时钟 | L2 地 |
-| L4 | 信号：地址线 | L5 电源 |
+| L3 | 信号：SDRAM 数据（八根数据线） | L2 地 |
+| L4 | 信号：地址线、时钟的 SDRAM 一侧（串阻之后） | L5 电源 |
 | L5 | 电源层：一块 `+3V3`，其余铺地 | — |
 | L6 | 信号：背面去耦；空处铺地 | L5 |
 
@@ -159,20 +162,21 @@ J1 +3V3（外部供电）→ C9 4.7 µF → +3V3（L5 的块）→ U1 的 VDD、
 
 ### 8.2 起点
 
-- 板框约 40 × 30 mm，横放，R1 圆角；不放安装孔。
-- 粗分区：
+- 板框 40 × 30 mm，横放，R1 圆角；不放安装孔。
+- 粗分区（`place.toml`）：
 
 ```
-           上边：J2 调试串口（左上）
+           上边：U1 北边的总线带（L3 / L1），FID1、FID2
          ┌──────────────────────────────────────┐
   左边   │ Y1 晶振   [U1 MCU]   R1   [U2 SDRAM]  │ 右边
-  J1 +3V3│                                      │
+  J1 +3V3│ TP1                                  │
          └──────────────────────────────────────┘
-           下边：板名、日期
+           下边：FID3（左下）、J2 调试串口（U1 下面）、板名和日期（U2 下面）
 ```
 
-- U1、U2 封装间距起点约 6 mm；SDRAM 转向在线序草图上试 0° 和 90° 定。
-- 晶振和两颗负载电容紧挨 U1 西边的 G1 / H1；R1 靠 U1。
+- U1 中心 (14, 14)；U2 中心 (29, 16)，转 180°（字节通道 0 的球 K–R、7–9 列朝向 MCU 的东北），比 U1 低 2 mm，封装间距 6 mm。
+- 晶振和两颗负载电容紧挨 U1 西边的 G1 / H1；R1 靠 U1 东边，转 90°。
+- J2 放在下边 U1 的东南角下面（USART1 的 R14 / R15 在 MCU 东南角），不在左上。
 
 ## 9. 线序和等长（已定）
 
@@ -180,14 +184,14 @@ J1 +3V3（外部供电）→ C9 4.7 µF → +3V3（L5 的块）→ U1 的 VDD、
 |---|---|---|---|---|
 | SDRAM 数据（FMC_D0–D7 + FMC_NBL0，9 根） | 一个字节通道，组内互相比 | 见第 7.2 节 | 每根 30 mm | 画，这一组 |
 | SDRAM 地址（FMC_A0–A3、FMC_BA0，5 根） | 每根对时钟（串阻两侧相加） | 见第 7.2 节 | 每根 30 mm | 不画 |
-| 调试串口、晶振 | 不做等长 | 无 | 晶振每根 7 mm | 不画 |
+| 调试串口、晶振 | 不做等长 | 无 | 晶振球到晶振焊盘每根 7 mm | 不画 |
 
 - 长度口径：焊盘到焊盘的走线长度，加过孔实际穿过的层间高度。
 - 等长怎么报：字节通道用规则文件的 `skew` 规则，地址窗口由 `length_groups.json` 生成 `length` 规则；每次构建另出长度表。
 - 换位：只在 SDRAM 一侧、字节内（第 3 节）。
-- 出线层由圈号定：0、1 圈走 L1，2、3 圈在规则区内打狗骨孔下 L3 / L4。
+- 出线层：数据线从 MCU 四边出来，要在两封装之间汇成一排，所以每根在球旁打狗骨孔下 L3（0、1 圈也一样），到 SDRAM 球旁再上 L1，每根 2 个过孔；NBL0、BA0、时钟的 MCU 一侧不换层，走 L1；地址线在 MCU 西边打狗骨孔下 L4，沿 MCU 的球行向东；时钟过 R1 后在 R1 旁下 L4。
 - 蛇形（RTE-7）：脚本画线段加圆弧；数值在第 7.2 节；放在出了规则区之后的直线段上；先定补线区，再绕着它排线带。
-- 晶振：Y1 两根线和两颗负载电容逐根手写坐标（`routes_local.py`），0.254 mm（XTAL 网络类），只走 L1，下面 L2 完整。
+- 晶振：Y1 两根线和两颗负载电容逐根手写坐标（`routes_local.py`），0.254 mm（XTAL 网络类），只走 L1，下面 L2 完整；球到晶振焊盘不超过 7 mm（HSE_OUT 5.9 mm，连同到 C2 的一段整网 7.45 mm）。
 - 线序草图的验收（RTE-13）：同层无交叉；每个等长组按规划路径算的组内差在目标以内，补线区容量大于要补的量。
 
 ## 10. 连接器约定（接法已定，位置是起点）
@@ -200,14 +204,15 @@ J1 +3V3（外部供电）→ C9 4.7 µF → +3V3（L5 的块）→ U1 的 VDD、
 
 ## 11. 工具路线（已定）
 
-全部由构建驱动跑：`python -m Tools.KiCadDesignTools.build templates/demo_board <步骤>`（project、rules、sch、layout、copper、route、finish）。板目录只放数据：`board.toml`、`place.toml`、`silk.toml`、`copper.sketch`、`length_groups.json`、`rules_cases.py`、`routes_*.py`、`sch/<页>.py`、`pins.csv`、`swap.csv`。
+全部由构建驱动跑：`python -m Tools.KiCadDesignTools.build templates/demo_board <步骤>`（project、rules、sch、pcb-update、layout、route、finish；copper 一步用不到：电源只有两颗 BGA 的电源地球，在 route 一步由 `routes_power_bga.py` 做）。板目录只放数据：`board.toml`、`place.toml`、`silk.toml`、`copper.sketch`、`length_groups.json`、`rules_cases.py`、规则文件、`routes_*.py`、`sch/<页>.py`、`pins.csv`、`swap.csv`、`unverified.md`。新板从这里起：`python -m Tools.KiCadDesignTools.build init <板名>`。
 
 | 项 | 决定 |
 |---|---|
 | 工程 | `project` 一步从 `templates/C-bga-065/` 生成（RUL-1） |
 | 原理图 | 一页，`sch/main.py` |
 | 布局 | `place.toml` |
-| 走线 | SDRAM 一组 `routes_sdram.py`（含 `TUNING`）；晶振、串口、电源过孔 `routes_local.py`、`routes_power*.py` |
+| 走线 | SDRAM 一组 `routes_sdram.py`（含 `TUNING`，四处蛇形位置）；两颗 BGA 的电源地球和背面去耦 `routes_power_bga.py`（`copper.bga_power` 自动选位）；晶振、复位、串口、地过孔 `routes_local.py` |
+| 规则 | `demo_board.kicad_dru`（模板的 15 条加本板的总线线宽、长度、过孔数、字节通道等长）；每条规则的基准用例在 `rules_cases.py` |
 | 等长 | 规则文件的 `sdram_lane0`；`length_groups.json` 的 `sdram_addr_window` |
 | 收尾 | `finish` 一步（光学定位点、铺地和清理、缝合过孔、丝印、泪滴） |
 
@@ -241,3 +246,8 @@ MCU 和 SDRAM 的接法沿用 H743 板（`stm32h743_sdram/` 的原理图，ST ST
 ## 16. 变更记录
 
 - 2026-11-24 · 全文 · 起草（Tools/ 整理第 5 阶段 H4a）：结构照 H743 板的 SPEC；第 7.2 节“本板取值”按规格档 C 的“布局和走线的取值”逐项填，数值除地址窗口（±10 mm，板小，H743 是 ±20 mm）外都沿用 H743 板。
+- 2026-11-24 · 第 2、3 节 · 建板（H4b）：BOOT0 直接接地，不用下拉电阻（U6）；NRST 引到新加的 TP1；VCAP1 / VCAP2 悬空（U2）。原因：电路不求能工作，少一个电阻、少两颗电容和它们的走线；接法已定，改了要用户确认。
+- 2026-11-24 · 第 3、9 节 · 建板（H4b）：数据位在 SDRAM 一侧换位（`swap.csv`），让 L3 上八根数据线不交叉。
+- 2026-11-24 · 第 6、9 节 · 建板（H4b）：时钟不走 L3：MCU 一侧走 L1 到 R1，串阻之后下 L4（L3 上八根数据线从 MCU 四边汇到两封装之间，时钟放 L3 会和它们交叉）；数据线 0、1 圈也在球旁下 L3（出线层不再完全由圈号定）；NBL0、BA0 全程 L1。L3 / L4 的用途已定，改了要用户确认。
+- 2026-11-24 · 第 8 节 · 建板（H4b，起点）：SDRAM 转 180°、比 MCU 低 2 mm；J2 从左上移到下边 U1 的东南角下面；FID3 在左下角（右下角留给板名）。
+- 2026-11-24 · 第 9 节 · 建板（H4b）：晶振的 7 mm 写明是球到晶振焊盘（整网连同负载电容那段 7.45 mm）。

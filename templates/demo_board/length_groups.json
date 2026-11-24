@@ -1,0 +1,13 @@
+{
+  "_": "SPEC.md section 9. Read by Tools.KiCadDesignTools.rules.len_rules. Members are rule conditions; lo / hi are mm relative to the reference. The byte lane is matched by the static skew rule sdram_lane0 of the rule file, not here.",
+  "groups": [
+    {"rule": "sdram_addr_window",
+     "members": "A.NetName == 'FMC_A*' || A.NetName == 'FMC_BA*'",
+     "ref": ["FMC_SDCLK", "FMC_SDCLK_R"], "lo": -10, "hi": 10, "cap": 30,
+     "why": "SPEC 7.2: every address line within 10 mm of the clock, the clock summed across R1; the 30 mm cap of sdram_len_max kept"}
+  ],
+  "fixed": [],
+  "sums": [
+    {"name": "sdclk_total", "nets": ["FMC_SDCLK", "FMC_SDCLK_R"], "max": 30}
+  ]
+}

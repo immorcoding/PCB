@@ -1,0 +1,131 @@
+(version 1)
+# Custom DRC rules of the demo board (STM32H743 + SDRAM, one byte lane). Rule profile C (docs/rule-profiles/C-bga-065.md):
+# the 15 rules of templates/C-bga-065/C-bga-065.kicad_dru as they are, the board's own (SDRAM bus width right after the
+# general width so that the area rules win inside the areas; length, via count and the byte lane's skew after the
+# profile's rules; SPEC 7.2 and 9) and the block len_rules writes from length_groups.json (last).
+# Later rules override earlier ones.
+#
+# ANY syntax error silently disables this WHOLE file (kicad-cli reports nothing). Known traps:
+# angles are unitless ("135", not "135deg"); min_resolved_spokes takes a bare number ("2", not "(min 2)");
+# every other number needs a unit; no '#' comment after a rule line; '==' not '='.
+# A misspelt net class, net, rule area or function name does NOT disable the file: that one rule just
+# matches nothing. After every edit run the driver's rules step (canary, every rule on the fixture board).
+#
+# Outside the BGA rule areas: track >= 0.1016, clearance 0.127 (net classes), via >= 0.45 / 0.2.
+# Inside the rule areas BGA_MCU and BGA_SDRAM (package outline + 1 mm, all layers): signal track exactly 0.09,
+# clearance >= 0.09, via >= 0.30 / 0.15 (the profile's exceptions, SPEC 7.1).
+
+# --- Track width (AD Width rules, min / preferred / max) ---
+(rule "signal_width"
+  (condition "A.Type == 'Track'")
+  (constraint track_width (min 0.1016mm) (opt 0.2032mm) (max 0.8128mm)))
+
+# The SDRAM bus (the board's own rule, before the area rules so that they win inside the areas) outside the rule areas: the general minimum (no thicker bus tracks in the 6 mm between the packages).
+(rule "bus_width"
+  (condition "A.Type == 'Track' && A.NetClass == 'SDRAM'")
+  (constraint track_width (min 0.1016mm) (opt 0.1016mm) (max 0.8128mm)))
+
+(rule "pwr_width"
+  (condition "A.Type == 'Track' && A.NetClass == 'PWR'")
+  (constraint track_width (min 0.1524mm) (opt 0.3048mm) (max 2.54mm)))
+
+# --- BGA rule areas: track width ---
+# A track that touches a rule area (also one that crosses its edge) may be 0.09.
+(rule "bga_width"
+  (condition "A.Type == 'Track' && (A.intersectsArea('BGA_MCU') || A.intersectsArea('BGA_SDRAM'))")
+  (constraint track_width (min 0.09mm) (opt 0.09mm) (max 2.54mm)))
+
+# A signal track that lies wholly inside a rule area must be exactly 0.09. Scripts change width 0.3 mm
+# outside the area edge; DRC judges each segment, so the change has to be at least half a track width outside.
+(rule "bga_width_inside"
+  (condition "A.Type == 'Track' && A.NetClass != 'PWR' && (A.enclosedByArea('BGA_MCU') || A.enclosedByArea('BGA_SDRAM'))")
+  (constraint track_width (min 0.09mm) (opt 0.09mm) (max 0.09mm)))
+
+# Crystal lines keep 0.254 everywhere (no exception inside the areas). After the area rules so that it wins.
+(rule "xtal_width"
+  (condition "A.Type == 'Track' && A.NetClass == 'XTAL'")
+  (constraint track_width (min 0.254mm) (opt 0.254mm) (max 0.254mm)))
+
+# --- Holes and vias ---
+# 0.15 is the small via drill inside the rule areas, 3.3 leaves room for 3.2 mm M3 holes.
+(rule "hole_range"
+  (constraint hole_size (min 0.15mm) (max 3.3mm)))
+
+(rule "via_size"
+  (condition "A.Type == 'Via'")
+  (constraint hole_size (min 0.2mm) (max 0.762mm))
+  (constraint via_diameter (min 0.45mm) (max 1.27mm))
+  (constraint annular_width (min 0.125mm)))
+
+# Small vias only when the whole via is inside a rule area (enclosedByArea, not intersectsArea: a via
+# that straddles the edge keeps the outside limits). No small via outside: change the placement instead.
+(rule "bga_via"
+  (condition "A.Type == 'Via' && (A.enclosedByArea('BGA_MCU') || A.enclosedByArea('BGA_SDRAM'))")
+  (constraint hole_size (min 0.15mm) (max 0.762mm))
+  (constraint via_diameter (min 0.3mm) (max 1.27mm))
+  (constraint annular_width (min 0.075mm)))
+
+# JLC: plated component holes need 0.28 mm to tracks and 0.3 mm to inner copper (vias: 0.2, board setting),
+# and 0.45 mm hole edge to hole edge (vias: 0.2; the board setting is 0.254).
+(rule "pth_hole_clearance"
+  (condition "A.Type == 'Pad' && A.Pad_Type == 'Through-hole'")
+  (constraint hole_clearance (min 0.3mm)))
+
+(rule "pth_hole_to_hole"
+  (condition "A.Type == 'Pad' && A.Pad_Type == 'Through-hole'")
+  (constraint hole_to_hole (min 0.45mm)))
+
+# --- BGA rule areas: clearance ---
+# The two Type tests keep pours out of this rule: intersectsArea() is true for a whole pour as soon as it
+# overlaps a rule area, and the pour would then be filled at 0.09 mm everywhere on the board (issue 16).
+(rule "bga_clearance"
+  (condition "A.Type != 'Zone' && B.Type != 'Zone' && (A.intersectsArea('BGA_MCU') || A.intersectsArea('BGA_SDRAM'))")
+  (constraint clearance (min 0.09mm)))
+
+# --- Corners: no 90-degree or acute bends (interior angle >= 135) ---
+# 134 rather than 135: KiCad measures some exact 45-degree turns as 134.9999 and flags them.
+# Also reports 90-degree T-junctions; triage those case by case.
+(rule "corner_angle"
+  (constraint track_angle (min 134)))
+
+# --- Shortest segment (small chamfers of 0.1 - 0.35 mm are left to Tools.KiCadDesignTools.analysis.track_shape) ---
+(rule "min_segment"
+  (condition "A.Type == 'Track'")
+  (constraint track_segment_length (min 0.1mm)))
+
+# --- Pour connection: thermal relief for through-hole, solid for SMD ---
+(rule "tht_thermal"
+  (condition "A.Type == 'Pad' && A.Pad_Type == 'Through-hole'")
+  (constraint zone_connection thermal_reliefs)
+  (constraint thermal_spoke_width (min 0.254mm))
+  (constraint thermal_relief_gap (min 0.254mm))
+  (constraint min_resolved_spokes 2))
+
+(rule "smd_solid"
+  (condition "A.Type == 'Pad' && A.Pad_Type == 'SMD'")
+  (constraint zone_connection solid))
+
+# ---- the board's rules (SPEC 7.2, 9) ----
+# Lengths per net: pad centre to pad centre plus the height of the layers each via crosses (SPEC 9: 30 mm a net). The
+# clock is split by R1; the sum across it is checked by len_rules (length_groups.json sums).
+(rule "sdram_len_max"
+  (condition "A.NetClass == 'SDRAM'")
+  (constraint length (max 30mm)))
+
+# Via count: the byte lane with its mask and the clock (SPEC 7.2: 3 a net); the address lines have no limit.
+(rule "sdram_via_max"
+  (condition "A.NetName == 'FMC_D*' || A.NetName == 'FMC_NBL*' || A.NetName == 'FMC_SDCLK*'")
+  (constraint via_count (max 3)))
+
+# Byte lane 0 (FMC_D0-D7 and FMC_NBL0): longest minus shortest <= 1.27 mm (SPEC 7.2, 50 mil). Named by MCU net, so it
+# stays right when bits are swapped on the SDRAM side.
+(rule "sdram_lane0"
+  (condition "A.NetName == 'FMC_D0' || A.NetName == 'FMC_D1' || A.NetName == 'FMC_D2' || A.NetName == 'FMC_D3' || A.NetName == 'FMC_D4' || A.NetName == 'FMC_D5' || A.NetName == 'FMC_D6' || A.NetName == 'FMC_D7' || A.NetName == 'FMC_NBL0'")
+  (constraint skew (max 1.27mm)))
+
+# >>> generated by Tools.KiCadDesignTools.rules.len_rules from length_groups.json -- do not edit between the markers
+# sdram_addr_window: reference FMC_SDCLK + FMC_SDCLK_R = 20.3731 mm
+(rule "sdram_addr_window"
+  (condition "A.NetName == 'FMC_A*' || A.NetName == 'FMC_BA*'")
+  (constraint length (min 10.3731mm) (opt 20.3731mm) (max 30.0000mm)))
+# <<< generated

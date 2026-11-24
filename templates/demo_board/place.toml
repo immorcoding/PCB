@@ -1,0 +1,58 @@
+# Placement of the demo board, applied by the layout step (Tools.KiCadDesignTools.placement.place):
+#   D:\KiCad\bin\python.exe -m Tools.KiCadDesignTools.placement.place templates/demo_board
+# Local frame (mm): origin at the board's top-left corner ([board] origin), x right, y down. A part is [x, y, rot] or
+# [x, y, rot, "B"] (bottom); rotations are KiCad's (counter-clockwise seen from the top). Every part not listed is
+# parked below the board. SPEC 8: U1 not turned (A1 top-left), U2 east of it, headers on the board edges.
+
+[outline]                        # Edge.Cuts: a rectangle with rounded corners
+width = 40.0
+height = 30.0
+corner_r = 1.0
+
+[bodies]                         # package bodies (w, h) at rotation 0: the rule areas
+U1 = [10.0, 10.0]
+U2 = [8.0, 13.0]
+
+# Rule areas on every copper layer, every flag off: package body + margin. F.Cu-only no-pour keep-outs over the same
+# rectangles (no outer-layer pour inside a BGA, the H743 board's rule). The names are the rule file's.
+[rule_areas]
+margin = 1.0
+areas = [
+    { name = "BGA_MCU", ref = "U1", label = "MCU", no_pour = "NOPOUR_L1_MCU" },
+    { name = "BGA_SDRAM", ref = "U2", label = "SDRAM", no_pour = "NOPOUR_L1_SDRAM" },
+]
+
+[pads]
+mask_margin_zero = ["U1", "U2"]  # ball pads: solder-mask opening equal to the pad (profile C exception)
+
+[park]
+skip = ["FID"]                   # the fiducials are the finish step's
+
+[parts]
+U1 = [14.0, 14.0, 0]             # the MCU, centre of the 10 x 10 body
+# the SDRAM east of the MCU, turned 180 degrees so that its byte lane 0 (balls K-R, columns 7-9) faces the MCU's north
+# east; 6 mm between the bodies, 2 mm lower than the MCU (the MCU's data balls sit on its south and east sides)
+U2 = [29.0, 16.0, 180]
+# SDCLK series resistor at the MCU, turned 90 degrees: pin 1 (MCU side) on the line of ball H14's escape (between G15
+# and H15, y 13.675), pin 2 north of it with the clock's via to L4 (x 20.6: between the MCU rule area and the L3 lines)
+R1 = [20.6, 13.165, 90]
+# HSE crystal west of balls G1 / H1, IN pad (1) north-east facing G1, OUT pad (3) south-west; load capacitors on the far
+# side of each signal pad
+Y1 = [5.8, 13.7, 180]
+C1 = [6.9, 10.95, 90]
+C2 = [2.7, 14.55, 180]
+TP1 = [6.0, 17.8, 0]             # NRST (ball J1)
+# +3V3 input on the left edge, bulk capacitor beside pin 1 (local L1 pour L1_3V3)
+J1 = [2.0, 21.0, 0]
+C9 = [5.6, 21.0, 0]
+# debug UART on the bottom edge under the MCU's south-east corner: GND TX RX 3V3 from the left
+J2 = [13.96, 26.6, 90]
+# decoupling under the BGAs (bottom, 0402): each centred between two ball-gap sites (0.65 / 0.8 mm apart), so that
+# both pads lie over a site the BGA power group can give a via of the pad's net (in-pad, the profile's exception);
+# clear of the bus vias. U1: north VDD row C, west F3 / G3, south row N, east J12 / J13 / H13; U2: N9 / M9 (west column), R7 / P7 (north)
+C3 = [14.0, 11.075, 0, "B"]
+C4 = [10.75, 13.025, 0, "B"]
+C5 = [14.65, 16.925, 0, "B"]
+C6 = [16.925, 14.0, 90, "B"]
+C7 = [25.4, 12.0, 90, "B"]
+C8 = [27.4, 10.8, 0, "B"]
