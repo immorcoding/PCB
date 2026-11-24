@@ -2,7 +2,7 @@
 copper-class nets (SPEC 5) outside the two BGA rule areas. The pours themselves come from copper.sketch.
 
     sh stm32h743_sdram/build.sh copper          (the whole step: sketch, this group, refill, measures)
-    D:\\KiCad\\bin\\python.exe scripts\\busroute\\build.py stm32h743_sdram\\routes_power.py --fast
+    D:\\KiCad\\bin\\python.exe -m Tools.KiCadDesignTools.routing.busroute.build stm32h743_sdram\\routes_power.py --fast
 
 The sites are searched by power_ties.py at build time against the pads, the copper.sketch regions and the
 SDRAM line-order sketch (tracks and vias of the `sdram` group on out/sketch/rot0), so the group comes out the

@@ -11,8 +11,7 @@ All coordinates are in units of 2.54 mm (100 mil); P(i, j) converts to mm.
 import os, sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-sys.path.insert(0, os.path.join(HERE, "..", "scripts"))
-from kisch import Sch
+from Tools.KiCadDesignTools.schematic.kisch import Sch
 
 U = 2.54
 def P(i, j): return (round(i * U, 4), round(j * U, 4))

@@ -45,7 +45,7 @@ import json, math, os, sys, uuid
 import numpy as np
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-sys.path.insert(0, os.path.join(os.path.dirname(HERE), "scripts"))
+sys.path.insert(0, os.path.dirname(HERE))                     # interim (Tools/ consolidation stage 1): the repository root, for Tools.KiCadDesignTools
 OX, OY = 100.0, 100.0
 INNER = ("L3", "L4")
 CLEARANCE, MIN_WIDTH = 0.2, 0.3
@@ -607,8 +607,8 @@ def gap_runs(b, R, gnd_masks):
     """L4 / L6 track length inside a gap between the L5 blocks of copper.sketch, and how much of it has ground copper of
     its own layer within GAP_REACH of its edge."""
     pcbnew = _p()
-    import cu_sketch
-    from busroute.geom import in_poly, pt_seg
+    from Tools.KiCadDesignTools.copper import cu_sketch
+    from Tools.KiCadDesignTools.routing.busroute.geom import in_poly, pt_seg
     mm = pcbnew.ToMM
     sk = cu_sketch.load_sketch(os.path.join(HERE, "copper.sketch"), 6)
     gap = sk.p["gap"] / 1e6

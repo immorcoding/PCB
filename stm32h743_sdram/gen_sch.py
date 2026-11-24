@@ -14,8 +14,8 @@ import importlib, os, sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
-sys.path.insert(0, os.path.join(HERE, "..", "scripts"))
-import kisch
+sys.path.insert(0, os.path.dirname(HERE))                     # interim (Tools/ consolidation stage 1): the repository root, for Tools.KiCadDesignTools
+from Tools.KiCadDesignTools.schematic import kisch
 from sch import common
 
 NAME = "stm32h743_sdram"

@@ -20,11 +20,11 @@ ties that point at the part's own centre cost a little more (vias go beside the 
 import math, os, sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-sys.path.insert(0, os.path.join(os.path.dirname(HERE), "scripts"))
-import cu_sketch                                            # noqa: E402
-from busroute.board import Board                            # noqa: E402
-from busroute.checks import Scene                           # noqa: E402
-from busroute.geom import in_poly, seg_poly_dist, seg_rect_dist, seg_dist, pt_seg, R2  # noqa: E402
+sys.path.insert(0, os.path.dirname(HERE))                     # interim (Tools/ consolidation stage 1): the repository root, for Tools.KiCadDesignTools
+from Tools.KiCadDesignTools.copper import cu_sketch                                            # noqa: E402
+from Tools.KiCadDesignTools.routing.busroute.board import Board                            # noqa: E402
+from Tools.KiCadDesignTools.routing.busroute.checks import Scene                           # noqa: E402
+from Tools.KiCadDesignTools.routing.busroute.geom import in_poly, seg_poly_dist, seg_rect_dist, seg_dist, pt_seg, R2  # noqa: E402
 
 DIRS = [(1, 0), (1, 1), (0, 1), (-1, 1), (-1, 0), (-1, -1), (0, -1), (1, -1)]
 STEP = 0.025                 # search step along a direction (keeps the 0.1 um grid from a pad centre on it)

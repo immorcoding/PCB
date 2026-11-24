@@ -24,7 +24,7 @@ listed in <board>.finish.json, so that `strip` can take exactly that away again.
 import json, math, os, re, subprocess, sys, uuid
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-sys.path.insert(0, os.path.join(os.path.dirname(HERE), "scripts"))
+sys.path.insert(0, os.path.dirname(HERE))                     # interim (Tools/ consolidation stage 1): the repository root, for Tools.KiCadDesignTools
 OX, OY = 100.0, 100.0
 KICAD_CLI = r"D:\KiCad\bin\kicad-cli.exe"
 RES = 20                                  # raster: px per mm (0.05 mm)

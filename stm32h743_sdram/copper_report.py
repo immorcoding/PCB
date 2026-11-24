@@ -27,7 +27,7 @@ import collections, json, os, re, sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
-sys.path.insert(0, os.path.join(os.path.dirname(HERE), "scripts"))
+sys.path.insert(0, os.path.dirname(HERE))                     # interim (Tools/ consolidation stage 1): the repository root, for Tools.KiCadDesignTools
 
 
 def unfill(path):
@@ -52,7 +52,7 @@ def strip(path, groups):
     """Remove what the busroute groups `groups` wrote into the board last time (as recorded in <board>.busroute.json),
     so that the groups can be rebuilt from scratch in their order (build.sh route1: the SDRAM bus first, the power
     groups after it, against the bus)."""
-    from busroute.board import write, Board
+    from Tools.KiCadDesignTools.routing.busroute.board import write, Board
     side = os.path.splitext(path)[0] + ".busroute.json"
     rec = json.load(open(side, encoding="utf-8")) if os.path.isfile(side) else {"groups": {}}
     cu = None
@@ -136,7 +136,7 @@ def clusters(board, nets):
 
 def table(board_path, odir):
     import pcbnew
-    import cu_sketch
+    from Tools.KiCadDesignTools.copper import cu_sketch
     import routes_power as RP
     L = []
     m = json.load(open(os.path.join(odir, "measure.json"), encoding="utf-8"))
@@ -347,7 +347,7 @@ def slots(board_path, odir, windows=None, part_b=None, layers=None, stem="slots"
     part_b: the power_bga_sites.json whose vias are counted as part B (default <out dir>/sketch_power_bga/)."""
     import math
     import pcbnew
-    import cu_sketch
+    from Tools.KiCadDesignTools.copper import cu_sketch
     from bga_power import PLANE_CLR, MINWIDTH
     b = pcbnew.LoadBoard(board_path)
     ids = list(b.GetEnabledLayers().CuStack())

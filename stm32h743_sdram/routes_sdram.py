@@ -6,8 +6,8 @@ packages and the SDRAM ball of every net as in out/plan50/swap_new.csv (now swap
 lanes 1, 2 and 3: DQ2 / DQ0, DQ19 / DQ23 / DQ21, DQ30 / DQ29).
 
     sh stm32h743_sdram/build.sh route2           (the real board: this group, then the power and local groups)
-    D:\KiCad\bin\python.exe scripts\busroute\build.py stm32h743_sdram\routes_sdram.py --fast
-    D:\KiCad\bin\python.exe scripts\busroute\build.py stm32h743_sdram\routes_sdram.py --tuning-budget
+    D:\KiCad\bin\python.exe -m Tools.KiCadDesignTools.routing.busroute.build stm32h743_sdram\routes_sdram.py --fast
+    D:\KiCad\bin\python.exe -m Tools.KiCadDesignTools.routing.busroute.build stm32h743_sdram\routes_sdram.py --tuning-budget
     SDRAM_BOARD=<copy of the board> SDRAM_TUNE_OBSTACLES=<copy> ... --fast     (on a copy with every other group)
 
 Every net is a hand-written route (PATHS: ball to ball, local mm, MCU centre (40, 37), SDRAM centre (57, 37)); the

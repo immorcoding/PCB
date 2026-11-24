@@ -21,11 +21,11 @@ own under the pad, else (ground) a via of its own within GND_VIA_MAX of the pad 
 import math, os, sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-sys.path.insert(0, os.path.join(os.path.dirname(HERE), "scripts"))
-import cu_sketch                                            # noqa: E402
-from busroute.board import Board                            # noqa: E402
-from busroute.checks import Scene                           # noqa: E402
-from busroute.geom import in_poly, seg_poly_dist, pt_seg    # noqa: E402
+sys.path.insert(0, os.path.dirname(HERE))                     # interim (Tools/ consolidation stage 1): the repository root, for Tools.KiCadDesignTools
+from Tools.KiCadDesignTools.copper import cu_sketch                                            # noqa: E402
+from Tools.KiCadDesignTools.routing.busroute.board import Board                            # noqa: E402
+from Tools.KiCadDesignTools.routing.busroute.checks import Scene                           # noqa: E402
+from Tools.KiCadDesignTools.routing.busroute.geom import in_poly, seg_poly_dist, pt_seg    # noqa: E402
 
 VIA_IN = (0.30, 0.15)            # inside the rule areas
 VIA_OUT = (0.45, 0.20)           # outside

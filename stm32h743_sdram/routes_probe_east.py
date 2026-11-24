@@ -2,7 +2,7 @@
 SDRAM rivers, and at what cost? Built on a snapshot of the committed board (SDRAM group as formal routing, power vias
 and pours, fills removed with copper_report.py unfill), never on the real board:
 
-    D:\\KiCad\\bin\\python.exe scripts\\busroute\\build.py stm32h743_sdram\\routes_probe_east.py --sketch --out stm32h743_sdram\\out\\probe_east\\run
+    D:\\KiCad\\bin\\python.exe -m Tools.KiCadDesignTools.routing.busroute.build stm32h743_sdram\\routes_probe_east.py --sketch --out stm32h743_sdram\\out\\probe_east\\run
 
 Open ends: north y = 26.5, south y = 50.8, CAN also x >= 63 (east). Local mm (MCU centre (40, 37)).
 Corridors used (see the report in issue #22 for capacities):

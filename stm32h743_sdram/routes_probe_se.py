@@ -1,7 +1,7 @@
 """Trial escape, NOT part of the SDRAM deliverable: can the non-SDRAM balls of the MCU's bottom-right corner get out
 to the south past the SDRAM bands? Built on top of the SDRAM sketch's output board (never on the real board):
 
-    D:\\KiCad\\bin\\python.exe scripts\\busroute\\build.py stm32h743_sdram\\routes_probe_se.py --sketch --out stm32h743_sdram\\out\\probe_se
+    D:\\KiCad\\bin\\python.exe -m Tools.KiCadDesignTools.routing.busroute.build stm32h743_sdram\\routes_probe_se.py --sketch --out stm32h743_sdram\\out\\probe_se
 
 (build routes_sdram.py into out\\sketch\\rot0 first). Rough tracks from the balls to y = 50.8, about 3 mm south of the
 lowest SDRAM band (D16 on L4 at y 47.75), with the net-class widths and vias of the profile.

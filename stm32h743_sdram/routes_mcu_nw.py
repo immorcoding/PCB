@@ -3,7 +3,7 @@ header / reset key, BOOT0, the SD card lines CMD / D3 / D1 / CD and CAN_STB. Eac
 (bga_fan.json) puts it (dog-bone, inner-layer run to the rule-area edge, on to the gate row at y 27.6 / the west
 gates at x 30.0); from there every net is written by hand with coordinates (RTE-3).
 
-    LOCAL_BOARD=<board> D:\\KiCad\\bin\\python.exe scripts\\busroute\\build.py stm32h743_sdram\\routes_mcu_nw.py --fast
+    LOCAL_BOARD=<board> D:\\KiCad\\bin\\python.exe -m Tools.KiCadDesignTools.routing.busroute.build stm32h743_sdram\\routes_mcu_nw.py --fast
     (build.sh route2 builds it on the real board after routes_mcu_south.py)
 
 Territory (shared with the south / west agent, stop 7): the L4 band x 27.5-44, y 25.4-27.45 and the west corridor

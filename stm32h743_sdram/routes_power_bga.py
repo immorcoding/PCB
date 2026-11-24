@@ -3,7 +3,7 @@ power / signal): every supply and ground ball of U201 (MCU) and U301 (SDRAM) on 
 L1 dog-bone (GND: the L2 plane, +3V3_MCU / +3V3_SDRAM: their L5 blocks), and the bottom decoupling over those vias.
 
     sh stm32h743_sdram/build.sh route2          (the whole board; this group follows routes_power.py)
-    D:\\KiCad\\bin\\python.exe scripts\\busroute\\build.py stm32h743_sdram\\routes_power_bga.py --fast
+    D:\\KiCad\\bin\\python.exe -m Tools.KiCadDesignTools.routing.busroute.build stm32h743_sdram\\routes_power_bga.py --fast
 
 The sites come from the BGA block plan bga_fan.json (bga_fan.py: one mixed integer program over the ball lattice
 for the supply vias, the capacitor places and the fan-out of the MCU's signal balls, with the plane-slot rule
@@ -14,7 +14,7 @@ routed (user 2026-11-21): a ball goes to its via and nothing else. A SHARED grou
 """
 import json, os
 from bga_power import BgaPlanner, WIDE_W, VIA_IN, BONE_W, r4
-from busroute.board import old_items
+from Tools.KiCadDesignTools.routing.busroute.board import old_items
 
 BOARD = os.environ.get("POWER_BOARD", "stm32h743_sdram.kicad_pcb")
 ORIGIN = (100, 100)

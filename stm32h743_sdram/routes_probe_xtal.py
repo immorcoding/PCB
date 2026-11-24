@@ -4,8 +4,8 @@ runs ball - crystal pad - capacitor and the build reports "3 pads, a route joins
 pad is passed through mid-chain, which the PATH check does not count). Built on the sketch build's output board
 (never on the real board):
 
-    D:\\KiCad\\bin\\python.exe scripts\\busroute\\build.py stm32h743_sdram\\routes_probe_xtal.py --sketch --out stm32h743_sdram\\out\\probe_xtal
-    D:\\KiCad\\bin\\python.exe scripts\\busroute\\build.py stm32h743_sdram\\routes_probe_xtal_gnd.py --sketch --out stm32h743_sdram\\out\\probe_xtal_gnd
+    D:\\KiCad\\bin\\python.exe -m Tools.KiCadDesignTools.routing.busroute.build stm32h743_sdram\\routes_probe_xtal.py --sketch --out stm32h743_sdram\\out\\probe_xtal
+    D:\\KiCad\\bin\\python.exe -m Tools.KiCadDesignTools.routing.busroute.build stm32h743_sdram\\routes_probe_xtal_gnd.py --sketch --out stm32h743_sdram\\out\\probe_xtal_gnd
 
 (build routes_sdram.py into out\\sketch\\rot0 first; the second file adds the ground guards on top of this one's
 output). Placement of try/eth-west: LSE Y202 vertical at (29.5, 34.8), HSE Y201 at 270 degrees centred on the

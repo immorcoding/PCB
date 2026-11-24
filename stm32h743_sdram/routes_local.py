@@ -2,8 +2,8 @@
 control nets, CAN line side, LCD link resistors, backlight sense, key and user LEDs, audio analog side. Every net
 is written by hand with coordinates (RTE-3); no autorouter. The Ethernet PHY side is routes_local_eth.py.
 
-    D:\\KiCad\\bin\\python.exe scripts\\busroute\\build.py stm32h743_sdram\\routes_local.py --fast
-    D:\\KiCad\\bin\\python.exe scripts\\busroute\\build.py stm32h743_sdram\\routes_local.py --out stm32h743_sdram\\out\\local
+    D:\\KiCad\\bin\\python.exe -m Tools.KiCadDesignTools.routing.busroute.build stm32h743_sdram\\routes_local.py --fast
+    D:\\KiCad\\bin\\python.exe -m Tools.KiCadDesignTools.routing.busroute.build stm32h743_sdram\\routes_local.py --out stm32h743_sdram\\out\\local
 
 BOARD defaults to the read-only snapshot of the committed board; LOCAL_BOARD=<board> builds the same description on
 another board (the real one: LOCAL_BOARD=stm32h743_sdram.kicad_pcb). Coordinates are local mm (board mm - 100).

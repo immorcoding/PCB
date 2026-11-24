@@ -25,8 +25,7 @@ Coordinates are in units of 2.54 mm; P(i, j) converts to mm.
 import math, os, sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-sys.path.insert(0, os.path.join(HERE, "..", "scripts"))
-from kisch import Sch, find, find_all, xform
+from Tools.KiCadDesignTools.schematic.kisch import Sch, find, find_all, xform
 
 U = 2.54
 def P(i, j): return (round(i * U, 4), round(j * U, 4))

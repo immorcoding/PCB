@@ -12,12 +12,15 @@
 #                                                   (after route2; FINISH_BOARD=<copy> runs it on a copy)
 #   sh stm32h743_sdram/build.sh publish             release pictures with net names into stm32h743_sdram/publish/
 #                                                   (publish.py; reads a copy of the board, about 15 minutes)
-# Later stages add their steps here (schematic, sketches, placement, copper, routing).
+# Stage 1 of the Tools/ consolidation (2026-11-24): the generic tools moved from scripts/ to Tools/KiCadDesignTools/;
+# Tools.KiCadDesignTools.build (board.toml) runs the same steps.
 set -e
 D=$(cd "$(dirname "$0")" && pwd); R=$(dirname "$D"); N=stm32h743_sdram
 PY=/d/KiCad/bin/python.exe
 STEP=${1:-rules}; O=${2:-$D/out/$STEP}
-mkdir -p "$O"
+mkdir -p "$O"; O=$(cd "$O" && pwd)
+# the tools are modules of Tools/KiCadDesignTools (python -m Tools.KiCadDesignTools.<category>.<tool>): run from the repository root
+cd "$R"
 quiet() { grep -v "image handler" || true; }
 # route2: the groups written to the real board after route1's, one per line "<GROUP> <routes file>", built in this order.
 # A routes file reads the board to build on from LOCAL_BOARD (route2 sets it to the real board). Add a group = add a line.
@@ -40,23 +43,23 @@ rules)
   head -1 "$O/rules_fixture.txt"
   grep "^FAIL" "$O/rules_fixture.txt" || true
   # 2. the real board: rule file loaded, rules that match nothing, length windows current
-  $PY "$R/scripts/dru_canary.py" "$D/$N.kicad_pcb" 2>&1 | quiet | tee "$O/canary.txt"
+  $PY -m Tools.KiCadDesignTools.rules.dru_canary "$D/$N.kicad_pcb" 2>&1 | quiet | tee "$O/canary.txt"
   # SKIP_DRU_MATCH=1: leave out the rule matching on the real board (one DRC per rule, one at a time: about 8 minutes),
   # as route2 does; `build.sh finish-checks` runs it once at the end. The fixture still matches every rule on its board.
   if [ -n "$SKIP_DRU_MATCH" ]; then
     echo "dru_match skipped (SKIP_DRU_MATCH): run build.sh finish-checks once at the end" | tee "$O/dru_match.txt"; DM=-
   else
-    $PY "$R/scripts/dru_match.py" "$D/$N.kicad_pcb" --json "$O/dru_match.json" > "$O/dru_match.txt" 2>&1 && DM=0 || DM=$?
+    $PY -m Tools.KiCadDesignTools.rules.dru_match "$D/$N.kicad_pcb" --json "$O/dru_match.json" > "$O/dru_match.txt" 2>&1 && DM=0 || DM=$?
     tail -1 "$O/dru_match.txt"
   fi
-  $PY "$R/scripts/len_rules.py" "$D/$N.kicad_pcb" 2>&1 | quiet | tee "$O/len_rules.txt"
+  $PY -m Tools.KiCadDesignTools.rules.len_rules "$D/$N.kicad_pcb" 2>&1 | quiet | tee "$O/len_rules.txt"
   echo "rules step: $(( $(date +%s) - T0 )) s; fixture exit $FX, dru_match exit $DM (2 = the board has no objects yet)"
   exit $FX
   ;;
 sch)
   # generate all pages, upgrade to the KiCad 10 format, ERC, netlist, PDF; then check the netlist
   T0=$(date +%s)
-  sh "$R/scripts/sch_build.sh" "$D" "$O" 2>&1 | quiet > "$O/sch_build.log" || { cat "$O/sch_build.log"; exit 1; }
+  sh "$R/Tools/KiCadDesignTools/schematic/sch_build.sh" "$D" "$O" 2>&1 | quiet > "$O/sch_build.log" || { cat "$O/sch_build.log"; exit 1; }
   head -1 "$O/sch_build.log"; grep "ERC messages" "$O/sch_build.log"
   grep -E "^\[" "$O/erc.rpt" | sort | uniq -c || true
   $PY "$D/sch_check.py" "$O/$N.net" 2>&1 | quiet > "$O/sch_check.txt" && SC=0 || SC=$?
@@ -78,26 +81,26 @@ layout)
   # measured trial checks (LAY-3). One KiCad process at a time; about 2 minutes.
   T0=$(date +%s)
   $PY "$D/place.py" 2>&1 | quiet
-  $PY "$R/scripts/busroute/build.py" "$D/routes_sdram.py" --sketch --out "$D/out/sketch/rot0" > "$O/sketch_build.txt" 2>&1 && SB=0 || SB=$?
+  $PY -m Tools.KiCadDesignTools.routing.busroute.build "$D/routes_sdram.py" --sketch --out "$D/out/sketch/rot0" > "$O/sketch_build.txt" 2>&1 && SB=0 || SB=$?
   echo "== SDRAM line-order sketch on the placed board (constraint 1)"
   grep -E "^\[间距\]|^结论" "$O/sketch_build.txt" || tail -3 "$O/sketch_build.txt"
   grep -E "^  ! " "$O/sketch_build.txt" || true
-  echo "== placement (scripts/place_check.py)"
-  $PY "$R/scripts/place_check.py" "$D/$N.kicad_pcb" --allow-under U201,U301 \
+  echo "== placement (placement/place_check)"
+  $PY -m Tools.KiCadDesignTools.placement.place_check "$D/$N.kicad_pcb" --allow-under U201,U301 \
     --edge J101=R --edge J501=L --edge J601=T --edge J602=T --edge J701=B --edge J801=T --edge J802=R \
     --edge J803=T --edge J804=B --not-supply U101.5,U103.5,U104.5 --silk-refs "^(TP|JP|J80[234])" \
     --json "$O/place_check.json" > "$O/place_check.txt" 2>&1 && PC=0 || PC=$?
   quiet < "$O/place_check.txt" | grep -v "keep-out \["
-  echo "== ways out of the fine-pitch parts (scripts/escape_check.py)"
+  echo "== ways out of the fine-pitch parts (placement/escape_check)"
   # on the sketch build's copy (it carries the SDRAM tracks): the two BGAs against the open board around the
   # sketch, the other fine-pitch parts 3 mm around themselves
   SK="$D/out/sketch/rot0/$N.kicad_pcb"
-  $PY "$R/scripts/escape_check.py" "$SK" --ref U201 --ref U301 --window 27 25 66 51 \
+  $PY -m Tools.KiCadDesignTools.placement.escape_check "$SK" --ref U201 --ref U301 --window 27 25 66 51 \
     --json "$O/escape_bga.json" 2>&1 | quiet
-  $PY "$R/scripts/escape_check.py" "$SK" --ref U501 --ref U601 --ref U701 --ref J701 --ref U401 \
+  $PY -m Tools.KiCadDesignTools.placement.escape_check "$SK" --ref U501 --ref U601 --ref U701 --ref J701 --ref U401 \
     --json "$O/escape_parts.json" 2>&1 | quiet
-  echo "== copper region sketch (scripts/cu_sketch.py check)"
-  $PY "$R/scripts/cu_sketch.py" check "$D/copper.sketch" --board "$D/$N.kicad_pcb" 2>&1 | quiet | tail -40
+  echo "== copper region sketch (copper/cu_sketch check)"
+  $PY -m Tools.KiCadDesignTools.copper.cu_sketch check "$D/copper.sketch" --board "$D/$N.kicad_pcb" 2>&1 | quiet | tail -40
   echo "== measured trial checks (layout_probe.py)"
   $PY "$D/layout_probe.py" --json "$O/layout_probe.json" 2>&1 | quiet
   echo "layout step: $(( $(date +%s) - T0 )) s; sketch build exit $SB, place_check exit $PC"
@@ -113,39 +116,39 @@ copper)
   echo "== placement and pours"
   $PY "$D/copper_report.py" unfill "$BRD" 2>&1 | quiet                  # no stale fill may decide a via's net
   $PY "$D/place.py" 2>&1 | quiet
-  $PY "$R/scripts/cu_sketch.py" check "$D/copper.sketch" --board "$BRD" 2>&1 | quiet > "$O/sketch_check.txt" || { cat "$O/sketch_check.txt"; exit 1; }
+  $PY -m Tools.KiCadDesignTools.copper.cu_sketch check "$D/copper.sketch" --board "$BRD" 2>&1 | quiet > "$O/sketch_check.txt" || { cat "$O/sketch_check.txt"; exit 1; }
   head -1 "$O/sketch_check.txt"; grep -E "^\s+(ERROR|warning)" "$O/sketch_check.txt" || true
-  $PY "$R/scripts/cu_sketch.py" apply "$D/copper.sketch" "$BRD" 2>&1 | quiet | grep -v "^warning: a ~" || true
+  $PY -m Tools.KiCadDesignTools.copper.cu_sketch apply "$D/copper.sketch" "$BRD" 2>&1 | quiet | grep -v "^warning: a ~" || true
   echo "== SDRAM line-order sketch on a copy of the board (the obstacles of the power group)"
   $PY "$D/copper_report.py" unfill "$SK" 2>&1 | quiet
-  $PY "$R/scripts/busroute/build.py" "$D/routes_sdram.py" --sketch --out "$D/out/sketch/rot0" --no-refill --no-pictures > "$O/sketch_build.txt" 2>&1 && SB=0 || SB=$?
+  $PY -m Tools.KiCadDesignTools.routing.busroute.build "$D/routes_sdram.py" --sketch --out "$D/out/sketch/rot0" --no-refill --no-pictures > "$O/sketch_build.txt" 2>&1 && SB=0 || SB=$?
   grep -E "^\[间距\]|^结论" "$O/sketch_build.txt" || tail -3 "$O/sketch_build.txt"
   echo "== power group on the board"
-  POWER_LOG="$O/power_sites.txt" $PY "$R/scripts/busroute/build.py" "$D/routes_power.py" --write-board --ignore-lock --no-refill --no-pictures \
+  POWER_LOG="$O/power_sites.txt" $PY -m Tools.KiCadDesignTools.routing.busroute.build "$D/routes_power.py" --write-board --ignore-lock --no-refill --no-pictures \
     --out "$O/power" > "$O/power_build.txt" 2>&1 && PB=0 || PB=$?
   grep -E "^写入|^\[间距\]|^结论|^ERROR" "$O/power_build.txt" || tail -5 "$O/power_build.txt"
   grep -E "^(NO |feed .*SHORT)" "$O/power_sites.txt" || true
   echo "== BGA power group on the board (part B: supply and ground balls, bottom decoupling)"
-  POWER_BGA_LOG="$O/power_bga_sites.txt" $PY "$R/scripts/busroute/build.py" "$D/routes_power_bga.py" --write-board --ignore-lock --no-refill --no-pictures \
+  POWER_BGA_LOG="$O/power_bga_sites.txt" $PY -m Tools.KiCadDesignTools.routing.busroute.build "$D/routes_power_bga.py" --write-board --ignore-lock --no-refill --no-pictures \
     --out "$O/power_bga" > "$O/power_bga_build.txt" 2>&1 && PG=0 || PG=$?
   grep -E "^写入|^\[间距\]|^结论|^ERROR" "$O/power_bga_build.txt" || tail -5 "$O/power_bga_build.txt"
   grep -E "^(NO |LOST)" "$O/power_bga_sites.txt" | cut -c1-300 || true
   echo "== refill and save (kicad-cli), measure"
   /d/KiCad/bin/kicad-cli.exe pcb drc --refill-zones --save-board --severity-all --units mm --format json -o "$O/drc.json" "$BRD" > /dev/null 2>&1 || true
-  $PY "$R/scripts/cu_sketch.py" measure "$BRD" --drc "$O/drc.json" --json "$O/measure.json" --skip-areas BGA_MCU,BGA_SDRAM > "$O/measure.txt" 2>&1 || true
-  $PY "$R/scripts/pour_islands.py" "$BRD" "cu-whole:L1_GND" "cu-whole:L6_GND" 2>&1 | quiet > "$O/pour_islands.txt" || true
+  $PY -m Tools.KiCadDesignTools.copper.cu_sketch measure "$BRD" --drc "$O/drc.json" --json "$O/measure.json" --skip-areas BGA_MCU,BGA_SDRAM > "$O/measure.txt" 2>&1 || true
+  $PY -m Tools.KiCadDesignTools.copper.pour_islands "$BRD" "cu-whole:L1_GND" "cu-whole:L6_GND" 2>&1 | quiet > "$O/pour_islands.txt" || true
   grep -v " 0 without" "$O/pour_islands.txt" || true
   echo "== power groups on the line-order sketch copy (after routes_sdram.py), refill there, plane slots (U31)"
-  POWER_BOARD="$SK" POWER_LOG="$O/sketch_power/power_sites.txt" $PY "$R/scripts/busroute/build.py" "$D/routes_power.py" --write-board \
+  POWER_BOARD="$SK" POWER_LOG="$O/sketch_power/power_sites.txt" $PY -m Tools.KiCadDesignTools.routing.busroute.build "$D/routes_power.py" --write-board \
     --no-refill --no-pictures --out "$O/sketch_power" > "$O/sketch_power_build.txt" 2>&1 && SP=0 || SP=$?
   grep -E "^\[间距\]|^结论|^ERROR" "$O/sketch_power_build.txt" || tail -5 "$O/sketch_power_build.txt"
-  POWER_BOARD="$SK" POWER_BGA_LOG="$O/sketch_power_bga/power_bga_sites.txt" $PY "$R/scripts/busroute/build.py" "$D/routes_power_bga.py" --write-board \
+  POWER_BOARD="$SK" POWER_BGA_LOG="$O/sketch_power_bga/power_bga_sites.txt" $PY -m Tools.KiCadDesignTools.routing.busroute.build "$D/routes_power_bga.py" --write-board \
     --no-refill --no-pictures --out "$O/sketch_power_bga" > "$O/sketch_power_bga_build.txt" 2>&1 && SG=0 || SG=$?
   grep -E "^\[间距\]|^结论|^ERROR" "$O/sketch_power_bga_build.txt" || tail -5 "$O/sketch_power_bga_build.txt"
   /d/KiCad/bin/kicad-cli.exe pcb drc --refill-zones --save-board --severity-all --units mm --format json -o "$O/sketch_drc.json" "$SK" > /dev/null 2>&1 || true
   $PY "$D/copper_report.py" slots "$SK" "$O" 2>&1 | quiet | tail -12
-  $PY "$R/scripts/escape_check.py" "$SK" --ref U201 --ref U301 --window 27 25 66 51 --json "$O/escape_bga.json" 2>&1 | quiet > "$O/escape.txt"
-  $PY "$R/scripts/escape_check.py" "$SK" --ref U501 --ref U601 --ref U701 --ref J701 --ref U401 --json "$O/escape_parts.json" 2>&1 | quiet >> "$O/escape.txt"
+  $PY -m Tools.KiCadDesignTools.placement.escape_check "$SK" --ref U201 --ref U301 --window 27 25 66 51 --json "$O/escape_bga.json" 2>&1 | quiet > "$O/escape.txt"
+  $PY -m Tools.KiCadDesignTools.placement.escape_check "$SK" --ref U501 --ref U601 --ref U701 --ref J701 --ref U401 --json "$O/escape_parts.json" 2>&1 | quiet >> "$O/escape.txt"
   echo "== escape check on the sketch copy (now | stop 4, out/layout/table.txt)"
   grep -E "^U[0-9]|^J[0-9]" "$O/escape.txt" | while read -r line; do
     ref=$(echo "$line" | cut -d' ' -f1); echo "$line"; grep -E "^$ref " "$D/out/layout/table.txt" | sed 's/^/  was: /'; done
@@ -184,19 +187,19 @@ route1|route2)
   # route2 strips every group: what copper is left belongs to no script (removed, listed)
   [ "$STEP" = route2 ] && $PY "$D/copper_report.py" orphans "$BRD" 2>&1 | quiet | tee "$O/orphans.txt"
   $PY "$D/place.py" 2>&1 | quiet
-  $PY "$R/scripts/cu_sketch.py" check "$D/copper.sketch" --board "$BRD" 2>&1 | quiet > "$O/sketch_check.txt" || { cat "$O/sketch_check.txt"; exit 1; }
-  $PY "$R/scripts/cu_sketch.py" apply "$D/copper.sketch" "$BRD" 2>&1 | quiet | grep -v "^warning: a ~" || true
+  $PY -m Tools.KiCadDesignTools.copper.cu_sketch check "$D/copper.sketch" --board "$BRD" 2>&1 | quiet > "$O/sketch_check.txt" || { cat "$O/sketch_check.txt"; exit 1; }
+  $PY -m Tools.KiCadDesignTools.copper.cu_sketch apply "$D/copper.sketch" "$BRD" 2>&1 | quiet | grep -v "^warning: a ~" || true
   echo "== SDRAM group on the board"
   SDRAM_TUNE_OBSTACLES="$O/obstacles.kicad_pcb" \
-  $PY "$R/scripts/busroute/build.py" "$D/routes_sdram.py" --write-board --no-refill --no-pictures --out "$O/sdram" > "$O/sdram_build.txt" 2>&1 && SB=0 || SB=$?
+  $PY -m Tools.KiCadDesignTools.routing.busroute.build "$D/routes_sdram.py" --write-board --no-refill --no-pictures --out "$O/sdram" > "$O/sdram_build.txt" 2>&1 && SB=0 || SB=$?
   grep -E "^写入|^\[间距\]|^结论|^ERROR|^  ! " "$O/sdram_build.txt" || tail -5 "$O/sdram_build.txt"
   echo "== power group on the board (after the bus)"
-  SDRAM_OBSTACLES="$BRD" POWER_LOG="$O/power_sites.txt" $PY "$R/scripts/busroute/build.py" "$D/routes_power.py" --write-board --no-refill --no-pictures \
+  SDRAM_OBSTACLES="$BRD" POWER_LOG="$O/power_sites.txt" $PY -m Tools.KiCadDesignTools.routing.busroute.build "$D/routes_power.py" --write-board --no-refill --no-pictures \
     --out "$O/power" > "$O/power_build.txt" 2>&1 && PB=0 || PB=$?
   grep -E "^写入|^\[间距\]|^结论|^ERROR|^  ! [A-Z]" "$O/power_build.txt" | grep -v "! DRC     unconnected" || tail -5 "$O/power_build.txt"
   grep -E "^(NO |feed .*SHORT)" "$O/power_sites.txt" || true
   echo "== BGA power group on the board (after the bus)"
-  SDRAM_OBSTACLES="$BRD" POWER_BGA_LOG="$O/power_bga_sites.txt" $PY "$R/scripts/busroute/build.py" "$D/routes_power_bga.py" --write-board --no-refill --no-pictures \
+  SDRAM_OBSTACLES="$BRD" POWER_BGA_LOG="$O/power_bga_sites.txt" $PY -m Tools.KiCadDesignTools.routing.busroute.build "$D/routes_power_bga.py" --write-board --no-refill --no-pictures \
     --out "$O/power_bga" > "$O/power_bga_build.txt" 2>&1 && PG=0 || PG=$?
   grep -E "^写入|^\[间距\]|^结论|^ERROR|^  ! [A-Z]" "$O/power_bga_build.txt" | grep -v "! DRC     unconnected" || tail -5 "$O/power_bga_build.txt"
   grep -E "^(NO |LOST)" "$O/power_bga_sites.txt" | cut -c1-300 || true
@@ -204,29 +207,29 @@ route1|route2)
     echo "$ROUTE2_GROUPS" | while read -r G F; do
       [ -n "$G" ] || continue
       echo "== group $G ($F) on the board"
-      LOCAL_BOARD="$BRD" $PY "$R/scripts/busroute/build.py" "$D/$F" --write-board --no-refill --no-pictures --out "$O/$G" > "$O/${G}_build.txt" 2>&1 || true
+      LOCAL_BOARD="$BRD" $PY -m Tools.KiCadDesignTools.routing.busroute.build "$D/$F" --write-board --no-refill --no-pictures --out "$O/$G" > "$O/${G}_build.txt" 2>&1 || true
       grep -E "^写入|^结论|^ERROR|^  ! [A-Z]" "$O/${G}_build.txt" | grep -v "! DRC     unconnected" || tail -5 "$O/${G}_build.txt"
     done
   fi
   echo "== refill and save (kicad-cli), DRC, measure"
   /d/KiCad/bin/kicad-cli.exe pcb drc --refill-zones --save-board --severity-all --units mm --format json -o "$O/drc.json" "$BRD" > /dev/null 2>&1 || true
   $PY "$D/make_project.py" > /dev/null 2>&1                               # SaveBoard rewrote the project file: its source is this script
-  $PY "$R/scripts/cu_sketch.py" measure "$BRD" --drc "$O/drc.json" --json "$O/measure.json" --skip-areas BGA_MCU,BGA_SDRAM > "$O/measure.txt" 2>&1 || true
+  $PY -m Tools.KiCadDesignTools.copper.cu_sketch measure "$BRD" --drc "$O/drc.json" --json "$O/measure.json" --skip-areas BGA_MCU,BGA_SDRAM > "$O/measure.txt" 2>&1 || true
   # plane slots over the whole bus region (both BGAs, the west layer changes, the strip between the packages)
   $PY "$D/copper_report.py" slots "$BRD" "$O" --window BUS 27 25 66 51 --part-b "$O/power_bga_sites.json" 2>&1 | quiet | tail -8
   # the power plane L5 over the whole board: the antipad chains inside each of the five blocks (slots_l5.json / .txt)
   $PY "$D/copper_report.py" slots "$BRD" "$O" --window BOARD -1 -1 86 76 --layers L5 --stem slots_l5 --part-b "$O/power_bga_sites.json" 2>&1 | quiet | grep "每块最长" || true
   # ground: L2 is the only plane; every L1 / L6 ground pour piece must hold a via or a through-hole pad of GND
-  $PY "$R/scripts/pour_islands.py" "$BRD" "cu-whole:L1_GND" "cu-whole:L6_GND" 2>&1 | quiet > "$O/pour_islands.txt" || true
+  $PY -m Tools.KiCadDesignTools.copper.pour_islands "$BRD" "cu-whole:L1_GND" "cu-whole:L6_GND" 2>&1 | quiet > "$O/pour_islands.txt" || true
   cat "$O/pour_islands.txt"
-  $PY "$R/scripts/escape_check.py" "$BRD" --ref U201 --ref U301 --window 27 25 66 51 --json "$O/escape_bga.json" 2>&1 | quiet > "$O/escape.txt"
-  $PY "$R/scripts/dru_canary.py" "$BRD" 2>&1 | quiet > "$O/canary.txt" || true
+  $PY -m Tools.KiCadDesignTools.placement.escape_check "$BRD" --ref U201 --ref U301 --window 27 25 66 51 --json "$O/escape_bga.json" 2>&1 | quiet > "$O/escape.txt"
+  $PY -m Tools.KiCadDesignTools.rules.dru_canary "$BRD" 2>&1 | quiet > "$O/canary.txt" || true
   # SKIP_DRU_MATCH=1: leave out the rule matching (one DRC per rule, one at a time: 7-8 minutes); run it once at the end
   # with `build.sh finish-checks` (2026-11-23: the PC hard-reset under parallel load, so heavy steps are kept few)
   if [ -n "$SKIP_DRU_MATCH" ]; then
     echo "dru_match skipped (SKIP_DRU_MATCH): run build.sh finish-checks once at the end" > "$O/dru_match.txt"
   else
-    $PY "$R/scripts/dru_match.py" "$BRD" --json "$O/dru_match.json" > "$O/dru_match.txt" 2>&1 || true
+    $PY -m Tools.KiCadDesignTools.rules.dru_match "$BRD" --json "$O/dru_match.json" > "$O/dru_match.txt" 2>&1 || true
   fi
   echo "== pictures (qualitative review only)"
   $PY "$D/copper_view.py" "$BRD" "$O" L1 L3 L4 L6 --scale 40 --window 29 26 66 50 --name bus 2>&1 | quiet | tr '\n' ' '; echo
@@ -241,8 +244,8 @@ route1|route2)
     $PY "$D/copper_view.py" "$BRD" "$O" L1 L6 --scale 45 --window 60 8 82 28 --name can 2>&1 | quiet | tr '\n' ' '; echo
     $PY "$D/copper_view.py" "$BRD" "$O" L1 L6 --scale 60 --window 61 36 70 47 --name fb5v --via-labels 2>&1 | quiet | tr '\n' ' '; echo
     $PY "$D/copper_view.py" "$BRD" "$O" L1 --scale 45 --window 11 58 36 73 --name user_lcd 2>&1 | quiet | tr '\n' ' '; echo
-    echo "== placement (scripts/place_check.py, as in the layout step)"
-    $PY "$R/scripts/place_check.py" "$BRD" --allow-under U201,U301 \
+    echo "== placement (placement/place_check, as in the layout step)"
+    $PY -m Tools.KiCadDesignTools.placement.place_check "$BRD" --allow-under U201,U301 \
       --edge J101=R --edge J501=L --edge J601=T --edge J602=T --edge J701=B --edge J801=T --edge J802=R \
       --edge J803=T --edge J804=B --not-supply U101.5,U103.5,U104.5 --silk-refs "^(TP|JP|J80[234])" \
       --json "$O/place_check.json" > "$O/place_check.txt" 2>&1 && PC=0 || PC=$?
@@ -301,7 +304,7 @@ finish)
   $PY "$D/finish.py" clean "$BRD" "$O" anchor > "$O/clean.log" 2>&1 && CL=0 || CL=$?; q2 < "$O/clean.log"
   [ "$CL" = 10 ] && refill "$O/drc_anchor.json"
   $PY "$D/finish.py" pieces "$BRD" "$O" after 2>&1 | q2
-  $PY "$R/scripts/pour_islands.py" "$BRD" "cu-whole:L1_GND" "cu-whole:L6_GND" 2>&1 | q2 > "$O/pour_islands.txt" || true
+  $PY -m Tools.KiCadDesignTools.copper.pour_islands "$BRD" "cu-whole:L1_GND" "cu-whole:L6_GND" 2>&1 | q2 > "$O/pour_islands.txt" || true
   cat "$O/pour_islands.txt"
   $PY "$D/finish.py" report "$BRD" "$O" after 2>&1 | q2
   echo "== silkscreen"
@@ -323,11 +326,11 @@ p = collections.Counter(v['type'] for v in d.get('schematic_parity', []))
 print('DRC by type:', ', '.join('%s %d' % kv for kv in sorted(c.items())) or 'none')
 print('unconnected:', len(d['unconnected_items']))
 print('schematic parity by type:', ', '.join('%s %d' % kv for kv in sorted(p.items())) or 'none')" "$(cygpath -m "$O/drc.json")" | tee "$O/drc_summary.txt"
-  $PY "$R/scripts/dru_canary.py" "$BRD" 2>&1 | quiet | tee "$O/canary.txt"
+  $PY -m Tools.KiCadDesignTools.rules.dru_canary "$BRD" 2>&1 | quiet | tee "$O/canary.txt"
   # the planes after the new ground vias: no plane-net via cut off, the L5 feed necks of the BGA blocks, longest slots
   $PY "$D/copper_report.py" slots "$BRD" "$O" --window BOARD -1 -1 86 76 --stem slots_board --part-b "$D/out/route2/power_bga_sites.json" 2>&1 \
     | quiet | grep -E "切断|L5 \+3V3_|每层最长" || true
-  # scripts/dru_match.py (one DRC per rule, about 30-40 minutes now that it runs one at a time) is not run here:
+  # rules/dru_match (one DRC per rule, about 30-40 minutes now that it runs one at a time) is not run here:
   # `build.sh finish-checks` runs it once, when asked
   echo "== pictures"
   # 3D: basic quality (no ray tracing: a full-load run reset the PC), 1600 px, 3 minutes at most each; the 2D
@@ -341,11 +344,11 @@ print('schematic parity by type:', ', '.join('%s %d' % kv for kv in sorted(p.ite
   ;;
 finish-checks)
   # the slow check of the finished board, run once when asked: every rule of the rule file matches at least one object
-  # (RUL-2; scripts/dru_match.py, one DRC per rule, one at a time: about 30-40 minutes on the routed board). Run it at
+  # (RUL-2; rules/dru_match, one DRC per rule, one at a time: about 30-40 minutes on the routed board). Run it at
   # low priority on four cores like finish.
   T0=$(date +%s)
   O=${2:-$D/out/finish}
-  $PY "$R/scripts/dru_match.py" "$D/$N.kicad_pcb" --json "$O/dru_match.json" > "$O/dru_match.txt" 2>&1 || true
+  $PY -m Tools.KiCadDesignTools.rules.dru_match "$D/$N.kicad_pcb" --json "$O/dru_match.json" > "$O/dru_match.txt" 2>&1 || true
   tail -1 "$O/dru_match.txt"
   echo "finish-checks step: $(( $(date +%s) - T0 )) s"
   ;;

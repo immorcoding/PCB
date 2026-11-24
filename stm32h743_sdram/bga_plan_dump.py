@@ -7,7 +7,7 @@ keep-out of the board, the stack heights and the rule values of the profile. Coo
 import json, os, sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-sys.path.insert(0, os.path.join(os.path.dirname(HERE), "scripts"))
+sys.path.insert(0, os.path.dirname(HERE))                     # interim (Tools/ consolidation stage 1): the repository root, for Tools.KiCadDesignTools
 ORIGIN = (100.0, 100.0)
 MCU, SDRAM = "U201", "U301"
 
@@ -17,8 +17,8 @@ def r4(v):
 
 
 def dump(board_path, out_path):
-    from busroute.board import Board
-    from busroute.profile import Profile
+    from Tools.KiCadDesignTools.routing.busroute.board import Board
+    from Tools.KiCadDesignTools.routing.busroute.profile import Profile
     b = Board(board_path, ORIGIN)
     pr = Profile.from_project(board_path)
     pads = []

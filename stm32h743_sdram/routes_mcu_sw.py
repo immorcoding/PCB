@@ -3,7 +3,7 @@ side to the PHY U501, the touch / I2C4 lines to their link resistors R701-R704, 
 its BGA ball (fan_leads.lead: dog-bone and the planned run to the rule-area edge) to its destination, written with
 coordinates (RTE-3, RTE-4: no autorouter). Local mm (board mm - 100).
 
-    LOCAL_BOARD=<board> D:\\KiCad\\bin\\python.exe scripts\\busroute\\build.py stm32h743_sdram\\routes_mcu_sw.py --fast
+    LOCAL_BOARD=<board> D:\\KiCad\\bin\\python.exe -m Tools.KiCadDesignTools.routing.busroute.build stm32h743_sdram\\routes_mcu_sw.py --fast
     (build.sh route2 builds it on the real board once the group is in ROUTE2_GROUPS, after routes_mcu_nw.py; the
     east bundle's and the south / west balls' leads moved here from routes_mcu_east.py / routes_mcu_south.py)
 

@@ -14,9 +14,9 @@ Connectivity is judged from the exported netlist (RUL-6), never from the drawing
 import math, os, sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-sys.path.insert(0, os.path.join(HERE, "..", "..", "scripts"))
-import kisch
-from kisch import find, find_all, xform
+sys.path.insert(0, os.path.dirname(os.path.dirname(HERE)))                     # interim (Tools/ consolidation stage 1): the repository root, for Tools.KiCadDesignTools
+from Tools.KiCadDesignTools.schematic import kisch
+from Tools.KiCadDesignTools.schematic.kisch import find, find_all, xform
 
 U = 2.54
 NC = None

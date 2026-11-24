@@ -1,8 +1,8 @@
 """Local circuits of the Ethernet PHY side (stop 7, routing two): the two 100 ohm pairs, the PHY's crystal, bias, LED
 and strap nets, the RJ45's LED cathodes and shield. Every net by hand with coordinates (RTE-3).
 
-    D:\\KiCad\\bin\\python.exe scripts\\busroute\\build.py stm32h743_sdram\\routes_local_eth.py --fast
-    D:\\KiCad\\bin\\python.exe scripts\\busroute\\build.py stm32h743_sdram\\routes_local_eth.py --out stm32h743_sdram\\out\\local_eth
+    D:\\KiCad\\bin\\python.exe -m Tools.KiCadDesignTools.routing.busroute.build stm32h743_sdram\\routes_local_eth.py --fast
+    D:\\KiCad\\bin\\python.exe -m Tools.KiCadDesignTools.routing.busroute.build stm32h743_sdram\\routes_local_eth.py --out stm32h743_sdram\\out\\local_eth
 
 BOARD as routes_local.py (LOCAL_BOARD=<board> builds it on another board; build.sh route2 builds it on the real one).
 

@@ -7,9 +7,9 @@ area's 0.09 mm clearance, and a teardrop would widen the track into that gap. Pa
 under them, and vias inside the areas, keep teardrops off; so do the pads of footprints with their own keep-outs (J501, J801). Prints the count of teardrop areas in the saved board.
 """
 import os, subprocess, sys
-sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "scripts"))
-from kisch import parse, dump, find
-import teardrops as TDS
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))                     # interim (Tools/ consolidation stage 1): the repository root, for Tools.KiCadDesignTools
+from Tools.KiCadDesignTools.schematic.kisch import parse, dump, find
+from Tools.KiCadDesignTools.finishing import teardrops as TDS
 
 OX, OY = 100.0, 100.0
 # the rule areas of place.py (body + 1 mm), board-file mm

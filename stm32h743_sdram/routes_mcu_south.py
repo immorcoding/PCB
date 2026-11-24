@@ -3,7 +3,7 @@ remaining buses (issue 22). The LCD, QSPI, RMII, LED, key and I2C4 balls that th
 west belong to routes_mcu_sw.py, which draws them from the ball to their destinations (and holds the QSPI clock and
 IO0 / IO1 routes that used to be here).
 
-    LOCAL_BOARD=<board> D:\\KiCad\\bin\\python.exe scripts\\busroute\\build.py stm32h743_sdram\\routes_mcu_south.py --fast
+    LOCAL_BOARD=<board> D:\\KiCad\\bin\\python.exe -m Tools.KiCadDesignTools.routing.busroute.build stm32h743_sdram\\routes_mcu_south.py --fast
     (build.sh route2 builds it on the real board after routes_mcu_east.py)
 
   USART1_TX  L6 straight south to y 50.85 (below the SDRAM's L4 band), a via to L4 and south-east to the debug header

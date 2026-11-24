@@ -19,9 +19,9 @@ import collections, contextlib, io, json, math, os, re, subprocess, sys
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(HERE)
 sys.path.insert(0, HERE)
-sys.path.insert(0, os.path.join(ROOT, "scripts"))
+sys.path.insert(0, ROOT)                     # interim (Tools/ consolidation stage 1): the repository root, for Tools.KiCadDesignTools
 import route1_report as R1                                  # noqa: E402
-from busroute.metrics import LEN_TOL                        # noqa: E402
+from Tools.KiCadDesignTools.routing.busroute.metrics import LEN_TOL                        # noqa: E402
 
 PAIRS = [("ETH_TX_P", "ETH_TX_N"), ("ETH_RX_P", "ETH_RX_N")]
 PAIR_TYPES = ("diff_pair_gap_out_of_range", "diff_pair_uncoupled_length_too_long", "skew_out_of_range")
@@ -86,8 +86,8 @@ def gap_crossings(b, side, layers=("L4", "L6"), step=0.02):
     drawn L5 block of copper.sketch (a block edge = a gap of `gap` mm to the rest of the plane), with the crossing
     points, and the length it runs inside a gap without crossing (sampled every `step` mm)."""
     import math
-    import cu_sketch
-    from busroute.geom import in_poly, pt_seg
+    from Tools.KiCadDesignTools.copper import cu_sketch
+    from Tools.KiCadDesignTools.routing.busroute.geom import in_poly, pt_seg
     sk = cu_sketch.load_sketch(os.path.join(HERE, "copper.sketch"), len(b.cu))
     gap = sk.p["gap"] / 1e6
     ox, oy = sk.origin[0] / 1e6 - b.origin[0], sk.origin[1] / 1e6 - b.origin[1]
@@ -145,7 +145,7 @@ def gap_crossings(b, side, layers=("L4", "L6"), step=0.02):
 
 
 def main(board_path, odir):
-    from busroute.board import Board
+    from Tools.KiCadDesignTools.routing.busroute.board import Board
     buf = io.StringIO()
     with contextlib.redirect_stdout(buf):
         bad1 = R1.main(board_path, odir)
@@ -166,7 +166,7 @@ def main(board_path, odir):
     def net_of(it):
         m = re.search(r"\[([^\]]+)\]", it.get("description", ""))
         return m.group(1) if m else None
-    r = subprocess.run([sys.executable, os.path.join(ROOT, "scripts", "track_shape.py"), board_path], capture_output=True, text=True,
+    r = subprocess.run([sys.executable, "-m", "Tools.KiCadDesignTools.analysis.track_shape", os.path.abspath(board_path)], cwd=ROOT, capture_output=True, text=True,
                        encoding="utf-8", errors="replace")
     shape_lines, kind = collections.defaultdict(list), None
     for l in r.stdout.splitlines():

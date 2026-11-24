@@ -18,9 +18,10 @@ import pcbnew
 from pcbnew import VECTOR2I, FromMM as mm
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-sys.path.insert(0, os.path.join(os.path.dirname(HERE), "scripts"))
+sys.path.insert(0, os.path.dirname(HERE))                     # interim (Tools/ consolidation stage 1): the repository root, for Tools.KiCadDesignTools
 sys.path.insert(0, HERE)
-import drc_probe, dru_match, len_rules, make_project
+from Tools.KiCadDesignTools.rules import drc_probe, dru_match, len_rules
+import make_project
 
 NAME = "stm32h743_sdram"
 PY = sys.executable
@@ -352,11 +353,11 @@ def main(out):
         bad += not ok
         lines.append(("ok   " if ok else "FAIL ") + text)
 
-    canary = subprocess.run([PY, os.path.join(HERE, "..", "scripts", "dru_canary.py"), stem + ".kicad_pcb"], capture_output=True, text=True)
+    canary = subprocess.run([PY, "-m", "Tools.KiCadDesignTools.rules.dru_canary", os.path.abspath(stem + ".kicad_pcb")], cwd=os.path.dirname(HERE), capture_output=True, text=True)
     check(canary.returncode == 0, "金丝雀：" + canary.stdout.strip())
 
     static = classify(drc_probe.run_drc(stem + ".kicad_pcb"), f)
-    lr = subprocess.run([PY, os.path.join(HERE, "..", "scripts", "len_rules.py"), stem + ".kicad_pcb"], capture_output=True, text=True, encoding="utf-8")
+    lr = subprocess.run([PY, "-m", "Tools.KiCadDesignTools.rules.len_rules", os.path.abspath(stem + ".kicad_pcb")], cwd=os.path.dirname(HERE), capture_output=True, text=True, encoding="utf-8")
     lines.append(lr.stdout.strip())
     check("rmii_refclk_plus_longest_txd: 102.0000 mm" in lr.stdout and "超出 2.0000" in lr.stdout and lr.returncode == 1,
           "len_rules.py 报出时钟加最长 TXD 超出 100 mm（故意的）")

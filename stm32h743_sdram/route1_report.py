@@ -17,7 +17,7 @@ import collections, json, math, os, re, subprocess, sys
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(HERE)
 sys.path.insert(0, HERE)
-sys.path.insert(0, os.path.join(ROOT, "scripts"))
+sys.path.insert(0, ROOT)                     # interim (Tools/ consolidation stage 1): the repository root, for Tools.KiCadDesignTools
 HARD_DRC = ("clearance", "hole_clearance", "annular_width", "copper_edge_clearance", "hole_to_hole", "shorting_items", "tracks_crossing",
             "track_width", "via_diameter", "track_angle", "isolated_copper", "starved_thermal")
 SLOT_MAX = 3.0
@@ -62,7 +62,7 @@ def straights(b, nets, areas):
 
 def main(board_path, odir):
     import pcbnew
-    from busroute.board import Board
+    from Tools.KiCadDesignTools.routing.busroute.board import Board
     import copper_report as CR
     bad = []
     L = []
@@ -116,7 +116,7 @@ def main(board_path, odir):
         p2 = s["ball_via"].get("U301.P2")
         A("       U58: U301.P2 (+3V3_SDRAM) 的过孔 %s" % (("(%.3f, %.3f)" % tuple(p2)) if p2 else "没有"))
     # ---- shape
-    r = subprocess.run([sys.executable, os.path.join(ROOT, "scripts", "track_shape.py"), board_path], capture_output=True, text=True, encoding="utf-8", errors="replace")
+    r = subprocess.run([sys.executable, "-m", "Tools.KiCadDesignTools.analysis.track_shape", os.path.abspath(board_path)], cwd=ROOT, capture_output=True, text=True, encoding="utf-8", errors="replace")
     ts, kind, lines = {}, None, collections.defaultdict(list)
     for l in r.stdout.splitlines():
         m = re.match(r"^(off-grid|staircase|sharp|crowded): (\d+)", l)
@@ -205,7 +205,7 @@ def main(board_path, odir):
         # serpentines inside the corridors the main session reserved for stop 7 (routes file RESERVED): must be 0
         import importlib.util
         spec = importlib.util.spec_from_file_location("rs", os.path.join(HERE, "routes_sdram.py"))
-        rs = importlib.util.module_from_spec(spec); sys.path.insert(0, os.path.join(ROOT, "scripts")); spec.loader.exec_module(rs)
+        rs = importlib.util.module_from_spec(spec); spec.loader.exec_module(rs)
         hits = []
         for n, lay, s0, mid, e0, w in b.arc_items:
             for L_, x0, y0, x1, y1 in getattr(rs, "RESERVED", []):

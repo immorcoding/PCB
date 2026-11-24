@@ -22,8 +22,8 @@ import pcbnew
 from pcbnew import ToMM
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-sys.path.insert(0, os.path.join(os.path.dirname(HERE), "scripts"))
-import cu_sketch
+sys.path.insert(0, os.path.dirname(HERE))                     # interim (Tools/ consolidation stage 1): the repository root, for Tools.KiCadDesignTools
+from Tools.KiCadDesignTools.copper import cu_sketch
 
 PCB = os.path.join(HERE, "stm32h743_sdram.kicad_pcb")
 SKETCH = os.path.join(HERE, "copper.sketch")
