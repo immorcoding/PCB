@@ -2,6 +2,7 @@
 
     python -m Tools.KiCadDesignTools.build <board dir> <step> [--out DIR] [--skip-match] [--upto GROUP] [--no-render] [--dry-run]
     python -m Tools.KiCadDesignTools.build <board dir> compare <out A> <out B>
+    python -m Tools.KiCadDesignTools.build init NAME [--from DIR] [--parent DIR] [--dry-run]
 
 Run it from the repository root, with KiCad's python (D:\\KiCad\\bin\\python.exe) or any Python >= 3.11; every tool
 it starts runs under KiCad's python (Tools.KiCadDesignTools.core.paths.KICAD_PY), the Tools modules as `python -m Tools.KiCadDesignTools.<...>` from the
@@ -12,6 +13,9 @@ repository root. Reports go to <out>/<step folder>/, <out> = <board dir>/out unl
               once at the end), length-window rules
   sch         schematic: generate, upgrade, ERC, netlist, PDF (schematic.build); netlist checks (schematic.check);
               kicad-happy review
+  pcb-update  the sch step's netlist into the board (schematic.net2pcb, KiCad's "Update PCB from Schematic"): missing
+              footprints added, changed ones replaced in place, values and pad nets refreshed, placed positions kept;
+              the project file first (the empty board when there is none) and again after the save
   layout      SPEC.md's table 本板取值 first (project.spec_check; stops on exit 1), placement (placement.place,
               place.toml), the line-order sketch on a copy, placement / escape / copper-sketch checks, measured trials
               (placement.layout_probe, [probe])
@@ -24,7 +28,11 @@ repository root. Reports go to <out>/<step folder>/, <out> = <board dir>/out unl
   publish     release pictures with net names (views.publish, [publish])
   all         rules, sch, route, finish
   compare     compare_runs on two out trees, and board_diff on the board copies they hold (<name>.kicad_pcb)
-  init NAME, pcb-update: not yet (stages 3 and 5 of the Tools/ consolidation)
+  init NAME   a new board folder <parent>/NAME (parent: the repository root, or --parent, a folder inside the
+              repository: board folders are imported as packages) from a template folder (--from, default
+              templates/demo_board): its data files copied (no out/, no generated KiCad files: those come from the
+              steps), file names and the text of the data files with the template's board name (and folder path)
+              replaced by NAME; then run the steps on it (project, rules, sch, pcb-update, layout, route, finish)
 
 Every step first looks for KiCad's lock files in the board folder (hidden ones too) and stops when one is there,
 runs below normal priority on four cores (inherited by every child) and holds the machine-wide heavy lock, so that
@@ -48,6 +56,13 @@ COPPER_TABLE = "Tools.KiCadDesignTools.copper.copper_table"  # the copper step's
 COPPER_VIEW = "Tools.KiCadDesignTools.views.copper_view"     # pictures of the filled copper ([copper_view])
 ROUTE_TABLE = "Tools.KiCadDesignTools.analysis.route_table"  # the route step's table ([route.table])
 PUBLISH = "Tools.KiCadDesignTools.views.publish"             # release pictures with net names ([publish])
+NET2PCB = "Tools.KiCadDesignTools.schematic.net2pcb"         # netlist into the board (pcb-update)
+INIT_FROM = "templates/demo_board"                           # init's default template folder
+# what init leaves out of the template: the steps' outputs and KiCad's own files (fnmatch patterns on names)
+GENERATED = ("out", "__pycache__", "publish", "*-backups", "*.kicad_pcb", "*.kicad_pro", "*.kicad_prl", "*.kicad_sch",
+             "*.kicad_sym", "*.pretty", "fp-lib-table", "sym-lib-table", "*.busroute.json", "*.finish.json", "*.pdf",
+             "*.lck", "_autosave-*", "fp-info-cache", "#auto_saved_files#")
+TEXT = (".toml", ".py", ".json", ".md", ".csv", ".sketch", ".kicad_dru", ".txt")   # init replaces the name in these
 KH = os.path.join(os.path.expanduser("~"), ".claude", "plugins", "marketplaces", "kicad-happy", "skills", "kicad", "scripts",
                   "analyze_schematic.py")
 
@@ -337,6 +352,23 @@ class Build:
                            stdin=subprocess.DEVNULL, cwd=O)
         n = sum(1 for l in open(O + "/kicad_happy_sch.txt", encoding="utf-8", errors="replace") if l.startswith("  ["))
         print("kicad-happy: %d findings in %s/kicad_happy_sch.txt" % (n, O))
+
+    def step_pcb_update(self):
+        """The sch step's netlist into the board (schematic.net2pcb): footprints added or replaced, nets assigned,
+        placed positions kept. make_project before (the empty board when there is none yet) and after (SaveBoard
+        rewrites the project file)."""
+        T0 = time.time()
+        net = self.out_root + "/" + self.cfg.get("build.out.sch", "sch") + "/" + self.N + ".net"
+        if not self.dry and not os.path.isfile(net):
+            print("pcb-update: no netlist %s (run the sch step first)" % net)
+            return 2
+        rc, data = self.r.py(PROJECT, self.D, filt=quiet)
+        self.pr(data)
+        NU, data = self.r.py(NET2PCB, net, self.BRD, filt=quiet)
+        self.pr(data)
+        self.project_quiet()
+        print("pcb-update step: %d s; net2pcb exit %s" % (time.time() - T0, NU))
+        return NU
 
     def step_layout(self):
         O, T0 = self.out("layout"), time.time()
@@ -659,20 +691,97 @@ def compare(a, b, name):
     return code
 
 
+def _repo_path(p):
+    """A folder given on the command line: absolute, or relative to the repository root."""
+    return os.path.normpath(p if os.path.isabs(p) else os.path.join(paths.REPO, p))
+
+
+def init(name, src=None, parent=None, dry=False):
+    """A new board folder <parent>/<name> from a template folder: its data files, the template's board name replaced.
+    -> exit code (0 written, 2 refused)."""
+    import fnmatch
+    src = _repo_path(src or INIT_FROM)
+    parent = _repo_path(parent or ".")
+    dst = os.path.join(parent, name)
+    if not name.isidentifier():
+        print("init: %r is not a Python name (the board folder is imported as a package: letters, digits, _)" % name)
+        return 2
+    try:
+        old = config.load(src)
+    except config.ConfigError as e:
+        print("init: the template %s: %s" % (src, e))
+        return 2
+    rel_src = os.path.relpath(src, paths.REPO).replace("\\", "/")
+    rel_dst = os.path.relpath(dst, paths.REPO).replace("\\", "/")
+    if rel_dst.startswith("..") or os.path.isabs(rel_dst):
+        print("init: %s is not inside the repository %s (board folders are imported as packages of it)" % (dst, paths.REPO))
+        return 2
+    if not all(p.isidentifier() for p in rel_dst.split("/")):
+        print("init: every folder of %s must be a Python name (the board folder is imported as a package)" % rel_dst)
+        return 2
+    if os.path.exists(dst):
+        print("init: %s exists already: nothing written" % rel_dst)
+        return 2
+    skip = lambda n: any(fnmatch.fnmatch(n, g) for g in GENERATED)
+    files = []
+    for root, dirs, names in os.walk(src):
+        dirs[:] = sorted(d for d in dirs if not skip(d))
+        for n in sorted(names):
+            if not skip(n):
+                files.append(os.path.relpath(os.path.join(root, n), src))
+    # the folder path first (comments and commands naming the template's folder), then the bare board name
+    subs = [(rel_src, rel_dst), (rel_src.replace("/", "\\"), rel_dst.replace("/", "\\")),
+            (rel_src.replace("/", "."), rel_dst.replace("/", ".")), (old.name, name)]
+    print("# init %s from %s (template board %s): %d files" % (rel_dst, rel_src, old.name, len(files)))
+    renamed = edited = 0
+    for f in files:
+        to = f.replace(old.name, name)
+        a, b = os.path.join(src, f), os.path.join(dst, to)
+        text = os.path.splitext(f)[1].lower() in TEXT
+        if dry:
+            print("cp %s %s%s" % (_q(a), _q(b), "   # name replaced in the text" if text else ""))
+            continue
+        os.makedirs(os.path.dirname(b), exist_ok=True)
+        data = open(a, "rb").read()
+        if text:
+            s = data.decode("utf-8")
+            for x, y in subs:
+                s = s.replace(x, y)
+            edited += s.encode("utf-8") != data
+            data = s.encode("utf-8")
+        open(b, "wb").write(data)
+        renamed += to != f
+    if dry:
+        return 0
+    cfg = config.load(dst)
+    print("wrote %s: %d files (%d renamed, %d with the name replaced); board %s, package %s" % (
+        rel_dst, len(files), renamed, edited, cfg.name, cfg.package))
+    print("next: python -m Tools.KiCadDesignTools.build %s project | rules | sch | pcb-update | layout | route | finish" % rel_dst)
+    return 0
+
+
 def main(argv):
     flags = {"--dry-run": False, "--skip-match": False, "--no-render": False}
-    out = upto = None
+    out = upto = src = parent = None
     args = []
     i = 0
     while i < len(argv):
         a = argv[i]
         if a in flags:
             flags[a] = True
-        elif a in ("--out", "--upto"):
+        elif a in ("--out", "--upto", "--from", "--parent"):
             if i + 1 >= len(argv):
                 print("%s needs a value" % a)
                 return 2
-            out, upto = (argv[i + 1], upto) if a == "--out" else (out, argv[i + 1])
+            v = argv[i + 1]
+            if a == "--out":
+                out = v
+            elif a == "--upto":
+                upto = v
+            elif a == "--from":
+                src = v
+            else:
+                parent = v
             i += 1
         elif a.startswith("--"):
             print("unknown option %s\n" % a + __doc__)
@@ -685,7 +794,12 @@ def main(argv):
     except Exception:
         pass
     if args[:1] == ["init"]:
-        print("init: not yet (stage 5 of the Tools/ consolidation: a new board folder from templates/)")
+        if len(args) != 2:
+            print(__doc__)
+            return 2
+        return init(args[1], src, parent, dry=flags["--dry-run"])
+    if src or parent:
+        print("--from / --parent belong to init")
         return 2
     if len(args) < 2 or args[1] not in STEPS:
         print(__doc__)
@@ -701,9 +815,6 @@ def main(argv):
             print("compare needs two out folders")
             return 2
         return compare(args[2], args[3], cfg.name)
-    if step == "pcb-update":
-        print("pcb-update: not yet (stage 3 of the Tools/ consolidation)")
-        return 2
     if len(args) != 2:
         print(__doc__)
         return 2
