@@ -520,7 +520,7 @@ def table(cfg, board_path, odir):
     """The full table: writes <out dir>/table.txt (and table_route1.txt) and prints it; 1 when a hard number is off."""
     from Tools.KiCadDesignTools.routing.busroute.board import Board
     T = cfg.need("route.table")
-    PR = T["pairs"]
+    PR = T.get("pairs")              # the differential pairs' part: only on a board that lists pairs
     buf = io.StringIO()
     with contextlib.redirect_stdout(buf):
         bad1 = bus_table(cfg, board_path, odir)
@@ -642,31 +642,32 @@ def table(cfg, board_path, odir):
     for l in gap_crossings(cfg, b, side):
         A(l)
     # ---- the differential pairs
-    A("")
-    A("[差分对] " + PR["title"])
-    lens = {}
-    for name, _ in groups_env():
-        m = gm.get(name)
-        if m:
-            lens.update(m["length"].get("drc") or {})
-            tu = m.get("tuning") or {}
-            for blk in tu.get("blocks", []):
-                if blk["net"].startswith(PR["prefix"]):
-                    A("       蛇形 %-9s %s (%.3f, %.3f)-(%.3f, %.3f) %d × %.3f %s，补 %.3f" % (
-                        blk["net"], PR["layer"], blk["from"][0], blk["from"][1], blk["to"][0], blk["to"][1], blk["humps"] or blk["bumps"], blk["amp"], blk["side"], blk["gain"]))
-    for p, n in PR["pairs"]:
-        if p in lens and n in lens:
-            A("       %-9s %.3f mm  %-9s %.3f mm  对内差 %.3f mm" % (p, lens[p], n, lens[n], abs(lens[p] - lens[n])))
-            if abs(lens[p] - lens[n]) > PR["skew_max"]:
-                bad.append("pair skew %s" % p)
-        else:
-            A("       %s / %s: 没有 DRC 长度" % (p, n))
-    pv = [v for v in d["violations"] if v["type"] in PAIR_TYPES and any((net_of(i) or "").startswith(PR["prefix"]) for i in v["items"])]
-    A("       差分对的 DRC 项（间隙、未耦合长度、对内差）：%d" % len(pv))
-    for v in pv[:10]:
-        A("         ! %s: %s" % (v["type"], v["description"]))
-    if pv:
-        bad.append("pair DRC")
+    if PR:
+        A("")
+        A("[差分对] " + PR["title"])
+        lens = {}
+        for name, _ in groups_env():
+            m = gm.get(name)
+            if m:
+                lens.update(m["length"].get("drc") or {})
+                tu = m.get("tuning") or {}
+                for blk in tu.get("blocks", []):
+                    if blk["net"].startswith(PR["prefix"]):
+                        A("       蛇形 %-9s %s (%.3f, %.3f)-(%.3f, %.3f) %d × %.3f %s，补 %.3f" % (
+                            blk["net"], PR["layer"], blk["from"][0], blk["from"][1], blk["to"][0], blk["to"][1], blk["humps"] or blk["bumps"], blk["amp"], blk["side"], blk["gain"]))
+        for p, n in PR["pairs"]:
+            if p in lens and n in lens:
+                A("       %-9s %.3f mm  %-9s %.3f mm  对内差 %.3f mm" % (p, lens[p], n, lens[n], abs(lens[p] - lens[n])))
+                if abs(lens[p] - lens[n]) > PR["skew_max"]:
+                    bad.append("pair skew %s" % p)
+            else:
+                A("       %s / %s: 没有 DRC 长度" % (p, n))
+        pv = [v for v in d["violations"] if v["type"] in PAIR_TYPES and any((net_of(i) or "").startswith(PR["prefix"]) for i in v["items"])]
+        A("       差分对的 DRC 项（间隙、未耦合长度、对内差）：%d" % len(pv))
+        for v in pv[:10]:
+            A("         ! %s: %s" % (v["type"], v["description"]))
+        if pv:
+            bad.append("pair DRC")
     # ---- placement and copper sketch
     A("")
     A("[布局] place_check.py（参数同 layout 一步）：")

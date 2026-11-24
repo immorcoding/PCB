@@ -38,13 +38,14 @@ def main(argv):
     PCB = cfg.pcb
     SKETCH = cfg.path(cfg.need("copper.sketch"))
     OX, OY = cfg.origin
-    XTAL_WINDOW = P["xtal_window"]
+    XTAL_WINDOW = P.get("xtal_window")           # optional, like every trial below: a board without it skips it
     MCU, GND, PLANE = P["mcu"], P["ground"], P["plane_net"]
-    LOOPS = {k: [tuple(x) for x in v] for k, v in P["loops"].items()}
-    BUSES = {k: (v["nets"], v["to"], v.get("limit"), v.get("spread")) for k, v in P["buses"].items()}
+    LOOPS = {k: [tuple(x) for x in v] for k, v in P.get("loops", {}).items()}
+    BUSES = {k: (v["nets"], v["to"], v.get("limit"), v.get("spread")) for k, v in P.get("buses", {}).items()}
     NET_LIMIT = P.get("net_limit", {})
     BY_NET = set(P.get("loop_pad_by_net", []))
-    FAN_J, SW_NET = P["lcd_fan"]["connector"], P["lcd_fan"]["switch_net"]
+    FAN = P.get("lcd_fan")
+    FAN_J, SW_NET = (FAN["connector"], FAN["switch_net"]) if FAN else (None, None)
     ol = cfg.datafile("place.toml")["outline"]
     BW, BH = ol["width"], ol["height"]
     NL = len(cfg.layers)
@@ -98,7 +99,7 @@ def main(argv):
 
     # ---- crystals
     xt = {}
-    for name, c_ in P["crystals"].items():
+    for name, c_ in P.get("crystals", {}).items():
         ref, caps, balls = c_["ref"], tuple(c_["caps"]), tuple(c_["balls"])
         d = {}
         for b in balls:
@@ -109,7 +110,7 @@ def main(argv):
             d[n] = {"ball_to_crystal": round(math.dist(L(bp.GetPosition()), L(yp.GetPosition())), 2),
                     "crystal_to_cap": round(math.dist(L(yp.GetPosition()), L(cp.GetPosition())), 2)}
         parts_in = {}
-        for r_ in (ref,) + caps:
+        for r_ in (ref,) + caps if XTAL_WINDOW else ():
             c = L(fps[r_].GetPosition())
             parts_in[r_] = XTAL_WINDOW[1] - 1.5 <= c[1] <= XTAL_WINDOW[3] + 2.5 and c[0] <= XTAL_WINDOW[2]
         xt[name] = {"nets": d, "near_window": parts_in}
@@ -149,36 +150,37 @@ def main(argv):
 
     # ---- LCD fan: straight paths ball -> FPC pad of every net the MCU shares with the connector; parts they cross;
     # the boost's switch node (pads of the switch net) against the easternmost path
-    def seg_box_dist(a, b, box):
-        x0, y0, x1, y1 = box
-        best = 1e9
-        n = 60
-        for k in range(n + 1):
-            t = k / n
-            p = (a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t)
-            best = min(best, math.hypot(max(x0 - p[0], 0, p[0] - x1), max(y0 - p[1], 0, p[1] - y1)))
-        return best
-    mcu = {p.GetNetname(): L(p.GetPosition()) for p in fps[MCU].Pads() if p.GetNetname()}
-    segs = [(n, mcu[n], L(p.GetPosition())) for p in fps[FAN_J].Pads() for n in [p.GetNetname()] if n in mcu and n != GND]
-    crossed = []
-    for f in board.GetFootprints():
-        ref = f.GetReference()
-        if ref in (MCU, FAN_J) or f.GetLayer() == pcbnew.B_Cu:
-            continue
-        cy = f.GetCourtyard(pcbnew.F_CrtYd).BBox()
-        box = (ToMM(cy.GetLeft()) - OX, ToMM(cy.GetTop()) - OY, ToMM(cy.GetRight()) - OX, ToMM(cy.GetBottom()) - OY)
-        if any(seg_box_dist(a, b, box) == 0 for _, a, b in segs):
-            crossed.append(ref)
-    sw = []
-    for f in board.GetFootprints():
-        for p in f.Pads():
-            if p.GetNetname() == SW_NET:
-                bb = p.GetBoundingBox()
-                box = (ToMM(bb.GetLeft()) - OX, ToMM(bb.GetTop()) - OY, ToMM(bb.GetRight()) - OX, ToMM(bb.GetBottom()) - OY)
-                sw.append((min(seg_box_dist(a, b, box) for _, a, b in segs), "%s.%s" % (f.GetReference(), p.GetNumber())))
-    east = max(max(a[0], b[0]) for _, a, b in segs)
-    R["lcd_fan"] = {"lines": len(segs), "east_x": round(east, 2), "parts_crossed": sorted(crossed),
-                    "sw_node_min_dist": round(min(sw)[0], 2), "sw_node_nearest": min(sw)[1]}
+    if FAN:
+        def seg_box_dist(a, b, box):
+            x0, y0, x1, y1 = box
+            best = 1e9
+            n = 60
+            for k in range(n + 1):
+                t = k / n
+                p = (a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t)
+                best = min(best, math.hypot(max(x0 - p[0], 0, p[0] - x1), max(y0 - p[1], 0, p[1] - y1)))
+            return best
+        mcu = {p.GetNetname(): L(p.GetPosition()) for p in fps[MCU].Pads() if p.GetNetname()}
+        segs = [(n, mcu[n], L(p.GetPosition())) for p in fps[FAN_J].Pads() for n in [p.GetNetname()] if n in mcu and n != GND]
+        crossed = []
+        for f in board.GetFootprints():
+            ref = f.GetReference()
+            if ref in (MCU, FAN_J) or f.GetLayer() == pcbnew.B_Cu:
+                continue
+            cy = f.GetCourtyard(pcbnew.F_CrtYd).BBox()
+            box = (ToMM(cy.GetLeft()) - OX, ToMM(cy.GetTop()) - OY, ToMM(cy.GetRight()) - OX, ToMM(cy.GetBottom()) - OY)
+            if any(seg_box_dist(a, b, box) == 0 for _, a, b in segs):
+                crossed.append(ref)
+        sw = []
+        for f in board.GetFootprints():
+            for p in f.Pads():
+                if p.GetNetname() == SW_NET:
+                    bb = p.GetBoundingBox()
+                    box = (ToMM(bb.GetLeft()) - OX, ToMM(bb.GetTop()) - OY, ToMM(bb.GetRight()) - OX, ToMM(bb.GetBottom()) - OY)
+                    sw.append((min(seg_box_dist(a, b, box) for _, a, b in segs), "%s.%s" % (f.GetReference(), p.GetNumber())))
+        east = max(max(a[0], b[0]) for _, a, b in segs)
+        R["lcd_fan"] = {"lines": len(segs), "east_x": round(east, 2), "parts_crossed": sorted(crossed),
+                        "sw_node_min_dist": round(min(sw)[0], 2), "sw_node_nearest": min(sw)[1]}
 
     # ---- report
     tot = sum(v["pads"] for v in rails.values()); off = sum(len(v["off"]) for v in rails.values())
@@ -195,10 +197,11 @@ def main(argv):
             bus, v["to"], v["min"], v["max"], v["spread"],
             ("; limit %g" % v["limit"]) + (", spread %g" % v["spread_limit"] if v["spread_limit"] else "") if v["limit"] else "",
             ("; OVER: " + " ".join(v["over"])) if v["over"] else ""))
-    F = R["lcd_fan"]
-    print("[lcd fan]   %d MCU-to-%s lines, easternmost path x %.2f; switch node (%s pads) %.2f mm from the nearest path (%s); "
-          "parts whose courtyard a straight path crosses: %s" % (F["lines"], FAN_J, F["east_x"], SW_NET, F["sw_node_min_dist"],
-                                                                 F["sw_node_nearest"], " ".join(F["parts_crossed"]) or "none"))
+    if FAN:
+        F = R["lcd_fan"]
+        print("[lcd fan]   %d MCU-to-%s lines, easternmost path x %.2f; switch node (%s pads) %.2f mm from the nearest path (%s); "
+              "parts whose courtyard a straight path crosses: %s" % (F["lines"], FAN_J, F["east_x"], SW_NET, F["sw_node_min_dist"],
+                                                                     F["sw_node_nearest"], " ".join(F["parts_crossed"]) or "none"))
     if "--json" in argv:
         with open(argv[argv.index("--json") + 1], "w", encoding="utf-8") as f:
             json.dump(R, f, indent=1)

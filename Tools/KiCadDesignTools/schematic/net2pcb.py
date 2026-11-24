@@ -19,10 +19,10 @@ The netlist is the kicadsexpr export:
 import os, sys
 import pcbnew
 
-from Tools.KiCadDesignTools.core import uuids
+from Tools.KiCadDesignTools.core import paths, uuids
 from Tools.KiCadDesignTools.schematic.kisch import parse, find, find_all
 
-FP_DIR = r"D:\KiCad\share\kicad\footprints"
+FP_DIR = paths.KICAD_FP
 
 
 def read_netlist(path):

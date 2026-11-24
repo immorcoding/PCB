@@ -141,7 +141,8 @@ def fiducials(cfg, path):
     b = pcbnew.LoadBoard(path)
     nick, name = fid["footprint"].split(":")
     lib = os.path.join(paths.KICAD_FP, nick + ".pretty")
-    sides = [(r, xy, "F") for r, xy in fid["top"].items()] + [(r, xy, "B") for r, xy in fid["bottom"].items()]
+    # a set per assembly side; a board with parts on one side only has no bottom set
+    sides = [(r, xy, "F") for r, xy in fid["top"].items()] + [(r, xy, "B") for r, xy in fid.get("bottom", {}).items()]
     for ref, (x, y), side in sides:
         fp = pcbnew.FootprintLoad(lib, name)
         fp.SetReference(ref)
