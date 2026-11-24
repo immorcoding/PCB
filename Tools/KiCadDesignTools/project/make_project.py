@@ -3,23 +3,30 @@
     D:\\KiCad\\bin\\python.exe -m Tools.KiCadDesignTools.project.make_project <board dir>            writes .kicad_pro; .kicad_pcb only if missing
     D:\\KiCad\\bin\\python.exe -m Tools.KiCadDesignTools.project.make_project <board dir> --new-pcb  also replaces the board with an empty one
 
-Starts from templates/<[board] template>/ and applies the board's data (board.toml):
+Starts from templates/<[board] template>/ (the rule profile's template, e.g. templates/C-bga-065/: its floors, track
+widths, via sizes and net classes Default / PWR / XTAL are the profile's values, RUL-1) and applies the board's data
+(board.toml):
 
-  .kicad_pro   board-level floors ([project.floors]), track widths, via sizes, differential pairs ([project]), net
-               classes ([netclasses]) and the net-class membership ([netclass_patterns], partly from pins.csv)
-  .kicad_pcb   empty board with the copper layers of [layers] and the fab stackup [board] stackup
-               (Tools/KiCadDesignTools/data/stackups/; true thicknesses: KiCad's length rules add the height of every
-               via, so a default stackup gives wrong lengths); on an existing board only the copper rows of the layer
-               table are brought to [layers] (core.boardtext.sync_layers)
+  .kicad_pro   the template's, plus: board-level floors that differ from the profile ([project.floors], optional),
+               track widths and via sizes when the board sets its own ([project], optional), differential pairs
+               ([project.diff_pairs]), net classes ([netclasses]: a class of the template is changed in place, a new
+               one is added after them) and the net-class membership ([netclass_patterns], partly from pins.csv)
+  .kicad_pcb   empty board from the template's, with the copper layers of [layers] and the fab stackup [board]
+               stackup (Tools/KiCadDesignTools/data/stackups/; true thicknesses: KiCad's length rules add the height of
+               every via, so a default stackup gives wrong lengths); on an existing board only the copper rows of the
+               layer table are brought to [layers] (core.boardtext.sync_layers)
+  .kicad_dru   copied from the template only when the board has none; after that it is the board's, written by hand
+               (never overwritten). Every rule name of the template's rule file is looked for in it: missing ones are
+               listed (a warning, the board may have dropped a rule on purpose)
   <lib>.pretty, fp-lib-table   footprints derived from KiCad's stock ones ([[footprints.derived]])
 
-The rule file <name>.kicad_dru is written by hand and is not touched here.
 The .kicad_pro is always regenerated (edit board.toml, not the file; KiCad also rewrites the file when the user closes
 the project, RUL-4). The board is never overwritten without --new-pcb (PROC-13).
 """
-import csv, json, os, re, sys
+import csv, json, os, re, shutil, sys
 
 from Tools.KiCadDesignTools.core import boardtext, config, paths, stackup
+from Tools.KiCadDesignTools.rules import drc_probe
 
 
 def template(cfg):
@@ -61,8 +68,11 @@ def make_pcb(cfg, path):
     s = open(template(cfg) + ".kicad_pcb", encoding="utf-8").read()
     s = re.sub(r"\(thickness [\d.]+\)", "(thickness %g)" % st.thickness(), s, count=1)
     cu = boardtext.layer_rows(layers(cfg))
-    s, k = re.subn(r'\t\t\(0 "F\.Cu" signal\)\n\t\t\(2 "B\.Cu" signal\)\n', lambda m: cu, s, count=1)
+    # the template's copper rows (two on templates/common, six on templates/C-bga-065) become the board's
+    s, k = re.subn(r'(?:\t\t\(\d+ "(?:F|B|In\d+)\.Cu" (?:signal|power|mixed|jumper)(?: "[^"]*")?\)\n)+', lambda m: cu, s, count=1)
     assert k == 1, "template layer table not found"
+    # the template's stackup (if it has one) is replaced by the board's
+    s = re.sub(r"\t\t\(stackup\n.*?\n\t\t\)\n", "", s, count=1, flags=re.S)
     assert "(stackup" not in s
     s, k = re.subn(r"\t\(setup\n", lambda m: "\t(setup\n" + stackup_text(st), s, count=1)
     assert k == 1
@@ -87,27 +97,40 @@ def net_patterns(cfg):
 def make_pro(cfg, path):
     d = json.load(open(template(cfg) + ".kicad_pro", encoding="utf-8"))
     ds = d["board"]["design_settings"]
-    for k, v in cfg.need("project.floors").items():
+    # the profile's floors are the template's; [project.floors] only where this board differs
+    for k, v in cfg.get("project.floors", {}).items():
         assert k in ds["rules"], k
         ds["rules"][k] = v
-    pr = cfg.need("project")
+    pr = cfg.get("project", {})
     pairs = pr.get("diff_pairs", {})
-    ds["track_widths"] = list(pr["track_widths"])
-    ds["via_dimensions"] = [{"diameter": v["diameter"], "drill": v["drill"]} for v in pr["via_dimensions"]]
+    if "track_widths" in pr:
+        ds["track_widths"] = list(pr["track_widths"])
+    if "via_dimensions" in pr:
+        ds["via_dimensions"] = [{"diameter": v["diameter"], "drill": v["drill"]} for v in pr["via_dimensions"]]
     ds["diff_pair_dimensions"] = [{"gap": 0.0, "via_gap": 0.0, "width": 0.0}] + \
                                  [{"gap": p["gap"], "via_gap": p["via_gap"], "width": p["width"]} for p in pairs.values()]
     ns = d["net_settings"]
-    base = next(c for c in ns["classes"] if c["name"] == "Default")
-    classes = []
-    for name, nc in cfg.need("netclasses").items():
-        c = dict(base, name=name, via_diameter=nc["via_diameter"], via_drill=nc["via_drill"], priority=nc["priority"],
-                 clearance=nc["clearance"])
+    # the template's classes (the profile's Default, PWR, XTAL) first, in their order; a board class of the same name
+    # changes that one in place, the others follow in board.toml order (fields left out: Default's, priority required)
+    classes = list(ns["classes"])
+    base = next(c for c in classes if c["name"] == "Default")
+    for name, nc in cfg.get("netclasses", {}).items():
+        i = next((j for j, c in enumerate(classes) if c["name"] == name), None)
+        if i is None and "priority" not in nc:
+            raise config.ConfigError("%s: [netclasses] %s needs a priority (it is not a class of the template)" % (cfg.toml, name))
+        c = dict(classes[i] if i is not None else base, name=name)
+        for k in ("via_diameter", "via_drill", "priority", "clearance"):
+            if k in nc:
+                c[k] = nc[k]
         if nc.get("diff_pair"):
             p = pairs[nc["diff_pair"]]
             c.update(track_width=p["width"], diff_pair_width=p["width"], diff_pair_gap=p["gap"])
-        else:
+        elif "track_width" in nc:
             c["track_width"] = nc["track_width"]
-        classes.append(c)
+        if i is None:
+            classes.append(c)
+        else:
+            classes[i] = c
     ns["classes"] = classes
     # Template patterns first (PWR and XTAL by name), then this board's. Wildcards: only '*' works.
     pats = [p for p in ns["netclass_patterns"]]
@@ -119,7 +142,20 @@ def make_pro(cfg, path):
     d["meta"]["filename"] = cfg.name + ".kicad_pro"
     d["pcbnew"]["last_paths"]["step"] = ""
     json.dump(d, open(path, "w", encoding="utf-8", newline="\n"), indent=2, ensure_ascii=False)
-    return len(pats)
+    return len(classes), len(pats)
+
+
+def rule_file(cfg, path):
+    """The board's rule file: the template's copied when there is none (-> "copied"); otherwise the template's rule
+    names missing from it (-> list)."""
+    src = template(cfg) + ".kicad_dru"
+    if not os.path.isfile(src):
+        return []
+    if not os.path.exists(path):
+        shutil.copyfile(src, path)
+        return "copied"
+    have = {r[0] for r in drc_probe.parse_rules(open(path, encoding="utf-8").read())}
+    return [r[0] for r in drc_probe.parse_rules(open(src, encoding="utf-8").read()) if r[0] not in have]
 
 
 def make_footprints(cfg):
@@ -154,14 +190,22 @@ def main(argv):
     if any(f.endswith(".lck") for f in os.listdir(cfg.dir)):
         sys.exit("KiCad has this project open (lock file present): close it first, it would overwrite the .kicad_pro")
     st = stackup.for_board(cfg)
-    n = make_pro(cfg, stem + ".kicad_pro")
-    print("wrote %s.kicad_pro: %d net classes, %d patterns" % (NAME, len(cfg.need("netclasses")), n))
+    nc, n = make_pro(cfg, stem + ".kicad_pro")
+    print("wrote %s.kicad_pro: %d net classes, %d patterns" % (NAME, nc, n))
     if "--new-pcb" in argv[1:] or not os.path.exists(stem + ".kicad_pcb"):
         make_pcb(cfg, stem + ".kicad_pcb")
         print("wrote %s.kicad_pcb: empty, %d copper layers, stackup %.4f mm" % (NAME, len(cfg.layers), st.thickness()))
     else:
         print("kept the existing %s.kicad_pcb (pass --new-pcb to replace it with an empty board)%s" % (
             NAME, "; its layer table rewritten to LAYERS" if sync_layers(cfg, stem + ".kicad_pcb") else ""))
+    tpl = cfg.need("board.template")
+    miss = rule_file(cfg, stem + ".kicad_dru")
+    if miss == "copied":
+        print("wrote %s.kicad_dru: the template's rule file (templates/%s); edit it for this board" % (NAME, tpl))
+    elif miss:
+        print("warning: %s.kicad_dru has no rule %s of the template's rule file (templates/%s)" % (NAME, ", ".join(miss), tpl))
+    elif os.path.isfile(template(cfg) + ".kicad_dru"):
+        print("%s.kicad_dru holds every rule name of the template's rule file (templates/%s)" % (NAME, tpl))
     made = make_footprints(cfg)
     print("wrote %s.pretty/%s.kicad_mod and fp-lib-table" % (cfg.need("board.lib"), ", ".join(made)))
     vh = cfg.get("project.via_heights", [])
