@@ -20,7 +20,7 @@ Arcs (serpentines) are part of the runs. An arc is not a bend; a joint where the
 turn across a short segment is taken from the start of the piece before it to the end of the piece
 after it, so a corner followed within CHAMFER by an arc that turns on the same way is reported; a
 short segment between two tangent arcs (a serpentine leg) is not, as long as neither end is a
-corner. When the board has arcs, one more line counts the arc joints that are not tangent (> 1 degree).
+corner; two segments in line (a width change) do not make a corner either. When the board has arcs, one more line counts the arc joints that are not tangent (> 1 degree).
 Coordinates are local (board mm - 100). Exit code 0 always: this is a report, the judgement is the reviewer's.
 """
 import sys, math, collections
@@ -165,7 +165,9 @@ for key in sorted(set(segs) | set(arcs_by)):
             for k in range(1, len(items)):
                 t = turn_deg(heading(items[k - 1], False), heading(items[k], True))
                 if not is_arc[k - 1] and not is_arc[k]:
-                    joint.append((True, t))
+                    # two straights in line (a width change at a rule-area edge) are no corner (2026-11-24: an arc 0.1
+                    # mm after such a joint was reported sharp)
+                    joint.append((abs(t) > TANGENT, t))
                 else:
                     joint.append((abs(t) > TANGENT, t))
                     if abs(t) > TANGENT:

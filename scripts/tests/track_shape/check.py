@@ -10,7 +10,9 @@ busroute's writer (net names only, as KiCad 10 keeps them):
   B  a serpentine from busroute.tune (two humps, pitch 0.3, legs between tangent arcs) -> nothing
   C  a straight followed by an arc that starts 30 degrees off its direction -> one `arc-joint`
   D  no arcs: two 45-degree corners 0.2 mm apart -> one `sharp`, as before
-Expected: sharp 2 (A, D), arc-joint 1 (C), off-grid / staircase / crowded / tiny 0, 7 arcs (A 1, B 5, C 1).
+  E  a straight that changes width (0.09 to 0.1016, in line, as at a rule-area edge), 0.1 mm of the wide straight,
+     then an arc turning 90 degrees -> nothing (the width change is no corner; reported sharp before 2026-11-24)
+Expected: sharp 2 (A, D), arc-joint 1 (C), off-grid / staircase / crowded / tiny 0, 8 arcs (A 1, B 5, C 1, E 1).
 The track_shape.py before arcs were followed reported sharp 1 (D only) on this board.
 
 Prints one line, `OK ...` or `FAIL ...`; exit code 0 = pass.
@@ -74,6 +76,12 @@ def routes():
     arcs.append(("C", "L1", c1, m, e, W))
     # D: two 45-degree corners 0.2 mm apart (no arcs)
     segs += [("D", "L1", (2.0, 9.0), (4.0, 9.0), W), ("D", "L1", (4.0, 9.0), (4.1414, 9.1414), W), ("D", "L1", (4.1414, 9.1414), (4.1414, 10.5), W)]
+    # E: thin straight, wide straight in line (0.1 mm), arc turning 90 degrees
+    e0, e1, e2 = (2.0, 12.0), (4.0, 12.0), (4.1, 12.0)
+    segs += [("E", "L1", e0, e1, 0.09), ("E", "L1", e1, e2, W)]
+    m, e, h = arc_from(e2, 0, 0.25, 90)
+    arcs.append(("E", "L1", e2, m, e, W))
+    segs.append(("E", "L1", e, step(e, h, 1.0), W))
     return segs, arcs
 
 
@@ -93,7 +101,7 @@ def main(argv):
         got = {k: num(k) for k in ("off-grid", "staircase", "sharp", "crowded", "arc-joint")}
         got["tiny"] = int(re.search(r"^tiny \(< 0.1 mm\): (\d+)", out, re.M).group(1))
         got["arcs"] = int(re.search(r"^\d+ segments, (\d+) arcs", out, re.M).group(1))
-        want = {"off-grid": 0, "staircase": 0, "sharp": 2, "crowded": 0, "arc-joint": 1, "tiny": 0, "arcs": 7}
+        want = {"off-grid": 0, "staircase": 0, "sharp": 2, "crowded": 0, "arc-joint": 1, "tiny": 0, "arcs": 8}
         if got != want:
             fails.append("counts %r, expected %r\n%s" % (got, want, out))
         sharp = [l.split()[0] for l in out.splitlines() if l.startswith("    ") and "turns" in l and "segment" in l]
@@ -107,8 +115,8 @@ def main(argv):
             print("FAIL track_shape (%d); temp dir kept: %s" % (len(fails), tmp))
             print("\n".join("  " + f for f in fails))
         else:
-            print("OK track_shape: corner + 0.1 mm + arc is sharp, serpentine legs are not, a 30-degree arc joint is reported, "
-                  "arc-free sharp as before; %.0f s%s" % (time.time() - t0, "; kept " + tmp if keep else ""))
+            print("OK track_shape: corner + 0.1 mm + arc is sharp, serpentine legs are not, a width change + 0.1 mm + arc is not, "
+                  "a 30-degree arc joint is reported, arc-free sharp as before; %.0f s%s" % (time.time() - t0, "; kept " + tmp if keep else ""))
         if not keep:
             shutil.rmtree(tmp, ignore_errors=True)
     return 1 if fails else 0

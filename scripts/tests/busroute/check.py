@@ -23,7 +23,7 @@ bench_routes.py and expects:
 
 Length tuning (tune.py), on the same board with other balls on the nets (TUNE_PADS) and bench_tune.py:
   plain             the routes without TUNING: DRC reports the lane's skew (the bench's rule bench_lane1, 5 mm, which
-                    wins over the project's sdram_lane1, 20 mm since 2026-11-23) -- the rule is live
+                    wins over the project's sdram_lane1, 1.27 mm since 2026-11-24) -- the rule is live
   budget            --tuning-budget numbers of variant "short": targets, needs, RTE-2 capacities, the one short net
   tune              a 5-lane bundle (3 slots, two start on one line, a bump beside a lane 0.25 mm away), a hand-written route with a
                     double-sided free site, one whose site is short for amp 0.5 (amplitude raised): every group inside
@@ -32,6 +32,8 @@ Length tuning (tune.py), on the same board with other balls on the nets (TUNE_PA
                     track_shape.py (arc joints, sharp, crowded) clean, the pinned lengths and blocks
   short             one more net whose site is far too short: drawn what fits (DRC clean, arc checks clean), the
                     only finding is TUNE "missing 9.145 mm", which equals target - its DRC-measured length
+  humps             (fast) D10's site with humps=1: one hump of height amp although D10 needs less (overshoot, a NOTE),
+                    no hard finding, D10 still inside the lane's window
   ref               a reference group (A0 A1 against the sum A3 + A2, as SDRAM address lines against the clock split
                     by its series resistor): the sum reaches its target over the sites of both pieces (DRC-measured),
                     A1 is aimed at the reached sum; built again with TUNE_OBSTACLES (a copy of the board with one more
@@ -95,8 +97,8 @@ TUNE_BUDGET = {'lane1': (22.72, {'FMC_D8': (4.9229, [(6, 4.4549, 22.4549)]), 'FM
 OBST = ((21.8, 3.2), (22.6, 3.2))
 TUNE_REF = {'ref': [('FMC_A3', 2, 0.905, 18.3), ('FMC_A2', 1, 0.7371, 21.7), ('FMC_A1', 1, 0.6896, 16.7)],
             'ref+obstacle': [('FMC_A3', 2, 0.905, 18.3), ('FMC_A2', 1, 0.7371, 22.75), ('FMC_A1', 1, 0.6896, 16.7)]}
-# The tuning bench's skew rule (tuning()): the project's sdram_lane1 allows 20 mm, more than the bench lane's natural
-# spread, so the bench carries its own 5 mm rule over the same five nets to prove that tuning meets a live skew rule.
+# The tuning bench's skew rule (tuning()): the project's sdram_lane1 (1.27 mm since 2026-11-24, 20 mm before) is not
+# what this bench tunes to, so the bench carries its own 5 mm rule over the same five nets to prove that tuning meets a live skew rule.
 BENCH_LANE_RULE = ('(rule "bench_lane1"\n  (condition "A.NetName == \'FMC_D8\' || A.NetName == \'FMC_D9\' || A.NetName == \'FMC_D10\''
                    ' || A.NetName == \'FMC_D11\' || A.NetName == \'FMC_D12\'")\n  (constraint skew (max 5mm)))\n\n')
 # DRC item types that say nothing about the routes on this synthetic board.
@@ -208,7 +210,7 @@ def tuning(tmp, want):
     os.makedirs(tt)
     make_board(tt, TUNE_PADS)
     # the bench's own 5 mm skew rule over the five lane nets, after the project's rules so that it wins over
-    # sdram_lane1 (20 mm since 2026-11-23, wider than the natural spread of 8.8 mm here): the plain build must
+    # sdram_lane1 (1.27 mm since 2026-11-24; the bench tunes to its own 5 mm): the plain build must
     # report it, the tuned one (spread 4.2) must not
     dru_path = os.path.join(tt, "bench.kicad_dru")
     dru = open(dru_path, encoding="utf-8").read()
@@ -272,6 +274,19 @@ def tuning(tmp, want):
             want(abs(miss - tu["missing"]["FMC_A3"]) <= 0.001 and hand["inside"] == 3 and hand["total"] == 4,
                  "short: missing %r against target - DRC length %.4f" % (tu["missing"], miss))
 
+    # humps=n (tune.py): a site that must hold exactly n humps; D10 needs 0.2422, one hump at amp adds 0.7425
+    os.environ["BUSROUTE_BENCH"] = "humps"
+    m, code = job.run(rt, fast=True, log=quiet)
+    if "error" in m:
+        want(False, "humps: could not be built: %s" % m["error"])
+    else:
+        tu = m["tuning"]
+        bl = [(x["net"], x["kind"], x["side"], x["humps"], x["amp"]) for x in tu["blocks"] if x["net"] == "FMC_D10"]
+        note = [f["text"] for f in m["findings"] if f["kind"] == "NOTE" and "humps=1" in f["text"]]
+        d10 = tu["groups"]["lane1"]["nets"]["FMC_D10"]
+        want(code == 0 and bl == [("FMC_D10", "single", "L", 1, 0.5)] and len(note) == 1 and "0.500 more than the need 0.242" in note[0]
+             and abs(d10["length"] - 23.2203) < 1e-3 and d10["to_window"] > 0,
+             "humps: exit %d, D10 blocks %r, notes %r, D10 %r" % (code, bl, note, d10))
     # a reference group (the reference summed over two nets, lengthened first; then the members) and an obstacle
     # board (TUNE_OBSTACLES): built without and with the obstacle, which moves A2's block
     od = os.path.join(tt, "obst")
@@ -475,7 +490,7 @@ def main(argv):
             print("OK busroute: 12 nets (ring 0-3 fan-out, bundle with corner and per-leg gaps, join, via field), DRC clean, "
                   "geometry = DRC lengths, 2 builds identical, 2 groups = 1 build, 4 negative cases, obstacles (shield tab, footprint keep-out), "
                   "length verdict, fan-out @layer and keep, a shared group of ties; "
-                  "tuning (bundle slots, bump, free site both-sided, raised amp, missing, summed reference group, obstacle board, budget %.1f s) %.0f s; %.0f s%s" % (
+                  "tuning (bundle slots, bump, free site both-sided, raised amp, missing, humps=n, summed reference group, obstacle board, budget %.1f s) %.0f s; %.0f s%s" % (
                       times.get("budget", 0), times.get("tune", 0), time.time() - t0, "; kept " + tmp if keep else ""))
         if not keep:
             shutil.rmtree(tmp, ignore_errors=True)

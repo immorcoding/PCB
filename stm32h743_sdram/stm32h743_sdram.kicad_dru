@@ -142,25 +142,25 @@
   (constraint via_count (max 3)))
 
 # SDRAM length matching (user, 2026-11-21): only the data lines, inside each byte lane (8 data bits and
-# their NBL): longest minus shortest <= 20 mm (user 2026-11-23, SPEC 9: the electrical value, ST's +-10 mm;
-# the practice value of 5 mm was not reached, the lanes are at 8.75 / 10.17 / 17.62 / 13.30 mm).
+# their NBL): longest minus shortest <= 1.27 mm (user 2026-11-24, 50 mil, SPEC 9: mandatory, the standard the user
+# routes six-layer boards to; was 20 mm from 2026-11-23, the electrical value, and 5 mm before that).
 # Address, command and clock are held to the clock by sdram_addr_window (generated block) and to 60 mm.
 # The lanes are named by MCU net, so they stay right when SDRAM bytes or bits are swapped.
 (rule "sdram_lane0"
   (condition "A.NetName == 'FMC_D0' || A.NetName == 'FMC_D1' || A.NetName == 'FMC_D2' || A.NetName == 'FMC_D3' || A.NetName == 'FMC_D4' || A.NetName == 'FMC_D5' || A.NetName == 'FMC_D6' || A.NetName == 'FMC_D7' || A.NetName == 'FMC_NBL0'")
-  (constraint skew (max 20mm)))
+  (constraint skew (max 1.27mm)))
 
 (rule "sdram_lane1"
   (condition "A.NetName == 'FMC_D8' || A.NetName == 'FMC_D9' || A.NetName == 'FMC_D10' || A.NetName == 'FMC_D11' || A.NetName == 'FMC_D12' || A.NetName == 'FMC_D13' || A.NetName == 'FMC_D14' || A.NetName == 'FMC_D15' || A.NetName == 'FMC_NBL1'")
-  (constraint skew (max 20mm)))
+  (constraint skew (max 1.27mm)))
 
 (rule "sdram_lane2"
   (condition "A.NetName == 'FMC_D16' || A.NetName == 'FMC_D17' || A.NetName == 'FMC_D18' || A.NetName == 'FMC_D19' || A.NetName == 'FMC_D20' || A.NetName == 'FMC_D21' || A.NetName == 'FMC_D22' || A.NetName == 'FMC_D23' || A.NetName == 'FMC_NBL2'")
-  (constraint skew (max 20mm)))
+  (constraint skew (max 1.27mm)))
 
 (rule "sdram_lane3"
   (condition "A.NetName == 'FMC_D24' || A.NetName == 'FMC_D25' || A.NetName == 'FMC_D26' || A.NetName == 'FMC_D27' || A.NetName == 'FMC_D28' || A.NetName == 'FMC_D29' || A.NetName == 'FMC_D30' || A.NetName == 'FMC_D31' || A.NetName == 'FMC_NBL3'")
-  (constraint skew (max 20mm)))
+  (constraint skew (max 1.27mm)))
 
 (rule "qspi_len_max"
   (condition "A.NetClass == 'QSPI'")
@@ -198,10 +198,10 @@
 (rule "rmii_rx_min"
   (condition "A.NetName == 'RMII_RXD*' || A.NetName == 'RMII_CRS_DV'")
   (constraint length (min 20.5576mm) (opt 20.5576mm) (max 60.0000mm)))
-# sdram_addr_window: reference FMC_SDCLK + FMC_SDCLK_R = 39.4135 mm
+# sdram_addr_window: reference FMC_SDCLK + FMC_SDCLK_R = 39.4845 mm
 (rule "sdram_addr_window"
   (condition "A.NetName == 'FMC_A*' || A.NetName == 'FMC_BA*' || A.NetName == 'FMC_SDNRAS' || A.NetName == 'FMC_SDNCAS' || A.NetName == 'FMC_SDNWE' || A.NetName == 'FMC_SDCKE0' || A.NetName == 'FMC_SDNE0'")
-  (constraint length (min 19.4135mm) (opt 39.4135mm) (max 59.4135mm)))
+  (constraint length (min 19.4845mm) (opt 39.4845mm) (max 59.4845mm)))
 # ltdc_spread_60: fixed (user 2026-11-23 (SPEC 9): LTDC longest minus shortest <= 60 mm, the electrical value (was 30, then a working target of 45); replaces ltdc_spread)
 (rule "ltdc_spread_60"
   (condition "A.NetClass == 'LTDC'")

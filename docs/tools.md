@@ -144,4 +144,6 @@
 - **两个封装的 courtyard 正好贴边，DRC 报 `courtyards_overlap`，`place_check.py` 不报**（它按面积 > 0.001 mm² 算）：摆件留 0.02 mm 以上。
 - **`busroute` 的快速检查读封装里的禁布区，也把同号的第二个焊盘当障碍**（2026-11-22 起；以前 RJ45 的屏蔽片只认一个、`Shield-board contact area` 不读）。封装里的禁布区在发现里叫 `位号:区名`。
 - **基准板拷真板的 `.kicad_dru` 时要清掉 `len_rules.py` 的生成段**（2026-11-23）：生成段的窗口是按真板量出的长度算的（`sdram_addr_window` 按真板 SDCLK 39.34 mm 卡 `FMC_A*` ≥ 19.34），基准板上同名的网络落在窗口外，busroute 基准的蛇形各例因此报 `length_out_of_range: 1`（`FMC_A3`）。`tests/busroute/check.py` 的 `bench_dru()` 和 `rules_fixture.py` 的静态阶段都只留手写规则、生成段置空；基准要窗口就自己写。
+- **蛇形块的弯数由补线位置的长度决定，要的量不到 n 个最矮的弯时会少画弯**（2026-11-24，H743 板 50 mil 等长）：`tune.py` 取“摆幅不低于 amp、正好补够”的最多弯数，要补 1.18 mm 时画一个 0.72 高的弯而不是两个 0.5 的（两个 0.5 的补 1.485）。规划里写了 n 个弯而量不够时，补线位置加 `humps=n`（`job.slot(..., humps=n)` / `Bundle.slot(..., humps=n)`，只用于单侧）：正好 n 个弯，摆幅按要补的量算、不低于 amp；不低于 amp 也多补时照画，多补多少记一条 NOTE（这根线会比目标长，DRC 的 skew 规则仍是判据）。基准 `tests/busroute/check.py` 的 humps 一例
+- **`track_shape.py` 把同一直线上的两段（线宽变化处，规则区边外 0.3 mm）当成拐角**（2026-11-24 修正）：蛇形的第一个圆弧离线宽变化处不到 0.35 mm 时报 `sharp`。现在同向的两段不算拐角，基准 `tests/track_shape/check.py` 的 E 例
 - **`track_shape.py` 以前遇到圆弧就断开走线**：拐点后 0.1 mm 接同向圆弧的地方报 0 处（RTE-8 的信号）。现在跟着圆弧走；四层板（有圆弧）只多一行 `arc-joint: 0`，其余各项不变，两块没有圆弧的板输出逐字相同（2026-11-22 对比）。

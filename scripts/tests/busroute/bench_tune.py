@@ -4,8 +4,8 @@
           areas (lane pitch 0.9) and up into the south row of U2 (R1, P1, R2, P2, R3; P1 / P2 through channels).
           The inner lanes are shorter (natural spread 9.4 mm); the three short ones have a site on the east leg
           (Bundle.slot, all starting at station 1.2, humps north): D8 six humps, D9 two humps under D8's, D10 a
-          bump. Spread 4.2: check.py's skew rule bench_lane1 (5 mm, it wins over the project's sdram_lane1, 20 mm
-          since 2026-11-23) covers exactly these five nets.
+          bump. Spread 4.2: check.py's skew rule bench_lane1 (5 mm, it wins over the project's sdram_lane1, 1.27 mm
+          since 2026-11-24) covers exactly these five nets.
           On the east leg D11 runs 0.25 mm south of D10 (the lane pitch of the H743 board: 0.148 mm edge to edge, below
           clr 0.19): D10's bump is drawn all the same, it comes no closer to D11 than the straight it replaces.
   hand    L1, FMC_A0..A3 written by hand (bus.keep) from the north row of U1 over the top to the north row
@@ -17,7 +17,9 @@
           A3's site (written first: 2 humps, 3.105) and the rest on A2's; then A1 is aimed at the reached sum - 16 + 0.3.
           With BENCH_TUNE_OBSTACLES (a copy of the board with a GND track on L1 north of A2's site, check.py) the board's
           other copper is an obstacle as well (TUNE_OBSTACLES): A2's block slides east past that track.
-BUSROUTE_BENCH selects the variant: tune (default), short, plain (no TUNING: the natural lengths), ref.
+  humps   (variant "humps", fast check only) as "tune", D10's site with humps=1: one hump of height amp (0.5, adds 0.7425)
+          instead of the bump, 0.5003 more than D10 needs (a NOTE), still inside the lane's window.
+BUSROUTE_BENCH selects the variant: tune (default), short, plain (no TUNING: the natural lengths), ref, humps.
 """
 import os
 from busroute import Bundle
@@ -61,7 +63,8 @@ def routes(job):
                   pitch=0.9, gaps={0: 0.65, 1: 0.8, 2: [0.9, 0.9, 0.25, 0.9], 3: 0.6, 4: 0.4})
     lane.slot("FMC_D8", 2, 1.2, 5.0, side="L")                  # all humps north, the three blocks start on one line:
     lane.slot("FMC_D9", 2, 1.2, 2.8, side="L")                  # D9's humps fit under D8's (0.9 lane pitch)
-    lane.slot("FMC_D10", 2, 3.8, 2.2, side="L")                # D10 needs less than one hump: a bump, where D11 runs 0.25 below
+    lane.slot("FMC_D10", 2, 3.8, 2.2, side="L",                 # D10 needs less than one hump: a bump, where D11 runs 0.25 below
+              humps=1 if VARIANT == "humps" else None)     # (variant humps: one whole hump all the same)
     bus.add(lane, start={n: m[n] for n in LANE1}, end={n: r[n].reversed() for n in LANE1})
     if VARIANT == "ref":                                    # the reference's pieces in this order: A3's site first
         job.slot("FMC_A3", "L1", (17.6, 5.1), (20.6, 5.1), side="L")

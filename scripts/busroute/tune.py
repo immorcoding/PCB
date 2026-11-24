@@ -7,8 +7,8 @@ The routes file (job.py) gives
               "pitch": {"default": 0.3, "FMC_SDCLK_R": 0.5},
               "end": 0.35, "clr": 0.19, "area_gap": 0.127, "keep": 0.7}
 
-and the sites: Bundle.slot(net, leg, s0, length, side, free, pitch) on a bundle lane, job.slot(net, layer, p0, p1,
-side, pitch) on any straight piece of a net's route (a hand-written one too). A net may have several sites; they
+and the sites: Bundle.slot(net, leg, s0, length, side, free, pitch, humps) on a bundle lane, job.slot(net, layer, p0, p1,
+side, pitch, humps) on any straight piece of a net's route (a hand-written one too). A net may have several sites; they
 are used in the order they were written.
 
 What is drawn (all numbers mm):
@@ -26,6 +26,10 @@ What is drawn (all numbers mm):
   a               the lowest height >= amp that adds exactly the need with as many humps as the site takes; raised
                   above amp only when the site is too short at amp, never above amp_max. A leg is absent (a = 2r)
                   or at least min_seg + 0.005 long.
+  humps=n         (site option, one-sided sites) the block has exactly n humps: the height for the need, never below
+                  amp; when n humps at amp add more than the need, they are drawn at amp all the same (the net ends
+                  above its target by the difference, a NOTE says how much), so that a planned block of n humps is not
+                  drawn as fewer, taller ones. A site that holds fewer than n humps is a TUNE finding.
   small           a need below one hump of height amp is one element: a bump (three arcs th, -2th, th, radius r)
                   when it is below a hump of height 2r, else one lower hump (or, when that hump's legs would be
                   shorter than min_seg + 0.005, a leg-less hump of a larger radius). Never a lower tail hump in a block.
@@ -72,10 +76,13 @@ DEFAULTS = {"margin": 0.3, "radius": 0.25, "amp": 0.5, "amp_max": 2.0, "pitch": 
 class Site:
     """A straight of `net` on `layer` from p0 to p1 that may carry a serpentine; humps towards side R (right of
     p0 -> p1 on the picture, y down), L or both."""
-    def __init__(self, net, layer, p0, p1, side="R", pitch=None, label=None, seq=0):
+    def __init__(self, net, layer, p0, p1, side="R", pitch=None, label=None, seq=0, humps=None):
         if side not in ("R", "L", "both"):
             raise RouteError("site of %s: side must be 'R', 'L' or 'both', not %r" % (net, side))
+        if humps is not None and (side == "both" or int(humps) != humps or humps < 1):
+            raise RouteError("site of %s: humps=%r needs a one-sided site and a whole number >= 1" % (net, humps))
         self.net, self.layer, self.side, self.pitch, self.seq = net, layer, side, pitch, seq
+        self.humps = int(humps) if humps is not None else None
         self.p0, self.p1 = (float(p0[0]), float(p0[1])), (float(p1[0]), float(p1[1]))
         self.label = label or "site %s (%g, %g)-(%g, %g)" % (layer, self.p0[0], self.p0[1], self.p1[0], self.p1[1])
         self.L = math.dist(self.p0, self.p1)
@@ -95,7 +102,7 @@ class Site:
 def from_slot(s):
     g = s.geometry()
     return Site(g["net"], g["layer"], g["from"], g["to"], g["side"], s.pitch,
-                "slot %s leg %d s %g..%g" % (g["bundle"], g["leg"], s.s0, s.s0 + s.length), s.seq)
+                "slot %s leg %d s %g..%g" % (g["bundle"], g["leg"], s.s0, s.s0 + s.length), s.seq, getattr(s, "humps", None))
 
 
 # ---------------------------------------------------------------- shapes (u along the site, v towards side +1)
@@ -656,15 +663,29 @@ class Tuning:
         room = rng[1] - rng[0]
         nmax = int(math.floor(room / p - 1 + 1e-9)) if kind == "both" else int(math.floor(room / (2 * p) + 1e-9))
         tests, why = {}, None
-        for el in self._exact(R, kind, r, nmax):
+        els = self._exact(R, kind, r, nmax)
+        if site.humps:                                      # exactly n humps (the site's humps=n)
+            if site.humps > nmax:
+                why = "the site holds %d humps, humps=%d asked" % (nmax, site.humps)
+                self.findings.append(F("TUNE", "%s: %s: %s" % (site.net, site.label, why), site.net, site.p0, layer=site.layer))
+                return None, why
+            nmax = site.humps
+            els = [e for e in els if e[0] == kind and e[1] == nmax]
+            if not els and R < nmax * (2 * S.amp - (8 - 2 * math.pi) * r) - 1e-9:
+                els = [(kind, nmax, S.amp, r)]              # n humps at amp add more than the need: drawn all the same
+        for el in els:
             hit, w = self._try(site, el, sides, rng, tests)
             if hit:
-                return self._commit(site, el, hit, p), None
+                blk = self._commit(site, el, hit, p)
+                if blk["gain"] > R + 1e-3:
+                    self.findings.append(F("NOTE", "%s: %s (humps=%d): %d humps of %.3f add %.3f, %.3f more than the need %.3f" % (
+                        site.net, site.label, site.humps, el[1], el[2], blk["gain"], blk["gain"] - R, R), site.net, site.p0))
+                return blk, None
             why = why or w
         # partial: the most that fits, humps no lower than amp
         best = None
         K = (8 - 2 * math.pi) * r
-        for n in range(nmax, 0, -1):
+        for n in range(nmax, (nmax - 1) if site.humps else 0, -1):
             a_hi = (R / n + K) / 2 if kind == "single" else (R + (4 - math.pi) * r * (n + 1)) / (2 * n)
             a_hi = min(a_hi, S.amp_max)
             grid = [S.amp] + [round(S.amp + 0.005 * i, 4) for i in range(1, int((a_hi - S.amp) / 0.005 + 1e-9) + 1)]

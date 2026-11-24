@@ -304,10 +304,14 @@ def west():
                      [Lp("L1", ["R811.2", (21.99, 67.48), "C806.1"])]]
     # G2: one SW diagonal from its run (x 34.31) to the via (31.96, 43.9), parallel to the lanes' corners; L3 down, east
     # at y 45.88 (south of the SDRAM band), down x 49.1, west at 65.2, down into its FPC via
+    # 2026-11-24 (SDRAM 50-mil plan, out/plan50): east of x 43.8 G2 steps SE to y 48.7 and runs east to x 48.9 before it
+    # turns south (was: along y 45.88 to x 48.7): the SDRAM's L3 south river spreads into that room for zone Z0b
+    # (D6 / D7 / D4 serpentines). The corner into x 49.1 is a 0.4 mm step from x 48.7 (the plan's 0.2 mm step from
+    # x 48.9 is a SHARP turn). 1.53 mm shorter
     pcs = lead("LCD_G2")
     lay, run, w = pcs[-1]
     R["LCD_G2"] = pcs[:-1] + [Lp(lay, list(run[:-1]) + [(34.31, 41.55), (31.96, 43.9)]), V(31.96, 43.9),
-                              Lp("L3", [(31.96, 43.9), (31.96, 45.48), (32.36, 45.88), (48.7, 45.88), (49.1, 46.28), (49.1, 64.8),
+                              Lp("L3", [(31.96, 43.9), (31.96, 45.48), (32.36, 45.88), (43.8, 45.88), (46.62, 48.7), (48.7, 48.7), (49.1, 49.1), (49.1, 64.8),
                                         (48.7, 65.2), (44.25, 65.2), (43.75, 65.7), (43.75, YN)]), *to_fpc(43.75, YN, 26)]
     # CRS_DV (re-sited: south exit at x 36.1): L6 down, west at y 43.8 north of the VDDA_MCU pour, via (32.55, 44.3); L1
     # down x 32.4, SW between the ground / +3V3_MCU vias, west along y 49.75 into pin 11 (between R503.2 and the RXER

@@ -36,8 +36,8 @@ The routes file is a Python file in the board's folder:
                             A group may instead be {"nets": [...], "ref": [nets summed], "lo": -20, "hi": 20}: every
                             member within lo..hi of the summed reference; the reference is lengthened first (tune.py).
     TUNE_OBSTACLES = path   a board whose other nets' copper the serpentines also keep clear of (groups built later)
-                            Sites: Bundle.slot(net, leg, s0, length, side, free, pitch) on a bundle lane, and
-                            job.slot(net, layer, p0, p1, side="R"|"L"|"both", pitch=None) on any straight piece of a
+                            Sites: Bundle.slot(net, leg, s0, length, side, free, pitch, humps) on a bundle lane, and
+                            job.slot(net, layer, p0, p1, side="R"|"L"|"both", pitch=None, humps=None) on any straight piece of a
                             net's route (hand-written ones too). A net's sites are used in the order they were written.
                             A net that cannot reach its target is a TUNE finding "missing X mm at site ..." (RTE-15).
                             Not with SHARED. `build.py <routes> --tuning-budget` prints targets, needs and the RTE-2
@@ -67,11 +67,12 @@ class Job:
         self.buses.append(b)
         return b
 
-    def slot(self, net, layer, p0, p1, side="R", pitch=None):
+    def slot(self, net, layer, p0, p1, side="R", pitch=None, humps=None):
         """A serpentine site on the straight piece of `net`'s route on `layer` from p0 to p1 (local mm; any two
         points of one straight segment). side: humps to the right ("R") or left ("L") of p0 -> p1 on the picture,
-        or "both"; pitch: None = TUNING's pitch for the net. Used only when the routes file has TUNING."""
-        s = tune.Site(net, layer, p0, p1, side, pitch, seq=next(SEQ))
+        or "both"; pitch: None = TUNING's pitch for the net; humps: None = as many as the site takes, n = exactly n
+        (tune.py). Used only when the routes file has TUNING."""
+        s = tune.Site(net, layer, p0, p1, side, pitch, seq=next(SEQ), humps=humps)
         self.sites.append(s)
         return s
 

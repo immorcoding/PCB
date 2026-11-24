@@ -161,11 +161,12 @@ class Bundle:
         return at_uv(L["D"], U, V)
 
     # ---- serpentine sites (drawn by the tuning stage, tune.py, when the routes file has TUNING)
-    def slot(self, net, leg, s0, length, side="R", free=None, pitch=None):
+    def slot(self, net, leg, s0, length, side="R", free=None, pitch=None, humps=None):
         """A serpentine site: `length` mm of straight on lane `net` from station s0 of `leg`, humps towards
         "R" / "L" (higher / lower lane numbers) or "both". With free = mm the neighbours on that side step aside
         (widen) so that their centre line is `free` away over the site. pitch = leg centre distance of the
-        serpentine (None: TUNING's pitch for the net). Returns a Slot; bus.tuning() lists them."""
+        serpentine (None: TUNING's pitch for the net); humps = exactly that many humps (tune.py). Returns a Slot;
+        bus.tuning() lists them."""
         i, L = self.idx(net), self.legs[leg]
         if free is not None:
             for sd in ((1, -1) if side == "both" else ((1,) if side == "R" else (-1,))):
@@ -174,14 +175,15 @@ class Bundle:
                     have = L["gv"][min(i, j)] / G / L["sc"]
                     if free > have + 1e-9:
                         self.widen(leg, s0, s0 + length, after=i, by=free - have, side=sd)
-        s = Slot(self, i, leg, s0, length, side, pitch)
+        s = Slot(self, i, leg, s0, length, side, pitch, humps)
         self.slots.append(s)
         return s
 
 
 class Slot:
-    def __init__(self, b, i, leg, s0, length, side, pitch):
+    def __init__(self, b, i, leg, s0, length, side, pitch, humps=None):
         self.b, self.i, self.leg, self.s0, self.length, self.side, self.pitch, self.net = b, i, leg, s0, length, side, pitch, b.nets[i]
+        self.humps = humps
         self.seq = next(SEQ)                                # sites of a net are used in the order they were written
 
     def geometry(self):
