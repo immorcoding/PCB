@@ -212,7 +212,13 @@ route1|route2)
   cat "$O/pour_islands.txt"
   $PY "$R/scripts/escape_check.py" "$BRD" --ref U201 --ref U301 --window 27 25 66 51 --json "$O/escape_bga.json" 2>&1 | quiet > "$O/escape.txt"
   $PY "$R/scripts/dru_canary.py" "$BRD" 2>&1 | quiet > "$O/canary.txt" || true
-  $PY "$R/scripts/dru_match.py" "$BRD" --json "$O/dru_match.json" > "$O/dru_match.txt" 2>&1 || true
+  # SKIP_DRU_MATCH=1: leave out the rule matching (one DRC per rule, one at a time: 7-8 minutes); run it once at the end
+  # with `build.sh finish-checks` (2026-11-23: the PC hard-reset under parallel load, so heavy steps are kept few)
+  if [ -n "$SKIP_DRU_MATCH" ]; then
+    echo "dru_match skipped (SKIP_DRU_MATCH): run build.sh finish-checks once at the end" > "$O/dru_match.txt"
+  else
+    $PY "$R/scripts/dru_match.py" "$BRD" --json "$O/dru_match.json" > "$O/dru_match.txt" 2>&1 || true
+  fi
   echo "== pictures (qualitative review only)"
   $PY "$D/copper_view.py" "$BRD" "$O" L1 L3 L4 L6 --scale 40 --window 29 26 66 50 --name bus 2>&1 | quiet | tr '\n' ' '; echo
   $PY "$D/copper_view.py" "$BRD" "$O" L1 L2 L3 L4 L6 --scale 90 --window 36 37 46 47 --name mcu_south --via-labels 2>&1 | quiet | tr '\n' ' '; echo

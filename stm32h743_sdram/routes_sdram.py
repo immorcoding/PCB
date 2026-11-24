@@ -42,8 +42,8 @@ GROUPS = {"lane0": ["FMC_D%d" % i for i in range(8)] + ["FMC_NBL0"], "lane1": ["
           "addr": ADDR, "clock": ["FMC_SDCLK", "FMC_SDCLK_R"]}
 YIELD_NETS = ["GND"]
 DRC_IGNORE = {"skew_out_of_range": "2026-11-23 tuning (RTE-15): no byte lane reaches the 5 mm of sdram_lane0-3 with tidy serpentines in the "
-                                   "room the routed board leaves (lane 0 8.75, lane 1 9.62, lane 2 20.42, lane 3 13.30 mm (stop 8: D26 without its lone hump); limiting nets "
-                                   "D7, D13, D21, D26, reported per net in the tuning report); the address / command window "
+                                   "room the routed board leaves (compact pass 2026-11-23: lane 0 8.75, lane 1 10.17, lane 2 17.52, lane 3 13.30 mm; limiting nets "
+                                   "D7, D9, D19, D26, reported per net in the tuning report); the address / command window "
                                    "(sdram_addr_window) is met and is not ignored"}
 # ---- stop 6 part B: length tuning of the four byte lanes (RTE-2, RTE-7, RTE-15; SPEC 9: inside a lane longest -
 # shortest <= 5 mm). spread per lane = the window aimed at (5 where the room allows it, see the report for the others);
@@ -57,7 +57,12 @@ DRC_IGNORE = {"skew_out_of_range": "2026-11-23 tuning (RTE-15): no byte lane rea
 # before (their blocks kept). Stop 8 (review 2): lane 3 13.6 (was 12.74): FMC_D26's lone hump removed, D26 (24.88 mm
 # natural) is the lane's shortest and the target (longest D28 38.17 - 13.6 + margin 0.3 = 24.87) lies just below it, so
 # D25 / D27 / D31 are matched to D26 (spread about 13.29, was 12.73)
-LANE_SPREAD = {"lane0": float(os.environ.get("SPREAD0", "8.76")), "lane1": float(os.environ.get("SPREAD1", "9.92")), "lane2": float(os.environ.get("SPREAD2", "20.72")), "lane3": float(os.environ.get("SPREAD3", "13.6"))}
+# compact (2026-11-23, user review): l1s pulled in (D9 / D12 / D11 / D8 about 2.5 mm shorter) and l4ss pulled up (D16 /
+# D17 2.7 mm shorter). Lane 1's target is D9's natural length (D9 has no room for a block that would not push the
+# bundle's outer lanes outwards again): 10.47 (was 9.92). Lane 2: D16 is 2.7 shorter; the target is D19's natural
+# length (D19 would otherwise get one lone 0.47 mm hump; D21 / D22 / D23 have no site): 17.83 (was 20.72), D18
+# lengthened on its site.
+LANE_SPREAD = {"lane0": float(os.environ.get("SPREAD0", "8.76")), "lane1": float(os.environ.get("SPREAD1", "10.47")), "lane2": float(os.environ.get("SPREAD2", "17.83")), "lane3": float(os.environ.get("SPREAD3", "13.6"))}
 # 2026-11-23 (user, SPEC 9): every address / command line within 20 mm of the clock, the clock summed across R201;
 # the clock is lengthened first (pitch 0.5, radius 0.25), then the short address lines (data pitch)
 ADDR_WINDOW = float(os.environ.get("ADDR_WINDOW", "20"))
@@ -88,6 +93,10 @@ VIEWS = [("all", 29.0, 26.0, 66.0, 50.0, 40), ("strip", 44.0, 28.0, 54.0, 46.0, 
          ("mcu", 33.0, 30.0, 47.0, 44.0, 100)]
 
 P = 0.25                                   # lane pitch outside the rule areas
+# l6s's east leg under the strip and the SDRAM (compact, 2026-11-23: tried 0.25 mm higher; it shortens FMC_D7, lane 0's
+# shortest net, which has no room for a serpentine, so lane 0's spread grows by 0.35: left at 43.6)
+L6S_Y0 = float(os.environ.get("L6S_Y0", "43.6"))
+L6S_WE = L6S_Y0 + 0.25 * 8
 GND_RETURN = [                             # (x, y): the layer changes they serve
     (29.95, 32.2),                         # A10 (30.65, 32.8) and A6 (31.15, 31.9), L4 -> L1 west of the crystal box
     (34.15, 32.95),                        # D28 (33.3, 33.25) L4 -> L1, A3 (32.1, 31.6) has no site of its own
@@ -214,7 +223,9 @@ def routes(job):
         # L1 nets with deep balls on the south side
         # A11 surfaces with a 45 degree step on L4, so that the track does not turn 90 degrees across its via (sketch:
         # L4 straight down to (40.0, 46.3), L1 east from there)
-        "FMC_A11": db("M7", (39.675, 39.925), "L4", [(40.0, 40.25), (40.0, 45.95), (40.35, 46.3)]) + [("via", (40.35, 46.3)), ("L1", [(40.35, 46.3), (40.65, 46.3)])],
+        # compact (2026-11-23, user review "pull the bus in"): A11's via stays (LCD_G2 runs on L3 at y 45.88 just north
+        # of it); on L1 it runs east 1.65 mm and steps NE up onto its lane (y 45.6, was 46.3), clear of D8's corner
+        "FMC_A11": db("M7", (39.675, 39.925), "L4", [(40.0, 40.25), (40.0, 45.95), (40.35, 46.3)]) + [("via", (40.35, 46.3)), ("L1", [(40.35, 46.3), (42.0, 46.3), (42.7, 45.6)])],
         # round 3 (user): no SDRAM track on L1 beside the crystal pins E1-H1 (box x 29-34, y 33.5-38.5). A10, A3 and D28
         # pass the west side on L4 and come up to L1 north of the box; A6 goes down south of it (see l1n)
         # stop 7 part 2: A10's west leg runs on the row-L line (y 38.95) instead of y 39.925 and steps down to y 39.5
@@ -371,7 +382,8 @@ def routes(job):
         y0["FMC_D3"] = s_d3[-1][1][-1][1]
         xs = {"FMC_D3": 50.45, "FMC_D24": 50.2, "FMC_D20": 49.95, "FMC_BA0": 49.7, "FMC_D13": 49.45, "FMC_D14": 49.2}
         se = {n: xs[n] - y0[n] - 0.3 for n in e_n}
-        yb = {"FMC_D24": 43.55, "FMC_D20": 43.8, "FMC_BA0": 44.05, "FMC_D13": 44.3, "FMC_D14": 44.55}
+        # compact (2026-11-23): the east leg under the SDRAM 0.2 mm higher (D24 hole to copper 0.2 from the vias of row y 43.0)
+        yb = {"FMC_D24": 43.35, "FMC_D20": 43.6, "FMC_BA0": 43.85, "FMC_D13": 44.1, "FMC_D14": 44.35}
         se2 = {n: xs[n] - yb[n] + 0.4 for n in yb}
         xn = {"FMC_D20": 57.1, "FMC_BA0": 57.4, "FMC_D13": 57.7, "FMC_D14": 58.0}
         ne = {n: xn[n] + yb[n] - 0.4 for n in xn}
@@ -387,7 +399,7 @@ def routes(job):
         bus.add(l1e, start={"FMC_D3": s_d3, "FMC_D24": m["FMC_D24"], "FMC_D20": s_d20, "FMC_BA0": m["FMC_BA0"],
                             "FMC_D13": m["FMC_D13"], "FMC_D14": m["FMC_D14"]},
                 end={"FMC_D3": [(50.45, 39.2), (51.05, 39.8), (54.2, 39.8), "U301.M2"],
-                     "FMC_D24": [(55.0, 43.2), (55.0, 33.4), "U301.C3"],
+                     "FMC_D24": [(55.0, 43.0), (55.0, 33.4), "U301.C3"],
                      "FMC_D20": [(57.1, 35.3), "U301.D7"],
                      "FMC_BA0": [(57.4, 39.0), "U301.J7"],
                      "FMC_D13": [(57.7, 41.1), "U301.M7"],
@@ -396,21 +408,32 @@ def routes(job):
         # l1s: D11 D12 D9 D8 (+ A11) going S (left = east), then E, then N up the SDRAM's east side
         s_n = ["FMC_D11", "FMC_D12", "FMC_D9", "FMC_D8", "FMC_A11"]
         xs = {"FMC_D11": 42.275, "FMC_D12": 41.95, "FMC_D9": 41.3, "FMC_D8": 40.975}
-        ys = {"FMC_D11": 45.3, "FMC_D12": 45.55, "FMC_D9": 45.8, "FMC_D8": 46.05, "FMC_A11": 46.3}
+        # compact (2026-11-23, user review): the east leg right under l1e's (0.25 below D14, was 0.75 lower) and the
+        # north leg up the SDRAM's east side inside its rule area (was x 61.6 - 62.6 at 0.25): D11 0.3 mm east of the
+        # col-9 vias; D12 / D9 / D8 / A11 as far west as their entries into the east face allow without three
+        # bends inside 2 mm (track_shape crowded): D12 and D8 need about 2 mm from their NW turn to the SW step into the
+        # ball. The south-east corners are 1.0 mm diagonals (0.6 before) for the same reason
+        ys = {"FMC_D11": 44.6, "FMC_D12": 44.85, "FMC_D9": 45.1, "FMC_D8": 45.35, "FMC_A11": 45.6}
         se = {n: xs[n] - ys[n] + 0.3 for n in xs}
-        xe = {"FMC_D11": 61.6, "FMC_D12": 61.85, "FMC_D9": 62.1, "FMC_D8": 62.35, "FMC_A11": 62.6}
-        ne = {n: xe[n] + ys[n] - 0.6 for n in xe}
+        # D11 leaves the east leg on one NE diagonal straight into R9 (no north leg: three bends inside 1.2 mm otherwise)
+        xe = {"FMC_D12": 61.45, "FMC_D9": 61.65, "FMC_D8": 61.85, "FMC_A11": 62.1}
+        ne = {n: xe[n] + ys[n] - 1.0 for n in xe}
         legs = [("S", xs), ("SE", se), ("E", ys), ("NE", ne), ("N", xe)]
-        l1s = bund("l1s", s_n, "L1", legs, 43.0, 40.0, {"FMC_A11": (2, 4)})
+        l1s = bund("l1s", s_n, "L1", legs, 43.0, 40.0, {"FMC_A11": (2, 4), "FMC_D11": (0, 2)})
         # 2026-11-23 tuning: D11 (lane 1), the north lane of the east leg below the MCU, humps north into the free L1
         # room under the MCU area (station = x - 42.575, D11's corner)
-        l1s.slot("FMC_D11", 2, 43.0 - 42.575, 48.5 - 43.0, side="L")
+        # compact (2026-11-23): the shorter east leg leaves D12 (lane 1) below the lane's target. D11's site shrinks to
+        # x 42.95 - 45.55 and D12 gets x 46.3 - 48.5 next to it, humping north with D11 stepped north over it (free =
+        # hump + 0.19 + track); both under the MCU's south edge, away from the outside of the bus (a block humping south
+        # would push D9 / D8 / A11 out again). Was: D11 alone, x 43.0 - 48.5
+        l1s.slot("FMC_D11", 2, 42.95 - 42.575, 2.6, side="L")
+        l1s.slot("FMC_D12", 2, 46.3 - 42.575, 2.2, side="L", free=0.92)
         bus.add(l1s, start={"FMC_D11": m["FMC_D11"], "FMC_D12": m["FMC_D12"], "FMC_D9": m["FMC_D9"], "FMC_D8": m["FMC_D8"], "FMC_A11": a11},
-                end={"FMC_D11": [(61.6, 43.0), (61.2, 42.6), "U301.R9"],
-                     "FMC_D12": [(61.85, 42.6), (61.45, 42.2), (59.8, 42.2), "U301.R8"],
-                     "FMC_D9": [(62.1, 42.2), (61.7, 41.8), "U301.P9"],
-                     "FMC_D8": [(62.35, 41.8), (61.95, 41.4), (59.8, 41.4), "U301.N8"],
-                     "FMC_A11": [(62.6, 37.4), (62.2, 37.0), "U301.H9"]})
+                end={"FMC_D11": ["U301.R9"],
+                     "FMC_D12": [(61.45, 43.2), (60.45, 42.2), (59.8, 42.2), "U301.R8"],
+                     "FMC_D9": [(61.65, 42.5), (60.95, 41.8), "U301.P9"],
+                     "FMC_D8": [(61.85, 41.85), (61.4, 41.4), (59.8, 41.4), "U301.N8"],
+                     "FMC_A11": [(62.1, 37.25), (61.85, 37.0), "U301.H9"]})
     # ---------------------------------------------------------------- SEC (L3; L6 until 2026-11-23)
     def via_end(pts, via, ball, lay=SEC):
         """End terminal: `pts` on the inner layer, a 0.30 via, the dog-bone to the SDRAM ball on L1."""
@@ -474,13 +497,13 @@ def routes(job):
         # l6ww: WE west, south down the west side, east (joins l6s as its outer lane)
         # stop 6: the SW leg starts at the lead's end (34.0, 38.3); sketch: a W leg and a 0.283 mm SW chamfer (SHARP)
         l6ww = bund("l6ww", ["FMC_SDNWE"], SEC, [("SW", {"FMC_SDNWE": 34.0 + 38.3}),
-                                                    ("S", {"FMC_SDNWE": 33.6}), ("SE", {"FMC_SDNWE": 33.6 - 45.6 + 0.6}),
-                                                    ("E", {"FMC_SDNWE": 45.6})], 34.0, 36.0)
+                                                    ("S", {"FMC_SDNWE": 33.6}), ("SE", {"FMC_SDNWE": 33.6 - L6S_WE + 0.6}),
+                                                    ("E", {"FMC_SDNWE": L6S_WE})], 34.0, 36.0)
         bus.add(l6ww, start={"FMC_SDNWE": m["FMC_SDNWE"]})
         # l6s: D6 D7 D4 D5 A8 A9 A7 RAS (+ WE) south, east under the SDRAM; D6 D7 D4 up its west face, the rest up the aisle
         s6 = ["FMC_D6", "FMC_D7", "FMC_D4", "FMC_D5", "FMC_A8", "FMC_A9", "FMC_A7", "FMC_SDNRAS", "FMC_SDNWE"]
         xs = {"FMC_D6": 41.3, "FMC_D7": 40.65, "FMC_D4": 40.325, "FMC_D5": 40.0, "FMC_A8": 39.675, "FMC_A9": 39.025, "FMC_A7": 38.7, "FMC_SDNRAS": 38.375}
-        ye = {n: 43.6 + 0.25 * i for i, n in enumerate(s6)}
+        ye = {n: L6S_Y0 + 0.25 * i for i, n in enumerate(s6)}
         xw = {"FMC_D6": 52.1, "FMC_D7": 52.35, "FMC_D4": 52.6}
         xa = {"FMC_D5": 55.6, "FMC_A8": 56.2, "FMC_A9": 56.6, "FMC_A7": 57.0, "FMC_SDNRAS": 57.4, "FMC_SDNWE": 57.8}
         legs = [("S", xs), ("SE", {n: xs[n] - ye[n] + 0.3 for n in xs}), ("E", ye)]
@@ -606,7 +629,10 @@ def routes(job):
         xs = {"FMC_D17": 43.9, "FMC_D16": 43.25}
         # round 3: below the L1 band, so that the south-east corner balls can drop through. opt1 (review 1): 0.75 mm north
         # (was 47.5 / 47.75): off the top edge of the +5V arm of L5 (y 48), 1.5 mm shorter each
-        ye = {"FMC_D17": 46.75, "FMC_D16": 47.0}
+        # compact (2026-11-23, user review): 1.35 mm north (was 46.75 / 47.0), the lowest the L5 gaps allow: D17's
+        # lower edge stays north of nothing, its upper edge 0.05 south of the +3V3_MCU block's south gap (y 44.8 - 45.3,
+        # x 36.4 - 46) and the +3V3_SDRAM block's (y 44.5 - 45.0); D15's serpentine no longer reaches into this band
+        ye = {"FMC_D17": 45.4, "FMC_D16": 45.65}
         xn = {"FMC_D17": 61.75, "FMC_D16": 62.0}
         yw = {"FMC_D17": 29.85, "FMC_D16": 29.6}
         legs = [("S", xs), ("SE", {n: xs[n] - ye[n] + 0.3 for n in ss}), ("E", ye), ("NE", {n: xn[n] + ye[n] - 0.6 for n in ss}),
