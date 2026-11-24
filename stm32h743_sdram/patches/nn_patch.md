@@ -15,7 +15,7 @@ Change (SDRAM group, routes_sdram.py, net FMC_D2, its first L1 piece; nothing el
 FMC_D2 then leaves between A11 (unconnected) and A12, over the feed column on L1 (no via there, the L5 feed is not
 touched). FMC_D2 gets 0.65 mm longer (22.364 mm in the trial; lane 0 spread must be re-checked by the SDRAM table).
 
-Then A12 in the plan (bga_fan.json signal entry, or fan_leads):
+Then A12 in the plan (bga_fan.json signal entry, or routing.fan_plan):
 
     SDMMC1_CK  ball A12 (42.6, 32.45), via (42.925, 32.125), layer L3, side N,
                run (42.925, 32.125) -> (42.925, 31.0), exit (42.925, 31.0)
@@ -56,7 +56,7 @@ other group's vias would also hit the power vias (38.587, 27.15) and (42.025, 26
 to give way here; the main session decides (e.g. the plan swaps D6 BOOT0 and B6 QSPI_BK1_NCS layers, or NCS leaves
 north on L3 past my BOOT0 via at (39.35, 24.5)).
 
-## 4. Layout suggestion (optional, place.py / copper.sketch): microSD pull-ups
+## 4. Layout suggestion (optional, place.toml / copper.sketch): microSD pull-ups
 
 R801-R806 are in the order CMD, D0, D1, D2, D3, CD while the socket contacts are D2, D3, CMD, CK, D0, D1, CD, and
 the L1 band of +3V3_SD (y 17.85-18.65) lies between pull-ups and socket. Every SD line therefore needs

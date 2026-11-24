@@ -1,6 +1,6 @@
 """Trial escape (probe), NOT part of any deliverable: can the non-SDRAM balls on the MCU's east side get out past the
 SDRAM rivers, and at what cost? Built on a snapshot of the committed board (SDRAM group as formal routing, power vias
-and pours, fills removed with copper_report.py unfill), never on the real board:
+and pours, fills removed with core.boardtext unfill), never on the real board:
 
     D:\\KiCad\\bin\\python.exe -m Tools.KiCadDesignTools.routing.busroute.build stm32h743_sdram\\routes_probe_east.py --sketch --out stm32h743_sdram\\out\\probe_east\\run
 

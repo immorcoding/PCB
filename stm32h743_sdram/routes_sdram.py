@@ -5,7 +5,7 @@ plan_summary.txt the blocks per zone, plan.py the check); this file draws that p
 packages and the SDRAM ball of every net as in out/plan50/swap_new.csv (now swap.csv: seven bits swapped inside
 lanes 1, 2 and 3: DQ2 / DQ0, DQ19 / DQ23 / DQ21, DQ30 / DQ29).
 
-    sh stm32h743_sdram/build.sh route2           (the real board: this group, then the power and local groups)
+    D:\KiCad\bin\python.exe -m Tools.KiCadDesignTools.build stm32h743_sdram route   (the real board: this group, then the power and local groups)
     D:\KiCad\bin\python.exe -m Tools.KiCadDesignTools.routing.busroute.build stm32h743_sdram\routes_sdram.py --fast
     D:\KiCad\bin\python.exe -m Tools.KiCadDesignTools.routing.busroute.build stm32h743_sdram\routes_sdram.py --tuning-budget
     SDRAM_BOARD=<copy of the board> SDRAM_TUNE_OBSTACLES=<copy> ... --fast     (on a copy with every other group)
@@ -55,9 +55,9 @@ TUNING = {"groups": dict({g: {"nets": GROUPS[g], "spread": LANE_SPREAD[g]} for g
                          addr={"nets": ADDR, "ref": ["FMC_SDCLK", "FMC_SDCLK_R"], "lo": -ADDR_WINDOW, "hi": ADDR_WINDOW}),
           "margin": 0.3, "radius": 0.25, "amp": 0.5, "amp_max": 2.0, "pitch": {"default": 0.3, "FMC_SDCLK": 0.5, "FMC_SDCLK_R": 0.5},
           "end": 0.35, "clr": 0.19, "area_gap": 0.127, "keep": 0.7}
-if os.environ.get("NOTUNE"):                 # the natural routes (room surveys: tune_sites.py on a build of this)
+if os.environ.get("NOTUNE"):                 # the natural routes (room surveys: routing.tune_sites on a build of this)
     TUNING = None
-# the copper of the groups built after this one (build.sh route2: the board as the last build left it); the
+# the copper of the groups built after this one (the route step: the board as the last build left it); the
 # serpentines keep clear of it (tune.py)
 TUNE_OBSTACLES = os.environ.get("SDRAM_TUNE_OBSTACLES") or None
 # corridors the MCU's other signals use on the SDRAM's layers next to the tuning zones (no serpentine; route1_report

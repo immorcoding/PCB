@@ -2,10 +2,10 @@
 power / signal): every supply and ground ball of U201 (MCU) and U301 (SDRAM) on a 0.30 / 0.15 via of its own by an
 L1 dog-bone (GND: the L2 plane, +3V3_MCU / +3V3_SDRAM: their L5 blocks), and the bottom decoupling over those vias.
 
-    sh stm32h743_sdram/build.sh route2          (the whole board; this group follows routes_power.py)
+    D:\\KiCad\\bin\\python.exe -m Tools.KiCadDesignTools.build stm32h743_sdram route   (the whole board; this group follows routes_power.py)
     D:\\KiCad\\bin\\python.exe -m Tools.KiCadDesignTools.routing.busroute.build stm32h743_sdram\\routes_power_bga.py --fast
 
-The sites come from the BGA block plan bga_fan.json (bga_fan.py: one mixed integer program over the ball lattice
+The sites come from the BGA block plan bga_fan.json (planning.bga_fan: one mixed integer program over the ball lattice
 for the supply vias, the capacitor places and the fan-out of the MCU's signal balls, with the plane-slot rule
 exact); this file only draws them and checks each piece against the board (bga_power.BgaPlanner). A capacitor pad
 lies over a via of its net (a ball's or one of its own, the approved via-in-pad under the BGAs); the VDDA filter

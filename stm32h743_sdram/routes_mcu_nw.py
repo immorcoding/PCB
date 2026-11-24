@@ -4,7 +4,7 @@ header / reset key, BOOT0, the SD card lines CMD / D3 / D1 / CD and CAN_STB. Eac
 gates at x 30.0); from there every net is written by hand with coordinates (RTE-3).
 
     LOCAL_BOARD=<board> D:\\KiCad\\bin\\python.exe -m Tools.KiCadDesignTools.routing.busroute.build stm32h743_sdram\\routes_mcu_nw.py --fast
-    (build.sh route2 builds it on the real board after routes_mcu_south.py)
+    (the driver's route step builds it on the real board after routes_mcu_south.py)
 
 Territory (shared with the south / west agent, stop 7): the L4 band x 27.5-44, y 25.4-27.45 and the west corridor
 x 27.5-30.6, y 25.4-40 belong to the other group on L4: this group crosses them on L1 / L3 / L6 only and puts no

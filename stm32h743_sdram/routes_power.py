@@ -1,10 +1,10 @@
 """Power group of the STM32H743 + SDRAM board (stop 5, power and copper, part A): every via and short tie of the
 copper-class nets (SPEC 5) outside the two BGA rule areas. The pours themselves come from copper.sketch.
 
-    sh stm32h743_sdram/build.sh copper          (the whole step: sketch, this group, refill, measures)
+    D:\\KiCad\\bin\\python.exe -m Tools.KiCadDesignTools.build stm32h743_sdram copper   (the whole step: sketch, this group, refill, measures)
     D:\\KiCad\\bin\\python.exe -m Tools.KiCadDesignTools.routing.busroute.build stm32h743_sdram\\routes_power.py --fast
 
-The sites are searched by power_ties.py at build time against the pads, the copper.sketch regions and the
+The sites are searched by copper.power_ties at build time against the pads, the copper.sketch regions and the
 SDRAM line-order sketch (tracks and vias of the `sdram` group on out/sketch/rot0), so the group comes out the
 same on the real board and on the sketch copy (POWER_BOARD=<that board> builds it there). Nothing is placed in
 the BGA rule areas; the supply and ground balls of U201 / U301, their dog-bones and the bottom decoupling
@@ -35,8 +35,8 @@ DRC_IGNORE = {"via_dangling": "this build does not refill the pours; build.sh co
 ALLOW_VIA_ON = ["U601.33"]    # codec exposed pad: thermal vias, approved like the PHY's (stop 4 round 2)
 HERE = os.path.dirname(os.path.abspath(__file__))
 SKETCH_BOARD = os.path.join(HERE, "out", "sketch", "rot0", "stm32h743_sdram.kicad_pcb")
-# the board whose FMC_ tracks and vias are the obstacles of this group: the line-order sketch copy (build.sh copper),
-# or, once the bus is on the real board (build.sh route1), that board itself: SDRAM_OBSTACLES=<board>
+# the board whose FMC_ tracks and vias are the obstacles of this group: the line-order sketch copy (the copper step),
+# or, once the bus is on the real board (the route step), that board itself: SDRAM_OBSTACLES=<board>
 OBSTACLES = os.environ.get("SDRAM_OBSTACLES", SKETCH_BOARD)
 VIA = (0.45, 0.2)
 
@@ -118,7 +118,7 @@ GND_TIGHT = {"U101.1": 0.5, "C104.2": 0.5, "U701.2": 0.5, "C705.2": 0.5, "C102.2
 GND_IC = ["U401.4", "U401.9", "U601.6", "U601.17", "U601.21", "U601.26", "U801.2", "D801.3", "D102.2",
           "Y501.2", "Y501.4", "Y201.2", "Y201.4"]
 GND_CONN = ("J601", "J602", "J701", "J801", "J803")
-GND_ISLAND = ["R101.2", "R708.2"]     # pads whose L1 ground pour piece KiCad's refill leaves on its own (pour_islands.py)
+GND_ISLAND = ["R101.2", "R708.2"]     # pads whose L1 ground pour piece KiCad's refill leaves on its own (copper.pour_islands)
 # L5 +5V: the strip under the top connectors and the leg down to R112 are 3 mm wide; no via of another net may cut
 # them (a ground via of J801 left 1.7 mm at the strip's east end in the first build)
 PROTECT = [("+5V", (33.5, 5.5, 64.0, 8.5)), ("+5V", (33.5, 8.5, 36.5, 22.5)),

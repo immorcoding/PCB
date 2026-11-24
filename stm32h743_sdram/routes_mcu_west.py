@@ -4,7 +4,7 @@ its pull-up R401, RMII_TX_EN / RMII_TXD0 to the PHY's north pins, and PHY_NRST r
 (board mm - 100); every net written with coordinates (RTE-3, RTE-4).
 
     LOCAL_BOARD=<board> D:\\KiCad\\bin\\python.exe -m Tools.KiCadDesignTools.routing.busroute.build stm32h743_sdram\\routes_mcu_west.py --fast
-    (build.sh route2 builds it on the real board after routes_mcu_sw.py)
+    (the driver's route step builds it on the real board after routes_mcu_sw.py)
 
   L3   from each gate north, nested 45-degree turns west at rows y 29.15 .. 27.9 (B6 southmost), north into a staircase
        of seven vias (34.75, 27.32) .. (37.45, 24.8) (0.45 east, 0.42 north each); G3 (L6 gate at x 40.65, TXD0's L3 x)

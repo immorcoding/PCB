@@ -3,7 +3,7 @@
     D:\\KiCad\\bin\\python.exe stm32h743_sdram\\decap_search.py [<board with the sketch tracks>]
 
 Default board: out/sketch/rot0/stm32h743_sdram.kicad_pcb (written by the line-order build, constraint 1 of stop 4).
-Prints PLACE entries for place.py; the table in place.py stays the source (this script only proposes).
+Prints PLACE entries (the old place.py table, now place.toml [parts]); place.toml stays the source (this script only proposes).
 
 Rules it keeps, on L6 (B.Cu, where these parts sit):
   - pads clear of every L6 track and every via of another net: 0.10 mm inside the BGA rule areas (rule 0.09),

@@ -3,7 +3,7 @@
 SDRAM track outside the ball fields, so every lane is clear of the bus as soon as it leaves the MCU's rule area.
 
     LOCAL_BOARD=<board> D:\\KiCad\\bin\\python.exe -m Tools.KiCadDesignTools.routing.busroute.build stm32h743_sdram\\routes_mcu_east.py --fast
-    (build.sh route2 builds it on the real board after routes_local_eth.py)
+    (the driver's route step builds it on the real board after routes_local_eth.py)
 
   north   the CAN pair up the strip between the packages (L6, x 46.5 / 46.75) to y 22.0 / 22.4, east to the
           transceiver, a via to L1 into U801.1 / U801.4 (complete)
