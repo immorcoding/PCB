@@ -1,0 +1,71 @@
+SDRAM rot 0, gap 8.0, dy 0.0, lane map 1023 (MCU lane -> SDRAM byte), 4719 options, 0 compatible pairs, time limit
+SDRAM centre (57.00, 37.00)
+bit matching ok; crossings left on a layer: 0 
+left without a place: none
+limits exceeded: none
+layer net          MCU  side way depth  SDRAM entry  est.mm vias
+L1   FMC_A11      M7   S    cw   4     H9    out     32.9  2
+L1   FMC_A10      N7   S    cw   3     G7    endA    41.3  2
+L1   FMC_A6       P6   S    cw   2     G3    endA    39.6  0
+L1   FMC_A3       J2   W    cw   2     F3    endA    38.0  0
+L1   FMC_D28      C3   W    cw   3     D3    endA    33.0  2
+L1   FMC_D29      C2   W    cw   2     A1    out     26.6  0
+L1   FMC_D30      D3   N    cw   4     B1    out     21.7  2
+L1   FMC_NBL3     C4   N    cw   3     F2    out     22.5  2
+L1   FMC_NBL0     A4   N    cw   1     K1    out     22.7  0
+L1   FMC_D2       B12  N    cw   2     L2    out     19.7  0
+L1   FMC_D3       C12  E    -    4     M2    out     14.7  2
+L1   FMC_D24      E14  E    -    2     C3    endR    28.6  0
+L1   FMC_D20      K12  E    -    4     D7    endR    27.6  2
+L1   FMC_BA0      K14  E    -    2     J7    endR    22.6  0
+L1   FMC_D13      P15  E    -    1     M7    endR    18.7  0
+L1   FMC_D14      P14  E    -    2     N7    endR    18.7  0
+L1   FMC_D11      P11  S    ccw  2     R9    out     23.4  0
+L1   FMC_D12      R11  S    ccw  1     R8    out     23.5  0
+L1   FMC_D9       R10  S    ccw  1     P9    out     24.2  0
+L1   FMC_D8       P10  S    ccw  2     N8    out     26.4  0
+L4   FMC_D17      M13  S    cw   4     A8    endA    34.5  2
+L4   FMC_D16      M12  S    cw   4     B9    endA    36.7  2
+L4   FMC_A2       H2   W    cw   2     F7    endA    39.3  2
+L4   FMC_SDNE0    G4   W    cw   4     J8    endA    42.9  2
+L4   FMC_NBL1     A3   N    cw   1     K9    endA    33.4  2
+L4   FMC_SDNCAS   B7   N    cw   2     K7    endA    29.8  2
+L4   FMC_D26      C14  E    -    2     E2    endA    19.1  2
+L4   FMC_D27      C13  E    -    3     A2    out     12.3  2
+L4   FMC_D25      D14  E    -    2     C2    out     11.3  2
+L4   FMC_D31      E3   E    under 3     D2    out     19.4  2
+L4   FMC_SDCKE0   F4   E    under 4     J2    out     19.1  2
+L4   FMC_SDCLK    H14  E    -    2     J1    out     10.2  2
+L4   FMC_A4       J3   E    under 3     G1    endR    32.7  2
+L4   FMC_A5       K3   E    under 3     G2    endR    31.6  2
+L4   FMC_BA1      K13  E    -    3     H8    endR    24.8  2
+L4   FMC_D10      N11  E    under 3     L8    endR    25.0  2
+L4   FMC_D15      N15  E    -    1     M8    endR    19.8  2
+L6   FMC_A1       H3   W    cw   3     G9    out     43.8  2
+L6   FMC_A0       E2   W    cw   2     G8    out     42.0  2
+L6   FMC_NBL2     D4   N    cw   4     F8    out     34.0  2
+L6   FMC_D23      D13  E    -    3     E8    out     25.1  2
+L6   FMC_D22      E13  E    -    3     D8    out     24.6  2
+L6   FMC_D21      E12  E    -    4     C8    out     24.4  2
+L6   FMC_D18      L13  E    -    3     C7    out     27.3  2
+L6   FMC_D19      L12  E    -    4     A9    endA    23.7  2
+L6   FMC_D1       L14  E    -    2     M3    endA    27.8  2
+L6   FMC_A12      L15  E    -    1     H3    out     11.7  2
+L6   FMC_D0       M14  E    -    2     N2    out     11.3  2
+L6   FMC_D6       P9   S    ccw  2     N3    out     18.4  2
+L6   FMC_D7       R9   S    ccw  1     R1    out     15.5  2
+L6   FMC_D4       R8   S    ccw  1     R2    out     16.9  2
+L6   FMC_D5       P8   S    ccw  2     P1    endR    22.5  2
+L6   FMC_A9       P7   S    ccw  2     J3    endR    25.9  2
+L6   FMC_A8       R7   S    ccw  1     H2    endR    26.9  2
+L6   FMC_A7       N6   S    ccw  3     H1    endR    29.6  2
+L6   FMC_SDNRAS   R6   S    ccw  1     J9    endR    29.2  2
+L6   FMC_SDNWE    J4   W    ccw  4     K8    endR    40.7  2
+lane 0 -> byte 1: 11.3-27.8 mm, spread 16.5
+lane 1 -> byte 0: 18.7-33.4 mm, spread 14.7
+lane 2 -> byte 2: 23.7-36.7 mm, spread 13.0
+lane 3 -> byte 3: 11.3-33.0 mm, spread 21.8
+address/command/clock: 10.2-43.8 mm, spread 33.6; clock 10.2
+total 1489.3 mm, longest 43.8, vias 88, per layer {'L1': 20, 'L4': 17, 'L6': 20}
+rivers along the N side of the MCU: {'L1': 10, 'L4': 6, 'L6': 3}
+rivers along the S side of the MCU: {'L1': 7, 'L4': 2, 'L6': 9}

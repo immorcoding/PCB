@@ -1,0 +1,2140 @@
+{
+ "vias": [
+  [
+   66.45,
+   60.45
+  ],
+  [
+   55.45,
+   51.45
+  ],
+  [
+   21.95,
+   28.45
+  ],
+  [
+   19.95,
+   62.45
+  ],
+  [
+   32.45,
+   62.95
+  ],
+  [
+   30.45,
+   28.45
+  ],
+  [
+   69.45,
+   7.45
+  ],
+  [
+   12.95,
+   66.45
+  ],
+  [
+   46.45,
+   7.45
+  ],
+  [
+   9.45,
+   33.45
+  ],
+  [
+   17.95,
+   71.95
+  ],
+  [
+   75.45,
+   23.45
+  ],
+  [
+   6.95,
+   60.45
+  ],
+  [
+   65.95,
+   26.95
+  ],
+  [
+   4.45,
+   38.95
+  ],
+  [
+   13.95,
+   39.45
+  ],
+  [
+   34.45,
+   12.95
+  ],
+  [
+   21.45,
+   39.45
+  ],
+  [
+   12.95,
+   59.45
+  ],
+  [
+   8.45,
+   10.95
+  ],
+  [
+   74.45,
+   11.45
+  ],
+  [
+   2.95,
+   13.45
+  ],
+  [
+   39.95,
+   19.95
+  ],
+  [
+   81.95,
+   53.45
+  ],
+  [
+   40.95,
+   63.45
+  ],
+  [
+   23.95,
+   72.45
+  ],
+  [
+   81.95,
+   23.45
+  ],
+  [
+   75.45,
+   36.95
+  ],
+  [
+   22.45,
+   11.95
+  ],
+  [
+   59.45,
+   61.45
+  ],
+  [
+   72.95,
+   2.45
+  ],
+  [
+   73.95,
+   64.45
+  ],
+  [
+   11.95,
+   72.95
+  ],
+  [
+   1.95,
+   22.45
+  ],
+  [
+   66.45,
+   33.95
+  ],
+  [
+   69.45,
+   53.95
+  ],
+  [
+   79.95,
+   64.45
+  ],
+  [
+   47.95,
+   57.95
+  ],
+  [
+   67.45,
+   71.95
+  ],
+  [
+   1.95,
+   62.95
+  ],
+  [
+   22.45,
+   2.45
+  ],
+  [
+   34.45,
+   2.95
+  ],
+  [
+   63.95,
+   44.95
+  ],
+  [
+   56.95,
+   65.95
+  ],
+  [
+   44.45,
+   53.45
+  ],
+  [
+   20.95,
+   19.45
+  ],
+  [
+   3.45,
+   17.45
+  ],
+  [
+   67.45,
+   1.95
+  ],
+  [
+   49.95,
+   48.95
+  ],
+  [
+   82.95,
+   11.45
+  ],
+  [
+   68.45,
+   12.95
+  ],
+  [
+   2.95,
+   34.45
+  ],
+  [
+   34.45,
+   8.45
+  ],
+  [
+   2.45,
+   58.45
+  ],
+  [
+   10.45,
+   2.45
+  ],
+  [
+   46.95,
+   11.95
+  ],
+  [
+   35.95,
+   23.95
+  ],
+  [
+   61.95,
+   68.45
+  ],
+  [
+   81.95,
+   31.95
+  ],
+  [
+   8.45,
+   39.45
+  ],
+  [
+   28.45,
+   63.45
+  ],
+  [
+   67.95,
+   65.95
+  ],
+  [
+   45.45,
+   1.95
+  ],
+  [
+   75.45,
+   28.95
+  ],
+  [
+   69.95,
+   36.95
+  ],
+  [
+   1.95,
+   27.45
+  ],
+  [
+   39.45,
+   53.45
+  ],
+  [
+   76.95,
+   52.95
+  ],
+  [
+   77.45,
+   38.95
+  ],
+  [
+   6.45,
+   29.45
+  ],
+  [
+   73.45,
+   72.95
+  ],
+  [
+   60.95,
+   49.45
+  ],
+  [
+   64.95,
+   29.95
+  ],
+  [
+   70.95,
+   50.45
+  ],
+  [
+   22.45,
+   14.95
+  ],
+  [
+   10.45,
+   11.45
+  ],
+  [
+   2.95,
+   9.95
+  ],
+  [
+   35.45,
+   15.45
+  ],
+  [
+   46.95,
+   21.45
+  ],
+  [
+   26.45,
+   44.45
+  ],
+  [
+   82.95,
+   64.45
+  ],
+  [
+   45.45,
+   48.95
+  ],
+  [
+   82.95,
+   27.45
+  ],
+  [
+   1.45,
+   39.95
+  ],
+  [
+   16.45,
+   39.95
+  ],
+  [
+   8.45,
+   63.45
+  ],
+  [
+   69.45,
+   25.45
+  ],
+  [
+   27.95,
+   68.45
+  ],
+  [
+   22.45,
+   7.95
+  ],
+  [
+   76.45,
+   34.95
+  ],
+  [
+   32.95,
+   53.45
+  ],
+  [
+   49.95,
+   56.95
+  ],
+  [
+   44.45,
+   59.95
+  ],
+  [
+   63.45,
+   22.95
+  ],
+  [
+   18.95,
+   65.45
+  ],
+  [
+   79.95,
+   45.95
+  ],
+  [
+   76.95,
+   66.95
+  ],
+  [
+   60.95,
+   60.45
+  ],
+  [
+   68.95,
+   62.95
+  ],
+  [
+   34.45,
+   64.45
+  ],
+  [
+   12.45,
+   33.45
+  ],
+  [
+   69.95,
+   56.45
+  ],
+  [
+   6.95,
+   17.45
+  ],
+  [
+   15.45,
+   58.45
+  ],
+  [
+   23.45,
+   40.95
+  ],
+  [
+   15.45,
+   18.95
+  ],
+  [
+   12.45,
+   21.45
+  ],
+  [
+   7.45,
+   6.45
+  ],
+  [
+   44.45,
+   65.95
+  ],
+  [
+   70.95,
+   46.45
+  ],
+  [
+   26.45,
+   46.95
+  ],
+  [
+   55.95,
+   72.95
+  ],
+  [
+   74.95,
+   3.45
+  ],
+  [
+   7.95,
+   58.45
+  ],
+  [
+   49.95,
+   21.45
+  ],
+  [
+   45.95,
+   16.95
+  ],
+  [
+   15.95,
+   60.45
+  ],
+  [
+   53.45,
+   65.95
+  ],
+  [
+   81.95,
+   34.45
+  ],
+  [
+   82.95,
+   48.95
+  ],
+  [
+   66.95,
+   67.95
+  ],
+  [
+   57.95,
+   61.95
+  ],
+  [
+   37.95,
+   13.45
+  ],
+  [
+   5.95,
+   13.45
+  ],
+  [
+   27.95,
+   19.95
+  ],
+  [
+   12.45,
+   23.95
+  ],
+  [
+   19.95,
+   71.95
+  ],
+  [
+   11.95,
+   58.45
+  ],
+  [
+   1.45,
+   16.95
+  ],
+  [
+   1.45,
+   29.95
+  ],
+  [
+   78.95,
+   53.45
+  ],
+  [
+   14.45,
+   71.95
+  ],
+  [
+   39.45,
+   62.45
+  ],
+  [
+   57.95,
+   57.45
+  ],
+  [
+   10.45,
+   13.45
+  ],
+  [
+   34.45,
+   1.45
+  ],
+  [
+   65.45,
+   6.45
+  ],
+  [
+   76.95,
+   64.45
+  ],
+  [
+   67.45,
+   73.45
+  ],
+  [
+   63.95,
+   43.45
+  ],
+  [
+   64.95,
+   45.95
+  ],
+  [
+   46.95,
+   9.95
+  ],
+  [
+   22.45,
+   4.45
+  ],
+  [
+   73.45,
+   36.95
+  ],
+  [
+   60.95,
+   51.95
+  ],
+  [
+   34.45,
+   6.45
+  ],
+  [
+   5.95,
+   31.45
+  ],
+  [
+   11.45,
+   39.45
+  ],
+  [
+   1.45,
+   64.45
+  ],
+  [
+   24.95,
+   46.45
+  ]
+ ],
+ "keepouts": [
+  {
+   "name": "FIN_NOPOUR_IN_MCU",
+   "layers": [
+    "L3",
+    "L4"
+   ],
+   "box": [
+    34.0,
+    31.0,
+    46.0,
+    43.0
+   ],
+   "angle": 0,
+   "why": "BGA via field (MCU)"
+  },
+  {
+   "name": "FIN_NOPOUR_IN_SDRAM",
+   "layers": [
+    "L3",
+    "L4"
+   ],
+   "box": [
+    52.0,
+    29.5,
+    62.0,
+    44.5
+   ],
+   "angle": 0,
+   "why": "BGA via field (SDRAM)"
+  },
+  {
+   "name": "FIN_TUNE_L1_ETH_RX_N",
+   "layers": [
+    "L1"
+   ],
+   "box": [
+    16.4403,
+    53.47279999999159,
+    18.759700000000002,
+    55.55970000000554
+   ],
+   "angle": 0.0,
+   "size": [
+    2.3194000000000017,
+    2.086900000013955
+   ],
+   "arcs": 5,
+   "why": "serpentine of ETH_RX_N (5 arcs), 0.5 mm from its copper"
+  },
+  {
+   "name": "FIN_TUNE_L1_ETH_TX_N",
+   "layers": [
+    "L1"
+   ],
+   "box": [
+    15.98216466911956,
+    46.003414669138564,
+    19.406685330861457,
+    49.42793533088046
+   ],
+   "angle": 45.0,
+   "size": [
+    2.919269600832237,
+    1.923733963630042
+   ],
+   "arcs": 7,
+   "why": "serpentine of ETH_TX_N (7 arcs), 0.5 mm from its copper"
+  },
+  {
+   "name": "FIN_TUNE_L1_FMC_D11",
+   "layers": [
+    "L1"
+   ],
+   "box": [
+    42.9492,
+    42.73549999998662,
+    47.050799999999974,
+    45.15080000000372
+   ],
+   "angle": 0.0,
+   "size": [
+    4.101599999999976,
+    2.4153000000170977
+   ],
+   "arcs": 11,
+   "why": "serpentine of FMC_D11 (11 arcs), 0.5 mm from its copper"
+  },
+  {
+   "name": "FIN_TUNE_L1_FMC_D12",
+   "layers": [
+    "L1"
+   ],
+   "box": [
+    42.9492,
+    44.29919999997018,
+    47.6508,
+    46.45180000001951
+   ],
+   "angle": 0.0,
+   "size": [
+    4.701599999999999,
+    2.1526000000493326
+   ],
+   "arcs": 13,
+   "why": "serpentine of FMC_D12 (13 arcs), 0.5 mm from its copper"
+  },
+  {
+   "name": "FIN_TUNE_L1_FMC_D13",
+   "layers": [
+    "L1"
+   ],
+   "box": [
+    45.8492,
+    38.38619999996994,
+    49.35079999999996,
+    41.45080000000055
+   ],
+   "angle": 0.0,
+   "size": [
+    3.5015999999999536,
+    3.064600000030609
+   ],
+   "arcs": 9,
+   "why": "serpentine of FMC_D13 (9 arcs), 0.5 mm from its copper"
+  },
+  {
+   "name": "FIN_TUNE_L1_FMC_D14",
+   "layers": [
+    "L1"
+   ],
+   "box": [
+    45.8492,
+    40.67419999999283,
+    48.75079999999999,
+    43.775799999999656
+   ],
+   "angle": 0.0,
+   "size": [
+    2.9015999999999877,
+    3.101600000006826
+   ],
+   "arcs": 7,
+   "why": "serpentine of FMC_D14 (7 arcs), 0.5 mm from its copper"
+  },
+  {
+   "name": "FIN_TUNE_L1_FMC_D14_2",
+   "layers": [
+    "L1"
+   ],
+   "box": [
+    49.899199999999986,
+    45.19919999998081,
+    52.8008,
+    46.95300000002225
+   ],
+   "angle": 0.0,
+   "size": [
+    2.901600000000016,
+    1.753800000041437
+   ],
+   "arcs": 7,
+   "why": "serpentine of FMC_D14 (7 arcs), 0.5 mm from its copper"
+  },
+  {
+   "name": "FIN_TUNE_L1_FMC_D2",
+   "layers": [
+    "L1"
+   ],
+   "box": [
+    47.24920000000001,
+    31.349199999959023,
+    50.150800000000025,
+    33.0308000000061
+   ],
+   "angle": 0.0,
+   "size": [
+    2.901600000000016,
+    1.68160000004708
+   ],
+   "arcs": 7,
+   "why": "serpentine of FMC_D2 (7 arcs), 0.5 mm from its copper"
+  },
+  {
+   "name": "FIN_TUNE_L1_FMC_D29",
+   "layers": [
+    "L1"
+   ],
+   "box": [
+    46.984199999999994,
+    29.04689999998514,
+    49.285800000000016,
+    30.72080000001309
+   ],
+   "angle": 0.0,
+   "size": [
+    2.301600000000022,
+    1.673900000027949
+   ],
+   "arcs": 5,
+   "why": "serpentine of FMC_D29 (5 arcs), 0.5 mm from its copper"
+  },
+  {
+   "name": "FIN_TUNE_L1_FMC_D3",
+   "layers": [
+    "L1"
+   ],
+   "box": [
+    46.4492,
+    32.22419999999105,
+    49.95079999999998,
+    34.09189999999989
+   ],
+   "angle": 0.0,
+   "size": [
+    3.501599999999982,
+    1.8677000000088384
+   ],
+   "arcs": 9,
+   "why": "serpentine of FMC_D3 (9 arcs), 0.5 mm from its copper"
+  },
+  {
+   "name": "FIN_TUNE_L1_FMC_D30",
+   "layers": [
+    "L1"
+   ],
+   "box": [
+    46.9792,
+    29.919199999980105,
+    49.88079999999999,
+    31.592700000034245
+   ],
+   "angle": 0.0,
+   "size": [
+    2.9015999999999877,
+    1.6735000000541405
+   ],
+   "arcs": 7,
+   "why": "serpentine of FMC_D30 (7 arcs), 0.5 mm from its copper"
+  },
+  {
+   "name": "FIN_TUNE_L1_FMC_D8",
+   "layers": [
+    "L1"
+   ],
+   "box": [
+    43.5392,
+    46.689199999957545,
+    47.04080000000004,
+    48.42590000001794
+   ],
+   "angle": 0.0,
+   "size": [
+    3.501600000000039,
+    1.7367000000603952
+   ],
+   "arcs": 9,
+   "why": "serpentine of FMC_D8 (9 arcs), 0.5 mm from its copper"
+  },
+  {
+   "name": "FIN_TUNE_L1_FMC_D9",
+   "layers": [
+    "L1"
+   ],
+   "box": [
+    42.9492,
+    45.64919999997037,
+    47.65079999999994,
+    47.498400000013014
+   ],
+   "angle": 0.0,
+   "size": [
+    4.701599999999942,
+    1.849200000042643
+   ],
+   "arcs": 13,
+   "why": "serpentine of FMC_D9 (13 arcs), 0.5 mm from its copper"
+  },
+  {
+   "name": "FIN_TUNE_L3_FMC_A12",
+   "layers": [
+    "L3"
+   ],
+   "box": [
+    47.04919999999999,
+    38.724199999968825,
+    49.95080000000004,
+    40.97580000003756
+   ],
+   "angle": 0.0,
+   "size": [
+    2.9016000000000446,
+    2.251600000068734
+   ],
+   "arcs": 7,
+   "why": "serpentine of FMC_A12 (7 arcs), 0.5 mm from its copper"
+  },
+  {
+   "name": "FIN_TUNE_L3_FMC_BA1",
+   "layers": [
+    "L3"
+   ],
+   "box": [
+    47.04919999999999,
+    37.53310000000139,
+    49.350799999999985,
+    39.1758
+   ],
+   "angle": 0.0,
+   "size": [
+    2.3015999999999934,
+    1.6426999999986123
+   ],
+   "arcs": 5,
+   "why": "serpentine of FMC_BA1 (5 arcs), 0.5 mm from its copper"
+  },
+  {
+   "name": "FIN_TUNE_L3_FMC_D0",
+   "layers": [
+    "L3"
+   ],
+   "box": [
+    47.04919999999999,
+    41.49919999996798,
+    51.150800000000025,
+    43.89800000000948
+   ],
+   "angle": 0.0,
+   "size": [
+    4.101600000000033,
+    2.398800000041504
+   ],
+   "arcs": 11,
+   "why": "serpentine of FMC_D0 (11 arcs), 0.5 mm from its copper"
+  },
+  {
+   "name": "FIN_TUNE_L3_FMC_D1",
+   "layers": [
+    "L3"
+   ],
+   "box": [
+    47.04919999999999,
+    40.169199999996614,
+    51.75079999999999,
+    42.2817000000102
+   ],
+   "angle": 0.0,
+   "size": [
+    4.701599999999999,
+    2.1125000000135827
+   ],
+   "arcs": 13,
+   "why": "serpentine of FMC_D1 (13 arcs), 0.5 mm from its copper"
+  },
+  {
+   "name": "FIN_TUNE_L3_FMC_D18",
+   "layers": [
+    "L3"
+   ],
+   "box": [
+    47.699199999990874,
+    30.249200000000013,
+    50.1482000000183,
+    35.5508
+   ],
+   "angle": 0.0,
+   "size": [
+    2.449000000027425,
+    5.30159999999999
+   ],
+   "arcs": 15,
+   "why": "serpentine of FMC_D18 (15 arcs), 0.5 mm from its copper"
+  },
+  {
+   "name": "FIN_TUNE_L3_FMC_D19",
+   "layers": [
+    "L3"
+   ],
+   "box": [
+    53.04919999999999,
+    24.51589999996744,
+    58.35079999999987,
+    26.30080000002116
+   ],
+   "angle": 0.0,
+   "size": [
+    5.30159999999988,
+    1.7849000000537174
+   ],
+   "arcs": 15,
+   "why": "serpentine of FMC_D19 (15 arcs), 0.5 mm from its copper"
+  },
+  {
+   "name": "FIN_TUNE_L3_FMC_D20",
+   "layers": [
+    "L3"
+   ],
+   "box": [
+    49.39919999998151,
+    30.24920000000004,
+    51.93420000000048,
+    34.95080000000001
+   ],
+   "angle": 0.0,
+   "size": [
+    2.535000000018968,
+    4.701599999999967
+   ],
+   "arcs": 13,
+   "why": "serpentine of FMC_D20 (13 arcs), 0.5 mm from its copper"
+  },
+  {
+   "name": "FIN_TUNE_L3_FMC_D21",
+   "layers": [
+    "L3"
+   ],
+   "box": [
+    53.04919999999999,
+    23.545399999983925,
+    58.95080000000001,
+    25.150800000019107
+   ],
+   "angle": 0.0,
+   "size": [
+    5.901600000000016,
+    1.605400000035182
+   ],
+   "arcs": 17,
+   "why": "serpentine of FMC_D21 (17 arcs), 0.5 mm from its copper"
+  },
+  {
+   "name": "FIN_TUNE_L3_FMC_D22",
+   "layers": [
+    "L3"
+   ],
+   "box": [
+    53.04919999999999,
+    22.44269999998333,
+    57.75079999999999,
+    24.050800000007516
+   ],
+   "angle": 0.0,
+   "size": [
+    4.701599999999999,
+    1.6081000000241872
+   ],
+   "arcs": 13,
+   "why": "serpentine of FMC_D22 (13 arcs), 0.5 mm from its copper"
+  },
+  {
+   "name": "FIN_TUNE_L3_FMC_D23",
+   "layers": [
+    "L3"
+   ],
+   "box": [
+    53.04919999999999,
+    21.29349999997792,
+    55.35079999999996,
+    23.05080000000213
+   ],
+   "angle": 0.0,
+   "size": [
+    2.301599999999965,
+    1.757300000024209
+   ],
+   "arcs": 5,
+   "why": "serpentine of FMC_D23 (5 arcs), 0.5 mm from its copper"
+  },
+  {
+   "name": "FIN_TUNE_L3_FMC_D4",
+   "layers": [
+    "L3"
+   ],
+   "box": [
+    46.6992,
+    45.54919999995656,
+    50.20080000000004,
+    47.41750000004762
+   ],
+   "angle": 0.0,
+   "size": [
+    3.501600000000039,
+    1.868300000091054
+   ],
+   "arcs": 9,
+   "why": "serpentine of FMC_D4 (9 arcs), 0.5 mm from its copper"
+  },
+  {
+   "name": "FIN_TUNE_L3_FMC_D6",
+   "layers": [
+    "L3"
+   ],
+   "box": [
+    46.6992,
+    43.24920000000001,
+    50.20080000000001,
+    45.0106000000303
+   ],
+   "angle": 0.0,
+   "size": [
+    3.5016000000000105,
+    1.7614000000302923
+   ],
+   "arcs": 9,
+   "why": "serpentine of FMC_D6 (9 arcs), 0.5 mm from its copper"
+  },
+  {
+   "name": "FIN_TUNE_L3_FMC_D7",
+   "layers": [
+    "L3"
+   ],
+   "box": [
+    46.6992,
+    44.21920000000001,
+    50.20079999999995,
+    46.35579999999592
+   ],
+   "angle": 0.0,
+   "size": [
+    3.5015999999999536,
+    2.1365999999959087
+   ],
+   "arcs": 9,
+   "why": "serpentine of FMC_D7 (9 arcs), 0.5 mm from its copper"
+  },
+  {
+   "name": "FIN_TUNE_L3_SDMMC1_CMD",
+   "layers": [
+    "L3"
+   ],
+   "box": [
+    43.0992,
+    17.402799999972512,
+    48.400800000000054,
+    19.05080000005717
+   ],
+   "angle": 0.0,
+   "size": [
+    5.30160000000005,
+    1.6480000000846573
+   ],
+   "arcs": 15,
+   "why": "serpentine of SDMMC1_CMD (15 arcs), 0.5 mm from its copper"
+  },
+  {
+   "name": "FIN_TUNE_L3_SDMMC1_D3",
+   "layers": [
+    "L3"
+   ],
+   "box": [
+    46.79919999999999,
+    18.19919999997435,
+    50.9008,
+    20.479600000020955
+   ],
+   "angle": 0.0,
+   "size": [
+    4.101600000000005,
+    2.2804000000466047
+   ],
+   "arcs": 11,
+   "why": "serpentine of SDMMC1_D3 (11 arcs), 0.5 mm from its copper"
+  },
+  {
+   "name": "FIN_TUNE_L4_FMC_D10",
+   "layers": [
+    "L4"
+   ],
+   "box": [
+    52.4492,
+    44.54919999997484,
+    55.95080000000001,
+    46.39690000004301
+   ],
+   "angle": 0.0,
+   "size": [
+    3.5016000000000105,
+    1.8477000000681727
+   ],
+   "arcs": 9,
+   "why": "serpentine of FMC_D10 (9 arcs), 0.5 mm from its copper"
+  },
+  {
+   "name": "FIN_TUNE_L4_FMC_D15",
+   "layers": [
+    "L4"
+   ],
+   "box": [
+    47.1992,
+    44.79919999998538,
+    51.9008,
+    46.96010000003667
+   ],
+   "angle": 0.0,
+   "size": [
+    4.701599999999999,
+    2.160900000051285
+   ],
+   "arcs": 13,
+   "why": "serpentine of FMC_D15 (13 arcs), 0.5 mm from its copper"
+  },
+  {
+   "name": "FIN_TUNE_L4_FMC_D17",
+   "layers": [
+    "L4"
+   ],
+   "box": [
+    56.149199999999986,
+    45.541999999988356,
+    58.45080000000001,
+    47.33080000000597
+   ],
+   "angle": 0.0,
+   "size": [
+    2.301600000000022,
+    1.7888000000176163
+   ],
+   "arcs": 5,
+   "why": "serpentine of FMC_D17 (5 arcs), 0.5 mm from its copper"
+  },
+  {
+   "name": "FIN_TUNE_L4_FMC_D25",
+   "layers": [
+    "L4"
+   ],
+   "box": [
+    47.99920000000001,
+    31.449199999990537,
+    52.100800000000014,
+    33.879300000006474
+   ],
+   "angle": 0.0,
+   "size": [
+    4.101600000000005,
+    2.430100000015937
+   ],
+   "arcs": 11,
+   "why": "serpentine of FMC_D25 (11 arcs), 0.5 mm from its copper"
+  },
+  {
+   "name": "FIN_TUNE_L4_FMC_D26",
+   "layers": [
+    "L4"
+   ],
+   "box": [
+    47.99920000000001,
+    28.94919999998943,
+    50.90079999999997,
+    30.641800000000632
+   ],
+   "angle": 0.0,
+   "size": [
+    2.9015999999999593,
+    1.692600000011204
+   ],
+   "arcs": 7,
+   "why": "serpentine of FMC_D26 (7 arcs), 0.5 mm from its copper"
+  },
+  {
+   "name": "FIN_TUNE_L4_FMC_D27",
+   "layers": [
+    "L4"
+   ],
+   "box": [
+    47.99920000000001,
+    29.849199999988013,
+    52.100799999999985,
+    32.11930000003672
+   ],
+   "angle": 0.0,
+   "size": [
+    4.101599999999976,
+    2.2701000000487106
+   ],
+   "arcs": 11,
+   "why": "serpentine of FMC_D27 (11 arcs), 0.5 mm from its copper"
+  },
+  {
+   "name": "FIN_TUNE_L4_FMC_D28",
+   "layers": [
+    "L4"
+   ],
+   "box": [
+    47.99920000000001,
+    33.249199999983695,
+    52.100799999999985,
+    35.087000000013454
+   ],
+   "angle": 0.0,
+   "size": [
+    4.101599999999976,
+    1.837800000029759
+   ],
+   "arcs": 11,
+   "why": "serpentine of FMC_D28 (11 arcs), 0.5 mm from its copper"
+  },
+  {
+   "name": "FIN_TUNE_L4_FMC_D31",
+   "layers": [
+    "L4"
+   ],
+   "box": [
+    47.99920000000001,
+    34.44919999999809,
+    51.50079999999996,
+    36.238900000020884
+   ],
+   "angle": 0.0,
+   "size": [
+    3.5015999999999536,
+    1.7897000000227905
+   ],
+   "arcs": 9,
+   "why": "serpentine of FMC_D31 (9 arcs), 0.5 mm from its copper"
+  },
+  {
+   "name": "FIN_TUNE_L4_FMC_NBL2",
+   "layers": [
+    "L4"
+   ],
+   "box": [
+    48.24920000000001,
+    27.949200000007192,
+    50.550799999999974,
+    29.55080000002504
+   ],
+   "angle": 0.0,
+   "size": [
+    2.301599999999965,
+    1.6016000000178465
+   ],
+   "arcs": 5,
+   "why": "serpentine of FMC_NBL2 (5 arcs), 0.5 mm from its copper"
+  },
+  {
+   "name": "FIN_TUNE_L4_FMC_SDCLK_R",
+   "layers": [
+    "L4"
+   ],
+   "box": [
+    48.449199999997866,
+    36.8242,
+    51.49059999999283,
+    42.9258
+   ],
+   "angle": 0.0,
+   "size": [
+    3.0413999999949652,
+    6.101600000000005
+   ],
+   "arcs": 11,
+   "why": "serpentine of FMC_SDCLK_R (11 arcs), 0.5 mm from its copper"
+  },
+  {
+   "name": "FIN_TUNE_L6_SDMMC1_CK",
+   "layers": [
+    "L6"
+   ],
+   "box": [
+    43.19919999998306,
+    20.149200000000004,
+    45.00090000000474,
+    24.2508
+   ],
+   "angle": 0.0,
+   "size": [
+    1.8017000000216825,
+    4.101599999999998
+   ],
+   "arcs": 7,
+   "why": "serpentine of SDMMC1_CK (7 arcs), 0.5 mm from its copper"
+  },
+  {
+   "name": "FIN_TUNE_L6_SDMMC1_D2",
+   "layers": [
+    "L6"
+   ],
+   "box": [
+    46.399199999999986,
+    18.199199999984142,
+    49.300799999999974,
+    20.95469999999631
+   ],
+   "angle": 0.0,
+   "size": [
+    2.9015999999999877,
+    2.7555000000121694
+   ],
+   "arcs": 7,
+   "why": "serpentine of SDMMC1_D2 (7 arcs), 0.5 mm from its copper"
+  }
+ ],
+ "pieces_removed": [
+  {
+   "name": "FIN_KO_L3_1",
+   "layer": "L3",
+   "stage": "shape",
+   "kind": "piece",
+   "area": 1.973,
+   "box": [
+    29.867,
+    47.451,
+    34.183,
+    48.299
+   ],
+   "why": "piece of 1.97 mm2 < 2.0 mm2 without a pad (held by 1 via)"
+  },
+  {
+   "name": "FIN_KO_L4_2",
+   "layer": "L4",
+   "stage": "shape",
+   "kind": "piece",
+   "area": 1.274,
+   "box": [
+    31.451,
+    38.267,
+    33.333,
+    39.249
+   ],
+   "why": "piece of 1.27 mm2 < 2.0 mm2 without a pad (held by 1 via)"
+  },
+  {
+   "name": "FIN_KO_L4_3",
+   "layer": "L4",
+   "stage": "shape",
+   "kind": "piece",
+   "area": 0.526,
+   "box": [
+    49.356,
+    36.251,
+    50.453,
+    36.824
+   ],
+   "why": "piece of 0.53 mm2 < 2.0 mm2 without a pad (held by 1 via)"
+  },
+  {
+   "name": "FIN_KO_L1_4",
+   "layer": "L1",
+   "stage": "shape",
+   "kind": "rects",
+   "area": 0.884,
+   "box": [
+    43.762,
+    5.288,
+    44.288,
+    8.288
+   ],
+   "why": "narrow spike below 0.6 mm, 2.90 mm long (1 box, 0 deg)"
+  },
+  {
+   "name": "FIN_KO_L1_5",
+   "layer": "L1",
+   "stage": "shape",
+   "kind": "rects",
+   "area": 0.477,
+   "box": [
+    51.863,
+    20.488,
+    52.588,
+    21.788
+   ],
+   "why": "narrow spike below 0.6 mm, 1.32 mm long (1 box, 0 deg)"
+  },
+  {
+   "name": "FIN_KO_L1_6",
+   "layer": "L1",
+   "stage": "shape",
+   "kind": "rects",
+   "area": 0.536,
+   "box": [
+    68.438,
+    21.638,
+    69.062,
+    23.338
+   ],
+   "why": "narrow spike below 0.6 mm, 1.65 mm long (1 box, 0 deg)"
+  },
+  {
+   "name": "FIN_KO_L1_7",
+   "layer": "L1",
+   "stage": "shape",
+   "kind": "rects",
+   "area": 0.281,
+   "box": [
+    32.524,
+    26.449,
+    33.726,
+    27.651
+   ],
+   "why": "narrow spike below 0.6 mm, 1.17 mm long (1 box, 45 deg)"
+  },
+  {
+   "name": "FIN_KO_L1_8",
+   "layer": "L1",
+   "stage": "shape",
+   "kind": "rects",
+   "area": 1.525,
+   "box": [
+    36.588,
+    28.013,
+    40.388,
+    28.588
+   ],
+   "why": "narrow neck below 0.6 mm, 3.70 mm long (1 box, 0 deg)"
+  },
+  {
+   "name": "FIN_KO_L1_9",
+   "layer": "L1",
+   "stage": "shape",
+   "kind": "rects",
+   "area": 0.438,
+   "box": [
+    14.088,
+    29.213,
+    15.338,
+    29.938
+   ],
+   "why": "narrow spike below 0.6 mm, 1.27 mm long (1 box, 0 deg)"
+  },
+  {
+   "name": "FIN_KO_L1_10",
+   "layer": "L1",
+   "stage": "shape",
+   "kind": "rects",
+   "area": 0.551,
+   "box": [
+    20.412,
+    31.638,
+    21.838,
+    32.213
+   ],
+   "why": "narrow spike below 0.6 mm, 1.38 mm long (1 box, 0 deg)"
+  },
+  {
+   "name": "FIN_KO_L1_11",
+   "layer": "L1",
+   "stage": "shape",
+   "kind": "rects",
+   "area": 0.463,
+   "box": [
+    72.688,
+    32.838,
+    73.938,
+    33.588
+   ],
+   "why": "narrow spike below 0.6 mm, 1.29 mm long (1 box, 0 deg)"
+  },
+  {
+   "name": "FIN_KO_L1_12",
+   "layer": "L1",
+   "stage": "shape",
+   "kind": "rects",
+   "area": 2.092,
+   "box": [
+    84.138,
+    40.288,
+    84.788,
+    44.488
+   ],
+   "why": "narrow neck below 0.6 mm, 4.11 mm long (1 box, 0 deg)"
+  },
+  {
+   "name": "FIN_KO_L1_13",
+   "layer": "L1",
+   "stage": "shape",
+   "kind": "rects",
+   "area": 0.521,
+   "box": [
+    22.938,
+    53.988,
+    23.513,
+    55.713
+   ],
+   "why": "narrow spike below 0.6 mm, 1.66 mm long (1 box, 0 deg)"
+  },
+  {
+   "name": "FIN_KO_L1_14",
+   "layer": "L1",
+   "stage": "shape",
+   "kind": "rects",
+   "area": 0.426,
+   "box": [
+    33.588,
+    61.512,
+    34.312,
+    62.562
+   ],
+   "why": "narrow spike below 0.6 mm, 1.10 mm long (1 box, 0 deg)"
+  },
+  {
+   "name": "FIN_KO_L1_15",
+   "layer": "L1",
+   "stage": "shape",
+   "kind": "rects",
+   "area": 0.663,
+   "box": [
+    52.613,
+    64.413,
+    54.713,
+    65.062
+   ],
+   "why": "narrow spike below 0.6 mm, 2.04 mm long (1 box, 0 deg)"
+  },
+  {
+   "name": "FIN_KO_L3_16",
+   "layer": "L3",
+   "stage": "shape",
+   "kind": "rects",
+   "area": 0.639,
+   "box": [
+    37.488,
+    23.763,
+    38.988,
+    24.838
+   ],
+   "why": "narrow spike below 0.6 mm, 1.67 mm long (3 boxes, 0 deg)"
+  },
+  {
+   "name": "FIN_KO_L3_17",
+   "layer": "L3",
+   "stage": "shape",
+   "kind": "rects",
+   "area": 0.438,
+   "box": [
+    40.262,
+    24.849,
+    41.626,
+    26.213
+   ],
+   "why": "narrow spike below 0.6 mm, 1.26 mm long (1 box, 45 deg)"
+  },
+  {
+   "name": "FIN_KO_L3_18",
+   "layer": "L3",
+   "stage": "shape",
+   "kind": "rects",
+   "area": 0.659,
+   "box": [
+    41.788,
+    24.963,
+    42.388,
+    26.588
+   ],
+   "why": "narrow spike below 0.6 mm, 1.57 mm long (1 box, 0 deg)"
+  },
+  {
+   "name": "FIN_KO_L3_19",
+   "layer": "L3",
+   "stage": "shape",
+   "kind": "rects",
+   "area": 0.301,
+   "box": [
+    40.462,
+    26.249,
+    41.663,
+    27.451
+   ],
+   "why": "narrow spike below 0.6 mm, 1.05 mm long (1 box, 45 deg)"
+  },
+  {
+   "name": "FIN_KO_L3_20",
+   "layer": "L3",
+   "stage": "shape",
+   "kind": "rects",
+   "area": 1.679,
+   "box": [
+    41.488,
+    42.938,
+    46.038,
+    43.588
+   ],
+   "why": "narrow spike below 0.6 mm, 4.46 mm long (1 box, 0 deg)"
+  },
+  {
+   "name": "FIN_KO_L3_21",
+   "layer": "L3",
+   "stage": "shape",
+   "kind": "rects",
+   "area": 0.329,
+   "box": [
+    40.588,
+    57.312,
+    41.288,
+    58.312
+   ],
+   "why": "narrow spike below 0.6 mm, 1.05 mm long (1 box, 0 deg)"
+  },
+  {
+   "name": "FIN_KO_L4_22",
+   "layer": "L4",
+   "stage": "shape",
+   "kind": "rects",
+   "area": 0.639,
+   "box": [
+    37.488,
+    23.763,
+    38.988,
+    24.838
+   ],
+   "why": "narrow spike below 0.6 mm, 1.67 mm long (3 boxes, 0 deg)"
+  },
+  {
+   "name": "FIN_KO_L4_23",
+   "layer": "L4",
+   "stage": "shape",
+   "kind": "rects",
+   "area": 0.604,
+   "box": [
+    45.938,
+    30.763,
+    46.388,
+    32.788
+   ],
+   "why": "narrow spike below 0.6 mm, 1.93 mm long (1 box, 0 deg)"
+  },
+  {
+   "name": "FIN_KO_L4_24",
+   "layer": "L4",
+   "stage": "shape",
+   "kind": "rects",
+   "area": 0.533,
+   "box": [
+    27.924,
+    43.187,
+    29.451,
+    44.713
+   ],
+   "why": "narrow spike below 0.6 mm, 1.41 mm long (1 box, 45 deg)"
+  },
+  {
+   "name": "FIN_KO_L4_25",
+   "layer": "L4",
+   "stage": "shape",
+   "kind": "rects",
+   "area": 2.269,
+   "box": [
+    36.288,
+    44.088,
+    36.788,
+    49.988
+   ],
+   "why": "narrow sliver below 0.6 mm, 5.79 mm long (1 box, 0 deg)"
+  },
+  {
+   "name": "FIN_KO_L4_26",
+   "layer": "L4",
+   "stage": "shape",
+   "kind": "rects",
+   "area": 6.164,
+   "box": [
+    34.613,
+    44.588,
+    35.238,
+    56.613
+   ],
+   "why": "narrow spike below 0.6 mm, 11.91 mm long (1 box, 0 deg)"
+  },
+  {
+   "name": "FIN_KO_L4_27",
+   "layer": "L4",
+   "stage": "shape",
+   "kind": "rects",
+   "area": 4.394,
+   "box": [
+    45.749,
+    51.399,
+    53.601,
+    59.251
+   ],
+   "why": "narrow sliver below 0.6 mm, 10.62 mm long (1 box, 45 deg)"
+  },
+  {
+   "name": "FIN_KO_L4_28",
+   "layer": "L4",
+   "stage": "shape",
+   "kind": "rects",
+   "area": 4.032,
+   "box": [
+    53.724,
+    59.374,
+    61.088,
+    66.738
+   ],
+   "why": "narrow spike below 0.6 mm, 9.97 mm long (1 box, 45 deg)"
+  },
+  {
+   "name": "FIN_KO_L6_29",
+   "layer": "L6",
+   "stage": "shape",
+   "kind": "rects",
+   "area": 1.222,
+   "box": [
+    62.463,
+    19.488,
+    63.388,
+    22.188
+   ],
+   "why": "narrow spike below 0.6 mm, 2.70 mm long (1 box, 0 deg)"
+  },
+  {
+   "name": "FIN_KO_L6_30",
+   "layer": "L6",
+   "stage": "shape",
+   "kind": "rects",
+   "area": 0.643,
+   "box": [
+    37.488,
+    23.763,
+    38.988,
+    24.838
+   ],
+   "why": "narrow spike below 0.6 mm, 1.67 mm long (3 boxes, 0 deg)"
+  },
+  {
+   "name": "FIN_KO_L6_31",
+   "layer": "L6",
+   "stage": "shape",
+   "kind": "rects",
+   "area": 0.474,
+   "box": [
+    40.463,
+    24.912,
+    41.388,
+    26.063
+   ],
+   "why": "narrow spike below 0.6 mm, 1.30 mm long (1 box, 0 deg)"
+  },
+  {
+   "name": "FIN_KO_L6_32",
+   "layer": "L6",
+   "stage": "shape",
+   "kind": "rects",
+   "area": 0.5,
+   "box": [
+    34.713,
+    32.938,
+    36.162,
+    33.562
+   ],
+   "why": "narrow spike below 0.6 mm, 1.42 mm long (1 box, 0 deg)"
+  },
+  {
+   "name": "FIN_KO_L6_33",
+   "layer": "L6",
+   "stage": "shape",
+   "kind": "rects",
+   "area": 0.54,
+   "box": [
+    39.912,
+    32.938,
+    41.338,
+    33.762
+   ],
+   "why": "narrow spike below 0.6 mm, 1.48 mm long (1 box, 0 deg)"
+  },
+  {
+   "name": "FIN_KO_L6_34",
+   "layer": "L6",
+   "stage": "shape",
+   "kind": "rects",
+   "area": 0.293,
+   "box": [
+    37.238,
+    36.262,
+    37.912,
+    37.312
+   ],
+   "why": "narrow spike below 0.6 mm, 1.08 mm long (1 box, 0 deg)"
+  },
+  {
+   "name": "FIN_KO_L6_35",
+   "layer": "L6",
+   "stage": "shape",
+   "kind": "rects",
+   "area": 0.606,
+   "box": [
+    38.613,
+    40.812,
+    39.488,
+    42.262
+   ],
+   "why": "narrow spike below 0.6 mm, 1.52 mm long (1 box, 0 deg)"
+  },
+  {
+   "name": "FIN_KO_L6_36",
+   "layer": "L6",
+   "stage": "shape",
+   "kind": "rects",
+   "area": 0.444,
+   "box": [
+    17.038,
+    48.788,
+    17.538,
+    50.438
+   ],
+   "why": "narrow spike below 0.6 mm, 1.57 mm long (1 box, 0 deg)"
+  },
+  {
+   "name": "FIN_KO_L6_37",
+   "layer": "L6",
+   "stage": "shape",
+   "kind": "rects",
+   "area": 2.002,
+   "box": [
+    45.512,
+    55.199,
+    48.826,
+    58.513
+   ],
+   "why": "narrow spike below 0.6 mm, 4.19 mm long (1 box, 45 deg)"
+  },
+  {
+   "name": "FIN_KO_L3_38",
+   "layer": "L3",
+   "stage": "anchor",
+   "kind": "piece",
+   "area": 1.748,
+   "box": [
+    31.901,
+    62.651,
+    33.581,
+    64.349
+   ],
+   "why": "piece of 1.75 mm2 < 2.0 mm2 without a pad (held by 1 via)"
+  },
+  {
+   "name": "FIN_KO_L3_39",
+   "layer": "L3",
+   "stage": "anchor",
+   "kind": "piece",
+   "area": 8.685,
+   "box": [
+    33.851,
+    43.0,
+    38.151,
+    45.349
+   ],
+   "why": "piece of 8.69 mm2 that no via or through-hole ground pad holds (no legal via site)"
+  },
+  {
+   "name": "FIN_KO_L3_40",
+   "layer": "L3",
+   "stage": "anchor",
+   "kind": "piece",
+   "area": 2.719,
+   "box": [
+    49.951,
+    38.046,
+    52.0,
+    40.208
+   ],
+   "why": "piece of 2.72 mm2 that no via or through-hole ground pad holds (no legal via site)"
+  },
+  {
+   "name": "FIN_KO_L3_41",
+   "layer": "L3",
+   "stage": "anchor",
+   "kind": "piece",
+   "area": 6.658,
+   "box": [
+    30.767,
+    34.645,
+    34.0,
+    37.084
+   ],
+   "why": "piece of 6.66 mm2 that no via or through-hole ground pad holds (no legal via site)"
+  },
+  {
+   "name": "FIN_KO_L3_42",
+   "layer": "L3",
+   "stage": "anchor",
+   "kind": "piece",
+   "area": 2.839,
+   "box": [
+    41.546,
+    27.329,
+    42.355,
+    31.0
+   ],
+   "why": "piece of 2.84 mm2 that no via or through-hole ground pad holds (no legal via site)"
+  },
+  {
+   "name": "FIN_KO_L3_43",
+   "layer": "L3",
+   "stage": "anchor",
+   "kind": "piece",
+   "area": 30.067,
+   "box": [
+    48.251,
+    26.001,
+    59.155,
+    29.5
+   ],
+   "why": "piece of 30.07 mm2 that no via or through-hole ground pad holds (no legal via site)"
+  },
+  {
+   "name": "FIN_KO_L4_44",
+   "layer": "L4",
+   "stage": "anchor",
+   "kind": "piece",
+   "area": 3.784,
+   "box": [
+    36.351,
+    51.27,
+    37.668,
+    55.749
+   ],
+   "why": "piece of 3.78 mm2 that no via or through-hole ground pad holds (no legal via site)"
+  },
+  {
+   "name": "FIN_KO_L4_45",
+   "layer": "L4",
+   "stage": "anchor",
+   "kind": "piece",
+   "area": 3.516,
+   "box": [
+    28.308,
+    43.717,
+    30.858,
+    46.771
+   ],
+   "why": "piece of 3.52 mm2 that no via or through-hole ground pad holds (no legal via site)"
+  },
+  {
+   "name": "FIN_KO_L4_46",
+   "layer": "L4",
+   "stage": "anchor",
+   "kind": "piece",
+   "area": 9.324,
+   "box": [
+    44.145,
+    42.266,
+    47.199,
+    46.529
+   ],
+   "why": "piece of 9.32 mm2 that no via or through-hole ground pad holds (no legal via site)"
+  },
+  {
+   "name": "FIN_KO_L4_47",
+   "layer": "L4",
+   "stage": "anchor",
+   "kind": "piece",
+   "area": 4.916,
+   "box": [
+    57.224,
+    44.5,
+    61.164,
+    46.529
+   ],
+   "why": "piece of 4.92 mm2 that no via or through-hole ground pad holds (no legal via site)"
+  },
+  {
+   "name": "FIN_KO_L4_48",
+   "layer": "L4",
+   "stage": "anchor",
+   "kind": "piece",
+   "area": 3.452,
+   "box": [
+    47.251,
+    44.072,
+    52.449,
+    44.849
+   ],
+   "why": "piece of 3.45 mm2 that no via or through-hole ground pad holds (no legal via site)"
+  },
+  {
+   "name": "FIN_KO_L4_49",
+   "layer": "L4",
+   "stage": "anchor",
+   "kind": "piece",
+   "area": 7.038,
+   "box": [
+    46.0,
+    36.251,
+    48.764,
+    43.349
+   ],
+   "why": "piece of 7.04 mm2 that no via or through-hole ground pad holds (no legal via site)"
+  },
+  {
+   "name": "FIN_KO_L4_50",
+   "layer": "L4",
+   "stage": "anchor",
+   "kind": "piece",
+   "area": 3.577,
+   "box": [
+    30.911,
+    39.196,
+    34.0,
+    41.325
+   ],
+   "why": "piece of 3.58 mm2 that no via or through-hole ground pad holds (no legal via site)"
+  },
+  {
+   "name": "FIN_KO_L4_51",
+   "layer": "L4",
+   "stage": "anchor",
+   "kind": "piece",
+   "area": 14.896,
+   "box": [
+    32.901,
+    28.751,
+    39.083,
+    35.454
+   ],
+   "why": "piece of 14.90 mm2 that no via or through-hole ground pad holds (no legal via site)"
+  },
+  {
+   "name": "FIN_KO_L4_52",
+   "layer": "L4",
+   "stage": "anchor",
+   "kind": "piece",
+   "area": 2.115,
+   "box": [
+    38.616,
+    29.251,
+    41.183,
+    31.0
+   ],
+   "why": "piece of 2.12 mm2 that no via or through-hole ground pad holds (no legal via site)"
+  },
+  {
+   "name": "FIN_KO_L4_53",
+   "layer": "L4",
+   "stage": "anchor",
+   "kind": "piece",
+   "area": 7.737,
+   "box": [
+    40.566,
+    29.501,
+    46.433,
+    31.0
+   ],
+   "why": "piece of 7.74 mm2 that no via or through-hole ground pad holds (no legal via site)"
+  }
+ ]
+}

@@ -1,0 +1,213 @@
+(version 1)
+# Custom DRC rules of the STM32H743 + SDRAM six-layer board. Profile C (docs/rule-profiles/C-bga-065.md).
+# Started from templates/common/common.kicad_dru; SPEC.md sections 7 and 9 give the values.
+# Later rules override earlier ones.
+#
+# ANY syntax error silently disables this WHOLE file (kicad-cli reports nothing). Known traps:
+# angles are unitless ("135", not "135deg"); min_resolved_spokes takes a bare number ("2", not "(min 2)");
+# every other number needs a unit; no '#' comment after a rule line; '==' not '='.
+# A misspelt net class, net, rule area or function name does NOT disable the file: that one rule just
+# matches nothing. After every edit run   sh stm32h743_sdram/build.sh rules   (canary, behaviour of every
+# rule on the fixture board, and the count of rules that match no object on the real board).
+#
+# Outside the BGA rule areas: track >= 0.1016, clearance 0.127 (net classes), via >= 0.45 / 0.2.
+# Inside the rule areas BGA_MCU and BGA_SDRAM (package outline + 1 mm, all layers):
+#   signal track exactly 0.09, clearance >= 0.09, via >= 0.30 / 0.15 (annular ring 0.075).
+# These exceptions were approved by the user on 2026-11-16 (issue 10) because a 0.65 mm ball pitch leaves
+# a 0.35 mm gap between 0.30 mm pads, and a 0.2 mm drill would sit 0.18 mm from the track between two vias.
+# Approved on 2026-11-20: the via array in the exposed pad of the Ethernet PHY (9 holes 0.5 / 0.2 mm that come
+# with the library footprint; they are footprint pads, not vias, so via_size does not see them).
+
+# --- Track width (AD Width rules, min / preferred / max) ---
+(rule "signal_width"
+  (condition "A.Type == 'Track'")
+  (constraint track_width (min 0.1016mm) (opt 0.2032mm) (max 0.8128mm)))
+
+# Buses that are length- or via-limited. Width outside the rule areas is the general minimum (routing
+# prototype, issue 21); the 50 ohm widths (L1 / L6 0.150, L3 / L4 0.135, SPEC 6) are not enforced.
+# No rule names a layer: every width, clearance, hole and length rule applies on L3 (In2.Cu, a signal layer since
+# 2026-11-23) exactly as on L4 (In3.Cu); rules_fixture.py proves it (cases w17-w19, c05, h08, l0h).
+(rule "bus_width"
+  (condition "A.Type == 'Track' && (A.NetClass == 'SDRAM' || A.NetClass == 'QSPI' || A.NetClass == 'SDMMC' || A.NetClass == 'LTDC' || A.NetClass == 'RMII')")
+  (constraint track_width (min 0.1016mm) (opt 0.1016mm) (max 0.8128mm)))
+
+(rule "pwr_width"
+  (condition "A.Type == 'Track' && A.NetClass == 'PWR'")
+  (constraint track_width (min 0.1524mm) (opt 0.3048mm) (max 2.54mm)))
+
+# 100 ohm pair between the PHY and the RJ45, on L1 only: 4.7 mil wide, 8 mil gap (0.1194 / 0.2032 mm), from the
+# fab's impedance calculator, run by the user on 2026-11-20 (on L4 the same gap needs 4.3 mil).
+(rule "eth_width"
+  (condition "A.Type == 'Track' && A.NetClass == 'ETH100'")
+  (constraint track_width (min 0.1194mm) (opt 0.1194mm) (max 0.1194mm)))
+
+# --- BGA rule areas: track width ---
+# A track that touches a rule area (also one that crosses its edge) may be 0.09.
+(rule "bga_width"
+  (condition "A.Type == 'Track' && (A.intersectsArea('BGA_MCU') || A.intersectsArea('BGA_SDRAM'))")
+  (constraint track_width (min 0.09mm) (opt 0.09mm) (max 2.54mm)))
+
+# A signal track that lies wholly inside a rule area must be exactly 0.09. Scripts change width 0.3 mm
+# outside the area edge; DRC judges each segment, so the change has to be at least half a track width outside.
+(rule "bga_width_inside"
+  (condition "A.Type == 'Track' && A.NetClass != 'PWR' && (A.enclosedByArea('BGA_MCU') || A.enclosedByArea('BGA_SDRAM'))")
+  (constraint track_width (min 0.09mm) (opt 0.09mm) (max 0.09mm)))
+
+# Crystal lines keep 0.254 everywhere: the HSE and LSE balls are in the outermost ring and leave the area
+# directly (no exception inside the area, approved 2026-11-16). After the area rules so that it wins.
+(rule "xtal_width"
+  (condition "A.Type == 'Track' && A.NetClass == 'XTAL'")
+  (constraint track_width (min 0.254mm) (opt 0.254mm) (max 0.254mm)))
+
+# --- Holes and vias ---
+# 0.15 is the small via drill inside the rule areas, 3.3 leaves room for the 3.2 mm M3 holes.
+(rule "hole_range"
+  (constraint hole_size (min 0.15mm) (max 3.3mm)))
+
+(rule "via_size"
+  (condition "A.Type == 'Via'")
+  (constraint hole_size (min 0.2mm) (max 0.762mm))
+  (constraint via_diameter (min 0.45mm) (max 1.27mm))
+  (constraint annular_width (min 0.125mm)))
+
+# Small vias only when the whole via is inside a rule area (enclosedByArea, not intersectsArea: a via
+# that straddles the edge keeps the outside limits). No small via outside: change the placement instead.
+(rule "bga_via"
+  (condition "A.Type == 'Via' && (A.enclosedByArea('BGA_MCU') || A.enclosedByArea('BGA_SDRAM'))")
+  (constraint hole_size (min 0.15mm) (max 0.762mm))
+  (constraint via_diameter (min 0.3mm) (max 1.27mm))
+  (constraint annular_width (min 0.075mm)))
+
+# JLC: plated component holes need 0.28 mm to tracks and 0.3 mm to inner copper (vias: 0.2, board setting),
+# and 0.45 mm hole edge to hole edge (vias: 0.2; the board setting is 0.254).
+(rule "pth_hole_clearance"
+  (condition "A.Type == 'Pad' && A.Pad_Type == 'Through-hole'")
+  (constraint hole_clearance (min 0.3mm)))
+
+(rule "pth_hole_to_hole"
+  (condition "A.Type == 'Pad' && A.Pad_Type == 'Through-hole'")
+  (constraint hole_to_hole (min 0.45mm)))
+
+# --- BGA rule areas: clearance ---
+# The two Type tests keep pours out of this rule: intersectsArea() is true for a whole pour as soon as it
+# overlaps a rule area, and the pour would then be filled at 0.09 mm everywhere on the board (issue 16).
+(rule "bga_clearance"
+  (condition "A.Type != 'Zone' && B.Type != 'Zone' && (A.intersectsArea('BGA_MCU') || A.intersectsArea('BGA_SDRAM'))")
+  (constraint clearance (min 0.09mm)))
+
+# --- Corners: no 90-degree or acute bends (interior angle >= 135) ---
+# 134 rather than 135: KiCad measures some exact 45-degree turns as 134.9999 and flags them.
+# Also reports 90-degree T-junctions; triage those case by case.
+(rule "corner_angle"
+  (constraint track_angle (min 134)))
+
+# --- Shortest segment (small chamfers of 0.1 - 0.35 mm are left to scripts/track_shape.py) ---
+(rule "min_segment"
+  (condition "A.Type == 'Track'")
+  (constraint track_segment_length (min 0.1mm)))
+
+# --- Pour connection: thermal relief for through-hole, solid for SMD ---
+(rule "tht_thermal"
+  (condition "A.Type == 'Pad' && A.Pad_Type == 'Through-hole'")
+  (constraint zone_connection thermal_reliefs)
+  (constraint thermal_spoke_width (min 0.254mm))
+  (constraint thermal_relief_gap (min 0.254mm))
+  (constraint min_resolved_spokes 2))
+
+(rule "smd_solid"
+  (condition "A.Type == 'Pad' && A.Pad_Type == 'SMD'")
+  (constraint zone_connection solid))
+
+# --- Ethernet pair: gap for 100 ohm (see eth_width). The within-pair skew limit of 1.27 mm was
+# confirmed by the user on 2026-11-20 (it is not an electrical need).
+(rule "eth_gap"
+  (condition "A.NetClass == 'ETH100'")
+  (constraint diff_pair_gap (min 0.2032mm) (opt 0.2032mm) (max 0.8mm)))
+
+(rule "eth_skew"
+  (condition "A.NetClass == 'ETH100'")
+  (constraint skew (max 1.27mm) (within_diff_pairs)))
+
+# --- Length, via count (SPEC section 9). Lengths are per net: pad centre to pad centre plus the height of
+# the layers each via really crosses. A series resistor splits a net; sums across it are checked by
+# scripts/len_rules.py, not here. ---
+(rule "sdram_len_max"
+  (condition "A.NetClass == 'SDRAM'")
+  (constraint length (max 60mm)))
+
+# Via count is limited only where timing is tight (user, 2026-11-21): the SDRAM data lanes with their NBL and
+# the clock. Address and command, LTDC and the slow signals have no limit; the build still reports their counts.
+(rule "sdram_via_max"
+  (condition "A.NetName == 'FMC_D*' || A.NetName == 'FMC_NBL*' || A.NetName == 'FMC_SDCLK*'")
+  (constraint via_count (max 3)))
+
+# SDRAM length matching (user, 2026-11-21): only the data lines, inside each byte lane (8 data bits and
+# their NBL): longest minus shortest <= 1.27 mm (user 2026-11-24, 50 mil, SPEC 9: mandatory, the standard the user
+# routes six-layer boards to; was 20 mm from 2026-11-23, the electrical value, and 5 mm before that).
+# Address, command and clock are held to the clock by sdram_addr_window (generated block) and to 60 mm.
+# The lanes are named by MCU net, so they stay right when SDRAM bytes or bits are swapped.
+(rule "sdram_lane0"
+  (condition "A.NetName == 'FMC_D0' || A.NetName == 'FMC_D1' || A.NetName == 'FMC_D2' || A.NetName == 'FMC_D3' || A.NetName == 'FMC_D4' || A.NetName == 'FMC_D5' || A.NetName == 'FMC_D6' || A.NetName == 'FMC_D7' || A.NetName == 'FMC_NBL0'")
+  (constraint skew (max 1.27mm)))
+
+(rule "sdram_lane1"
+  (condition "A.NetName == 'FMC_D8' || A.NetName == 'FMC_D9' || A.NetName == 'FMC_D10' || A.NetName == 'FMC_D11' || A.NetName == 'FMC_D12' || A.NetName == 'FMC_D13' || A.NetName == 'FMC_D14' || A.NetName == 'FMC_D15' || A.NetName == 'FMC_NBL1'")
+  (constraint skew (max 1.27mm)))
+
+(rule "sdram_lane2"
+  (condition "A.NetName == 'FMC_D16' || A.NetName == 'FMC_D17' || A.NetName == 'FMC_D18' || A.NetName == 'FMC_D19' || A.NetName == 'FMC_D20' || A.NetName == 'FMC_D21' || A.NetName == 'FMC_D22' || A.NetName == 'FMC_D23' || A.NetName == 'FMC_NBL2'")
+  (constraint skew (max 1.27mm)))
+
+(rule "sdram_lane3"
+  (condition "A.NetName == 'FMC_D24' || A.NetName == 'FMC_D25' || A.NetName == 'FMC_D26' || A.NetName == 'FMC_D27' || A.NetName == 'FMC_D28' || A.NetName == 'FMC_D29' || A.NetName == 'FMC_D30' || A.NetName == 'FMC_D31' || A.NetName == 'FMC_NBL3'")
+  (constraint skew (max 1.27mm)))
+
+(rule "qspi_len_max"
+  (condition "A.NetClass == 'QSPI'")
+  (constraint length (max 30mm)))
+
+(rule "ltdc_len_max"
+  (condition "A.NetClass == 'LTDC'")
+  (constraint length (max 120mm)))
+
+# skew compares every net of the group with the longest one: exactly "longest minus shortest <= 30 mm".
+# Overridden on every LTDC net by ltdc_spread_60 of the generated block (same condition, later in the file: 60 mm,
+# user 2026-11-23); the fixture's static phase still exercises this rule.
+(rule "ltdc_spread"
+  (condition "A.NetClass == 'LTDC'")
+  (constraint skew (max 30mm)))
+
+(rule "rmii_len_max"
+  (condition "A.NetClass == 'RMII'")
+  (constraint length (max 60mm)))
+
+(rule "rmii_refclk_len_max"
+  (condition "A.NetName == 'RMII_REF_CLK'")
+  (constraint length (max 40mm)))
+
+# >>> generated by scripts/len_rules.py from length_groups.json -- do not edit between the markers
+# qspi_window: reference QSPI_CLK = 26.1196 mm
+(rule "qspi_window"
+  (condition "A.NetName == 'QSPI_BK1_IO*'")
+  (constraint length (min 21.1196mm) (opt 26.1196mm) (max 30.0000mm)))
+# sdmmc_window: reference SDMMC1_CK = 36.7084 mm
+(rule "sdmmc_window"
+  (condition "A.NetClass == 'SDMMC' && A.NetName != 'SDMMC1_CK'")
+  (constraint length (min 36.7084mm) (opt 36.7084mm) (max 41.7084mm)))
+# rmii_rx_min: reference RMII_REF_CLK = 20.5576 mm
+(rule "rmii_rx_min"
+  (condition "A.NetName == 'RMII_RXD*' || A.NetName == 'RMII_CRS_DV'")
+  (constraint length (min 20.5576mm) (opt 20.5576mm) (max 60.0000mm)))
+# sdram_addr_window: reference FMC_SDCLK + FMC_SDCLK_R = 39.4845 mm
+(rule "sdram_addr_window"
+  (condition "A.NetName == 'FMC_A*' || A.NetName == 'FMC_BA*' || A.NetName == 'FMC_SDNRAS' || A.NetName == 'FMC_SDNCAS' || A.NetName == 'FMC_SDNWE' || A.NetName == 'FMC_SDCKE0' || A.NetName == 'FMC_SDNE0'")
+  (constraint length (min 19.4845mm) (opt 39.4845mm) (max 59.4845mm)))
+# ltdc_spread_60: fixed (user 2026-11-23 (SPEC 9): LTDC longest minus shortest <= 60 mm, the electrical value (was 30, then a working target of 45); replaces ltdc_spread)
+(rule "ltdc_spread_60"
+  (condition "A.NetClass == 'LTDC'")
+  (constraint skew (max 60mm)))
+# qspi_ncs_no_cap: fixed (user 2026-11-23: the chip select has no length cap, replaces qspi_len_max for it)
+(rule "qspi_ncs_no_cap"
+  (condition "A.NetName == 'QSPI_BK1_NCS'")
+  (constraint length (max 1000mm)))
+# <<< generated

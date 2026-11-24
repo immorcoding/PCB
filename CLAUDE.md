@@ -12,6 +12,28 @@ KiCad 10 硬件设计。分工：Claude 完成原理图、布局、布线；用�
 
 KiCad 10.0.8 在 `D:\KiCad\bin\`（`kicad-cli.exe`，带 pcbnew 的 `python.exe`），不在 PATH 上。
 
+## 模型和思考程度
+
+用户 2026-11-21 定，为了省 token。主会话不读手册页面图和草图、板图图片，这些交给子任务，只收结论、数字和页码或坐标。派子任务时按下表写明 `model` 和 `effort`。
+
+| 任务 | 谁做 | 模型 | 思考程度 |
+|---|---|---|---|
+| 和用户对话、定方案、设计规则、审子任务结果 | 主会话 | Fable | 会话设置 |
+| 线序分配（每根线走哪层、从哪边绕）：用确定性脚本算，不交给子任务搜索 | 主会话 | Fable | 会话设置 |
+| 没有先例的新工具或新算法（主会话先写清接口和基准） | 子任务 | Fable | high |
+| 读手册页面图取数（引脚表、时序、尺寸）；关键数字主会话抽查一处 | 子任务 | Sonnet | medium |
+| 网上调研（器件、工艺、应用笔记） | 子任务 | Sonnet | medium |
+| 看草图和板图找问题（交叉、绕远、异常），回清单和坐标 | 子任务 | Sonnet | medium |
+| 走线和布局的整齐度评判 | 子任务 | Opus | high |
+| 按既定格式写原理图页面 | 子任务 | Sonnet | medium |
+| 按已分好的层和方向写线束，构建到通过 | 子任务 | Opus | high |
+| 给已有基准的工具加功能、改脚本 | 子任务 | Opus | high |
+| 按铜皮草图摆器件 | 子任务 | Opus | high |
+| 独立复核（规则、网表对手册、交付前检查） | 子任务 | Opus | high |
+| 机械性批量改动（文档同步、填表、改名） | 子任务 | Haiku | low |
+
+表里没有的任务，按出错代价就近套一行；拿不准就问用户。
+
 ## Project shape
 
 Current standards, one file per area, rules grouped under titles. Before planning, specifying or changing anything that touches an area, read its file (once split, its index and the title files involved), hand those files to any subagent you start, and raise any Proposed items with the user.

@@ -22,3 +22,7 @@ analysis/*/
 
 # Vendor datasheets downloaded by hand (not redistributed)
 stm32h743_sdram/datasheet/
+stm32h743_sdram/out/
+
+# Release images are regenerated with build.sh publish
+stm32h743_sdram/publish/

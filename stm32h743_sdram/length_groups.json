@@ -1,0 +1,32 @@
+{
+  "_": "SPEC.md section 9. Read by scripts/len_rules.py. Members are rule conditions; lo / hi are mm relative to the reference. SDRAM data is matched inside each byte lane by the static skew rules sdram_lane0..3 of the rule file, not here. The fixed rules come after the static ones of the rule file and win over them for the objects they cover.",
+  "groups": [
+    {"rule": "qspi_window",
+     "members": "A.NetName == 'QSPI_BK1_IO*'",
+     "ref": ["QSPI_CLK"], "lo": -5, "hi": 5, "cap": 30},
+    {"rule": "sdmmc_window",
+     "members": "A.NetClass == 'SDMMC' && A.NetName != 'SDMMC1_CK'",
+     "ref": ["SDMMC1_CK"], "lo": 0, "hi": 5},
+    {"rule": "rmii_rx_min",
+     "members": "A.NetName == 'RMII_RXD*' || A.NetName == 'RMII_CRS_DV'",
+     "ref": ["RMII_REF_CLK"], "lo": 0, "cap": 60},
+    {"rule": "sdram_addr_window",
+     "members": "A.NetName == 'FMC_A*' || A.NetName == 'FMC_BA*' || A.NetName == 'FMC_SDNRAS' || A.NetName == 'FMC_SDNCAS' || A.NetName == 'FMC_SDNWE' || A.NetName == 'FMC_SDCKE0' || A.NetName == 'FMC_SDNE0'",
+     "ref": ["FMC_SDCLK", "FMC_SDCLK_R"], "lo": -20, "hi": 20, "cap": 60,
+     "why": "user 2026-11-23 (SPEC 9): every address / command line within 20 mm of the clock, the clock summed across R201; the 60 mm cap of sdram_len_max kept"}
+  ],
+  "fixed": [
+    {"rule": "ltdc_spread_60",
+     "members": "A.NetClass == 'LTDC'",
+     "constraint": "skew (max 60mm)",
+     "why": "user 2026-11-23 (SPEC 9): LTDC longest minus shortest <= 60 mm, the electrical value (was 30, then a working target of 45); replaces ltdc_spread"},
+    {"rule": "qspi_ncs_no_cap",
+     "members": "A.NetName == 'QSPI_BK1_NCS'",
+     "constraint": "length (max 1000mm)",
+     "why": "user 2026-11-23: the chip select has no length cap, replaces qspi_len_max for it"}
+  ],
+  "sums": [
+    {"name": "sdclk_total", "nets": ["FMC_SDCLK", "FMC_SDCLK_R"], "max": 60},
+    {"name": "rmii_refclk_plus_longest_txd", "nets": ["RMII_REF_CLK"], "plus_longest_of": ["RMII_TXD0", "RMII_TXD1"], "max": 100}
+  ]
+}
