@@ -53,7 +53,8 @@ BOARD = os.environ.get("LOCAL_BOARD", "out/probe_east/base/stm32h743_sdram.kicad
 ORIGIN = (100, 100)
 GROUP = "local"
 VIA_LIMIT = 4
-YIELD_NETS = ["GND"]          # the L1 / L6 ground pours give way to the tracks
+YIELD_NETS = ["GND", "+12V"]  # the L1 / L6 ground pours give way to the tracks; so does the +12V pour round RPP_GATE
+                              # (its fill keeps the zone clearance to the track and stays one piece, DRC clean)
 OPEN_ENDS = True              # opt1: EN_3V3A branches at a via (R108's chain starts at the via (67.25, 32.4))
 DRC_IGNORE = {"solder_mask_bridge": "mask webs between fine-pitch pads of the footprints (QFN, FPC), there before this group"}
 VIEWS = [("power", 60.0, 28.0, 80.0, 62.0, 40), ("can", 66.0, 7.0, 84.0, 28.0, 45), ("lcd", 10.0, 54.0, 60.0, 74.0, 30),
