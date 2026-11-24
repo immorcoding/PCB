@@ -6,6 +6,8 @@ The workspace's own schematic and board tools. Everything runs from the reposito
     D:\KiCad\bin\python.exe -m Tools.KiCadDesignTools.<category>.<tool> <args>
     D:\KiCad\bin\python.exe -m Tools.KiCadDesignTools.build <board dir> <step> [--dry-run]
     D:\KiCad\bin\python.exe -m Tools.KiCadDesignTools.regress            (every benchmark, PROC-15)
+    D:\KiCad\bin\python.exe -m Tools.KiCadDesignTools.regress --board demo   (the demo board built from its data, ~12 min)
+    D:\KiCad\bin\python.exe -m Tools.KiCadDesignTools.build init NAME [--from DIR] [--parent DIR]   (a new board folder)
 
 No tool edits `sys.path`; board files (routes files, schematic pages) import
 `from Tools.KiCadDesignTools.routing.busroute import ...`. busroute loads a routes file of a board folder as a module
@@ -16,7 +18,8 @@ of that folder's package (`<board>.<stem>`). Commands, usage and the known pitfa
 Status (2026-11-24, branch `tools-consolidation`): stages 1-2 done: the generic tools moved here from `scripts/`, the
 benchmarks carry their own fixtures, `build.py` reads `<board dir>/board.toml`. Stage 3 (batches A-G) moved the H743
 board folder's scripts that the driver called here, their constants into its data files; the driver calls Tools
-modules only (no `[scripts]` section any more).
+modules only (no `[scripts]` section any more). H4b: `templates/demo_board/` (a small six-layer board, data files only,
+built by the driver from `project` to `finish`), the driver's `init` and `pcb-update`, `regress --board demo`.
 
 | Category | Tool | Command | When | Rules | Benchmark |
 |---|---|---|---|---|---|
@@ -29,7 +32,7 @@ modules only (no `[scripts]` section any more).
 | project | `make_project` | `-m ...project.make_project <board dir> [--new-pcb]` | `.kicad_pro` from the profile's template (`templates/<[board] template>/`: floors, widths, vias, Default / PWR / XTAL) plus the board's (`[project]`, `[netclasses]`, `[netclass_patterns]`), empty board with the stackup, derived footprints (`[[footprints.derived]]`), layer table; the template's rule file copied when the board has none, its rule names looked for in the board's | RUL-1, PROC-13 | |
 | project | `spec_check` | `-m ...project.spec_check <board dir> [--profile <md>]` | SPEC.md's table 本板取值: every item of the profile's table 布局和走线的取值 filled (a value or 不适用), each 数据源 reference agreeing with its data file (`[board] profile`, `spec_table = false`: warnings only); the layout step runs it first | PROC-8 | `tests/spec_check` |
 | rules | `fixture` | `-m ...rules.fixture <board dir> <out>` | every rule breaks and passes on a fixture board (cases: `<board dir>/rules_cases.py`) | RUL-2 | (it is one) |
-| (driver) | `build` | `-m ...build <board dir> <step>` | rules, sch, layout, copper, route, finish, checks, publish, all, compare | PROC-4, PROC-6 | `--dry-run` |
+| (driver) | `build` | `-m ...build <board dir> <step>`; `-m ...build init NAME [--from DIR] [--parent DIR]` | project, rules, sch, pcb-update (netlist into the board, placed parts kept), layout, copper, route, finish, checks, publish, all, compare; init: a new board folder from a template folder (default `templates/demo_board`: its data files, the name replaced) | PROC-4, PROC-6 | `--dry-run`; `regress --board demo` |
 | rules | `dru_canary` | `-m ...rules.dru_canary <board>` | the rule file is loaded | RUL-2 | `tests/drc_tools` |
 | rules | `dru_match` | `-m ...rules.dru_match <board> [--json]` | every rule matches something (one DRC per rule, slow) | RUL-2 | `tests/drc_tools` |
 | rules | `drc_probe` | (library) | DRC on a copy with another rule file, report parsing, net lengths | | `tests/drc_tools` |
@@ -42,7 +45,7 @@ modules only (no `[scripts]` section any more).
 | schematic | `check` | `-m ...schematic.check <board dir> <netlist>` | netlist against the drawing's intent, the pin table (`[schematic.pin_table]`), the SDRAM byte lanes (`[schematic.swap]`) | RUL-6 | |
 | schematic | `net2pcb` | `-m ...schematic.net2pcb <netlist> <board>` | netlist into the board | | |
 | placement | `place` | `-m ...placement.place <board dir> [--pcb <copy>] [--rot <angle>]` | every part, outline, holes, rule areas and F.Cu no-pour areas from `<board dir>/place.toml`; parks unlisted parts below the board; `--pcb`/`--rot`: trials on a copy | LAY-1, PROC-13 | |
-| placement | `layout_probe` | `-m ...placement.layout_probe <board dir> [--pcb <board>] [--json <out>]` | measured trials: rails against the copper sketch, crystals, switcher loops, bus lengths, LCD fan (board.toml `[probe]`) | LAY-2, 3 | |
+| placement | `layout_probe` | `-m ...placement.layout_probe <board dir> [--pcb <board>] [--json <out>]` | measured trials: rails against the copper sketch, crystals, switcher loops, bus lengths, LCD fan (board.toml `[probe]`; every trial but the rails optional) | LAY-2, 3 | |
 | placement | `place_check` | `-m ...placement.place_check <board> [...]` | placement metrics | LAY-2, 5, 6, 8 | `tests/place_check` |
 | placement | `escape_check` | `-m ...placement.escape_check <board> --ref U1 [...]` | ways out of fine-pitch parts | LAY-2 | `tests/place_check` |
 | placement | `via_spots` | `-m ...placement.via_spots ...` | legal via spots (ignores footprint keep-outs) | | |
@@ -79,6 +82,12 @@ modules only (no `[scripts]` section any more).
 | analysis | `board_diff` | `-m ...analysis.board_diff <a> <b>` | two board files item by item (uuids aside, fills as areas) | | |
 | analysis | `compare_runs` | `-m ...analysis.compare_runs <out A> <out B>` | two builds' reports number by number | | |
 | third_party | `auto_tracks`, `auto_clean`, `auto_tidy` | `-m ...third_party.<tool> ...` | KiCadRoutingTools output (RTE-4: by exception) | RTE-4 | |
+
+Whole-board bench: `regress --board demo` copies `templates/demo_board` with `build init` into `out/regress/` (git-ignored,
+inside the repository: board folders are imported as packages), runs project, rules --skip-match, sch, pcb-update,
+layout, route --skip-match and finish --no-render on the copy, and checks the step exit codes, the rule fixture, the
+schematic checks, the final DRC with schematic parity by type, unconnected items, the byte lane's spread and the
+address window against `tests/demo_board/expected.json`; not part of the default run (about 12 minutes).
 
 `...` = `Tools.KiCadDesignTools`. Several older tools read `sys.argv` when imported (script style); run them only as
 commands.
