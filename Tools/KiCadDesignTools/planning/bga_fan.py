@@ -31,6 +31,16 @@ The program (per package, the MCU with everything, the SDRAM with its supply bal
             every 3.3 V ball with a 100 nF supply pad within CAP_REACH
   slots     no chain of joined plane clearance holes (L2: every via but GND; L5: every via but the block's net)
             longer than --slot-max: added lazily, exact (bga_grid.Slots over the fixed vias and the chosen ones)
+
+The rule values (vias, widths, clearances in and out of the rule areas) are the geo's (planning.bga_dump: the board's
+rule files), the planes' zone values the copper sketch's (bga_grid.configure). Environment switches for experiments
+and debugging only (a board's choices are in bga_block.toml; none of these is set by a build):
+  FAN_NOSUP, FAN_NOSIG, FAN_NOCAP   leave the supply vias / the signal fan-out / the capacitors out of the program
+  FAN_NOSIGSLOT                     signal vias out of the slot rule;  FAN_NOSTAIR: no staircase rows
+  FAN_ROUNDS (30)                   rounds of lazy slot cuts;  FAN_UNALLOC (400): cost of an unallocated signal ball
+  FAN_CAPOPT                        capacitor counts optional, a placed part rewarded by [fan] cap_bonus
+  FAN_REACH, FAN_DROP="C218 ..."    what-ifs over the data: another cap_reach; capacitor kinds left out
+  FAN_NOFEED, FAN_SIDES_FREE="net"  what-ifs over the data: no [fan] feed sites; nets freed from [fan.sides]
 """
 import argparse, json, math, os, time
 
@@ -40,6 +50,8 @@ from Tools.KiCadDesignTools.planning import bga_grid as G
 from Tools.KiCadDesignTools.planning.bga_plan import Lattice, LP, sample_ok, ball_options, cap_candidate, CAP_GEOM, r4, staircases
 
 DIRS = {"E": (1, 0), "W": (-1, 0), "S": (0, 1), "N": (0, -1)}
+# cost weights of the program (method): an unallocated signal ball; per mm of a ball's way to the rule-area edge (W_IN)
+# and of the exit's Manhattan distance to the net's target (W_OUT)
 UNALLOC, W_OUT, W_IN = float(os.environ.get("FAN_UNALLOC", "400")), 0.25, 0.15
 DONE = set()                                          # signal balls fixed by an earlier pass (with_fixed)
 NOSIGSLOT = bool(os.environ.get("FAN_NOSIGSLOT"))     # signal vias left out of the slot rule (stage A of the staged run)
@@ -73,10 +85,13 @@ DEFAULT_TARGET = None
 IMPORTANT = None                 # net prefixes that prefer IMPORTANT_LAYER (next to the ground plane, SPEC 6)
 IMPORTANT_LAYER = None
 SIDES = None                     # net -> the MCU sides it may leave through; nets not listed: any side
-NOVDDA = None                    # FAN_NOVDDA: the VDDA filter's parts, zone and net taken out of the state
+NOVDDA = None                    # the VDDA filter's parts, zone and net; taken out of the state when its drop is true
 SLOT_MAX = None                  # --slot-max default
 AREA = None                      # {ref: its BGA rule area name} (place.toml [rule_areas])
 BUS_W = None                     # the bus width the options are checked at
+BUS_PREFIX = None                # the SDRAM bus's nets ([power] bus_prefix): not fanned out here
+BONE_W = None                    # a supply ball's dog-bone in a fixed stage-A result: [power.bga] bone_widths, the first
+CAP_BONUS = None                 # FAN_CAPOPT: reward of a placed capacitor ([fan] cap_bonus: tied nets, the others)
 INNER = None                     # the layers of a run after a via: the signal layers but the top one
 
 
@@ -84,7 +99,8 @@ def setup(cfg):
     """Read the board's values (see the globals above) and configure bga_grid."""
     global MCU, SDRAM, POWER, SUPPLY33, GROUND, WINDOW, MCU_CAPS, SD_CAPS, CAP_KINDS, CAP_REF, TIED, ISLAND, FEED
     global EXTRA, CAP_REACH, CAP_FAR, CAP_FAR_OTHER, XTAL_BALLS, XTAL_BOX, XTAL_END_X, XTAL_W, EXITS, TARGET
-    global DEFAULT_TARGET, IMPORTANT, IMPORTANT_LAYER, SIDES, NOVDDA, SLOT_MAX, INNER, AREA, BUS_W
+    global DEFAULT_TARGET, IMPORTANT, IMPORTANT_LAYER, SIDES, NOVDDA, SLOT_MAX, INNER, AREA, BUS_W, BUS_PREFIX, BONE_W
+    global CAP_BONUS
     G.configure(cfg)
     blk = cfg.datafile("bga_block.toml")
     if not blk.get("block") or not blk.get("fan"):
@@ -123,6 +139,9 @@ def setup(cfg):
     INNER = G.LAYERS[1:]
     AREA = {a["ref"]: a["name"] for a in cfg.datafile("place.toml")["rule_areas"]["areas"]}
     BUS_W = b["bus_width"]
+    BUS_PREFIX = cfg.need("power.bus_prefix")
+    BONE_W = cfg.need("power.bga.bone_widths")[0]
+    CAP_BONUS = f["cap_bonus"]
     return cfg
 
 
@@ -168,24 +187,28 @@ def turn(a, b, c):
 
 
 def with_fixed(geo, fixA, ref=None):
-    """The geo with a stage-A result built in: its supply and own vias, the supply dog-bones (L1, 0.2) and the
-    capacitor pads (L6), so that the signal stage sees them as ordinary copper."""
+    """The geo with a stage-A result built in: its supply and own vias (the rule areas' via), the supply dog-bones
+    (L1, BONE_W), the signal fan-outs of an earlier pass (the rule areas' width) and the capacitor pads (L6), so that
+    the signal stage sees them as ordinary copper."""
+    R = geo["rules"]
+    vd, vh = R["via_area"]
+    w_in = R["w_area"]
     g = dict(geo)
     g["vias"] = list(geo["vias"]); g["tracks"] = list(geo["tracks"]); g["pads"] = list(geo["pads"])
     for num, v in fixA["supply"].items():
         if not v["via"]:
             continue
-        g["vias"].append([v["net"], list(v["via"]), 0.3, 0.15])
-        g["tracks"].append([v["net"], G.TOP, list(v["ball"]), list(v["via"]), 0.2])
+        g["vias"].append([v["net"], list(v["via"]), vd, vh])
+        g["tracks"].append([v["net"], G.TOP, list(v["ball"]), list(v["via"]), BONE_W])
     for num, v in fixA.get("signal", {}).items():              # signal fan-outs placed by an earlier pass
-        g["vias"].append([v["net"], list(v["via"]), 0.3, 0.15])
-        g["tracks"].append([v["net"], G.TOP, list(v["ball"]), list(v["via"]), 0.09])
+        g["vias"].append([v["net"], list(v["via"]), vd, vh])
+        g["tracks"].append([v["net"], G.TOP, list(v["ball"]), list(v["via"]), w_in])
         run = [v["via"]] + [q for q in v["run"] if q != v["via"]]
         for a_, b_ in zip(run, run[1:]):
-            g["tracks"].append([v["net"], v["layer"], list(a_), list(b_), 0.09])
+            g["tracks"].append([v["net"], v["layer"], list(a_), list(b_), w_in])
         DONE.add(num)
     for k, net in fixA["own"].items():
-        g["vias"].append([net, [float(c) for c in k.split(",")], 0.3, 0.15])
+        g["vias"].append([net, [float(c) for c in k.split(",")], vd, vh])
     for c in fixA["caps"]:
         hl, hw = CAP_GEOM[c["size"]][1:]
         horiz = c["rot"] % 180 == 0
@@ -200,7 +223,7 @@ def with_fixed(geo, fixA, ref=None):
 def state(geo):
     g = dict(geo)
     gone = set(MCU_CAPS + SD_CAPS)
-    if os.environ.get("FAN_NOVDDA"):                # the VDDA filter moved out of the ball field (west of the MCU)
+    if NOVDDA.get("drop"):                          # the VDDA filter moved out of the ball field (west of the MCU)
         gone |= set(NOVDDA["parts"])
         g["zones"] = [z for z in geo["zones"] if z["name"] != NOVDDA["zone"]]
         g["tracks"] = [t for t in geo["tracks"] if t[0] != NOVDDA["net"]]
@@ -210,18 +233,18 @@ def state(geo):
 
 
 def site_ok_fixed(f, cc, fixed_vias):
-    """Capacitor pads against the state: L6 copper 0.09 away, foreign holes 0.2 away (fixed vias are all foreign:
-    the state has no supply via)."""
+    """Capacitor pads against the state: L6 copper the rule areas' clearance away, foreign holes the hole clearance
+    away (fixed vias are all foreign: the state has no supply via)."""
     d6 = f.D[G.BOTTOM]
     for (x0, y0, x1, y1) in cc["rects"]:
         j0, j1, i0, i1 = f._win((x0, y0, x1, y1), 0.0)
         X, Y = np.meshgrid(f.xs[i0:i1], f.ys[j0:j1])
         inside = (X >= x0) & (X <= x1) & (Y >= y0) & (Y <= y1)
-        if inside.any() and (d6[j0:j1, i0:i1][inside] < 0.09 - 1e-4).any():
+        if inside.any() and (d6[j0:j1, i0:i1][inside] < f.clr_area - 1e-4).any():
             return False
         for n, p, d, h in fixed_vias:
             dx = max(x0 - p[0], 0.0, p[0] - x1); dy = max(y0 - p[1], 0.0, p[1] - y1)
-            if math.hypot(dx, dy) < h / 2 + 0.2 - 1e-6 or math.hypot(dx, dy) < d / 2 + 0.09 - 1e-6:
+            if math.hypot(dx, dy) < h / 2 + f.hole_clr - 1e-6 or math.hypot(dx, dy) < d / 2 + f.clr_area - 1e-6:
                 return False
     return True
 
@@ -297,7 +320,7 @@ class Fan:
         out = {}
         for uv, pad in sorted(lat.balls.items()):
             net = pad["net"]
-            if not is_signal(net) or net.startswith("FMC_") or pad["num"] in XTAL_BALLS or pad["num"] in DONE:
+            if not is_signal(net) or net.startswith(BUS_PREFIX) or pad["num"] in XTAL_BALLS or pad["num"] in DONE:
                 continue
             opts = []
             for o in ball_options(lat, f, masks, via_ok, uv, inner=INNER):
@@ -442,7 +465,8 @@ class Fan:
             # capacitors: each pad over a via of its net (a ball's, or one of its own; VCAP: the ball's)
             cover, by_kind = {}, {}
             for k, cc in enumerate(caps):
-                v = lp.var(0.3 * cc["nearest"] + 0.0001 * k - ((600.0 if cc["kind"] in ("C218", "C219") else 300.0) if os.environ.get("FAN_CAPOPT") else 0.0), name="cap")
+                v = lp.var(0.3 * cc["nearest"] + 0.0001 * k - ((CAP_BONUS["tied"] if cc["nets"][0] in TIED else CAP_BONUS["other"])
+                                                                if os.environ.get("FAN_CAPOPT") else 0.0), name="cap")
                 C[k] = v
                 by_kind.setdefault(cc["kind"], []).append(v)
                 for s_, net in ((cc["s"], cc["nets"][0]), (cc["g"], GROUND)):

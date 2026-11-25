@@ -9,13 +9,16 @@ power plane (role power), the ground plane (role ground) and the ground net ([po
 Pure Python + numpy / scipy / scikit-image (system Python, not KiCad's). Nothing here allocates anything: the
 allocation is bga_plan's model; this module only answers "is there room" for a given state.
 
-Rules (profile C, docs/rule-profiles/C-bga-065.md; values read from geo["rules"]):
-  track    inside a BGA rule area 0.09 wide, 0.09 to other copper; outside its class width, 0.127
-  via      0.30 / 0.15 when wholly inside a rule area, else 0.45 / 0.20; pad to copper as a track; hole edge to
-           other copper 0.2 (plated part holes 0.3); hole edge to hole edge 0.254; never on a pad
+Rules (profile C, docs/rule-profiles/C-bga-065.md; values read from geo["rules"], the dump of the board's rule
+files; H743 values):
+  track    inside a BGA rule area 0.09 wide, 0.09 to other copper; outside its class width, the narrowest class's
+           clearance (0.127)
+  via      0.30 / 0.15 when wholly inside a rule area, else the smallest class via (0.45 / 0.20); pad to copper as a
+           track; hole edge to other copper 0.2 (plated part holes 0.3); hole edge to hole edge 0.254; never on a pad
   planes   two vias foreign to a plane (L2: not GND; L5: not the net of the block they stand in) join their
-           clearance holes when closer than (d1 + d2) / 2 + 2 * 0.127 + 0.2; a chain's length is the largest
-           centre distance in it + the largest pad + 0.254 (copper.plane_slots, copper.bga_power)
+           clearance holes when closer than (d1 + d2) / 2 + 2 * PLANE_CLR + PLANE_MINW; a chain's length is the
+           largest centre distance in it + the largest pad + 2 * PLANE_CLR (copper.plane_slots, copper.bga_power);
+           PLANE_CLR and PLANE_MINW are the copper sketch's plane_clearance and minwidth (0.127, 0.2)
 The grid is aligned to the ball lattices (0.65 / 2 and 0.8 / 2 are multiples of 0.025), so the one-track
 channels (0.08 mm of room between two pads, 0.01 mm between two vias) are met exactly: distances are computed
 per copper item at the grid points, not from a raster.
@@ -24,7 +27,6 @@ import math
 import numpy as np
 
 STEP = 0.025
-PLANE_CLR, PLANE_MINW = 0.127, 0.2
 CAP = 0.6                      # distances are kept up to this (the largest need is a 0.45 via: 0.352)
 EPS = 1e-4
 
@@ -36,11 +38,12 @@ GND_PLANE = None               # the ground plane
 COPPER = None                  # every copper layer (pads without a layer list, vias)
 TOP = BOTTOM = None            # the outer layers
 GROUND = None                  # the ground net
+PLANE_CLR = PLANE_MINW = None  # the planes' zone clearance and minimum width (the copper sketch)
 
 
 def configure(cfg):
-    """Take the layers and the ground net from a board configuration (core.config)."""
-    global LAYERS, PLANES, PWR_PLANE, GND_PLANE, COPPER, TOP, BOTTOM, GROUND
+    """Take the layers, the ground net and the planes' zone values from a board configuration (core.config)."""
+    global LAYERS, PLANES, PWR_PLANE, GND_PLANE, COPPER, TOP, BOTTOM, GROUND, PLANE_CLR, PLANE_MINW
     from Tools.KiCadDesignTools.core import config
     LAYERS = tuple(cfg.signal_layers())
     PLANES = tuple(cfg.plane_layers())
@@ -52,6 +55,7 @@ def configure(cfg):
     COPPER = tuple(l.L for l in cfg.layers)
     TOP, BOTTOM = cfg.layers[0].L, cfg.layers[-1].L
     GROUND = cfg.need("power.ground")
+    PLANE_CLR, PLANE_MINW = cfg.copper_plane()
 
 
 def _need_config():
@@ -165,8 +169,9 @@ class Field:
         self.w_area, self.clr_area = R["w_area"], R["clr_area"]
         self.via_in = tuple(R["via_area"])
         self.hole_clr, self.hole_hole = R["hole_clr"], R["hole_hole"]
-        self.clr_out = 0.127
-        self.via_out = (0.45, 0.2)
+        cls = R["classes"].values()                         # outside the areas: the narrowest net class
+        self.clr_out = min(c["clearance"] for c in cls)
+        self.via_out = min(tuple(c["via"]) for c in cls)
         self.areas = [tuple(a["rect"]) for n, a in sorted(geo["areas"].items()) if n in R["area_names"]]
         self.items = items if items is not None else scene_items(geo)
         X, Y = np.meshgrid(self.xs, self.ys)

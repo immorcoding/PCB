@@ -111,8 +111,10 @@ island = [{ site = [36.425, 38.625], net = "+3V3_MCU" }]
 # site column pair either side of ball column 11 (x 41.625 / 42.275, rows A-C, where balls A11 / B11 are unconnected)
 # holds no via of another net, so the tongue (x 39.6-44.2) enters the field in a 1.4 mm channel; FAN_NOFEED drops it
 feed = { x = [41.625, 42.275], y = [31.475, 32.125, 32.775, 33.425] }
-# the VDDA filter taken out of the state with FAN_NOVDDA (moved out of the ball field, west of the MCU)
-novdda = { parts = ["C220", "C221", "C222", "C223", "FB201"], zone = "cu:L6_VDDA_MCU", net = "VDDA_MCU" }
+# the VDDA filter: drop = true takes it out of the state (moved out of the ball field, west of the MCU; was the
+# environment switch FAN_NOVDDA, R2 2026-11-24)
+novdda = { parts = ["C220", "C221", "C222", "C223", "FB201"], zone = "cu:L6_VDDA_MCU", net = "VDDA_MCU", drop = false }
+cap_bonus = { tied = 600.0, other = 300.0 }   # FAN_CAPOPT (capacitor counts optional): reward of a placed part (tied nets' first)
 default_target = [40.0, 37.0]         # target of a net not listed below
 important = ["RMII_", "ETH_", "QSPI_", "SDMMC1_"]   # nets that prefer the important layer (next to the ground plane, SPEC 6)
 important_layer = "L3"
