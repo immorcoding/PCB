@@ -12,7 +12,7 @@ in-pad over a via of its net, an L6 stub to one, or a via of its own. Ground is 
 and nothing else). A SHARED group: it replaces only what it wrote itself.
 """
 import json, os
-from Tools.KiCadDesignTools.copper.bga_power import BgaPlanner, WIDE_W
+from Tools.KiCadDesignTools.copper.bga_power import BgaPlanner
 from Tools.KiCadDesignTools.routing.busroute.board import old_items
 
 BOARD = os.environ.get("BOARD", "demo_board.kicad_pcb")
@@ -36,7 +36,7 @@ def routes(job):
     P = BgaPlanner(b, job.profile, os.path.join(HERE, "copper.sketch"), POWER, caps, skip_items=old_items(b.path, GROUP))
     for ref in POWER:
         P.place_balls(ref)
-    P.connect_caps(widths_for={"VCAP1": WIDE_W, "VCAP2": WIDE_W})    # a VCAP stub, if one is needed: short and wide
+    P.connect_caps(widths_for={"VCAP1": P.wide_w, "VCAP2": P.wide_w})    # a VCAP stub, if one is needed: short and wide
     ALLOW_VIA_ON[:] = sorted(P.allow)
     job.stitch += P.extras
     job.notes += P.log

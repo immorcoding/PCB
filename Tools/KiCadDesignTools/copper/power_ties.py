@@ -64,8 +64,9 @@ def pad_dist(p, pad):
 
 
 class Planner:
-    def __init__(self, board, profile, sketch_path, obstacle_board=None, obstacle_nets=(), via=(0.45, 0.2), allow=(), protect=(), cfg=None):
-        self.b, self.pr, self.via = board, profile, tuple(via)
+    def __init__(self, board, profile, sketch_path, obstacle_board=None, obstacle_nets=(), via=None, allow=(), protect=(), cfg=None):
+        """via: (diameter, drill) of the group's vias (default the smallest class via of the rule files)."""
+        self.b, self.pr, self.via = board, profile, tuple(via or profile.via_out_min())
         self.pwr_plane = power_plane(board_config(sketch_path, cfg))
         self.allow = set(allow)
         self.protect = list(protect)                          # (net, (x0, y0, x1, y1)): narrow plane strips no via of another net may cut
@@ -139,10 +140,10 @@ class Planner:
             if pn != net and math.hypot(max(R[0] - p[0], 0.0, p[0] - R[2]), max(R[1] - p[1], 0.0, p[1] - R[3])) < r + self.pr.plane_clr:
                 return "cuts the narrow %s strip" % pn
         for n, q in self.own_vias:
-            if math.dist(p, q) < (OWN_VIA if n == net else d + 0.127):
+            if math.dist(p, q) < (OWN_VIA if n == net else d + self.pr.clr_out()):
                 return "via of %s at (%.3f, %.3f)" % (n, q[0], q[1])
         for n, q, hr in self.th:
-            if math.dist(p, q) < hr + h / 2 + (0.45 if n != net else 0.254):
+            if math.dist(p, q) < hr + h / 2 + (self.pr.pth_hole_hole if n != net else self.pr.hole_hole):
                 return "plated hole at (%.3f, %.3f)" % q
         it = self.sc.via(net, p, d, h)
         for o in self.sc.near(it, 0.1):

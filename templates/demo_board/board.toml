@@ -125,6 +125,17 @@ nets = ["GND", "+3V3"]
 ground = "GND"                   # never routed: a via at each pad
 bus_prefix = "FMC_"              # nets of the bus group: the BGA power group's obstacles
 
+# copper.bga_power's own choices. The vias are the rule file's (in-area via; outside: the smallest class via), the
+# planes' clearance and minimum width the copper sketch's.
+[power.bga]
+via_pitch = 0.45                 # least centre distance between two vias, any nets
+stub_max = 0.7                   # bottom stub, capacitor pad edge to via centre
+gnd_via_max = 1.0                # a capacitor's own ground via: pad edge to via centre
+bone_widths = [0.2, 0.15]        # dog-bone widths, first legal; then the rule areas' track width (rule file)
+stub_widths = [0.25, 0.2, 0.15, 0.1]   # bottom stub widths
+wide_widths = [0.3, 0.25, 0.2]   # the VCAP stubs ("short and wide")
+share90_first = true             # a neighbour's via at 90 degrees (short dog-bone) before a via that joins antipads
+
 [bga.U1]                         # the MCU: its supply net with a block on the power plane
 supply = "+3V3"
 

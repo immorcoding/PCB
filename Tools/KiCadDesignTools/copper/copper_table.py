@@ -100,11 +100,12 @@ def table(cfg, board_path, odir):
     gpads = [("%s.%s" % (f.GetReference(), p.GetNumber()), p) for f in b.GetFootprints() for p in f.Pads() if p.GetNetname() == GND]
     cand = [n for n, p in gpads if not p.HasHole() and not part_b(n) and n not in skip_pads and n.split(".")[0] not in skip_refs]
     rely = sorted(set(cand) - set(own))
-    far = [s for s in g if s["kind"] == "via" and s["pad"].startswith("C") and s.get("edge", 0) > 1.0]
+    gmax = cfg.need("power.bga.gnd_via_max")            # a capacitor's own ground via: pad edge to via centre
+    far = [s for s in g if s["kind"] == "via" and s["pad"].startswith("C") and s.get("edge", 0) > gmax]
     L.append("")
     L.append("地: 过孔 %d 个（焊盘旁 %d，散热焊盘内 %d）；有自己过孔的焊盘 %d；靠铺地的焊盘 %d：%s" % (
         len(g), sum(1 for s in g if _own_via(s)), sum(1 for s in g if s["kind"] == "in pad"), len(own), len(rely), " ".join(rely)))
-    L.append("  电容地过孔离焊盘边超过 1.0 mm: %s" % (" ".join("%s %.2f" % (s["pad"], s["edge"]) for s in far) or "0"))
+    L.append("  电容地过孔离焊盘边超过 %.1f mm: %s" % (gmax, " ".join("%s %.2f" % (s["pad"], s["edge"]) for s in far) or "0"))
     miss = [l for l in sites["log"] if l.startswith("NO ")]
     L.append("  找不到位置的: %d%s" % (len(miss), "".join("\n    " + l for l in miss)))
     L.append("环路的地过孔（U56，焊盘边到过孔中心 mm）: " + "  ".join(
@@ -187,9 +188,10 @@ def part_b_text(cfg, b, odir):
     L.append("背面去耦（焊盘 %d 个）: %s；最长短线（焊盘边外的长度）%.3f mm（%s）" % (
         len(caps), "  ".join("%s %d" % kv for kv in sorted(kc.items())), worst[0], worst[1]))
     gown = [c for c in caps.values() if c["net"] == GND and c["kind"] != "pour" and not c.get("balls")]
-    L.append("  电容地焊盘：和地球共用过孔 %d 个，自己的地过孔 %d 个（焊盘边到过孔中心最远 %.2f mm，超过 1.0 mm 的 %d）" % (
+    gmax = cfg.need("power.bga.gnd_via_max")
+    L.append("  电容地焊盘：和地球共用过孔 %d 个，自己的地过孔 %d 个（焊盘边到过孔中心最远 %.2f mm，超过 %.1f mm 的 %d）" % (
         sum(1 for c in caps.values() if c["net"] == GND and c.get("balls")), len(gown),
-        max([c.get("edge", 0) for c in gown] or [0]), sum(1 for c in gown if c.get("edge", 0) > 1.0)))
+        max([c.get("edge", 0) for c in gown] or [0]), gmax, sum(1 for c in gown if c.get("edge", 0) > gmax)))
     supply_own = sorted(k for k, c in caps.items() if c["net"] != GND and c["kind"].startswith("own"))
     L.append("  电源焊盘没有落到球的过孔、用自己的过孔到 %s 的 %d 个: %s" % (power_plane(cfg), len(supply_own), " ".join(supply_own) or "-"))
     small = [(f.GetReference(), p) for r, f in fps.items() if r.startswith("C") and f.GetValue().replace(" ", "").lower() in ("100n", "100nf", "0.1u", "0.1uf")

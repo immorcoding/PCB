@@ -14,11 +14,11 @@ field. Writes <out dir>/<stem>.json and <stem>.txt (default stem "slots") and pr
 board.toml [copper.slots]: windows (default {name: [x0, y0, x1, y1]}, local mm), ref_layers ({plane layer: its
 neighbouring signal layers}), report (slots longer than this are listed, mm), blocks ({net of a BGA block on the power
 plane: its rule area}), part_b (default part-B file, relative to the out folder). The power plane is the layer of
-role "power" ([layers]); the origin is [board] origin.
+role "power" ([layers]); the origin is [board] origin; the planes' zone clearance and minimum width (when two antipads
+join) are the copper sketch's ([copper] sketch: plane_clearance, minwidth).
 """
 import collections, json, math, os, sys
 
-from Tools.KiCadDesignTools.copper.bga_power import PLANE_CLR, MINWIDTH
 from Tools.KiCadDesignTools.copper.power_ties import power_plane
 
 
@@ -35,6 +35,7 @@ def slots(cfg, board_path, odir, windows=None, part_b=None, layers=None, stem="s
     REF_LAYERS = sl["ref_layers"]
     PWR_PLANE = power_plane(cfg)
     BLOCKS = sl["blocks"]
+    PLANE_CLR, MINWIDTH = cfg.copper_plane()          # the planes' zone clearance and minimum width (copper sketch)
     OX, OY = cfg.origin
     b = pcbnew.LoadBoard(board_path)
     ids = list(b.GetEnabledLayers().CuStack())
