@@ -9,6 +9,11 @@ The workspace's own schematic and board tools. Everything runs from the reposito
     D:\KiCad\bin\python.exe -m Tools.KiCadDesignTools.regress            (every benchmark, PROC-15)
     D:\KiCad\bin\python.exe -m Tools.KiCadDesignTools.regress --board demo   (the demo board built from its data, ~12 min)
 
+The demo board (`templates/demo_board/`) is a test piece for the tool chain, not a reference design and not for fabrication:
+it is kept as small and quick to build as possible, and its placement and routing were not polished or reviewed. A new
+board copies its file structure and formats, not its content; the worked example of layout and routing is
+`stm32h743_sdram/`.
+
 No tool edits `sys.path`; board files (routes files, schematic pages) import
 `from Tools.KiCadDesignTools.routing.busroute import ...`. busroute loads a routes file of a board folder as a module
 of that folder's package (`<board>.<stem>`; `<board>.probes.<stem>` for the trial files in `probes/`). The rules the
