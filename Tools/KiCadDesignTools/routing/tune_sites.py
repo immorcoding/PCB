@@ -1,7 +1,7 @@
 """Survey of serpentine sites for the SDRAM bus (RTE-2): for every net that has to be lengthened, its straight pieces
 outside the rule areas and the room beside them, read from the board file.
 
-    python -m Tools.KiCadDesignTools.routing.tune_sites <board dir> [board] [--spread 5] [--margin 0.3] [--window 20]
+    python -m Tools.KiCadDesignTools.routing.tune_sites <board dir> [board] [--spread S] [--margin M] [--window W]
                                                         [--natural <metrics.json>] [--json out.json]
 
 board: default the board folder's own board file. board.toml [tune_sites]: layers (the SDRAM's signal layers), clock
@@ -10,16 +10,17 @@ board: default the board folder's own board file. board.toml [tune_sites]: layer
 8 data bits and one mask per lane); [power] ground (its pours are no obstacle); the origin from [board] origin;
 [route.table] straight (the shortest straight that is a site). The serpentine's numbers are the bus routes file's
 TUNING (the [[route.group]] named by [route.table] bus): keep, clr, amp .. amp_max, area_gap, pitch (default, per
-net), margin (the --margin default); a track's half width is its net class's (the board's .kicad_pro), the pours'
-clearance the copper sketch's outer-layer clearance.
+net), margin, each lane group's spread and the address group's window lo .. hi (the targets busroute's tune aims at;
+--spread, --margin, --window W override them, W for -W .. W); a track's half width is its net class's (the board's
+.kicad_pro), the pours' clearance the copper sketch's outer-layer clearance.
 Lengths: track (arcs by their true length) plus the height between the layers a via joins (the via heights of the
 board's stackup, Tools.KiCadDesignTools.core.stackup: KiCad 10's Python does not expose the stackup list);
 --natural takes the lengths from a busroute metrics.json instead (its tuning "natural", i.e. without the
 serpentines; e.g. out/route2/sdram/metrics.json).
 Needs:
   byte lane k (D8k..D8k+7, NBLk): (longest of the lane - spread + margin) - length
-  address / command against the clock C = the clock's pieces summed: the clock is aimed at (longest address - window +
-  margin), each address at (that clock - window + margin); the clock's row is its pieces' straights (pitch 0.5 there).
+  address / command against the clock C = the clock's pieces summed: the clock is aimed at (longest address - hi +
+  margin), each address at (that clock + lo + margin); the clock's row is its pieces' straights (pitch 0.5 there).
 For each straight of [route.table] straight (2.5 mm) or more at the outside width: per side, the largest gain of ONE
 block of equal humps (TUNING pitch, H743 0.3, clock 0.5; keep 0.7 mm at both ends, amplitude amp 0.5 to amp_max 2.0,
 RTE-2: n * (2a - 0.858 p)) that fits between the foreign copper found there (clr 0.19 mm kept), and the nets that
@@ -92,7 +93,9 @@ def main(argv):
     STRAIGHT = cfg.need("route.table.straight")
     pr = cfg.rules()                                        # the nets' class widths (the board's .kicad_pro)
     ZCLR = cfg.copper_sketch().p["clearance"] / 1e6         # pours on the signal layers: the sketch's outer clearance
-    SPREAD, MARGIN, WINDOW = opt("--spread", 5.0), opt("--margin", TU["margin"]), opt("--window", 20.0)
+    MARGIN = opt("--margin", TU["margin"])
+    refg = next(v for v in TU["groups"].values() if "ref" in v)     # the address / command group against the clock
+    HI, LO = (opt("--window", 0.0), -opt("--window", 0.0)) if "--window" in argv else (refg["hi"], refg["lo"])
     CLOCK = list(ts["clock"])
     ADDR = list(ts["addr"])
     GND = cfg.need("power.ground")
@@ -179,15 +182,15 @@ def main(argv):
     need, target, group = {}, {}, {}
     for g, ns in lanes.items():
         mx = max(LEN[n] for n in ns)
-        target[g] = mx - SPREAD + MARGIN
+        target[g] = mx - opt("--spread", TU["groups"][g]["spread"]) + MARGIN
         for n in ns:
             group[n] = g
             if LEN[n] < target[g] - 1e-6:
                 need[n] = target[g] - LEN[n]
     clk = sum(LEN[n] for n in CLOCK)
     amax = max(ADDR, key=lambda n: LEN[n])
-    clk_t = max(clk, LEN[amax] - WINDOW + MARGIN)
-    target["clock"], target["addr"] = clk_t, clk_t - WINDOW + MARGIN
+    clk_t = max(clk, LEN[amax] - HI + MARGIN)
+    target["clock"], target["addr"] = clk_t, clk_t + LO + MARGIN
     for n in CLOCK:
         group[n] = "clock"
         if clk_t > clk + 1e-6:
