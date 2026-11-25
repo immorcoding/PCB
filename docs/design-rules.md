@@ -55,9 +55,9 @@ ReturnPath 由 kicad-happy 的回流路径分析覆盖。
 - **`intersectsArea()` 对铺铜区是按整块判断的**：规则区的间距规则只写 `A.intersectsArea('BGA_…')` 时，一块铺铜只要盖到规则区，全板都按区内的间距填充（H7 的铜皮原型上实测 0.092 mm，铺铜区设的是 0.20；废弃的 RK3568 板也是这样）。条件前面加 `A.Type != 'Zone' && B.Type != 'Zone'`，写法见 [规格档 C](rule-profiles/C-bga-065.md)。金丝雀查不出这种作用范围的错，要量一处铺铜到别的铜的实际距离。
 - `corner_angle` 也会报 90° 的 T 型分叉，需要逐条判断。
 - 每处角度违规会报两次（两段走线各一次）。
-- **`corner_angle` 只比较相邻两段**：两个 45° 拐点之间夹一段极短的线（四层板 `MOTOR3`：0.05 mm），每个拐点都是 135°，不报，看上去却是直角。`min_segment` 把 0.1 mm 以下的挡掉；0.1–0.35 mm 的小倒角由 `track_shape.py` 的 `sharp` 项查。下限不能在 DRC 里直接提高：0.2 mm 时四层板多报 5 条正常的焊盘出线，0.3 mm 时多报 20 条。
+- **`corner_angle` 只比较相邻两段**：两个 45° 拐点之间夹一段极短的线（四层板 `MOTOR3`：0.05 mm），每个拐点都是 135°，不报，看上去却是直角。`min_segment` 把 0.1 mm 以下的挡掉；0.1–0.35 mm 的小倒角由 `analysis.track_shape` 的 `sharp` 项查。下限不能在 DRC 里直接提高：0.2 mm 时四层板多报 5 条正常的焊盘出线，0.3 mm 时多报 20 条。
 
-## 走线形状（DRC 不查，用 `scripts/track_shape.py` 查）
+## 走线形状（DRC 不查，用 `python -m Tools.KiCadDesignTools.analysis.track_shape <板>` 查）
 
 下面的数字是四层板上用户认可的那一版的水平（2026-11-12），不是用户逐条定的指标。怎么用见 [shape/routing.md](shape/routing.md) 的 RTE-8 到 RTE-10。
 

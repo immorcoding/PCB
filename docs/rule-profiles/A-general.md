@@ -31,4 +31,4 @@
 - **网络类通配符只认 `*`**：`*MOTOR?_N`、`*USB_D[+-]` 这类写法不报错也不匹配，网络留在 Default 类。表现是 1 mm 的电机线被 `signal_width` 报过宽、USB 的等长规则不触发。逐个网络名写。
 - **`VBAT*` 会把 `VBAT_SENSE` 归进 PWR**：采样线也按 PWR 的 0.1524 mm 下限检查。
 - **0.5 mm 间距 LGA 的阻焊桥**：阻焊扩展 0.05 mm 时焊盘间只剩 0.05 mm，低于 0.08 mm 下限，每个焊盘对报一条 `solder_mask_bridge`。给这些封装打开"允许阻焊桥"（`fp.SetAllowSolderMaskBridges(True)`），代价是每个封装多一条 `lib_footprint_mismatch`。
-- **封装自带的禁布区**：`RF_Module:ST_SPBTLE` 带一个 12 × 12 mm 的四层禁布区，比外框大，布局时外框不重叠也会报 `items_not_allowed`。`scripts/via_spots.py` 不看封装里的禁布区。
+- **封装自带的禁布区**：`RF_Module:ST_SPBTLE` 带一个 12 × 12 mm 的四层禁布区，比外框大，布局时外框不重叠也会报 `items_not_allowed`。`placement.via_spots`（`Tools/KiCadDesignTools/placement/via_spots.py`）不看封装里的禁布区。
