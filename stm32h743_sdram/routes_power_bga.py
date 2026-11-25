@@ -2,10 +2,10 @@
 power / signal): every supply and ground ball of U201 (MCU) and U301 (SDRAM) on a 0.30 / 0.15 via of its own by an
 L1 dog-bone (GND: the L2 plane, +3V3_MCU / +3V3_SDRAM: their L5 blocks), and the bottom decoupling over those vias.
 
-    sh stm32h743_sdram/build.sh route2          (the whole board; this group follows routes_power.py)
-    D:\\KiCad\\bin\\python.exe scripts\\busroute\\build.py stm32h743_sdram\\routes_power_bga.py --fast
+    D:\\KiCad\\bin\\python.exe -m Tools.KiCadDesignTools.build stm32h743_sdram route   (the whole board; this group follows routes_power.py)
+    D:\\KiCad\\bin\\python.exe -m Tools.KiCadDesignTools.routing.busroute.build stm32h743_sdram\\routes_power_bga.py --fast
 
-The sites come from the BGA block plan bga_fan.json (bga_fan.py: one mixed integer program over the ball lattice
+The sites come from the BGA block plan bga_fan.json (planning.bga_fan: one mixed integer program over the ball lattice
 for the supply vias, the capacitor places and the fan-out of the MCU's signal balls, with the plane-slot rule
 exact); this file only draws them and checks each piece against the board (bga_power.BgaPlanner). A capacitor pad
 lies over a via of its net (a ball's or one of its own, the approved via-in-pad under the BGAs); the VDDA filter
@@ -13,8 +13,8 @@ parts and the VCAP capacitors are joined by BgaPlanner.connect_caps (pour, stub 
 routed (user 2026-11-21): a ball goes to its via and nothing else. A SHARED group beside `power` (part A).
 """
 import json, os
-from bga_power import BgaPlanner, WIDE_W, VIA_IN, BONE_W, r4
-from busroute.board import old_items
+from Tools.KiCadDesignTools.copper.bga_power import BgaPlanner, r4
+from Tools.KiCadDesignTools.routing.busroute.board import old_items
 
 BOARD = os.environ.get("POWER_BOARD", "stm32h743_sdram.kicad_pcb")
 ORIGIN = (100, 100)
@@ -61,8 +61,8 @@ def routes(job):
                 P.nosite[ball.name] = "no site in the plan"
                 continue
             s = (r4(v["via"][0]), r4(v["via"][1]))
-            why = P.via_why(ball.net, s, VIA_IN)
-            w = next((w for w in BONE_W if P.seg_why(ball.net, "L1", ball.pos, s, w) is None), None)
+            why = P.via_why(ball.net, s, P.via_in)
+            w = next((w for w in P.bone_w if P.seg_why(ball.net, "L1", ball.pos, s, w) is None), None)
             if why or w is None:
                 P.log.append("LOST     %s %s: planned via (%.3f, %.3f) %s" % (ball.name, ball.net, s[0], s[1], why or "dog-bone not free"))
                 P.nosite[ball.name] = why or "dog-bone"
@@ -70,11 +70,11 @@ def routes(job):
             P._bone(ball, s, w, new_via=True, kind="ball")
         for key, net in sorted(r["own"].items()):
             p = tuple(r4(float(c)) for c in key.split(","))
-            why = P.via_why(net, p, VIA_IN, pads_ok=[n for n in caps])
+            why = P.via_why(net, p, P.via_in, pads_ok=[n for n in caps])
             if why:
                 P.log.append("LOST     own via of %s at (%.3f, %.3f): %s" % (net, p[0], p[1], why))
                 continue
-            P._put_via(net, p, VIA_IN, "own")
+            P._put_via(net, p, P.via_in, "own")
             P.extras.append((net, p))
             P.log.append("own      %-11s via (%.3f, %.3f) under a capacitor pad" % (net, p[0], p[1]))
     # VDDA_MCU: the filter left the ball field (bottom, south-west of the rule area, L6 band L6_VDDA_MCU); the balls'
@@ -83,7 +83,7 @@ def routes(job):
     if vp1[0] == vr1[0] == 35.125:
         P.chains.setdefault("VDDA_MCU", []).append([("L3", [vp1, vr1, (35.125, 44.075), (34.95, 44.25)], 0.2), ("via", (34.95, 44.25), (0.45, 0.2))])
         P.log.append("VDDA     L3 link P1 / R1 vias -> via (34.950, 44.250) into the L6 band")
-    P.connect_caps(widths_for={"VCAP1": WIDE_W, "VCAP2": WIDE_W})
+    P.connect_caps(widths_for={"VCAP1": P.wide_w, "VCAP2": P.wide_w})
     ALLOW_VIA_ON[:] = sorted(P.allow)
     job.stitch += P.extras
     job.notes += P.log

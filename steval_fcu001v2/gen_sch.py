@@ -1,6 +1,7 @@
 """Generate steval_fcu001v2.kicad_sch.
 
-    D:\\KiCad\\bin\\python.exe steval_fcu001v2\\gen_sch.py
+    D:\\KiCad\\bin\\python.exe -m steval_fcu001v2.gen_sch      (from the repository root: it imports
+                                                           Tools.KiCadDesignTools, so running the file itself fails)
 
 Re-capture of ST's STEVAL-FCU001V2 flight controller schematic (schematic pack
 Rev 2, June 2024, in ref/). Reference designators follow ST's so the result can
@@ -25,8 +26,7 @@ Coordinates are in units of 2.54 mm; P(i, j) converts to mm.
 import math, os, sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-sys.path.insert(0, os.path.join(HERE, "..", "scripts"))
-from kisch import Sch, find, find_all, xform
+from Tools.KiCadDesignTools.schematic.kisch import Sch, find, find_all, xform
 
 U = 2.54
 def P(i, j): return (round(i * U, 4), round(j * U, 4))

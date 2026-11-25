@@ -1,0 +1,658 @@
+# Board data of the STM32H743 + SDRAM six-layer test board, read by the build driver:
+#   D:\KiCad\bin\python.exe -m Tools.KiCadDesignTools.build stm32h743_sdram <step>          (from the repository root)
+# Coordinates are local mm (board-file mm - origin), x right, y down. Paths are relative to this folder. Numbers that
+# end up on a command line are written as the command line had them (27, not 27.0).
+# Tools/ consolidation (2026-11-24): the driver reads the sections below and calls Tools modules only (stage 2 made
+# the driver, stage 3 moved this folder's scripts into Tools/KiCadDesignTools/ and their constants here). The project
+# file's data ([project], [netclasses], [netclass_patterns], [[footprints.derived]]) moved in stage 3A, the
+# schematic's ([schematic]) in stage 3B, the placement's (place.toml, [probe]) in stage 3C, the copper reports' and
+# power planners' ([copper.slots], [copper.table], [copper_view], [power], [bga.<ref>], [tune_sites], place.toml [fan]
+# ref) in stage 3D, the offline BGA planners' (bga_block.toml) in stage 3E, the finishing's ([finish.*], silk.toml)
+# in stage 3F, the route table's ([route.table]) and the release pictures' ([publish]) in stage 3G.
+
+[board]
+name = "stm32h743_sdram"
+title = "STM32H743 + SDRAM six-layer test board"
+rev = "A"
+profile = "C"                    # docs/rule-profiles/C-bga-065.md
+template = "C-bga-065"           # templates/C-bga-065: the profile's project file, rule file and six-layer board (RUL-1)
+spec_table = false               # SPEC.md predates the "本板取值" table: spec_check warns instead of failing
+lib = "h743"                     # project symbol and footprint library
+origin = [100.0, 100.0]
+stackup = "JLC06161H-3313E"
+
+[layers]
+# top to bottom: L1 = F.Cu ... L6 = B.Cu (user 2026-11-23, SPEC 6: signal / ground / signal / signal / power / signal)
+roles = ["signal", "ground", "signal", "signal", "power", "signal"]
+names = ["", "L2_GND", "L3_SIG", "L4_SIG", "L5_PWR", ""]
+
+# The project file (Tools.KiCadDesignTools.project.make_project): templates/<template> plus the values below. The
+# profile's values (board-level floors: 0.09 / 0.09 and vias 0.30 / 0.15 inside the BGA rule areas; track widths, via
+# sizes, the net classes Default / PWR / XTAL) are in templates/C-bga-065/C-bga-065.kicad_pro since 2026-11-24;
+# [project.floors], track_widths and via_dimensions here would override them for this board only. The rule file is
+# written by hand and not touched there (make_project lists the template's rule names it lacks).
+[project]
+via_heights = [["L1", "L3"], ["L1", "L4"], ["L1", "L6"], ["L3", "L4"], ["L4", "L6"]]   # printed: the SDRAM's layer changes
+
+[project.diff_pairs.ETH]           # 100 ohm pair PHY - RJ45 on L1, 4.7 / 8 mil: JLC impedance calculator, run by the user 2026-11-20
+width = 0.1194
+gap = 0.2032
+via_gap = 0.25
+
+# Net classes after the template's Default, PWR and XTAL (the profile's), in .kicad_pro order. Bus classes exist so
+# that length / via-count rules can address a whole bus; their width outside the rule areas is the general minimum, as
+# in the routing prototype (issue 21). diff_pair: track and pair width / gap from [project.diff_pairs.<name>].
+[netclasses]
+SDRAM = { track_width = 0.1016, via_diameter = 0.45, via_drill = 0.2, priority = 10, clearance = 0.127 }
+QSPI = { track_width = 0.1016, via_diameter = 0.45, via_drill = 0.2, priority = 11, clearance = 0.127 }
+SDMMC = { track_width = 0.1016, via_diameter = 0.45, via_drill = 0.2, priority = 12, clearance = 0.127 }
+LTDC = { track_width = 0.1016, via_diameter = 0.45, via_drill = 0.2, priority = 13, clearance = 0.127 }
+RMII = { track_width = 0.1016, via_diameter = 0.45, via_drill = 0.2, priority = 14, clearance = 0.127 }
+ETH100 = { diff_pair = "ETH", via_diameter = 0.45, via_drill = 0.2, priority = 15, clearance = 0.127 }   # PHY - RJ45
+
+# Net-class patterns, after the template's own (PWR and XTAL by name), in this order: the pins.csv rows whose group is
+# listed in [netclass_patterns.groups] (net name = the signal column, a global label without '/'), then nets.
+# Wildcards: only '*' works.
+[netclass_patterns]
+pins = "pins.csv"
+nets = [
+    ["RMII", "RMII_REF_CLK"], ["RMII", "RMII_CRS_DV"], ["RMII", "RMII_RXD0"], ["RMII", "RMII_RXD1"], ["RMII", "RMII_TX_EN"],
+    ["RMII", "RMII_TXD0"], ["RMII", "RMII_TXD1"],
+    # nets that are not MCU pins. FMC_SDCLK_R is the SDRAM side of the SDCLK series resistor.
+    ["SDRAM", "FMC_SDCLK_R"], ["XTAL", "PHY_XI"], ["XTAL", "PHY_XO"], ["XTAL", "PHY_XO_R"],
+    ["ETH100", "ETH_TX_P"], ["ETH100", "ETH_TX_N"], ["ETH100", "ETH_RX_P"], ["ETH100", "ETH_RX_N"],
+    # copper-type and short-and-wide nets of SPEC section 5 that the template patterns do not catch
+    ["PWR", "SW_*"], ["PWR", "LED_A"], ["PWR", "VCAP*"], ["PWR", "VDDCR"],
+]
+
+[netclass_patterns.groups]         # pins.csv group -> net class
+SDRAM_DATA = "SDRAM"
+SDRAM_ADDR = "SDRAM"
+SDRAM_CLK = "SDRAM"
+QSPI = "QSPI"
+SDMMC = "SDMMC"
+LTDC = "LTDC"
+HSE = "XTAL"
+LSE = "XTAL"
+
+# Footprints derived from KiCad's stock ones into the board's library ([board] lib, <lib>.pretty and fp-lib-table).
+[[footprints.derived]]             # the stock 90-ball BGA with 0.33 mm pads instead of 0.40 (SPEC 2.1; 0.33 is Micron's
+lib = "Package_BGA"                # land for the same package, ISSI gives no land pattern)
+footprint = "BGA-90_8.0x13.0mm_Layout2x3x15_P0.8mm"
+name = "BGA-90_8.0x13.0mm_Layout2x3x15_P0.8mm_Pad0.33mm"
+pad_size = [0.4, 0.33]             # every pad of size 0.4 x 0.4 becomes 0.33 x 0.33
+pads = 90                          # how many such pads the stock footprint has (it must not have changed)
+
+[build]
+# the driver's `all` (build.sh's sequence): the board and its netlist exist (no project / pcb-update), and the route
+# step places every part, applies the copper sketch and rebuilds the power groups itself (no layout / copper: their
+# reports are reviews, run them on their own); a new board's `all` is the full list (build.py ALL)
+all = ["rules", "sch", "route", "finish"]
+
+[build.out]                      # report folders under out/ when they are not named after the step
+route = "route2"                 # build.sh's step was route2 (stop 7); finish reads route2/power_bga_sites.json
+checks = "finish"                # build.sh finish-checks wrote into out/finish
+
+# The schematic (Tools.KiCadDesignTools.schematic: generate, build, check). Title and revision from [board], the
+# project symbol library is [board] lib.
+[schematic]
+review = true                    # kicad-happy analyze_schematic.py when it is installed (RUL-9)
+date = "2026-11-20"
+power_symbols = ["GND", "+3V3", "+5V", "+12V", "+3V3A", "+1V8"]   # nets drawn with power symbols, the rest are labels
+# Pages in order: module sch/<name>.py, number = hundreds digit of its references, title.
+pages = [
+    { name = "power", number = 1, title = "Power: input, 5 V, 3.3 V, LDOs" },
+    { name = "mcu", number = 2, title = "MCU STM32H743IIK6" },
+    { name = "sdram", number = 3, title = "SDRAM 8M x 32" },
+    { name = "qspi", number = 4, title = "QSPI flash" },
+    { name = "eth", number = 5, title = "Ethernet PHY and RJ45" },
+    { name = "audio", number = 6, title = "Audio codec and jacks" },
+    { name = "lcd", number = 7, title = "LCD connector, touch, backlight" },
+    { name = "io", number = 8, title = "microSD, CAN, debug, misc" },
+]
+
+[schematic.power_copies]         # power nets without a stock symbol: a copy of the stock one in the project library
+"+3V3A" = "+3V3"
+
+[schematic.footprints]           # footprints by short name (sheet.FP); C0402..C1206 by value, R0402 default, R0805 links
+C0402 = "Capacitor_SMD:C_0402_1005Metric"
+C0603 = "Capacitor_SMD:C_0603_1608Metric"
+C0805 = "Capacitor_SMD:C_0805_2012Metric"
+C1206 = "Capacitor_SMD:C_1206_3216Metric"
+R0402 = "Resistor_SMD:R_0402_1005Metric"
+R0603 = "Resistor_SMD:R_0603_1608Metric"
+R0805 = "Resistor_SMD:R_0805_2012Metric"
+R1206 = "Resistor_SMD:R_1206_3216Metric"
+L0603 = "Inductor_SMD:L_0603_1608Metric"
+L0805 = "Inductor_SMD:L_0805_2012Metric"
+LED0603 = "LED_SMD:LED_0603_1608Metric"
+"TP_1.5" = "TestPoint:TestPoint_Pad_D1.5mm"
+"TP_1.0" = "TestPoint:TestPoint_Pad_D1.0mm"
+TP_LOOP = "TestPoint:TestPoint_Loop_D2.50mm_Drill1.0mm"
+
+[schematic.pin_table]            # netlist check 2: the MCU's balls against the pin table, when its page is drawn
+file = "pins.csv"
+ref = "U201"
+page = "mcu"
+
+[schematic.swap]                 # netlist check 3: SDRAM byte lanes (SPEC 9); the page's ball map and the swap table: schematic.swap
+ref = "U301"
+page = "sdram"
+lanes = 4
+data_net = "FMC_D"               # MCU data bit n = <data_net>n, byte mask m = <mask_net>m
+mask_net = "FMC_NBL"
+table = "swap.csv"               # sdram (DQn, DQMn) -> MCU-side net (Tools.KiCadDesignTools.schematic.swap)
+columns = [1, 2, 3, 7, 8, 9]     # the ball columns of the page's grid BALLS (ISSI Rev C p.4, top view)
+balls = 90
+nc_as = { H3 = "A12" }           # NC on the 256 Mb part, A12 on the 512 Mb parts: FMC_A12 is wired to it (SPEC 2.1)
+
+# Nets that cross pages. The name is the contract between page modules; the page in the text owns the circuit
+# that creates or terminates the net. MCU signals are the pins.csv signal names (FMC_*, QSPI_*, LCD_*, RMII_*,
+# ETH_MDC, ETH_MDIO, SDMMC1_*, FDCAN1_*, SAI1_*, I2C4_*, USART1_*, SWDIO, SWCLK, SWO, and the auxiliary pins
+# LCD_BL_PWM, USER_KEY, LCD_DISP, TP_INT, TP_RST, PHY_NRST, SD_CD, CAN_STB, CODEC_NRST, LED1, LED2); they are not
+# repeated here. Documentation only: no tool reads it.
+[schematic.shared_nets]
+GND = "power symbol; one ground net, analog and digital are not split"
+"+12V" = "power symbol; after reverse-polarity protection (power)"
+"+5V" = "power symbol; LMR51420 output (power). Also feeds the CAN transceiver, backlight boost, analog LDO"
+"+3V3" = "power symbol; TPS62A02 output (power)"
+"+3V3A" = "power symbol; TPS7A2033 output (power); codec AVDD / DRVDD only"
+"+1V8" = "power symbol; TPS7A2018 output (power); codec DVDD only"
+VDDA_MCU = "label; +3V3 through a ferrite bead (mcu); VREF+ ties to it"
+VDDA_PHY = "label; +3V3 through a ferrite bead (eth); PHY VDD1A / VDD2A"
+NRST = "label; MCU reset (mcu: button, capacitor; io: SWD connector pin 10)"
+FMC_SDCLK_R = "label; SDRAM side of the SDCLK series resistor (resistor on mcu page, pin on sdram page)"
+I2C4_SCL = "pull-ups are on the audio page; the lcd page only taps it through 0 ohm links"
+I2C4_SDA = "as I2C4_SCL"
+
+[layout]
+decap_limit = 2.5                # mm, a 100 nF to the supply pin or ball it serves (LAY-2; rule profile C)
+allow_under = ["U201", "U301"]   # bottom parts under these (the decoupling under the BGAs, SPEC 6)
+not_supply = ["U101.5", "U103.5", "U104.5"]
+silk_refs = "^(TP|JP|J80[234])"
+sketch = { routes = "routes_sdram.py", out = "out/sketch/rot0" }   # the SDRAM line-order sketch, on a copy
+
+[layout.edges]                   # connector -> board edge it faces (L R T B), LAY-6; command-line order
+J101 = "R"
+J501 = "L"
+J601 = "T"
+J602 = "T"
+J701 = "B"
+J801 = "T"
+J802 = "R"
+J803 = "T"
+J804 = "B"
+
+[[layout.escape]]                # escape_check runs (LAY-2) on the sketch copy; window = x0 y0 x1 y1
+refs = ["U201", "U301"]
+window = [27, 25, 66, 51]
+json = "escape_bga.json"
+
+[[layout.escape]]
+refs = ["U501", "U601", "U701", "J701", "U401"]
+json = "escape_parts.json"
+
+# Measured trial checks of the layout step (Tools.KiCadDesignTools.placement.layout_probe; LAY-2 rails, LAY-3).
+# Board extent from place.toml [outline]; power blocks = the sketch regions on the power layer ([layers] roles).
+[probe]
+mcu = "U201"                     # the balls the crystals, buses and LCD fan start from
+ground = "GND"                   # not a rail; left out of the LCD fan
+plane_net = "+3V3"               # rails: counts as covered where no other power block is (the rest of L5 is +3V3)
+xtal_window = [29.0, 33.5, 34.0, 38.5]   # x0 y0 x1 y1, the L1 window the SDRAM sketch keeps free (open to the west)
+loop_pad_by_net = ["D701"]       # loops: these parts' first pad is found by the net, not the pad number
+net_limit = { RMII_REF_CLK = 40.0 }      # Manhattan limits of single nets (SPEC 9)
+
+[probe.crystals]                 # crystal, load capacitors, MCU balls
+HSE = { ref = "Y201", caps = ["C225", "C226"], balls = ["G1", "H1"] }
+LSE = { ref = "Y202", caps = ["C227", "C228"], balls = ["E1", "F1"] }
+
+[probe.loops]                    # high-current loops: what, part, pad, part, net (nearest pad of that net)
+"U101 5 V buck" = [["VIN", "U101", "3", "C104", "+12V"], ["GND", "U101", "1", "C104", "GND"],
+                   ["SW", "U101", "2", "L101", "SW_5V"], ["bulk", "U101", "3", "C102", "+12V"]]
+"U102 3.3 V buck" = [["VIN", "U102", "4", "C108", "+5V"], ["GND", "U102", "2", "C108", "GND"],
+                     ["SW", "U102", "3", "L102", "SW_3V3"]]
+"U701 backlight boost" = [["VIN", "U701", "5", "C704", "+5V_BL"], ["SW", "U701", "1", "D701", "SW_BL"],
+                          ["SW-L", "U701", "1", "L701", "SW_BL"], ["diode-Cout", "D701", "1", "C705", "LED_A"],
+                          ["Cout-GND", "U701", "2", "C705", "GND"]]
+
+[probe.buses]                    # nets, far part, Manhattan limit and spread limit (SPEC 9; none when absent)
+LTDC = { to = "J701", limit = 120.0, spread = 30.0, nets = [
+    "LCD_R3", "LCD_R4", "LCD_R5", "LCD_R6", "LCD_R7", "LCD_G2", "LCD_G3", "LCD_G4", "LCD_G5", "LCD_G6", "LCD_G7",
+    "LCD_B3", "LCD_B4", "LCD_B5", "LCD_B6", "LCD_B7", "LCD_CLK", "LCD_DE", "LCD_HSYNC", "LCD_VSYNC"] }
+QSPI = { to = "U401", limit = 30.0, nets = ["QSPI_CLK", "QSPI_BK1_IO0", "QSPI_BK1_IO1", "QSPI_BK1_IO2", "QSPI_BK1_IO3"] }
+RMII = { to = "U501", limit = 60.0, nets = ["RMII_REF_CLK", "RMII_CRS_DV", "RMII_RXD0", "RMII_RXD1", "RMII_TX_EN", "RMII_TXD0", "RMII_TXD1"] }
+SDMMC = { to = "J801", nets = ["SDMMC1_CK", "SDMMC1_CMD", "SDMMC1_D0", "SDMMC1_D1", "SDMMC1_D2", "SDMMC1_D3"] }
+SAI = { to = "U601", nets = ["SAI1_MCLK_A", "SAI1_SCK_A", "SAI1_FS_A", "SAI1_SD_A", "SAI1_SD_B"] }
+CAN = { to = "U801", nets = ["FDCAN1_TX", "FDCAN1_RX"] }
+SWD = { to = "J803", nets = ["SWDIO", "SWCLK", "SWO"] }
+UART = { to = "J804", nets = ["USART1_TX", "USART1_RX"] }
+
+[probe.lcd_fan]                  # straight paths ball -> connector pad; the boost's switch node against them
+connector = "J701"
+switch_net = "SW_BL"
+
+[copper]
+sketch = "copper.sketch"
+skip_areas = ["BGA_MCU", "BGA_SDRAM"]                  # cu_sketch measure leaves the BGA rule areas out
+pour_check = ["cu-whole:L1_GND", "cu-whole:L6_GND"]    # pour_islands: every outer ground piece holds a via (PWR-6)
+
+# the copper step (stop 5): the power groups on the board, then on the line-order sketch copy ({sketch})
+[[copper.group]]
+name = "power"
+file = "routes_power.py"
+out = "power"
+flags = ["--ignore-lock"]
+env = { POWER_LOG = "{out}/power_sites.txt" }
+
+[[copper.group]]
+name = "power_bga"
+file = "routes_power_bga.py"
+out = "power_bga"
+flags = ["--ignore-lock"]
+env = { POWER_BGA_LOG = "{out}/power_bga_sites.txt" }
+after = "refill_board"           # then refill the board, measure, pour pieces
+
+[[copper.group]]
+name = "power"
+file = "routes_power.py"
+out = "sketch_power"
+board = "sketch"
+env = { POWER_BOARD = "{sketch}", POWER_LOG = "{out}/sketch_power/power_sites.txt" }
+
+[[copper.group]]
+name = "power_bga"
+file = "routes_power_bga.py"
+out = "sketch_power_bga"
+board = "sketch"
+env = { POWER_BOARD = "{sketch}", POWER_BGA_LOG = "{out}/sketch_power_bga/power_bga_sites.txt" }
+
+[[copper.views]]                 # layers, px per mm, window x0 y0 x1 y1 (none = the whole board), name, options
+layers = ["L1", "L2", "L3", "L5", "L6"]
+
+[[copper.views]]
+board = "sketch"
+layers = ["L1", "L2", "L3", "L5", "L6"]
+scale = 40
+window = [33, 30, 47, 45]
+name = "mcu"
+
+[[copper.views]]
+board = "sketch"
+layers = ["L1", "L2", "L3", "L5", "L6"]
+scale = 40
+window = [51, 28.5, 63, 45.5]
+name = "sdram"
+
+[[copper.views]]                 # the longest L2 slot under the MCU marked, every via labelled with its net
+board = "sketch"
+layers = ["L2"]
+scale = 90
+window = [36, 36, 46, 45]
+name = "slot_mcu"
+slots = "slots.json"
+via_labels = true
+rename = ["L2_slot_mcu.png", "slot_L2_mcu.png"]
+
+# Pictures of the filled copper (Tools.KiCadDesignTools.views.copper_view; qualitative only, PROC-14).
+[copper_view]
+layers = ["L1", "L2", "L5", "L6"]   # when none are given: L2 ground plane, L5 power blocks, L1 / L6 ground fill
+label_strip = "FMC_"             # via labels without this prefix
+
+[copper_view.colours]            # net -> RGB; other nets get a colour from their name
+GND = [150, 170, 150]
+"+3V3" = [205, 220, 120]
+"+5V" = [235, 150, 60]
+"+3V3A" = [90, 190, 230]
+"+3V3_MCU" = [225, 90, 160]
+"+3V3_SDRAM" = [200, 70, 60]
+"+12V" = [120, 90, 220]
+
+# Plane slots (Tools.KiCadDesignTools.copper.plane_slots, U31). The power plane is the layer of role power ([layers]).
+[copper.slots]
+# default windows: rule area +- 2 mm (the via column at x 59-60, y 28.5-37 that the stop-3 review saw lies in SDRAM)
+windows = { MCU = [32.0, 29.0, 48.0, 45.0], SDRAM = [50.0, 27.5, 64.0, 46.5] }
+ref_layers = { L2 = ["L1", "L3"], L5 = ["L4", "L6"] }   # plane -> signal layers whose return current runs on it
+report = 2.0                     # slots longer than this are listed
+blocks = { "+3V3_MCU" = "BGA_MCU", "+3V3_SDRAM" = "BGA_SDRAM" }   # BGA blocks on the power plane -> their rule area
+part_b = "sketch_power_bga/power_bga_sites.json"   # part-B vias when no --part-b is given (relative to the out folder)
+
+# The copper table of the copper step (Tools.KiCadDesignTools.copper.copper_table).
+[copper.table]
+nets = ["GND", "+3V3", "+5V", "+3V3A", "+3V3_MCU", "+3V3_SDRAM", "+3V3_QSPI", "+3V3_PHY", "+3V3_AUD", "+3V3_LCD", "+3V3_SD",
+        "+3V3_CAN", "+5V_BL", "+5V_CAN", "+5V_LDO", "+3V3_LDO", "+5V_REG", "+3V3_REG", "+12V_IN", "+12V", "+12V_JACK", "SW_5V",
+        "SW_3V3", "SW_BL", "LED_A", "+1V8", "VDDA_MCU", "VDDA_PHY"]   # copper-class nets (SPEC 5): connectivity
+# per rail: label, feed pads, vias required (1 per 0.5 A of the rail, at least 2 per output / side)
+rails = [
+    ["+5V (1.2 A) R110 -> L5", ["R110.2"], 3], ["+3V3 (1.1 A) R111 -> L5", ["R111.2"], 3],
+    ["+5V -> 3.3 V buck input (U102, C108)", ["U102.4", "C108.1"], 2],
+    ["+3V3A LDO output -> L5 block (U103, C111)", ["U103.5", "C111.1"], 2],
+    ["+3V3_MCU R203 -> L5 tongue (+ C217)", ["R203.2", "C217.1"], 2], ["+3V3_SDRAM R301 -> L5 tongue (+ C309)", ["R301.2", "C309.1"], 2],
+    ["VDDA_PHY L1 north piece <-> L6", ["L1_VDDA_PHY_N"], 1], ["VDDA_PHY L1 west piece <-> L6", ["L1_VDDA_PHY_W"], 1],
+    ["VDDA_PHY L1 south piece <-> L6", ["L1_VDDA_PHY_S"], 1], ["VDDA_PHY FB501 <-> L6", ["FB501.2"], 2],
+    ["+3V3_PHY L6 strip <-> L1 pour", ["L1_3V3_PHY - L6 strip"], 1],
+    ["+5V link R112.1", ["R112.1"], 2], ["+5V link R710.1", ["R710.1"], 2], ["+5V link R814.1", ["R814.1"], 2],
+    ["+3V3 link R203.1", ["R203.1"], 2], ["+3V3 link R301.1", ["R301.1"], 2], ["+3V3 link R404.1", ["R404.1"], 2],
+    ["+3V3 link R514.1", ["R514.1"], 2], ["+3V3 link R610.1", ["R610.1"], 2], ["+3V3 link R709.1", ["R709.1"], 2],
+    ["+3V3 link R812.1", ["R812.1"], 2], ["+3V3 link R813.1", ["R813.1"], 2], ["+3V3 link R113.1", ["R113.1"], 2],
+]
+no_vias = "  +12V 链（0.94 A）、+5V_REG、+3V3_REG、+1V8、LED_A、+5V_BL: 全在 L1，不换层，没有供电过孔"
+loops = ["C104.2", "U101.1", "C102.2", "C103.2", "C705.2", "U701.2", "C703.2", "C704.2", "C108.2", "U102.2"]   # U56
+crystal_ground = ["Y201.2", "Y201.4"]                 # U54
+ground_skip = ["U601.33"]        # ground pads that need no via of their own: the codec's exposed pad (vias in it)
+ground_skip_refs = ["U501"]      # and every ground pad of the PHY
+part_a = "routes_power"          # routes modules of the two power groups (PART_B / PLANE_NETS, POWER)
+part_b = "routes_power_bga"
+decap_skip = ["GND", "VCAP1", "VCAP2"]                # balls left out of the distance to the nearest 100 nF
+clusters = ["VCAP1", "VCAP2", "VDDA_MCU"]             # listed piece by piece
+bga_areas = ["BGA_MCU", "BGA_SDRAM"]                  # the BGA rule areas: outer-layer pours inside them
+
+# The power planners (Tools.KiCadDesignTools.copper.power_ties for routes_power.py, copper.bga_power for
+# routes_power_bga.py). Power plane = the layer of role power, ground planes = role ground ([layers]).
+[power]
+ground = "GND"                   # the ground net (never routed: a via at each pad)
+bus_prefix = "FMC_"              # nets of the SDRAM line-order sketch: the BGA group's obstacles, balls left to the sketch
+
+# copper.bga_power's own choices (R2, 2026-11-24: were constants of the module). The vias themselves are the rule
+# file's (in-area via; outside: the smallest class via), the planes' clearance and minimum width the copper sketch's.
+[power.bga]
+via_pitch = 0.45                 # least centre distance between two vias, any nets (hole to copper 0.2 needs 0.425)
+stub_max = 0.7                   # bottom stub, capacitor pad edge to via centre
+gnd_via_max = 1.0                # a capacitor's own ground via: pad edge to via centre
+bone_widths = [0.2, 0.15]        # dog-bone widths, first legal; then the rule areas' track width (rule file, 0.09)
+stub_widths = [0.25, 0.2, 0.15, 0.1]   # bottom stub widths
+wide_widths = [0.3, 0.25, 0.2]   # the VCAP stubs ("short and wide", routes_power_bga.py)
+share90_first = true             # a neighbour's via at 90 degrees (short dog-bone) before a via that joins antipads
+
+[bga.U201]                       # the MCU
+supply = "+3V3_MCU"              # its supply net with a block on the power plane
+lattice = true                   # own capacitor vias stay on ball-gap sites (unrouted signal balls escape through the channels)
+parity = { GND = 0, "+3V3_MCU" = 1 }   # checkerboard colour of a net's vias (no two orthogonal neighbours)
+
+[bga.U301]                       # the SDRAM (every signal is in the line-order sketch)
+supply = "+3V3_SDRAM"
+
+# Survey of serpentine sites for the SDRAM bus (Tools.KiCadDesignTools.routing.tune_sites, RTE-2); the byte lanes
+# from [schematic.swap].
+[tune_sites]
+layers = ["L1", "L3", "L4"]      # the SDRAM's signal layers
+clock = ["FMC_SDCLK", "FMC_SDCLK_R"]   # the clock's pieces (across the series resistor), summed
+addr = ["FMC_A0", "FMC_A1", "FMC_A2", "FMC_A3", "FMC_A4", "FMC_A5", "FMC_A6", "FMC_A7", "FMC_A8", "FMC_A9", "FMC_A10",
+        "FMC_A11", "FMC_A12", "FMC_BA0", "FMC_BA1", "FMC_SDNRAS", "FMC_SDNCAS", "FMC_SDNWE", "FMC_SDCKE0", "FMC_SDNE0"]
+area_prefix = "BGA_"             # rule areas the sites stay out of
+box = [0.3, 0.3, 84.7, 74.7]     # x0 y0 x1 y1: the board (85 x 75) less 0.3 mm
+
+# Lengths of the bus (Tools.KiCadDesignTools.planning.measure / check / plan): byte lanes from [schematic.swap], address
+# lines and the clock's pieces from [tune_sites].
+[length]
+start_refs = ["U201", "R201"]    # a net is traced from its pad on the first of these parts (R201: FMC_SDCLK_R)
+window_rule = "sdram_addr_window"   # length_groups.json group: the address lines' window round the clock sum
+
+# Length plans on paper (Tools.KiCadDesignTools.planning.plan; the hand waypoints in a plan data file, e.g.
+# probes/plan50/plan_h743.py).
+[plan]
+routes = "routes_sdram"          # its TUNING (block limits, pitch), YIELD_NETS and VIA_TARGET apply to the plan
+block_free_layers = ["L1"]       # serpentine blocks on these layers stay outside the BGA rule areas
+label_strip = "FMC_"             # left out of net names in the summary
+
+[route]
+obstacles_group = "sdram"        # built on a copy without its own copper: its serpentines see the later groups
+orphans = true                   # copper no group claims is removed and listed (orphans.txt)
+
+# The route step's table (Tools.KiCadDesignTools.analysis.route_table): the bus group's part (stop 6), then one row per
+# routes file ([[route.group]]; in_report: the ROUTE2_GROUPS the driver passes), gap crossings, pairs, placement.
+# Byte lanes from [schematic.swap], clock nets from [tune_sites] clock, BGA rule areas from place.toml [rule_areas],
+# slot files from [[route.slots]] (the runs with a stem), the escape run's refs from [[route.escape]].
+[route.table]
+bus = "sdram"                    # the group of the first part (lengths, serpentines, vias, order: <out>/<bus>/metrics.json)
+label = "SDRAM"                  # the first part in the verdict
+title = "== 走线一 A 部分（build.sh route1）：SDRAM 组写入真板，两组电源在它之后重建，KiCad 填充后量 =="
+part_title = "== SDRAM 组（route1 的表，同一块板、同一次填充和 DRC）=="   # the first part's heading inside the full table
+lane_rule = "sdram_lane"         # the byte lanes' skew rules <lane_rule>0..3 of the rule file
+straight = 2.5                   # data / mask straights at least this long are serpentine candidates (straights.json)
+slot_mark = 3.0                  # plane slots longer than this are named (the old slot limit; report only)
+slot_list = 2.5                  # plane slots longer than this are listed one by one (report only, RTE-5: no limit)
+sites = "power_bga_sites.json"   # the BGA power group's via sites (balls without a site, [[route.table.ball_via]])
+place_refs = ["U501", "U101", "U102", "U601", "U801"]   # their pin lines of place_check.txt go into the table
+
+[route.table.escape]             # escape_check now against the copper step (stop 5)
+json = "escape_bga.json"         # in the out folder; the [[route.escape]] run that writes it gives the refs
+before = "out/copper/escape_bga.json"
+skip = ["FMC_", "+", "GND", "VCAP", "VDDA"]   # nets left out (the bus, supplies): signal balls are the rest
+title = "escape_check（两颗 BGA，窗口 27 25 66 51），非 SDRAM、非电源的信号球，现在对停点 5："
+
+[[route.table.ball_via]]         # U58: a ball's via in the sites file
+name = "U58"
+ball = "U301.P2"
+net = "+3V3_SDRAM"
+
+[route.table.pairs]              # the differential pairs (local groups' DRC lengths and serpentines)
+title = "以太网两对（100 Ω，L1，线宽 0.1194、对内间距 0.2032；对内差上限 1.27 mm，eth_skew）"
+prefix = "ETH_"
+pairs = [["ETH_TX_P", "ETH_TX_N"], ["ETH_RX_P", "ETH_RX_N"]]
+skew_max = 1.27                  # intra-pair difference limit (rule eth_skew)
+layer = "L1"
+
+[[route.escape]]
+refs = ["U201", "U301"]
+window = [27, 25, 66, 51]
+json = "escape_bga.json"
+
+[[route.slots]]                  # plane slots (U31): the whole bus region
+name = "BUS"
+window = [27, 25, 66, 51]
+part_b = "power_bga_sites.json"
+tail = 8
+
+[[route.slots]]                  # the power plane L5 over the whole board: the antipad chains in each block
+name = "BOARD"
+window = [-1, -1, 86, 76]
+layers = ["L5"]
+stem = "slots_l5"
+part_b = "power_bga_sites.json"
+show = "每块最长"
+
+# Groups in build order. env: the busroute build's environment; {board} = the board file, {out} = the step's out
+# folder, {obstacles} = the obstacle copy.
+[[route.group]]
+name = "sdram"
+file = "routes_sdram.py"
+env = { SDRAM_TUNE_OBSTACLES = "{obstacles}" }
+
+[[route.group]]
+name = "power"
+file = "routes_power.py"
+env = { SDRAM_OBSTACLES = "{board}", POWER_LOG = "{out}/power_sites.txt" }
+
+[[route.group]]
+name = "power_bga"
+file = "routes_power_bga.py"
+env = { SDRAM_OBSTACLES = "{board}", POWER_BGA_LOG = "{out}/power_bga_sites.txt" }
+
+[[route.group]]
+name = "local"
+file = "routes_local.py"
+env = { LOCAL_BOARD = "{board}" }
+in_report = true
+
+[[route.group]]
+name = "local_eth"
+file = "routes_local_eth.py"
+env = { LOCAL_BOARD = "{board}" }
+in_report = true
+
+[[route.group]]
+name = "mcu_east"
+file = "routes_mcu_east.py"
+env = { LOCAL_BOARD = "{board}" }
+in_report = true
+
+[[route.group]]
+name = "mcu_south"
+file = "routes_mcu_south.py"
+env = { LOCAL_BOARD = "{board}" }
+in_report = true
+
+[[route.group]]
+name = "mcu_nw"
+file = "routes_mcu_nw.py"
+env = { LOCAL_BOARD = "{board}" }
+in_report = true
+
+[[route.group]]
+name = "mcu_sw"
+file = "routes_mcu_sw.py"
+env = { LOCAL_BOARD = "{board}" }
+in_report = true
+
+[[route.group]]
+name = "mcu_w"
+file = "routes_mcu_west.py"
+env = { LOCAL_BOARD = "{board}" }
+in_report = true
+
+[[route.views]]
+layers = ["L1", "L3", "L4", "L6"]
+scale = 40
+window = [29, 26, 66, 50]
+name = "bus"
+
+[[route.views]]
+layers = ["L1", "L2", "L3", "L4", "L6"]
+scale = 90
+window = [36, 37, 46, 47]
+name = "mcu_south"
+via_labels = true
+
+[[route.views]]
+layers = ["L1", "L3", "L6"]
+scale = 80
+window = [51, 28.5, 63, 45.5]
+name = "sdram"
+via_labels = true
+
+[[route.views]]                  # the two planes (L2 ground, L5 the power blocks) over the bus region
+layers = ["L2", "L5"]
+scale = 40
+window = [27, 25, 66, 51]
+name = "planes"
+slots = "slots.json"
+
+[[route.views]]                  # L5 over the whole board with its longest slot
+layers = ["L5"]
+scale = 14
+name = "board"
+slots = "slots_l5.json"
+
+[[route.views]]                  # the Ethernet block
+layers = ["L1", "L4", "L6"]
+scale = 45
+window = [0, 38, 32, 63]
+name = "phy"
+via_labels = true
+
+[[route.views]]
+layers = ["L1", "L6"]
+scale = 45
+window = [60, 8, 82, 28]
+name = "can"
+
+[[route.views]]
+layers = ["L1", "L6"]
+scale = 60
+window = [61, 36, 70, 47]
+name = "fb5v"
+via_labels = true
+
+[[route.views]]
+layers = ["L1"]
+scale = 45
+window = [11, 58, 36, 73]
+name = "user_lcd"
+
+# The finish step (Tools.KiCadDesignTools.finishing.finish: strip, fiducials, pours, clean, pieces, stitch, report, silk,
+# teardrops; views.finish_view); the silkscreen's items are in silk.toml.
+[finish]
+rest = 20                        # seconds of pause after each refill, DRC and render (the PC hard-reset under load)
+clean_passes = 2                 # narrow copper / small pieces: keep-outs, refill, at most this many passes
+slots = { name = "BOARD", window = [-1, -1, 86, 76], stem = "slots_board", part_b = "power_bga_sites.json", show = "切断|L5 \\+3V3_|每层最长" }
+render = { sides = ["top", "bottom"], width = 1600, height = 1410, quality = "basic", timeout = 180 }   # no ray tracing
+pour_layers = ["L1", "L3", "L4", "L6"]   # layers with ground pours (copper.sketch's L1 / L6, [finish.pour]'s): pieces,
+                                         # narrow copper, stitching
+
+# Fiducials. JLCPCB (https://jlcpcb.com/help/article/how-to-add-edge-rails-fiducials-for-pcb-assembly-order, read
+# 2026-11-23): 1 mm bare copper, solder-mask opening twice the copper (2 mm), three to four along the board edges, at
+# least 3.35 mm from the board edge including the keep-out. KiCad's Fiducial_1mm_Mask2mm (pad clearance 0.6) plus a
+# copper keep-out of 3 mm diameter (no track, via or pour). Centres chosen in free corners (not under a part, not in a
+# routed lane; checked by `fiducials`), keep-out edge >= 3.35 mm from the edge.
+# 2026-11-23: FID2 / FID3 moved off the mounting holes' 6 mm keep-out (courtyard edge 5.55 mm from H804 / H803; now
+# 6.42 / 7.67 mm) and the bottom set off the top one (LAY-5: no bottom pad under a top pad; now 2.2-3.3 mm apart).
+# Each spot has >= 0.35 mm to spare against copper of its side, vias, courtyards and silkscreen (out/stage0/fid_scan.py).
+[finish.fiducials]
+footprint = "Fiducial:Fiducial_1mm_Mask2mm"
+keepout_r = 1.5                  # keep-out radius
+edge_min = 3.35                  # keep-out edge to board edge (JLCPCB)
+top = { FID1 = [8.8, 14.4], FID2 = [75.55, 65.6], FID3 = [6.7, 62.5] }     # top left, bottom right, bottom left
+# the bottom carries parts too (35 SMD, the 0402 decoupling under both BGAs): three on the bottom as well, so that each
+# assembly side has its own set (kicad-happy FD-001 on the first run: no fiducials on B.Cu)
+bottom = { FID4 = [6.4, 15.45], FID5 = [73.5, 66.5], FID6 = [10.0, 62.6] }
+
+# Ground pours on the inner signal layers and their clean-up (Tools.KiCadDesignTools.finishing.pour; SPEC 8, user
+# 2026-11-24). Keep-outs over the BGA rule areas of place.toml [rule_areas] and over every serpentine block.
+[finish.pour]
+layers = ["L3", "L4"]            # the inner signal layers poured with ground here
+clearance = 0.2                  # pour to every other net (no single-ended line turned coplanar closer than this)
+min_width = 0.3
+island_min = 2.0                 # mm2: smaller pieces without a pad are dropped by KiCad
+thermal = 0.254                  # gap and spoke of the rule file's tht_thermal
+tune_margin = 0.5                # serpentine copper -> pour
+sliver_w = 0.6                   # narrow ground copper: narrower than this (twice the pour minimum width) ...
+sliver_len = 1.0                 # ... a spike / sliver this long
+neck_len = 3.0                   # ... or a neck between two wide parts this long
+gap_reach = 0.5                  # return path report: ground copper this close to the track edge
+report_min_width = { L1 = 0.3, L2 = 0.2, L3 = 0.3, L4 = 0.3, L5 = 0.2, L6 = 0.3 }   # narrow copper below this per layer
+
+# Ground stitching vias (Tools.KiCadDesignTools.finishing.stitch, FIN-4 step 1): coverage radii, clearances of a site.
+[finish.stitch]
+via = { size = 0.45, drill = 0.2 }   # through vias of the ground net
+gnd_in = 0.05                    # ground fill round the via on a pour layer
+outer = 0.2                      # outer layers: other nets' copper (pour clearance)
+lane = 0.25                      # inner signal layers: other nets' copper (do not take a lane)
+pad = 0.25                       # any pad
+crt = 0.1                        # courtyards grown by this
+edge = 0.8                       # board edge
+plane_web = 0.6                  # power plane: fill round the via (no notch in a block edge, no antipad chain)
+via_gap = 0.3                    # other vias, edge to edge
+gnd_spacing = 1.2                # ground vias, centre to centre
+d_open = 4.0                     # coverage radius in open pour
+d_dense = 3.0                    # ... within edge_band of the board edge and in the dense boxes
+d_rim = 3.5                      # ... along a pour piece's rim
+edge_band = 4.0
+min_gain = 6.0                   # mm2 of uncovered pour a new via must cover
+piece_min = 1.5                  # mm2: smaller pieces are left as they are (listed)
+long = 5.0                       # longer than this with a mean width under thin: long and thin, a via within end_r
+thin = 2.5                       # of each end
+end_r = 2.5
+# local mm boxes x0 y0 x1 y1: d_dense in these (Ethernet, audio, the switching regulators) and no via in feed_keep
+dense = { Ethernet = [0, 37, 32, 62], audio = [0, 0, 36, 34], "buck 3.3 V" = [62, 27, 85, 39], "buck 5 V" = [60, 37, 85, 52], "12 V input" = [60, 50, 85, 70], "backlight boost" = [47, 46, 60, 64] }
+feed_keep = { "+3V3_MCU tongue" = [39.1, 24.5, 44.7, 31.5], "+3V3_SDRAM tongue" = [55.1, 24.5, 61.5, 30.7] }
+xtal_refs = ["Y201", "Y202", "C225", "C226", "C227", "C228", "Y501", "C508", "C509"]   # no via near these courtyards
+xtal_grow = 0.6
+
+[finish.teardrops]               # Tools.KiCadDesignTools.finishing.teardrops <board dir> <board>
+skip_boxes = [[34.0, 31.0, 46.0, 43.0], [52.0, 29.5, 62.0, 44.5]]   # x0 y0 x1 y1: the BGA rule areas (body + 1 mm)
+
+[finish.view]                    # close-ups of the top silkscreen (Tools.KiCadDesignTools.views.finish_view), x0 y0 x1 y1
+close = { title = [3.5, 32.0, 27.5, 41.0], northeast = [61.0, 0.0, 85.0, 30.0], dc_input = [56.0, 46.0, 85.0, 62.0], lcd_uart = [24.0, 59.0, 70.0, 75.0], codec_mcu_north = [20.0, 12.0, 50.0, 33.0], west = [0.0, 0.0, 26.0, 42.0] }
+
+# Release pictures with net names (Tools.KiCadDesignTools.views.publish): every copper layer, the outer ones with their
+# silkscreen, close-ups, the layers stacked. Windows x0 y0 x1 y1 in local mm.
+[publish]
+rest = 20                        # seconds of pause between heavy commands (kicad-cli, Edge)
+out = "publish"                  # the pictures (layers/, closeups/, combined/)
+work = "out/publish_work"        # the board copy, geom.json, kicad-cli's plots, the silkscreen SVGs
+view = [-1, -1, 86, 76]          # the whole board plus 1 mm
+px = 100                         # px per mm of the whole-board pictures
+close_px = 250                   # px per mm of the close-ups
+close = { mcu_sdram = [26, 20, 66, 52] }   # close-ups of the signal layers and the stacked views: name -> window
+# picture titles per layer
+titles = { L1 = "top signal", L2 = "GND plane", L3 = "signal + GND pour", L4 = "signal + GND pour", L5 = "power plane (blocks)", L6 = "bottom signal" }

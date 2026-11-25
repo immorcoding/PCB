@@ -1,10 +1,10 @@
 """MCU south / west buses (stop 7, the remaining buses, issue 22): LTDC to the FPC J701, QSPI to the flash U401, the RMII
 side to the PHY U501, the touch / I2C4 lines to their link resistors R701-R704, the user LEDs and key. Every net from
-its BGA ball (fan_leads.lead: dog-bone and the planned run to the rule-area edge) to its destination, written with
+its BGA ball (routing.fan_plan.lead: dog-bone and the planned run to the rule-area edge) to its destination, written with
 coordinates (RTE-3, RTE-4: no autorouter). Local mm (board mm - 100).
 
-    LOCAL_BOARD=<board> D:\\KiCad\\bin\\python.exe scripts\\busroute\\build.py stm32h743_sdram\\routes_mcu_sw.py --fast
-    (build.sh route2 builds it on the real board once the group is in ROUTE2_GROUPS, after routes_mcu_nw.py; the
+    LOCAL_BOARD=<board> D:\\KiCad\\bin\\python.exe -m Tools.KiCadDesignTools.routing.busroute.build stm32h743_sdram\\routes_mcu_sw.py --fast
+    (the driver's route step builds it on the real board, a [[route.group]] in board.toml after routes_mcu_nw.py; the
     east bundle's and the south / west balls' leads moved here from routes_mcu_east.py / routes_mcu_south.py)
 
 Layer use south of the MCU (the SDRAM rivers: L1 y 44-46.5 east of x 38.5, L3 y 43.4-45.6 east of x 33.6, L4 D16 / D17
@@ -31,7 +31,7 @@ and QSPI_BK1_NCS in the west loop (routes_mcu_west.py), their last stretch on L3
 I2C4 / touch rows (G7 and G4 leave L3 at y 65.65 / 64.9 for it)
 """
 import os
-from fan_leads import plan, info
+from Tools.KiCadDesignTools.routing.fan_plan import plan, info
 
 BOARD = os.environ.get("LOCAL_BOARD", "stm32h743_sdram.kicad_pcb")
 ORIGIN = (100, 100)

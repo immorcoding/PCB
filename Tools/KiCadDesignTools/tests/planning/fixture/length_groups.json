@@ -1,0 +1,6 @@
+{
+  "_": "planning benchmark: A0 / A1 against the clock sum CK + CK_R",
+  "groups": [
+    {"rule": "bench_window", "members": "A.NetName == 'A*'", "ref": ["CK", "CK_R"], "lo": -1, "hi": 1.62}
+  ]
+}

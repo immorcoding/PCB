@@ -1,0 +1,26 @@
+{
+  "board": {
+    "design_settings": {
+      "rules": {
+        "min_clearance": 0.09,
+        "min_track_width": 0.09,
+        "min_via_diameter": 0.3,
+        "min_through_hole_diameter": 0.15,
+        "min_hole_clearance": 0.2,
+        "min_hole_to_hole": 0.254,
+        "min_copper_edge_clearance": 0.254
+      }
+    }
+  },
+  "meta": {
+    "filename": "bench.kicad_pro",
+    "version": 3
+  },
+  "net_settings": {
+    "classes": [
+      {"name": "Default", "track_width": 0.1016, "clearance": 0.127, "via_diameter": 0.45, "via_drill": 0.2, "priority": 2147483647}
+    ],
+    "meta": {"version": 4},
+    "netclass_patterns": []
+  }
+}

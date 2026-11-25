@@ -75,7 +75,7 @@ TP109-TP111 Keystone 5001 [sel]  (catalogue M65 p.56): black, loop 2.5 mm, mount
 
 Not on this page: the backlight boost (lcd page) and the LED_A test point.
 """
-from .common import FP, NC, P, U, symbol
+from Tools.KiCadDesignTools.schematic.sheet import FP, NC, P, U, symbol
 
 SOT23_6 = "Package_TO_SOT_SMD:SOT-23-6"
 SOT23_5 = "Package_TO_SOT_SMD:SOT-23-5"

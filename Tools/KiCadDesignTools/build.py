@@ -1,0 +1,886 @@
+"""Build driver: one board folder, one step; the board's data is <board dir>/board.toml.
+
+    python -m Tools.KiCadDesignTools.build <board dir> <step> [--out DIR] [--skip-match] [--upto GROUP] [--no-render] [--dry-run]
+    python -m Tools.KiCadDesignTools.build <board dir> compare <out A> <out B>
+    python -m Tools.KiCadDesignTools.build init NAME [--from DIR] [--parent DIR] [--dry-run]
+
+Run it from the repository root, with KiCad's python (D:\\KiCad\\bin\\python.exe) or any Python >= 3.11; every tool
+it starts runs under KiCad's python (Tools.KiCadDesignTools.core.paths.KICAD_PY), the Tools modules as `python -m Tools.KiCadDesignTools.<...>` from the
+repository root. Reports go to <out>/<step folder>/, <out> = <board dir>/out unless --out is given.
+
+  project     the project file, the derived footprints, the board's layer table (project.make_project)
+  rules       project, rule fixture board, canary, rule matching on the board (--skip-match: left out, run `checks`
+              once at the end), length-window rules
+  sch         schematic: generate, upgrade, ERC, netlist, PDF (schematic.build); netlist checks (schematic.check);
+              kicad-happy review
+  pcb-update  the sch step's netlist into the board (schematic.net2pcb, KiCad's "Update PCB from Schematic"): missing
+              footprints added, changed ones replaced in place, values and pad nets refreshed, placed positions kept;
+              the project file first (the empty board when there is none) and again after the save
+  layout      SPEC.md's table 本板取值 first (project.spec_check; stops on exit 1), placement (placement.place,
+              place.toml), the line-order sketch on a copy, placement / escape / copper-sketch checks, measured trials
+              (placement.layout_probe, [probe])
+  copper      placement, pours, the power groups on the board and on the sketch copy, refill, measures, pictures, table
+  route       every [[route.group]] stripped, placement, pours, the groups rebuilt in order (--upto GROUP: only up to
+              that one), the length-window rules from the routed lengths (len_rules; not with --upto), refill, DRC,
+              measures, plane slots, escape check, canary, pictures, placement check, table
+  finish      after every route: fiducials, inner pours and clean-up, stitching, silkscreen, teardrops, final DRC with
+              schematic parity, canary, pictures (FINISH_BOARD=<copy> runs it on a copy, as build.sh did)
+  checks      every rule of the rule file matches something (one DRC per rule, one at a time: about 30 minutes)
+  publish     release pictures with net names (views.publish, [publish])
+  all         the steps of board.toml [build] all in order (the H743 board: rules, sch, route, finish), by default
+              project, rules, sch, pcb-update, layout, copper, route, finish: a board from its data files alone
+  compare     compare_runs on two out trees, and board_diff on the board copies they hold (<name>.kicad_pcb)
+  init NAME   a new board folder <parent>/NAME (parent: the repository root, or --parent, a folder inside the
+              repository: board folders are imported as packages) from a template folder (--from, default
+              templates/demo_board): its data files copied (no out/, no generated KiCad files: those come from the
+              steps), file names and the text of the data files with the template's board name (and folder path)
+              replaced by NAME; then `all` builds it (project, rules, sch, pcb-update, layout, copper, route, finish)
+
+Every step first looks for KiCad's lock files in the board folder (hidden ones too) and stops when one is there,
+runs below normal priority on four cores and holds the machine-wide heavy lock; every child goes through
+Tools.KiCadDesignTools.core.heavy.run (below normal, four cores, the lock, a pause of heavy.GAP seconds after the
+previous heavy command, PCB_HEAVY_GAP), so that only one KiCad process runs at a time. --dry-run prints the commands
+instead of running them.
+
+Every step calls Tools modules only, with the board folder as their first argument where they read board data
+(stage 3 of the consolidation); the commands and their order are those of stm32h743_sdram/build.sh, except that the
+route step runs len_rules itself (R3).
+
+A step stops at the first child that fails and returns its exit code ("step <name> stopped: ..."): a non-zero exit
+(a timeout: 124) or an expected output missing (a refill's DRC report: 3). A child whose exit code is a verdict
+(findings) does not stop the step; its code is reported in the step's last line, as build.sh did: the rule fixture,
+the canary, rule matching, len_rules, the schematic checks and kicad-happy, the line-order sketch builds, the groups'
+builds (their findings go to the tables), place_check, escape_check, the layout step's sketch check, the tables, the
+finish step's clean-up (exit 10: keep-outs added, refill and run again) and the 3D renders.
+"""
+import json, os, re, shutil, sys, time, collections
+
+from Tools.KiCadDesignTools.core import config, heavy, paths
+
+STEPS = ("project", "rules", "sch", "pcb-update", "layout", "copper", "route", "finish", "checks", "publish", "all",
+         "compare", "init")
+# `all` on a board without [build] all: a new board from its data files, init to the finished board
+ALL = ("project", "rules", "sch", "pcb-update", "layout", "copper", "route", "finish")
+PROJECT = "Tools.KiCadDesignTools.project.make_project"      # the project file, after every SaveBoard too
+SPEC_CHECK = "Tools.KiCadDesignTools.project.spec_check"     # SPEC.md's table 本板取值 against the profile and the data
+PLACE = "Tools.KiCadDesignTools.placement.place"             # every part from <board dir>/place.toml
+BOARDTEXT = "Tools.KiCadDesignTools.core.boardtext"          # unfill / strip / orphans (text edits of the board file)
+SLOTS = "Tools.KiCadDesignTools.copper.plane_slots"          # plane slots, cut-off vias, feed necks ([copper.slots])
+COPPER_TABLE = "Tools.KiCadDesignTools.copper.copper_table"  # the copper step's table ([copper.table])
+COPPER_VIEW = "Tools.KiCadDesignTools.views.copper_view"     # pictures of the filled copper ([copper_view])
+ROUTE_TABLE = "Tools.KiCadDesignTools.analysis.route_table"  # the route step's table ([route.table])
+PUBLISH = "Tools.KiCadDesignTools.views.publish"             # release pictures with net names ([publish])
+NET2PCB = "Tools.KiCadDesignTools.schematic.net2pcb"         # netlist into the board (pcb-update)
+INIT_FROM = "templates/demo_board"                           # init's default template folder
+# what init leaves out of the template: the steps' outputs and KiCad's own files (fnmatch patterns on names)
+GENERATED = ("out", "__pycache__", "publish", "*-backups", "*.kicad_pcb", "*.kicad_pro", "*.kicad_prl", "*.kicad_sch",
+             "*.kicad_sym", "*.pretty", "fp-lib-table", "sym-lib-table", "*.busroute.json", "*.finish.json", "*.pdf",
+             "*.lck", "_autosave-*", "fp-info-cache", "#auto_saved_files#")
+TEXT = (".toml", ".py", ".json", ".md", ".csv", ".sketch", ".kicad_dru", ".txt")   # init replaces the name in these
+KH = os.path.join(os.path.expanduser("~"), ".claude", "plugins", "marketplaces", "kicad-happy", "skills", "kicad", "scripts",
+                  "analyze_schematic.py")
+
+
+def fw(p):
+    """Paths as build.sh handed them to the tools (Git Bash turns /e/x into E:/x): forward slashes."""
+    return os.path.abspath(p).replace("\\", "/")
+
+
+# ---------------------------------------------------------------------------------------------------- output filters
+def _lines(data, keep):
+    parts = data.split(b"\n")
+    if parts and parts[-1] == b"":
+        parts.pop()
+    return b"".join(p + b"\n" for p in parts if keep(p))
+
+
+def quiet(data):
+    """build.sh's quiet(): grep -v "image handler"."""
+    return _lines(data, lambda l: b"image handler" not in l)
+
+
+def q2(data):
+    """build.sh's q2() (finish step): the SWIG leak notice cut out, then no "image handler" lines and no empty lines."""
+    data = re.sub(rb"swig/python detected a memory leak[^.\n]*found\.", b"", data)
+    return _lines(data, lambda l: b"image handler" not in l and len(l) > 0)
+
+
+def text(data):
+    return data.decode("utf-8", "replace").replace("\r\n", "\n")
+
+
+def grep(data, pattern, invert=False):
+    rx = re.compile(pattern)
+    return [l for l in text(data).splitlines() if bool(rx.search(l)) != invert]
+
+
+class Stop(Exception):
+    def __init__(self, code, why=""):
+        super().__init__(why)
+        self.code = code
+
+
+KEEP = None          # Runner.run(ok=KEEP): any exit code is a verdict of the child, the step goes on
+MISSING = 3          # the step's exit code when a child exited 0 but did not write an expected file
+
+
+# ---------------------------------------------------------------------------------------------------- the runner
+class Runner:
+    """Runs (or, with dry=True, prints) the commands of one step, one at a time, from the repository root."""
+
+    def __init__(self, dry):
+        self.dry = dry
+
+    def show(self, argv, env=None, out=None, append=False, note=""):
+        e = " ".join("%s=%s" % (k, _q(str(v).replace("\n", "\\n"))) for k, v in (env or {}).items())
+        cmd = " ".join(_q(a) for a in argv)
+        red = (" >> " if append else " > ") + _q(out) if out else ""
+        print("%s%s%s%s" % (e + " " if e else "", cmd, red, ("   # " + note) if note else ""))
+
+    def run(self, argv, out=None, append=False, filt=None, env=None, timeout=None, note="", ok=(0,), outputs=()):
+        """-> (exit code, output bytes after the filter). The output goes to `out` (a file) when given. argv items are
+        written with str(): board.toml numbers as build.sh wrote them (27, 28.5, -1).
+        ok: the exit codes that let the step go on (KEEP: any); outputs: files the child must write (removed first).
+        Otherwise Stop (the step ends with the child's exit code, MISSING when it exited 0)."""
+        argv = [str(a) for a in argv]
+        if self.dry:
+            self.show(argv, env, out, append, note)
+            return 0, b""
+        # set iteration over strings follows Python's per-process hash seed: escape_check's choice among equivalent
+        # layers / partners (and bga_fan's program order) changed from run to run; a fixed seed makes them repeat
+        e = {} if "PYTHONHASHSEED" in os.environ else {"PYTHONHASHSEED": "0"}
+        e.update({k: str(v) for k, v in (env or {}).items()})
+        # below normal priority on four cores, under the heavy lock (the driver holds it: re-entrant), after the gap
+        r = heavy.run(argv, stdout=heavy.PIPE, stderr=heavy.STDOUT, env=e, cwd=paths.REPO, timeout=timeout, outputs=outputs)
+        data, rc = r.stdout or b"", r.returncode
+        if filt:
+            data = filt(data)
+        if out:
+            os.makedirs(os.path.dirname(out) or ".", exist_ok=True)
+            with open(out, "ab" if append else "wb") as f:
+                f.write(data)
+        if (ok is not KEEP and rc not in ok) or r.missing:
+            why = ("timed out after %s s" % timeout if r.timed_out else "exit %d" % rc if ok is not KEEP and rc not in ok
+                   else "no %s" % ", ".join(r.missing))
+            tail = heavy.decode(data).strip().splitlines()[-15:]
+            raise Stop(rc or MISSING, "%s: %s%s" % (" ".join(_q(a) for a in argv[:6]), why,
+                                                    "".join("\n    " + l for l in tail) + ("\n    (output: %s)" % out if out else "")))
+        return rc, data
+
+    def py(self, target, *args, **kw):
+        """A Tools module ("Tools.KiCadDesignTools.x.y") or a script file, under KiCad's python."""
+        if target.startswith("Tools.KiCadDesignTools."):
+            return self.run([paths.KICAD_PY, "-m", target] + list(args), **kw)
+        return self.run([paths.KICAD_PY, target] + list(args), **kw)
+
+    def cli(self, *args, **kw):
+        return self.run([paths.KICAD_CLI] + list(args), **kw)
+
+    def copy(self, a, b):
+        if self.dry:
+            print("cp %s %s" % (_q(a), _q(b)))
+        else:
+            shutil.copyfile(a, b)
+
+    def move(self, a, b):
+        if self.dry:
+            print("mv -f %s %s" % (_q(a), _q(b)))
+        elif os.path.exists(a):
+            os.replace(a, b)
+
+    def remove(self, *files):
+        if self.dry:
+            print("rm -f %s" % " ".join(_q(f) for f in files))
+            return
+        for f in files:
+            if os.path.exists(f):
+                os.remove(f)
+
+    def write(self, path, content):
+        if self.dry:
+            print("echo %s > %s" % (_q(content.rstrip("\n")), _q(path)))
+        else:
+            with open(path, "w", encoding="utf-8") as f:            # text mode: CRLF on Windows, as tee wrote it
+                f.write(content)
+
+    def rest(self, seconds):
+        if self.dry:
+            print("# rest %d s" % seconds)
+        else:
+            heavy.rest(seconds)
+
+
+def _q(s):
+    s = str(s)
+    return s if s and re.fullmatch(r"[\w@%+=:,./\\-]+", s) else "'" + s.replace("'", "'\\''") + "'"
+
+
+def echo(lines):
+    for l in lines:
+        print(l)
+
+
+# ---------------------------------------------------------------------------------------------------- the steps
+class Build:
+    def __init__(self, cfg, out_root, dry=False, skip_match=False, upto=None, render=True):
+        self.cfg, self.dry, self.skip_match, self.upto, self.render = cfg, dry, skip_match, upto, render
+        self.r = Runner(dry)
+        self.D = fw(cfg.dir)
+        self.N = cfg.name
+        self.BRD = self.D + "/" + self.N + ".kicad_pcb"
+        self.out_root = fw(out_root)
+
+    # helpers ---------------------------------------------------------------------------------------------------
+    def out(self, step):
+        folder = self.cfg.get("build.out.%s" % step, step)
+        O = self.out_root + "/" + folder
+        if not self.dry:
+            os.makedirs(O, exist_ok=True)
+        return O
+
+    def L(self, text_):
+        print(text_)
+
+    def pr(self, data, n=None):
+        lines = text(data).splitlines()
+        echo(lines if n is None else lines[:n])
+
+    def group(self, name):
+        for g in self.cfg.groups:
+            if g["name"] == name:
+                return g
+        raise config.ConfigError("no [[route.group]] named %s" % name)
+
+    def busroute(self, routes, flags, O_group, log, env=None, after=(), ok=(0,)):
+        """busroute.build <routes> <flags> --out <O_group> <after> (build.sh's order; build.py takes flags anywhere)."""
+        args = [self.D + "/" + routes] + flags + ["--out", O_group] + list(after)
+        return self.r.py("Tools.KiCadDesignTools.routing.busroute.build", *args, out=log, env=env, ok=ok)
+
+    def escape(self, board, run, out, append):
+        args = [self.D, board]
+        for ref in run["refs"]:
+            args += ["--ref", ref]
+        if run.get("window"):
+            args += ["--window"] + list(run["window"])
+        # the layers tracks may use: the tool takes the board's signal layers (layer roles) unless the run names its own
+        if run.get("layers"):
+            args += ["--layers"] + list(run["layers"])
+        return args
+
+    def view(self, board, O, v):
+        args = [board, O] + list(v["layers"])
+        if "scale" in v:
+            args += ["--scale", v["scale"]]
+        if v.get("window"):
+            args += ["--window"] + list(v["window"])
+        if v.get("name"):
+            args += ["--name", v["name"]]
+        if v.get("slots"):
+            args += ["--slots", O + "/" + v["slots"]]
+        if v.get("via_labels"):
+            args += ["--via-labels"]
+        rc, data = self.r.py(COPPER_VIEW, self.D, *args, filt=quiet)                       # stops the step on a failure
+        if data:
+            print(" ".join(text(data).splitlines()) + " ")
+        if v.get("rename"):
+            a, b = v["rename"]
+            self.r.move(O + "/" + a, O + "/" + b)
+
+    def place_check(self, O, show):
+        lay = self.cfg.get("layout", {})
+        args = [self.BRD]
+        if lay.get("allow_under"):
+            args += ["--allow-under", ",".join(lay["allow_under"])]
+        for ref, side in (lay.get("edges") or {}).items():
+            args += ["--edge", "%s=%s" % (ref, side)]
+        if lay.get("not_supply"):
+            args += ["--not-supply", ",".join(lay["not_supply"])]
+        if lay.get("silk_refs"):
+            args += ["--silk-refs", lay["silk_refs"]]
+        args += ["--limit", "%g" % self.cfg.need("layout.decap_limit")]      # LAY-2: the profile's value, SPEC 本板取值
+        args += ["--ground", self.cfg.need("power.ground")]                  # a decoupling capacitor has a pad on it
+        args += ["--json", O + "/place_check.json"]
+        rc, data = self.r.py("Tools.KiCadDesignTools.placement.place_check", *args, out=O + "/place_check.txt", ok=KEEP)
+        echo(show(data))
+        return rc
+
+    def project_quiet(self):
+        """The project file again after a SaveBoard (KiCad rewrites it; its source is make_project and board.toml)."""
+        self.r.py(PROJECT, self.D)
+
+    def match_skipped(self, O, tee=True):
+        msg = "dru_match skipped (SKIP_DRU_MATCH): run build.sh finish-checks once at the end"
+        self.r.write(O + "/dru_match.txt", msg + "\n")
+        if tee:
+            print(msg)
+
+    # steps -----------------------------------------------------------------------------------------------------
+    def step_project(self):
+        rc, data = self.r.py(PROJECT, self.D, filt=quiet, ok=KEEP)                 # its exit code is the step's
+        self.pr(data)
+        return rc
+
+    def step_rules(self):
+        O, T0 = self.out("rules"), time.time()
+        rc, data = self.r.py(PROJECT, self.D, filt=quiet)
+        self.pr(data)
+        # 1. every rule behaves as written (fixture board with the project's own rules and stackup)
+        FX, _ = self.r.py("Tools.KiCadDesignTools.rules.fixture", self.D, O, out=O + "/fixture.log", ok=KEEP)
+        if not self.dry and os.path.isfile(O + "/rules_fixture.txt"):
+            lines = open(O + "/rules_fixture.txt", encoding="utf-8").read().splitlines()
+            echo(lines[:1] + [l for l in lines if l.startswith("FAIL")])
+        # 2. the real board: rule file loaded, rules that match nothing, length windows current
+        rc, data = self.r.py("Tools.KiCadDesignTools.rules.dru_canary", self.BRD, filt=quiet, out=O + "/canary.txt", ok=KEEP)
+        self.pr(data)
+        if self.skip_match:
+            self.match_skipped(O)
+            DM = "-"
+        else:
+            DM, data = self.r.py("Tools.KiCadDesignTools.rules.dru_match", self.BRD, "--json", O + "/dru_match.json", out=O + "/dru_match.txt",
+                                 ok=KEEP)
+            echo(text(data).splitlines()[-1:])
+        # exit 1: a length sum over its limit (reported in len_rules.txt); the generated block is written either way
+        rc, data = self.r.py("Tools.KiCadDesignTools.rules.len_rules", self.BRD, filt=quiet, out=O + "/len_rules.txt", ok=KEEP)
+        self.pr(data)
+        print("rules step: %d s; fixture exit %s, dru_match exit %s (2 = the board has no objects yet)" % (time.time() - T0, FX, DM))
+        return FX
+
+    def step_sch(self):
+        O, T0 = self.out("sch"), time.time()
+        rc, data = self.r.py("Tools.KiCadDesignTools.schematic.build", self.D, O, filt=quiet, out=O + "/sch_build.log")
+        self.pr(data, 1)
+        echo(grep(data, "ERC messages"))
+        if not self.dry and os.path.isfile(O + "/erc.rpt"):
+            c = collections.Counter(l for l in open(O + "/erc.rpt", encoding="utf-8", errors="replace").read().splitlines() if l.startswith("["))
+            echo("%7d %s" % (n, l) for l, n in sorted(c.items()))
+        SC, data = self.r.py("Tools.KiCadDesignTools.schematic.check", self.D, O + "/" + self.N + ".net", filt=quiet,
+                             out=O + "/sch_check.txt", ok=KEEP)
+        echo(l[:400] for l in text(data).splitlines() if l)
+        if self.cfg.get("schematic.review", False):
+            if os.path.isfile(KH):
+                # kicad-happy's analyzer (RUL-9) under the system Python, in the out folder (it makes analysis/ there)
+                self.r.run([shutil.which("python") or "python", KH, self.D + "/" + self.N + ".kicad_sch", "--text", "--stage",
+                            "schematic"], note="cwd %s; stdout > kicad_happy_sch.txt, stderr > kicad_happy_sch.err" % O) if self.dry \
+                    else self._kicad_happy(O)
+            else:
+                print("kicad-happy analyzer not found: schematic review not run")
+        print("sch step: %d s; sch_check exit %s" % (time.time() - T0, SC))
+        return SC
+
+    def _kicad_happy(self, O):
+        py = shutil.which("python") or "python"
+        with open(O + "/kicad_happy_sch.txt", "wb") as so, open(O + "/kicad_happy_sch.err", "wb") as se:
+            # its exit code is not judged (build.sh: `|| true`): the findings are triaged by hand
+            heavy.run([py, KH, self.D + "/" + self.N + ".kicad_sch", "--text", "--stage", "schematic"], stdout=so, stderr=se, cwd=O)
+        n = sum(1 for l in open(O + "/kicad_happy_sch.txt", encoding="utf-8", errors="replace") if l.startswith("  ["))
+        print("kicad-happy: %d findings in %s/kicad_happy_sch.txt" % (n, O))
+
+    def step_pcb_update(self):
+        """The sch step's netlist into the board (schematic.net2pcb): footprints added or replaced, nets assigned,
+        placed positions kept. make_project before (the empty board when there is none yet) and after (SaveBoard
+        rewrites the project file)."""
+        T0 = time.time()
+        net = self.out_root + "/" + self.cfg.get("build.out.sch", "sch") + "/" + self.N + ".net"
+        if not self.dry and not os.path.isfile(net):
+            print("pcb-update: no netlist %s (run the sch step first)" % net)
+            return 2
+        rc, data = self.r.py(PROJECT, self.D, filt=quiet)
+        self.pr(data)
+        NU, data = self.r.py(NET2PCB, net, self.BRD, filt=quiet)
+        self.pr(data)
+        self.project_quiet()
+        print("pcb-update step: %d s; net2pcb exit %s" % (time.time() - T0, NU))
+        return NU
+
+    def step_layout(self):
+        O, T0 = self.out("layout"), time.time()
+        # PROC-8: the SPEC's 本板取值 complete and in line with the data files before anything is placed
+        SC, data = self.r.py(SPEC_CHECK, self.D, filt=quiet, out=O + "/spec_check.txt", ok=(0, 1))
+        self.pr(data)
+        if SC == 1:
+            print("layout step: stopped, SPEC.md's table 本板取值 is incomplete or disagrees with the data (%s/spec_check.txt)" % O)
+            return 1
+        lay = self.cfg.need("layout")
+        sk = lay["sketch"]
+        SKO = self.D + "/" + sk["out"]
+        SK = SKO + "/" + self.N + ".kicad_pcb"
+        rc, data = self.r.py(PLACE, self.D, filt=quiet)
+        self.pr(data)
+        SB, data = self.busroute(sk["routes"], ["--sketch"], SKO, O + "/sketch_build.txt", ok=KEEP)
+        print("== line-order sketch on the placed board")
+        echo(grep(data, r"^\[间距\]|^结论") or text(data).splitlines()[-3:])
+        echo(grep(data, r"^  ! "))
+        print("== placement (Tools.KiCadDesignTools.placement.place_check)")
+        PC = self.place_check(O, lambda d: grep(quiet(d), r"keep-out \[", invert=True))
+        print("== ways out of the fine-pitch parts (Tools.KiCadDesignTools.placement.escape_check)")
+        for run in lay.get("escape", []):
+            rc, data = self.r.py("Tools.KiCadDesignTools.placement.escape_check", *self.escape(SK, run, None, False), "--json", O + "/" + run["json"], filt=quiet,
+                                 ok=KEEP)
+            self.pr(data)
+        print("== copper region sketch (Tools.KiCadDesignTools.copper.cu_sketch check)")
+        # a report here (the copper and route steps stop on a rejected sketch)
+        rc, data = self.r.py("Tools.KiCadDesignTools.copper.cu_sketch", "check", self.D + "/" + self.cfg.need("copper.sketch"), "--board", self.BRD, filt=quiet,
+                             ok=KEEP)
+        echo(text(data).splitlines()[-40:])
+        print("== measured trial checks")
+        rc, data = self.r.py("Tools.KiCadDesignTools.placement.layout_probe", self.D, "--json", O + "/layout_probe.json", filt=quiet)
+        self.pr(data)
+        print("layout step: %d s; sketch build exit %s, place_check exit %s" % (time.time() - T0, SB, PC))
+        return 0
+
+    def step_copper(self):
+        O, T0 = self.out("copper"), time.time()
+        cu, lay = self.cfg.need("copper"), self.cfg.need("layout")
+        BRD = self.BRD
+        SKO = self.D + "/" + lay["sketch"]["out"]
+        SK = SKO + "/" + self.N + ".kicad_pcb"
+        sketch = self.D + "/" + cu["sketch"]
+        print("== placement and pours")
+        self.r.py(BOARDTEXT, self.D, "unfill", BRD, filt=quiet)
+        self.r.py(PLACE, self.D, filt=quiet)
+        rc, data = self.r.py("Tools.KiCadDesignTools.copper.cu_sketch", "check", sketch, "--board", BRD, filt=quiet, out=O + "/sketch_check.txt")
+        rc, data = self.r.py("Tools.KiCadDesignTools.copper.cu_sketch", "apply", sketch, BRD, filt=quiet)
+        echo(grep(data, r"^warning: a ~", invert=True))
+        print("== line-order sketch on a copy of the board (the obstacles of the power groups)")
+        self.r.py(BOARDTEXT, self.D, "unfill", SK, filt=quiet)
+        SB, data = self.busroute(lay["sketch"]["routes"], ["--sketch"], SKO, O + "/sketch_build.txt", after=["--no-refill", "--no-pictures"], ok=KEEP)
+        echo(grep(data, r"^\[间距\]|^结论") or text(data).splitlines()[-3:])
+        codes = []
+        for g in cu.get("group", []):
+            print("== group %s on %s" % (g["name"], g.get("board", "board")))
+            env = {k: self._fill(v, O, SK) for k, v in (g.get("env") or {}).items()}
+            flags = ["--write-board"] + list(g.get("flags", [])) + ["--no-refill", "--no-pictures"]
+            rc, data = self.busroute(g["file"], flags, O + "/" + g["out"], O + "/" + g["out"] + "_build.txt", env=env, ok=KEEP)
+            codes.append(rc)
+            echo(grep(data, r"^写入|^\[间距\]|^结论|^ERROR") or text(data).splitlines()[-5:])
+            if g.get("after") == "refill_board":
+                print("== refill and save (kicad-cli), measure")
+                self.r.cli("pcb", "drc", "--refill-zones", "--save-board", "--severity-all", "--units", "mm", "--format", "json", "-o",
+                           O + "/drc.json", BRD, outputs=[O + "/drc.json"])
+                self.r.py("Tools.KiCadDesignTools.copper.cu_sketch", "measure", BRD, "--drc", O + "/drc.json", "--json", O + "/measure.json",
+                          "--skip-areas", ",".join(cu["skip_areas"]), out=O + "/measure.txt")
+                rc, data = self.r.py("Tools.KiCadDesignTools.copper.pour_islands", BRD, *cu["pour_check"], filt=quiet, out=O + "/pour_islands.txt")
+                echo(grep(data, " 0 without", invert=True))
+        self.r.cli("pcb", "drc", "--refill-zones", "--save-board", "--severity-all", "--units", "mm", "--format", "json", "-o",
+                   O + "/sketch_drc.json", SK, outputs=[O + "/sketch_drc.json"])
+        rc, data = self.r.py(SLOTS, self.D, SK, O, filt=quiet)
+        echo(text(data).splitlines()[-12:])
+        first = True
+        for run in lay.get("escape", []):
+            self.r.py("Tools.KiCadDesignTools.placement.escape_check", *self.escape(SK, run, None, False), "--json", O + "/" + run["json"], filt=quiet,
+                      out=O + "/escape.txt", append=not first, ok=KEEP)
+            first = False
+        print("== pictures of the filled layers (qualitative review only)")
+        for v in cu.get("views", []):
+            self.view(SK if v.get("board") == "sketch" else BRD, O, v)
+        self.project_quiet()
+        print("== copper table")
+        CT, data = self.r.py(COPPER_TABLE, self.D, BRD, O, filt=quiet, env={"COPPER_SECONDS": "%d s" % (time.time() - T0)}, ok=KEEP)
+        self.pr(data)
+        print("copper step: %d s; sketch build exit %s, group exits %s, table exit %s" % (time.time() - T0, SB, codes, CT))
+        return 0
+
+    def _fill(self, v, O, SK=None, obstacles=None):
+        return (v.replace("{out}", O).replace("{board}", self.BRD).replace("{sketch}", SK or "")
+                 .replace("{obstacles}", obstacles or ""))
+
+    def step_route(self):
+        O, T0 = self.out("route"), time.time()
+        BRD, rt = self.BRD, self.cfg.need("route")
+        groups = self.cfg.groups
+        names = [g["name"] for g in groups]
+        if self.upto and self.upto not in names:
+            raise config.ConfigError("--upto %s: no such group (%s)" % (self.upto, ", ".join(names)))
+        build = names[:names.index(self.upto) + 1] if self.upto else names
+        rc, data = self.r.py(PROJECT, self.D, filt=quiet)
+        echo(grep(data, "layer table"))
+        print("== placement and pours (the groups are stripped first, then rebuilt in order)")
+        self.r.py(BOARDTEXT, self.D, "unfill", BRD, filt=quiet)
+        obst_group = rt.get("obstacles_group")
+        OBST = O + "/obstacles.kicad_pcb"
+        if obst_group:
+            # the serpentines of this group need the other groups' copper as obstacles (tune.py, TUNE_OBSTACLES): a copy
+            # of the board as the last build left it, without the group's own copper
+            self.r.copy(BRD, OBST)
+            self.r.copy(self.D + "/" + self.N + ".busroute.json", O + "/obstacles.busroute.json")
+            self.r.py(BOARDTEXT, self.D, "strip", OBST, obst_group, filt=quiet)
+        self.r.py(BOARDTEXT, self.D, "strip", BRD, *names, filt=quiet)
+        if rt.get("orphans", True):
+            rc, data = self.r.py(BOARDTEXT, self.D, "orphans", BRD, filt=quiet, out=O + "/orphans.txt")
+            self.pr(data)
+        self.r.py(PLACE, self.D, filt=quiet)
+        sketch = self.D + "/" + self.cfg.need("copper.sketch")
+        rc, data = self.r.py("Tools.KiCadDesignTools.copper.cu_sketch", "check", sketch, "--board", BRD, filt=quiet, out=O + "/sketch_check.txt")
+        rc, data = self.r.py("Tools.KiCadDesignTools.copper.cu_sketch", "apply", sketch, BRD, filt=quiet)
+        echo(grep(data, r"^warning: a ~", invert=True))
+        codes = {}
+        for g in groups:
+            if g["name"] not in build:
+                continue
+            print("== group %s (%s) on the board" % (g["name"], g["file"]))
+            env = {k: self._fill(v, O, obstacles=OBST) for k, v in (g.get("env") or {}).items()}
+            # a group's findings (exit 1) or a group that could not be built (exit 2) go to the route table
+            rc, data = self.busroute(g["file"], ["--write-board", "--no-refill", "--no-pictures"], O + "/" + g["name"],
+                                     O + "/" + g["name"] + "_build.txt", env=env, ok=KEEP)
+            codes[g["name"]] = rc
+            echo(grep(data, r"^写入|^\[间距\]|^结论|^ERROR|^  ! [A-Z]") or text(data).splitlines()[-5:])
+        if self.upto:
+            print("== length-window rules left as they are (--upto: the board is built only in part)")
+        else:
+            # the windows of the rule file's generated block from the lengths just routed (RTE-2), before the DRC that
+            # judges them: a board routed for the first time needs no second rules step. Exit 1: a sum over its
+            # limit (a verdict, in len_rules.txt); the block is written either way, only when it changed.
+            print("== length-window rules (Tools.KiCadDesignTools.rules.len_rules)")
+            rc, data = self.r.py("Tools.KiCadDesignTools.rules.len_rules", BRD, filt=quiet, out=O + "/len_rules.txt", ok=KEEP)
+            self.pr(data)
+        print("== refill and save (kicad-cli), DRC, measure")
+        self.r.cli("pcb", "drc", "--refill-zones", "--save-board", "--severity-all", "--units", "mm", "--format", "json", "-o",
+                   O + "/drc.json", BRD, outputs=[O + "/drc.json"])
+        self.project_quiet()
+        cu = self.cfg.need("copper")
+        self.r.py("Tools.KiCadDesignTools.copper.cu_sketch", "measure", BRD, "--drc", O + "/drc.json", "--json", O + "/measure.json", "--skip-areas",
+                  ",".join(cu["skip_areas"]), out=O + "/measure.txt")
+        for s in rt.get("slots", []):
+            args = [self.D, BRD, O, "--window", s["name"]] + list(s["window"])
+            if s.get("layers"):
+                args += ["--layers"] + list(s["layers"])
+            if s.get("stem"):
+                args += ["--stem", s["stem"]]
+            if s.get("part_b"):
+                args += ["--part-b", O + "/" + s["part_b"]]
+            rc, data = self.r.py(SLOTS, *args, filt=quiet)
+            echo(grep(data, s["show"]) if s.get("show") else text(data).splitlines()[-int(s.get("tail", 8)):])
+        rc, data = self.r.py("Tools.KiCadDesignTools.copper.pour_islands", BRD, *cu["pour_check"], filt=quiet, out=O + "/pour_islands.txt")
+        self.pr(data)
+        first = True
+        for run in rt.get("escape", []):
+            self.r.py("Tools.KiCadDesignTools.placement.escape_check", *self.escape(BRD, run, None, False), "--json", O + "/" + run["json"], filt=quiet,
+                      out=O + "/escape.txt", append=not first, ok=KEEP)
+            first = False
+        self.r.py("Tools.KiCadDesignTools.rules.dru_canary", BRD, filt=quiet, out=O + "/canary.txt", ok=KEEP)
+        if self.skip_match:
+            self.match_skipped(O, tee=False)
+        else:
+            self.r.py("Tools.KiCadDesignTools.rules.dru_match", BRD, "--json", O + "/dru_match.json", out=O + "/dru_match.txt", ok=KEEP)
+        print("== pictures (qualitative review only)")
+        for v in rt.get("views", []):
+            self.view(BRD, O, v)
+        print("== placement (Tools.KiCadDesignTools.placement.place_check, as in the layout step)")
+        PC = self.place_check(O, lambda d: grep(d, r"^\[(outside|overlap|keepout|under)\]"))
+        print("== route table")
+        listed = "\n" + "".join("%s %s\n" % (g["name"], g["file"]) for g in groups if g.get("in_report") and g["name"] in build)
+        RT, data = self.r.py(ROUTE_TABLE, self.D, BRD, O, out=O + "/table.log",
+                             env={"ROUTE2_GROUPS": listed, "ROUTE2_SECONDS": "%d s" % (time.time() - T0)}, ok=KEEP)
+        lines = text(quiet(data)).splitlines()
+        part = rt.get("table", {}).get("part_title")         # the full table's own part ends here; the bus part follows
+        for l in lines:
+            print(l)
+            if l == part:
+                break
+        print("route step: %d s; group exits %s, place_check exit %s, table exit %s" % (time.time() - T0, codes, PC, RT))
+        return 0
+
+    def step_finish(self):
+        O, T0 = self.out("finish"), time.time()
+        fin = self.cfg.need("finish")
+        copy = os.environ.get("FINISH_BOARD")
+        BRD = fw(copy) if copy else self.BRD
+        rest = int(fin.get("rest", 20))
+        F, D = "Tools.KiCadDesignTools.finishing.finish", self.D
+
+        def refill(js):
+            self.r.cli("pcb", "drc", "--refill-zones", "--save-board", "--severity-all", "--units", "mm", "--format", "json", "-o", js, BRD,
+                       outputs=[js])
+            self.r.rest(rest)
+
+        def p(rc_data):
+            self.pr(rc_data[1])
+            return rc_data[0]
+        self.r.remove(O + "/clean_shape.txt", O + "/clean_anchor.txt")
+        print("== strip, fiducials")
+        p(self.r.py(BOARDTEXT, self.D, "unfill", BRD, filt=q2))
+        p(self.r.py(F, D, "strip", BRD, filt=q2))
+        # the fiducials stay first: their keep-outs must be on the board before the pours, the vias and the silkscreen
+        p(self.r.py(F, D, "fiducials", BRD, filt=q2))
+        print("== pours on the inner signal layers, pour keep-outs, clean-up of narrow copper and small pieces")
+        p(self.r.py(F, D, "pours", BRD, O, filt=q2))
+        refill(O + "/drc_pour.json")
+        for P in range(1, int(fin.get("clean_passes", 2)) + 1):
+            CL, data = self.r.py(F, D, "clean", BRD, O, "shape", out=O + "/clean.log", ok=(0, 10))
+            self.pr(q2(data))
+            if self.dry:
+                print("# exit 10 (keep-outs added): refill %s/drc_clean%d.json and run the next pass" % (O, P))
+            if CL != 10:
+                break
+            refill(O + "/drc_clean%d.json" % P)
+        print("== ground stitching vias")
+        p(self.r.py(F, D, "pieces", BRD, O, "before", filt=q2))
+        p(self.r.py(F, D, "stitch", BRD, O, filt=q2))
+        refill(O + "/drc_stitch.json")
+        p(self.r.py(F, D, "stitch", BRD, O, "--pieces", filt=q2))      # the pieces the first pass's vias made or left on one via
+        refill(O + "/drc_stitch2.json")
+        # an inner piece the stitching could not hold (no legal site) goes by a keep-out
+        CL, data = self.r.py(F, D, "clean", BRD, O, "anchor", out=O + "/clean.log", ok=(0, 10))
+        self.pr(q2(data))
+        if self.dry:
+            print("# exit 10 (keep-outs added): refill %s/drc_anchor.json" % O)
+        if CL == 10:
+            refill(O + "/drc_anchor.json")
+        p(self.r.py(F, D, "pieces", BRD, O, "after", filt=q2))
+        rc, data = self.r.py("Tools.KiCadDesignTools.copper.pour_islands", BRD, *self.cfg.need("copper.pour_check"), filt=q2, out=O + "/pour_islands.txt")
+        self.pr(data)
+        p(self.r.py(F, D, "report", BRD, O, "after", filt=q2))
+        print("== silkscreen")
+        p(self.r.py(BOARDTEXT, self.D, "unfill", BRD, filt=q2))
+        p(self.r.py(F, D, "silk", BRD, O, filt=q2))
+        print("== teardrops")
+        p(self.r.py(F, D, "teardrops", BRD, filt=q2))
+        self.r.rest(rest)
+        if not copy:
+            self.project_quiet()                                    # SaveBoard may have rewritten the project file
+        print("== final DRC (schematic parity), canary, rules matching nothing")
+        self.r.cli("pcb", "drc", "--refill-zones", "--save-board", "--severity-all", "--schematic-parity", "--units", "mm", "--format",
+                   "json", "-o", O + "/drc.json", BRD, outputs=[O + "/drc.json"])
+        self.r.rest(rest)
+        if not copy:
+            self.project_quiet()
+        self.drc_summary(O + "/drc.json", O + "/drc_summary.txt")
+        rc, data = self.r.py("Tools.KiCadDesignTools.rules.dru_canary", BRD, filt=quiet, out=O + "/canary.txt", ok=KEEP)
+        self.pr(data)
+        s = fin.get("slots")
+        if s:
+            # the planes after the new ground vias: no plane-net via cut off, feed necks, longest slots
+            args = [self.D, BRD, O, "--window", s["name"]] + list(s["window"]) + ["--stem", s["stem"]]
+            if s.get("part_b"):
+                args += ["--part-b", self.out_root + "/" + self.cfg.get("build.out.route", "route") + "/" + s["part_b"]]
+            rc, data = self.r.py(SLOTS, *args, filt=quiet)
+            echo(grep(data, s["show"]))
+        print("== pictures")
+        rd = fin.get("render") or {}
+        # 3D renders (user 2026-11-24): only under the limits every child gets here (below-normal priority, the
+        # driver's four cores, one heavy run), a pause before and after each; --no-render or render.enabled = false
+        # leaves them out
+        sides = rd.get("sides", ["top", "bottom"]) if (rd.get("enabled", True) and self.render) else []
+        if not sides:
+            print("3D renders left out (--no-render / [finish] render.enabled = false)")
+        elif not self.dry:
+            self.r.rest(rest)
+        for side in sides:
+            rc, _ = self.r.cli("pcb", "render", "--side", side, "--width", rd.get("width", 1600), "--height", rd.get("height", 1410),
+                               "--quality", rd.get("quality", "basic"), "--background", "opaque", "-o", O + "/render_%s.png" % side, BRD,
+                               timeout=int(rd.get("timeout", 180)), ok=KEEP)
+            if rc:
+                print("render %s failed or took over %d s" % (side, int(rd.get("timeout", 180))))
+            self.r.rest(rest)
+        p(self.r.py("Tools.KiCadDesignTools.views.finish_view", D, BRD, O, filt=q2))
+        print("finish step: %d s" % (time.time() - T0))
+        return 0
+
+    def drc_summary(self, js, out):
+        if self.dry:
+            print("# DRC summary of %s > %s" % (js, out))
+            return
+        d = json.load(open(js, encoding="utf-8"))
+        c = collections.Counter(v["type"] for v in d["violations"])
+        p = collections.Counter(v["type"] for v in d.get("schematic_parity", []))
+        s = ("DRC by type: %s\nunconnected: %d\nschematic parity by type: %s\n"
+             % (", ".join("%s %d" % kv for kv in sorted(c.items())) or "none", len(d["unconnected_items"]),
+                ", ".join("%s %d" % kv for kv in sorted(p.items())) or "none"))
+        print(s, end="")
+        self.r.write(out, s)
+
+    def step_checks(self):
+        O, T0 = self.out("checks"), time.time()
+        rc, data = self.r.py("Tools.KiCadDesignTools.rules.dru_match", self.BRD, "--json", O + "/dru_match.json", out=O + "/dru_match.txt",
+                             ok=KEEP)
+        echo(text(data).splitlines()[-1:])
+        print("checks step: %d s" % (time.time() - T0))
+        return 0
+
+    def step_publish(self):
+        T0 = time.time()
+        rc, data = self.r.py(PUBLISH, self.D, "--rest", int(self.cfg.get("publish.rest", 20)), filt=quiet, ok=KEEP)   # the step's exit code
+        self.pr(data)
+        print("publish step: %d s" % (time.time() - T0))
+        return rc
+
+    def step_all(self):
+        code = 0
+        for s in all_steps(self.cfg):
+            print("==== %s" % s)
+            code = getattr(self, "step_" + s.replace("-", "_"))() or code
+        return code
+
+
+def all_steps(cfg):
+    """The steps of `all`: board.toml [build] all, or ALL (a board built from its data files alone)."""
+    steps = list(cfg.get("build.all", ALL))
+    bad = [s for s in steps if s not in STEPS or s in ("all", "compare", "init")]
+    if bad:
+        raise config.ConfigError("[build] all: %s are not steps (%s)" % (bad, ", ".join(ALL)))
+    return steps
+
+
+def compare(a, b, name):
+    from Tools.KiCadDesignTools.analysis import board_diff, compare_runs
+    code = compare_runs.main([a, b])
+    pa, pb = os.path.join(a, name + ".kicad_pcb"), os.path.join(b, name + ".kicad_pcb")
+    if os.path.isfile(pa) and os.path.isfile(pb):
+        code = board_diff.main([pa, pb]) or code
+    else:
+        print("board_diff: no %s.kicad_pcb in both folders" % name)
+    return code
+
+
+def _repo_path(p):
+    """A folder given on the command line: absolute, or relative to the repository root."""
+    return os.path.normpath(p if os.path.isabs(p) else os.path.join(paths.REPO, p))
+
+
+def init(name, src=None, parent=None, dry=False):
+    """A new board folder <parent>/<name> from a template folder: its data files, the template's board name replaced.
+    -> exit code (0 written, 2 refused)."""
+    import fnmatch
+    src = _repo_path(src or INIT_FROM)
+    parent = _repo_path(parent or ".")
+    dst = os.path.join(parent, name)
+    if not name.isidentifier():
+        print("init: %r is not a Python name (the board folder is imported as a package: letters, digits, _)" % name)
+        return 2
+    try:
+        old = config.load(src)
+    except config.ConfigError as e:
+        print("init: the template %s: %s" % (src, e))
+        return 2
+    rel_src = os.path.relpath(src, paths.REPO).replace("\\", "/")
+    rel_dst = os.path.relpath(dst, paths.REPO).replace("\\", "/")
+    if rel_dst.startswith("..") or os.path.isabs(rel_dst):
+        print("init: %s is not inside the repository %s (board folders are imported as packages of it)" % (dst, paths.REPO))
+        return 2
+    if not all(p.isidentifier() for p in rel_dst.split("/")):
+        print("init: every folder of %s must be a Python name (the board folder is imported as a package)" % rel_dst)
+        return 2
+    if os.path.exists(dst):
+        print("init: %s exists already: nothing written" % rel_dst)
+        return 2
+    skip = lambda n: any(fnmatch.fnmatch(n, g) for g in GENERATED)
+    files = []
+    for root, dirs, names in os.walk(src):
+        dirs[:] = sorted(d for d in dirs if not skip(d))
+        for n in sorted(names):
+            if not skip(n):
+                files.append(os.path.relpath(os.path.join(root, n), src))
+    # the folder path first (comments and commands naming the template's folder), then the bare board name
+    subs = [(rel_src, rel_dst), (rel_src.replace("/", "\\"), rel_dst.replace("/", "\\")),
+            (rel_src.replace("/", "."), rel_dst.replace("/", ".")), (old.name, name)]
+    print("# init %s from %s (template board %s): %d files" % (rel_dst, rel_src, old.name, len(files)))
+    renamed = edited = 0
+    for f in files:
+        to = f.replace(old.name, name)
+        a, b = os.path.join(src, f), os.path.join(dst, to)
+        text = os.path.splitext(f)[1].lower() in TEXT
+        if dry:
+            print("cp %s %s%s" % (_q(a), _q(b), "   # name replaced in the text" if text else ""))
+            continue
+        os.makedirs(os.path.dirname(b), exist_ok=True)
+        data = open(a, "rb").read()
+        if text:
+            s = data.decode("utf-8")
+            for x, y in subs:
+                s = s.replace(x, y)
+            edited += s.encode("utf-8") != data
+            data = s.encode("utf-8")
+        open(b, "wb").write(data)
+        renamed += to != f
+    if dry:
+        return 0
+    cfg = config.load(dst)
+    print("wrote %s: %d files (%d renamed, %d with the name replaced); board %s, package %s" % (
+        rel_dst, len(files), renamed, edited, cfg.name, cfg.package))
+    print("next: python -m Tools.KiCadDesignTools.build %s all   (or one step at a time, in this order: %s)"
+          % (rel_dst, " | ".join(all_steps(cfg))))
+    return 0
+
+
+def main(argv):
+    flags = {"--dry-run": False, "--skip-match": False, "--no-render": False}
+    out = upto = src = parent = None
+    args = []
+    i = 0
+    while i < len(argv):
+        a = argv[i]
+        if a in flags:
+            flags[a] = True
+        elif a in ("--out", "--upto", "--from", "--parent"):
+            if i + 1 >= len(argv):
+                print("%s needs a value" % a)
+                return 2
+            v = argv[i + 1]
+            if a == "--out":
+                out = v
+            elif a == "--upto":
+                upto = v
+            elif a == "--from":
+                src = v
+            else:
+                parent = v
+            i += 1
+        elif a.startswith("--"):
+            print("unknown option %s\n" % a + __doc__)
+            return 2
+        else:
+            args.append(a)
+        i += 1
+    try:
+        sys.stdout.reconfigure(encoding="utf-8", line_buffering=True)     # progress shows in a log file as it happens
+    except Exception:
+        pass
+    if args[:1] == ["init"]:
+        if len(args) != 2:
+            print(__doc__)
+            return 2
+        return init(args[1], src, parent, dry=flags["--dry-run"])
+    if src or parent:
+        print("--from / --parent belong to init")
+        return 2
+    if len(args) < 2 or args[1] not in STEPS:
+        print(__doc__)
+        return 2
+    try:
+        cfg = config.load(args[0])
+    except config.ConfigError as e:
+        print("board.toml: %s" % e)
+        return 2
+    step = args[1]
+    if step == "compare":
+        if len(args) != 4:
+            print("compare needs two out folders")
+            return 2
+        return compare(args[2], args[3], cfg.name)
+    if len(args) != 2:
+        print(__doc__)
+        return 2
+    b = Build(cfg, out or os.path.join(cfg.dir, "out"), dry=flags["--dry-run"], skip_match=flags["--skip-match"], upto=upto,
+              render=not flags["--no-render"])
+    if flags["--dry-run"]:
+        print("# dry run: %s %s (out %s)" % (cfg.name, step, b.out_root))
+        return getattr(b, "step_" + step.replace("-", "_"))()
+    locks = heavy.kicad_lock(cfg.dir)
+    if locks and not (step == "finish" and os.environ.get("FINISH_BOARD")):
+        print("KiCad has the project open (%s): nothing written" % ", ".join(locks))
+        return 2
+    others = heavy.running(("kicad-cli.exe",))
+    if others:
+        print("a KiCad process is running already (%s): one at a time" % ", ".join(others))
+        return 2
+    print("# %s" % heavy.low_priority())
+    with heavy.HeavyLock("Tools.KiCadDesignTools.build %s %s" % (cfg.name, step)):
+        try:
+            return getattr(b, "step_" + step.replace("-", "_"))()
+        except Stop as s:
+            print("step %s stopped: %s" % (step, s))
+            return s.code
+
+
+if __name__ == "__main__":
+    sys.exit(main(sys.argv[1:]))

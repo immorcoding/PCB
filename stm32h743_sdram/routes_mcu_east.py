@@ -2,8 +2,8 @@
 (bga_fan.json) fans out east on L6 (dog-bone, L6 run along a ball row to the rule-area edge at x 46). L6 carries no
 SDRAM track outside the ball fields, so every lane is clear of the bus as soon as it leaves the MCU's rule area.
 
-    LOCAL_BOARD=<board> D:\\KiCad\\bin\\python.exe scripts\\busroute\\build.py stm32h743_sdram\\routes_mcu_east.py --fast
-    (build.sh route2 builds it on the real board after routes_local_eth.py)
+    LOCAL_BOARD=<board> D:\\KiCad\\bin\\python.exe -m Tools.KiCadDesignTools.routing.busroute.build stm32h743_sdram\\routes_mcu_east.py --fast
+    (the driver's route step builds it on the real board after routes_local_eth.py)
 
   north   the CAN pair up the strip between the packages (L6, x 46.5 / 46.75) to y 22.0 / 22.4, east to the
           transceiver, a via to L1 into U801.1 / U801.4 (complete)
@@ -13,7 +13,7 @@ SDRAM track outside the ball fields, so every lane is clear of the bus as soon a
           buses (issue 22): that file draws them from the ball to the FPC / link resistors.
 """
 import os
-from fan_leads import plan, lead, ext
+from Tools.KiCadDesignTools.routing.fan_plan import plan, lead, ext
 
 BOARD = os.environ.get("LOCAL_BOARD", "stm32h743_sdram.kicad_pcb")
 ORIGIN = (100, 100)

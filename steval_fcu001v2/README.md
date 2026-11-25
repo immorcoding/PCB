@@ -10,11 +10,11 @@
 
 | 步骤 | 命令 |
 |---|---|
-| 原理图 | `sh scripts/sch_build.sh steval_fcu001v2 <输出目录>` |
-| 网表进板 | `D:\KiCad\bin\python.exe scripts\net2pcb.py <输出目录>\steval_fcu001v2.net steval_fcu001v2\steval_fcu001v2.kicad_pcb` |
+| 原理图 | `D:\KiCad\bin\python.exe -m Tools.KiCadDesignTools.schematic.build steval_fcu001v2 <输出目录>` |
+| 网表进板 | `D:\KiCad\bin\python.exe -m Tools.KiCadDesignTools.schematic.net2pcb <输出目录>\steval_fcu001v2.net steval_fcu001v2\steval_fcu001v2.kicad_pcb` |
 | 整板（布局、走线、丝印、泪滴、DRC） | `sh steval_fcu001v2/build_pcb.sh <报告目录>` |
 
-`route.py` 里是手工走线（按区域分函数）和铺铜；自动布线的 21 个网络存在 `auto_tracks.json` 里，由 `route.py` 回放。`auto_tracks.json` 已经用 `scripts/auto_tidy.py` 拉直过（过孔和分叉点不动，自动走线从最初的 387 段减到 217 段）；布线器绕远的路径没有改。重跑自动布线的做法见 `CLAUDE.md` 的"走线"一节。
+`route.py` 里是手工走线（按区域分函数）和铺铜；自动布线的 21 个网络存在 `auto_tracks.json` 里，由 `route.py` 回放。`auto_tracks.json` 已经用 `Tools/KiCadDesignTools/third_party/auto_tidy.py` 拉直过（过孔和分叉点不动，自动走线从最初的 387 段减到 217 段）；布线器绕远的路径没有改。重跑自动布线的做法见 `CLAUDE.md` 的"走线"一节。
 
 ## 审查清单
 
@@ -62,7 +62,7 @@
 - 其余：`BAT` 和 `+`/`-`、`Mn+`（电机正极焊盘，另一个是负极）、`SWD`、`DIO`/`CLK`（TP1/TP2）、`RST`（按键和 TP3）、`CHG`（充电指示灯）、板名。LD1/LD2 两个用户灯没有标。
 - **署名**（应用户要求）：底面蓝牙模块旁有一个四旋翼俯视图的小标志（4.5 mm 见方，自己画的）和三行字 `designed by` / `Claude` / `Fable 5.2 2026`，只在丝印层，压在走线和盖油过孔上，不压焊盘。
 
-### 走线形状（`scripts/track_shape.py`，DRC 不查的部分）
+### 走线形状（`Tools/KiCadDesignTools/analysis/track_shape.py`，DRC 不查的部分）
 
 2026-11-12 用户审查后返工过一轮，之后的结果：
 

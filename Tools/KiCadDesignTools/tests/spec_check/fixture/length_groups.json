@@ -1,0 +1,8 @@
+{
+  "_": "The spec_check benchmark's length groups (only the window spec_check reads).",
+  "groups": [
+    {"rule": "bench_window",
+     "members": "A.NetName == 'A*'",
+     "ref": ["CK"], "lo": -10, "hi": 10, "cap": 30}
+  ]
+}

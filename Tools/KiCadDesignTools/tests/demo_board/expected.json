@@ -1,0 +1,13 @@
+{
+  "_": "Expected numbers of the whole-board bench `python -m Tools.KiCadDesignTools.regress --board demo` (templates/demo_board built from its data in out/regress/). Counts and texts exact, lengths to 0.005 mm. Taken from the template's build of 2026-11-24 (H4b; H4c: the VCAP capacitors C10 / C11 added, +4 silk_over_copper, +2 field mismatches). R3: the driver's `all` sequence, copper step added, the second rules step gone (the route step writes the length windows); the numbers unchanged. drc: the final DRC of the finish step by type (silk_over_copper: the 0402 / 0805 footprints' own silkscreen lines over tracks and vias, removed from the Gerbers by the solder mask); parity: schematic parity by type (net2pcb does not copy the symbols' fields; TP1's exclude-from-BOM flag differs from its symbol's), the same classes as on the H743 board.",
+  "steps": {"project": 0, "rules": 0, "sch": 0, "pcb-update": 0, "layout": 0, "copper": 0, "route": 0, "finish": 0},
+  "fixture": [59, 0],
+  "sch_check": "OK：0 处不符",
+  "erc": 0,
+  "drc": {"silk_over_copper": 22},
+  "unconnected": 0,
+  "parity": {"footprint_symbol_field_mismatch": 18, "footprint_symbol_mismatch": 1},
+  "lane_spread": 0.6,
+  "clock": 20.3731,
+  "window": [10.3731, 30.0]
+}

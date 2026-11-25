@@ -3,8 +3,8 @@ header / reset key, BOOT0, the SD card lines CMD / D3 / D1 / CD and CAN_STB. Eac
 (bga_fan.json) puts it (dog-bone, inner-layer run to the rule-area edge, on to the gate row at y 27.6 / the west
 gates at x 30.0); from there every net is written by hand with coordinates (RTE-3).
 
-    LOCAL_BOARD=<board> D:\\KiCad\\bin\\python.exe scripts\\busroute\\build.py stm32h743_sdram\\routes_mcu_nw.py --fast
-    (build.sh route2 builds it on the real board after routes_mcu_south.py)
+    LOCAL_BOARD=<board> D:\\KiCad\\bin\\python.exe -m Tools.KiCadDesignTools.routing.busroute.build stm32h743_sdram\\routes_mcu_nw.py --fast
+    (the driver's route step builds it on the real board after routes_mcu_south.py)
 
 Territory (shared with the south / west agent, stop 7): the L4 band x 27.5-44, y 25.4-27.45 and the west corridor
 x 27.5-30.6, y 25.4-40 belong to the other group on L4: this group crosses them on L1 / L3 / L6 only and puts no
@@ -31,7 +31,7 @@ through the band (x 39.0-40.0, 41.57-41.62, 42.43-43.87); vias are allowed east 
   CAN_STB L6 north at x 42.6, east along y 14.3 (north of the FDCAN_TX via) to a via north of U801.8
 """
 import os
-from fan_leads import plan, lead, ext
+from Tools.KiCadDesignTools.routing.fan_plan import plan, lead, ext
 
 BOARD = os.environ.get("LOCAL_BOARD", "stm32h743_sdram.kicad_pcb")
 ORIGIN = (100, 100)
@@ -216,7 +216,7 @@ def routes(job):
     job.slot("SDMMC1_D3", "L3", (46.65, 18.75), (51.3, 18.75), side="R")
     job.slot("SDMMC1_D2", "L6", (46.25, 18.75), (49.7, 18.75), side="R")
     job.slot("SDMMC1_CMD", "L3", (42.95, 18.5), (52.5, 18.5), side="L")
-    # crystals: L1 only, 0.254, ball - crystal pad - load capacitor (routes_probe_xtal.py)
+    # crystals: L1 only, 0.254, ball - crystal pad - load capacitor (probes/routes_probe_xtal.py)
     R = {n: ([thin(c) for c in p] if p and isinstance(p[0], list) else thin(p)) for n, p in R.items()}
     R.update({
         "LSE_IN": [("L1", ["U201.E1", (31.9, 35.05), (30.4, 33.55), "Y202.1", "C227.1"], 0.254)],

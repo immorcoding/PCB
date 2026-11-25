@@ -2,8 +2,8 @@
 control nets, CAN line side, LCD link resistors, backlight sense, key and user LEDs, audio analog side. Every net
 is written by hand with coordinates (RTE-3); no autorouter. The Ethernet PHY side is routes_local_eth.py.
 
-    D:\\KiCad\\bin\\python.exe scripts\\busroute\\build.py stm32h743_sdram\\routes_local.py --fast
-    D:\\KiCad\\bin\\python.exe scripts\\busroute\\build.py stm32h743_sdram\\routes_local.py --out stm32h743_sdram\\out\\local
+    D:\\KiCad\\bin\\python.exe -m Tools.KiCadDesignTools.routing.busroute.build stm32h743_sdram\\routes_local.py --fast
+    D:\\KiCad\\bin\\python.exe -m Tools.KiCadDesignTools.routing.busroute.build stm32h743_sdram\\routes_local.py --out stm32h743_sdram\\out\\local
 
 BOARD defaults to the read-only snapshot of the committed board; LOCAL_BOARD=<board> builds the same description on
 another board (the real one: LOCAL_BOARD=stm32h743_sdram.kicad_pcb). Coordinates are local mm (board mm - 100).
@@ -14,7 +14,7 @@ at pad centres (a net with three or more pads is a list of pad-to-pad chains); g
 pads have their vias from stop 5 or rely on the L1 pour); widths are the net-class widths (Default 0.2032 mm).
 
 Why each net goes the way it does (one line each). Stop 7 moved R807, D103, R102 / R103, R701-R704, R808 / R809
-and SW801 so that their links are straight (RTE-10; place.py):
+and SW801 so that their links are straight (RTE-10; place.toml):
   BOOT_5V    U101.6 45 degrees down to C101.1's column, straight down into it (1.7 mm)
   FB_5V      the divider's FB pads face each other (R102 / R103 turned): R103.1 - R102.2 straight on L1; the +12V
              column (x 65.55-67) stands between the divider and U101.4, so that link hops on L6 (2 vias), south of
@@ -53,7 +53,8 @@ BOARD = os.environ.get("LOCAL_BOARD", "out/probe_east/base/stm32h743_sdram.kicad
 ORIGIN = (100, 100)
 GROUP = "local"
 VIA_LIMIT = 4
-YIELD_NETS = ["GND"]          # the L1 / L6 ground pours give way to the tracks
+YIELD_NETS = ["GND", "+12V"]  # the L1 / L6 ground pours give way to the tracks; so does the +12V pour round RPP_GATE
+                              # (its fill keeps the zone clearance to the track and stays one piece, DRC clean)
 OPEN_ENDS = True              # opt1: EN_3V3A branches at a via (R108's chain starts at the via (67.25, 32.4))
 DRC_IGNORE = {"solder_mask_bridge": "mask webs between fine-pitch pads of the footprints (QFN, FPC), there before this group"}
 VIEWS = [("power", 60.0, 28.0, 80.0, 62.0, 40), ("can", 66.0, 7.0, 84.0, 28.0, 45), ("lcd", 10.0, 54.0, 60.0, 74.0, 30),

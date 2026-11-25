@@ -1,0 +1,117 @@
+# Silkscreen of the STM32H743 + SDRAM board, written by the finish step (Tools.KiCadDesignTools.finishing.silk).
+# Coordinates are local mm (board-file mm - origin), x right, y down. Moved here from finish_silk.py in stage 3F of the
+# Tools/ consolidation (2026-11-24).
+#
+# Decisions (the user gave the designer the silkscreen, 2026-11-23: "this is your board; pick sizes and icons yourself,
+# just make sure JLC can print it"):
+#   - Reference designators: none on the silkscreen (FIN-1, all or none: 217 parts on 85 x 75 mm, most of them 0402 and
+#     0603 in the BGA fan-outs and round the QFNs, do not take a legible 1.0 mm designator each). Every reference field
+#     moves to the Fab layer of its side (assembly drawing); values that were on the silkscreen are hidden.
+#   - Sizes (JLCPCB, https://jlcpcb.com/capabilities/pcb-capabilities, read 2026-11-23: character height >= 1.0 mm,
+#     line width >= 0.15 mm, width : height 1 : 6 preferred, pad to silkscreen >= 0.15 mm): three sizes of one family,
+#     stroke about 1/6.5 of the height: S (labels), M (connector names), L (the title). Icons are drawn with 0.15 mm
+#     lines in a box of about 2.4 mm.
+#   - What is printed: the function of every header / terminal pin (both sides for the through-hole ones), test point
+#     names, button and LED names, connector names with a small glyph, the LCD panel's pin 1 and 40 at the FPC ends
+#     (SPEC 10), the DC jack's polarity (centre positive, schematic page "Input 12 V ... centre positive") and a warning
+#     triangle, DNP beside R707, the A1 corners of the two BGAs (dot), the title block and the designer's mark on the
+#     top and a short version on the bottom. Pin-1 marks of the ICs and the polarity marks of the diodes and the
+#     tantalum / electrolytic capacitors are the footprints' own silkscreen (kept).
+#   - Fine-pitch footprints (U601, U501, J701, J801, pad gaps 0.229 - 0.25 mm): solder-mask expansion 0.06 mm on the
+#     footprint (board default 0.1016), so the web between pads is 0.109 - 0.13 mm >= JLCPCB's 0.10 mm minimum
+#     (1 oz, green; same page) and >= the board's 0.0813 minimum: no solder-mask bridge, no gang opening.
+
+[sizes]                          # text height, width, stroke (mm)
+S = [1.0, 0.8, 0.15]             # labels
+M = [1.3, 1.0, 0.2]              # connector names
+L = [1.8, 1.4, 0.28]             # the title
+
+[place]                          # how far items keep from things (mm) and how far they may slide from their anchor
+icon_width = 0.15                # glyph line width
+pad_silk = 0.15                  # pad solder-mask opening -> silkscreen (JLCPCB)
+silk_gap = 0.12                  # other footprints' silkscreen
+body_in = 0.25                   # courtyard shrunk by this = part body (no text under a part)
+edge = 0.35                      # board edge
+item_gap = 0.2                   # items placed before
+reach = 1.6                      # default slide
+
+[mask]
+fine = { U601 = 0.06, U501 = 0.06, J701 = 0.06, J801 = 0.06 }   # solder-mask expansion of the fine-pitch footprints
+
+[a1]
+parts = [["U201", "A1"], ["U301", "A1"]]   # a dot outside the body at the corner nearest this ball
+
+[labels]
+# text items: [text, x, y, rot, size, side]; rot 90 = reading upwards. "B" items are mirrored on the bottom.
+texts = [
+    # ---- debug UART J804 (pins at y 71.0, x 57.80 / 60.34 / 62.88 / 65.42: GND TX RX 3V3 as seen from the board),
+    # names below the pins between the header and the board edge, both sides
+    ["GND", 57.80, 73.85, 0, "S", "F"], ["TX", 60.34, 73.85, 0, "S", "F"], ["RX", 62.88, 73.85, 0, "S", "F"], ["3V3", 65.42, 73.85, 0, "S", "F"],
+    ["UART", 55.2, 71.0, 90, "S", "F"],
+    ["GND", 57.80, 73.85, 0, "S", "B"], ["TX", 60.34, 73.85, 0, "S", "B"], ["RX", 62.88, 73.85, 0, "S", "B"], ["3V3", 65.42, 73.85, 0, "S", "B"],
+    ["UART", 55.2, 71.0, 90, "S", "B"],
+    # ---- SWD J803 (pin 1 +3V3 at (38.65, 2.46), top left): name below it, "1" left of pin 1
+    ["SWD", 40.4, 9.5, 0, "M", "F"], ["1", 35.75, 2.46, 0, "S", "F"],
+    # ---- CAN terminal J802 (pins at x 79.05: 1 CANH y 21.0, 2 CANL y 17.5, 3 GND y 14.0). On the top the strip
+    # between the ESD diode D801 and the terminal body is 1.2 mm wide: one letter each (H, L, a ground glyph) under
+    # the name CAN; the bottom carries the full names. JP801 closes the 120 ohm termination (TERM, east of it).
+    ["H", 74.65, 21.0, 0, "S", "F"], ["L", 74.65, 17.5, 0, "S", "F"],
+    ["CANH", 74.75, 21.0, 90, "S", "B"], ["CANL", 74.75, 17.5, 90, "S", "B"], ["GND", 74.75, 14.0, 90, "S", "B"],
+    ["CAN", 79.6, 10.6, 0, "M", "F"], ["CAN", 79.6, 10.6, 0, "M", "B"],
+    ["TERM", 82.5, 26.2, 0, "S", "F"], ["TERM", 82.5, 26.2, 0, "S", "B"],
+    # ---- DC input J101 (centre pin 1 = +12V_JACK at (71.3, 59.0); sleeve GND): warning, name, centre-positive symbol
+    ["12V DC", 77.3, 51.35, 0, "M", "F"],
+    # ---- connector names
+    ["LINE IN", 35.75, 9.0, 90, "S", "F"],
+    ["PHONES", 5.3, 12.4, 0, "S", "F"],
+    ["microSD", 64.0, 4.8, 90, "S", "F"],
+    ["ETH", 1.5, 35.6, 90, "M", "F"],
+    ["LCD", 44.5, 67.9, 0, "M", "F"],
+    ["40", 26.6, 70.3, 0, "S", "F"], ["1", 50.75, 68.2, 0, "S", "F"],     # panel pins (pad 1 = panel 40, left)
+    # ---- test points (TestPoint_Pad 1.5 / 1.0 mm, loops 2.5 mm)
+    ["+12V", 61.3, 50.6, 0, "S", "F"], ["+5V", 68.3, 49.5, 0, "S", "F"], ["+3V3", 82.7, 36.0, 0, "S", "F"],
+    ["+3V3A", 31.8, 22.55, 0, "S", "F"], ["+1V8", 29.2, 31.0, 0, "S", "F"], ["LED_A", 61.2, 59.0, 0, "S", "F"],
+    ["EN3V3", 74.4, 38.1, 0, "S", "F"], ["EN3V3A", 37.6, 18.45, 0, "S", "F"], ["EN1V8", 7.95, 31.9, 90, "S", "F"],
+    ["BOOT0", 44.6, 21.6, 0, "S", "F"],
+    ["GND", 60.4, 57.1, 0, "S", "F"], ["GND", 4.0, 28.1, 0, "S", "F"], ["GND", 51.5, 24.0, 0, "S", "F"],
+    ["GND", 60.4, 57.1, 0, "S", "B"], ["GND", 4.0, 28.1, 0, "S", "B"], ["GND", 51.5, 24.0, 0, "S", "B"],
+    # ---- buttons, LEDs, DNP
+    ["RESET", 45.75, 12.0, 90, "S", "F"], ["USER", 16.0, 70.4, 0, "S", "F"],
+    ["PWR", 71.0, 10.0, 0, "S", "F"], ["LED1", 14.0, 61.3, 0, "S", "F"], ["LED2", 17.9, 61.3, 0, "S", "F"],
+    ["DNP", 55.2, 65.6, 0, "S", "F"],
+]
+
+# icons: [glyph, x, y, scale, side(, reach)]; glyphs: headphones linein sdcard ethernet display dcjack warning bug can
+# reset button ground mark (finishing.silk.glyph)
+icons = [
+    ["headphones", 5.3, 9.9, 1.0, "F"], ["linein", 35.75, 14.3, 0.8, "F"], ["sdcard", 64.0, 9.3, 0.8, "F"],
+    ["ethernet", 3.5, 36.0, 1.0, "F"], ["display", 41.3, 67.9, 1.0, "F"], ["dcjack", 82.3, 51.35, 0.95, "F"],
+    ["warning", 73.3, 51.3, 0.8, "F"], ["bug", 43.9, 9.5, 0.9, "F"], ["can", 76.3, 10.6, 0.9, "F"],
+    ["reset", 45.75, 15.4, 0.8, "F"], ["button", 13.0, 70.4, 0.8, "F"],
+    ["ground", 74.65, 14.0, 0.5, "F"],
+    # (TP109's loop at (60.4, 54.4) has its GND name but no glyph: no free spot within 2.5 mm of it)
+    ["ground", 6.4, 28.3, 0.7, "F"], ["ground", 53.6, 24.0, 0.7, "F"],
+]
+
+# Title blocks, placed first (they need the largest free areas). at: the centre of the first line; reserve: the box
+# round it (dx0, dy0, dx1, dy1) the stitching vias keep out of; items at at + d.
+[[title]]                        # top (free strip x 4.6 - 26, y 33.8 - 39.8)
+side = "F"
+at = [15.5, 34.9]
+reserve = [-9.5, -1.2, 9.5, 4.4]
+items = [
+    { text = "STM32H743 + SDRAM", d = [0, 0], size = "M", reach = 0.6 },
+    { text = "rev A  2026-11  6 layers", d = [0, 1.75], size = "S", reach = 0.4 },
+    { icon = "mark", d = [-6.6, 3.55], scale = 0.85, reach = 0.4 },
+    { text = "Designed by Claude", d = [1.2, 3.6], size = "S", reach = 0.4 },
+]
+
+[[title]]                        # bottom: short version; the mark is seen from below left of the text
+side = "B"
+at = [40.0, 50.5]
+reserve = [-12.0, -1.2, 12.0, 2.9]
+items = [
+    { text = "STM32H743 + SDRAM rev A", d = [0, 0], size = "M", reach = 3.0 },
+    { icon = "mark", d = [9.9, 2.0], scale = 0.85, reach = 3.0 },
+    { text = "Designed by Claude 2026-11", d = [1.0, 2.0], size = "S", reach = 3.0 },
+]

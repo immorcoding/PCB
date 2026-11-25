@@ -62,7 +62,7 @@ J501 Wuerth 7499010211A, RJ45 with magnetics, through hole, tab down. Pins [W] p
   Green = LED1 = link / activity, yellow = LED2 = 100 Mbit/s (reset defaults, [L] p.36).
   Pin 8 and the shield go to GND through R513 (0 ohm): the board has one ground and no chassis net.
 """
-from .common import FP, NC, P, U
+from Tools.KiCadDesignTools.schematic.sheet import FP, NC, P, U
 
 PHY_FP = "Package_DFN_QFN:VQFN-24-1EP_4x4mm_P0.5mm_EP2.5x2.5mm_ThermalVias"
 RJ45_FP = "Connector_RJ:RJ45_Wuerth_7499010211A_Horizontal"

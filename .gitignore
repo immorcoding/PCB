@@ -26,3 +26,17 @@ stm32h743_sdram/out/
 
 # Release images are regenerated with build.sh publish
 stm32h743_sdram/publish/
+
+# Scratch boards (init proofs, regression copies) and the demo template's build outputs: the template holds data only
+/out/
+templates/demo_board/out/
+templates/demo_board/*.kicad_pcb
+templates/demo_board/*.kicad_pro
+templates/demo_board/*.kicad_sch
+templates/demo_board/*.kicad_sym
+templates/demo_board/*.pretty/
+templates/demo_board/fp-lib-table
+templates/demo_board/sym-lib-table
+templates/demo_board/*.busroute.json
+templates/demo_board/*.finish.json
+templates/demo_board/*.pdf

@@ -4,15 +4,44 @@
 
 整理时的状态：分支 `integration-h743`，commit `9b07db5`，停点 3（两张草图）进行中。
 
+## 现状（2026-11-24，分支 `tools-consolidation`）
+
+H743 板交付、合回 `main` 之后做了一轮工具整合（合并前由用户审 PR）：`scripts/` 和 `stm32h743_sdram/` 里的脚本全部搬进 `Tools/KiCadDesignTools/<类别>/`，从仓库根以 `python -m Tools.KiCadDesignTools.<类别>.<工具>` 运行，板目录只留数据（`board.toml`、`place.toml`、`silk.toml`、`rules_cases.py`、`bga_block.toml`、`routes_*.py`、`sch/<页>.py`），构建由驱动 `python -m Tools.KiCadDesignTools.build <板目录> <步骤>` 跑。工具清单和规则对照在 [Tools/KiCadDesignTools/README.md](../Tools/KiCadDesignTools/README.md)，命令的坑在 [tools.md](tools.md)。下面各节的原文保留（路径是当时的），每个候选下加了一行“现状”。
+
+| 项 | 现状 | 在哪 / 哪个提交 |
+|---|---|---|
+| T1 线序分配 | **搁置**：没有通用化；`line_order.py` 已删（最后在 `a889ac4`），它的结果留档在 `stm32h743_sdram/probes/line_order/`（`balls_identity.json` 仍由 `planning.bga_plan` 读） | 删除：`ff313ff` |
+| T2 busroute 去依赖、差分对、蛇形 | **部分**：去依赖做完（基准自带夹具 `tests/busroute/fixture/`）；蛇形和按量预留在整合前做完（`routing/busroute/tune.py`）；差分对没做（以太网两对按两根网络写、`route_table` 报对内差） | `1c356fb`（阶段 1） |
+| T3 新工程生成 | **做完**：两条路都走了，规格档 C 的模板 `templates/C-bga-065/`，加通用生成器 `project.make_project`（模板 + `board.toml`）；H743 的工程文件逐字节不变 | `b89692b`（3A）、`45bf65e`（H4a） |
+| T4 规则基准板 | **做完**：框架 `rules.fixture`，用例表是板目录的 `rules_cases.py`；和 `tests/drc_tools` 没有合并框架 | `b89692b`（3A） |
+| T5 原理图画法层和网表核对 | **做完**：画法 `schematic/sheet.py`，生成 `schematic.generate`（`[schematic] pages`），核对 `schematic.check`（意图、引脚表 `[schematic.pin_table]`、换位 `[schematic.swap]`，后两项可选），单页试画 `schematic.build --page`（代替 `try_page.sh`）；`kisch.py` 文档里的错路径已改 | `5da90d6`（3B） |
+| T6 阻抗 | **部分**：叠层有了数据文件（`Tools/KiCadDesignTools/data/stackups/JLC06161H-3313E.toml`，`core/stackup.py`，长度测量用它的过孔高度），`rules.impedance` 仍用自己写死的表 | `0922b81`（H3） |
+| T7 指标表汇总 | **部分**：每步一张表（`copper.copper_table`、`analysis.route_table`，布局的 `place_check` / `layout_probe`），两次构建按数字比用 `analysis.compare_runs`（驱动的 `compare`）；没有一条命令出八组的整表 | `6f59732`（3D）、`0366db2`（3G） |
+| T8 铜皮草图读回、视图 | **部分**：`read --sketch` 能读回 `whole`（整合前）；视图是 `views.sketch_view`，外形和规则区仍从 `place.toml` 取，不从板文件读，没并进 `cu_sketch` | `091faea`（3C） |
+| T9 摆位辅助和粗筛 | **部分**：`placement.place` 通用（坐标在 `place.toml`，`--pcb` / `--rot` 试转向）；飞线交叉数粗筛没做 | `091faea`（3C） |
+| T10 手改检测 | **搁置**：没做。写板的程序改成确定的 uuid 之后同一构建的板文件逐字节相同，比对摘要的前提有了 | `ef36bbd` |
+| T11 分步构建骨架 | **做完**：驱动 `build.py`（步骤、计时、报告目录、退出码、低优先级和重活锁、`--dry-run`、`init`、`pcb-update`、`compare`），`build.sh` 只是薄壳；整板基准 `regress --board demo`（演示板 `templates/demo_board/`） | `1c2c342`（阶段 2）、`dfbb1ab`、`562c6cf`、`78ac4a3` |
+| T12 每个工具有基准（PROC-15） | **部分**：R3 给四个纯文本工具补了小基准，进默认的 `regress`：`tests/board_diff`、`tests/compare_runs`、`tests/uuids`、`tests/boardtext`（`strip` 要 pcbnew 和 busroute 的记录，不在里面）。还没有自己基准的：`planning.bga_plan`、`planning.bga_fan`、`planning.bga_grid`、`planning.bga_dump`、`copper.power_ties`、`copper.plane_slots`、`copper.copper_table`、`copper.pour_islands`、`routing.tune_sites`、`placement.layout_probe`、`finishing.*`、`views.*`。都要 pcbnew 和一块像样的板（`bga_*` 还要 numpy / scipy 和几分钟的求解），做法是各配一块小夹具板和预期数字。整板基准 `regress --board demo` 跑过其中的 `plane_slots`、`copper_table`（R3 起有 copper 一步）、`pour_islands`、`layout_probe`、`finishing.*`、`views.copper_view` / `finish_view`，但只比最后的 DRC、长度和退出码，不比各自的输出；`bga_*`、`power_ties`、`tune_sites`、`views.publish` / `place_view` / `sketch_view` / `pcb_view` / `layer_view` 哪个基准都不跑 | R3 |
+| S1–S11 skill | **搁置**：一个都没写。整合后命令都是 `python -m Tools.KiCadDesignTools....`，skill 可以只指向 README 的工具表和规则对照、tools.md 的坑编号（K1…） | — |
+
+同一轮删掉或挪走的板目录文件（都不再被任何工具读，内容在 git 历史里）：
+
+- `stm32h743_sdram/line_order.py`：最后在 `a889ac4`。
+- `stm32h743_sdram/decap_search.py`（停点 4 的背面去耦位置搜索，结果已在 `place.toml`）：最后在 `c38fa0d`。
+- `stm32h743_sdram/patches/`（`nn_patch.md`、`sw_bga_fan_patch.json`，停点 7 走线子任务的补丁建议，用上的已在 `routes_mcu_nw.py` / `routes_mcu_sw.py` 的 `PATCH` 里）：最后在 `c38fa0d`。
+- `stm32h743_sdram/routes_probe_*.py` 四个试走文件和 `line_order/` 挪进 `stm32h743_sdram/probes/`（`ff313ff`）。
+
 标记：**核** = 读代码或文档核过（文件和行号能对上）；**推** = 我的推断，没跑过、没对过。没标的是从 `docs/tools.md`、`docs/shape/` 转述的。
 
 ## 0. 处理时的前提
 
 - 先用 `shape-your-project` 清空 `docs/shape/inbox/integration-h743.md`，规则定下来之后再写 skill：skill 引用规则编号，规则还在变时写进 skill 的内容会马上过期。
-- 每个工具动手前按 PROC-5 查一遍现成的，记下为什么不用；按 PROC-15 重写进 `scripts/`，不直接搬，配一块小基准板和预期指标，挂到 `scripts/regress.py` 上。
+- 每个工具动手前按 PROC-5 查一遍现成的，记下为什么不用；按 PROC-15 重写进 `scripts/`（现在是 `Tools/KiCadDesignTools/<类别>/`），不直接搬，配一块小基准板和预期指标，挂到 `scripts/regress.py`（现在是 `python -m Tools.KiCadDesignTools.regress`）上。
 - 这台电脑在 12 个进程的重负载下会硬复位（用户 2026-11-21）。批量计算先筛：候选按不换位的飞线交叉数粗筛到两个，两个各开一个进程并行算；要避免的是不筛就开十几个进程。不需要规定"默认单进程"。工具的默认值和文档按这个口径写。
 
 ## 1. 现有脚本一览
+
+（整理时的表，路径是当时的；现在的清单见 `Tools/KiCadDesignTools/README.md`。）
 
 | 脚本 | 在哪 | 通用程度 | 基准（PROC-15） |
 |---|---|---|---|
@@ -66,6 +95,8 @@
 
 **规模**：大。**依赖**：T2（`Board`、`Fanout`）、T9 的粗筛；DDR 部分依赖 T2 的差分对。
 
+**现状（2026-11-24）**：搁置。`line_order.py` 删除（最后在 `a889ac4`），没有通用化，也没有基准；分配表留档在 `stm32h743_sdram/probes/line_order/`。离线的整块 BGA 模型 `planning.bga_plan` 带一版 SDRAM 线序（`try/fanout-first`），不是这里要的通用工具。
+
 ### T2 `busroute`：去掉对板目录的依赖，补差分对和蛇形
 
 **现在**（**核**）：线束、BGA 扇出、换层过孔阵、几何检查、写板、DRC、长度、指标、出图，约 2600 行，带基准。
@@ -80,6 +111,8 @@
 
 **规模**：去依赖小；差分对中到大；蛇形在本项目里做。**依赖**：T3（叠层来源）。
 
+**现状（2026-11-24）**：去依赖做完（阶段 1，`1c356fb`：基准的叠层、工程文件、规则文件和 BGA-90 封装冻结进 `tests/busroute/fixture/`）；`Profile` 的类默认值仍是 C 档的数，只在文件里读不到时用；蛇形和按量预留做完（`tune.py`、`--tuning-budget`、`humps=`）；差分对没做。
+
 ### T3 新工程生成（`stm32h743_sdram/make_project.py`，224 行）
 
 **现在**（**核**）：从 `templates/common/` 加规格档 C 的数生成 `.kicad_pro`（板级下限、网络类、按 `pins.csv` 归类）和带真实叠层的空板。
@@ -90,6 +123,8 @@
 
 **规模**：小到中。**被依赖**：T2 基准、T4、T6。
 
+**现状（2026-11-24）**：做完，(a)(b) 都做了。`templates/C-bga-065/`（`45bf65e`）是 C 档的模板；`project.make_project <板目录>`（`b89692b`）从 `[board] template` 加 `board.toml` 的 `[project]`、`[netclasses]`、`[netclass_patterns]`、`[[footprints.derived]]` 生成工程文件、空板和派生封装，叠层从 `[board] stackup`。第 7 节问题 5 因此不用再问。
+
 ### T4 规则基准板（`stm32h743_sdram/rules_fixture.py`，369 行）
 
 **现在**（**核**）：用板子自己的空板、`.kicad_pro`、`.kicad_dru` 搭基准板，每条规则一个违规用例和一个合规用例，DRC 跑两遍（静态、生成等长窗口后），另外量铺铜间距、焊盘连接方式、过孔高度。RUL-2 的"规则阶段板上还没有对象"就是靠它解决的（inbox 信号）。
@@ -99,6 +134,8 @@
 **要做的**：拆成通用框架（搭板、放对象、跑 DRC、比违规集合、三项测量）加每块板的用例表；用例表和规则文件放在一起。和 `scripts/tests/drc_tools/` 思路相同，范围不同，框架可以共用（第 4 节）。
 
 **规模**：中。**依赖**：T3。
+
+**现状（2026-11-24）**：做完（`b89692b`）：`rules.fixture <板目录> <输出目录>` 是框架；规格档的 15 条规则的用例在模板 `templates/C-bga-065/rules_cases.py`，板目录的 `rules_cases.py` 只放本板规则的用例（R3 起；以前 H743 板和演示板各抄一份）。和 `tests/drc_tools` 没有共用框架。
 
 ### T5 原理图：画法层和网表核对（`sch/common.py`、`sch_check.py`、`build.sh sch`、`sch/try_page.sh`）
 
@@ -112,6 +149,8 @@
 
 **规模**：中。**依赖**：无。
 
+**现状（2026-11-24）**：做完（`5da90d6`）：画法层是 `schematic/sheet.py`（不并进 `kisch`），`schematic.check` 的三项检查由 `board.toml` 的 `[schematic.pin_table]`、`[schematic.swap]` 开关，`schematic.build <板目录> <输出> --page <页>` 代替 `try_page.sh` 和 `sch_build.sh`。
+
 ### T6 阻抗（`scripts/impedance.py`）
 
 **现在**（**核**）：二维场解，叠层表 `STACKUP` 写死 JLC06161H-3313E，`--layer` 只能选这张表里的层。
@@ -119,6 +158,8 @@
 **要做的**：叠层从 `.kicad_pcb` 的叠层段或一张表读。算法不动。板厂计算器仍然为准（RUL-3）。
 
 **规模**：小。**依赖**：T3（叠层的单一来源）。
+
+**现状（2026-11-24）**：部分。叠层的单一来源有了（`data/stackups/<名>.toml`，`core/stackup.py`，`board.toml` 的 `[board] stackup`），`rules.impedance` 还没改成读它。
 
 ### T7 指标表汇总（PROC-4）
 
@@ -128,6 +169,8 @@
 
 **规模**：中。**依赖**：T2、T8。
 
+**现状（2026-11-24）**：部分。铜皮一步和走线一步各出一张表（`copper.copper_table`、`analysis.route_table`），`analysis.compare_runs` 按数字比两次构建；“变差的项标出来”和八组合一张表没做。
+
 ### T8 铜皮草图：补读回、并入视图（`cu_sketch.py`、`sketch_view.py`）
 
 **现在**：`whole` 和区里的开孔读不回来（inbox 信号，PWR-7）；`sketch_view.py` 单独画图，BGA 外形和规则区从 `place.py` 取 **核**。
@@ -135,6 +178,8 @@
 **要做的**：读回补全；视图做成 `cu_sketch.py view`，外形和规则区从板文件读。PWR-8、PWR-9 里工具作者自定的数（外层 0.2 mm、焊盘外扩 0.3 mm）等用户定了再改默认值。
 
 **规模**：小到中。**依赖**：无。
+
+**现状（2026-11-24）**：部分。读回 `whole` 已能做（`read --sketch`）；视图是 `views.sketch_view <板目录> <输出>`，外形和规则区读 `place.toml`，没有并进 `cu_sketch`。PWR-8、PWR-9 的工具自定数（0.2、0.3）仍是草图参数的默认值。
 
 ### T9 摆位辅助和候选粗筛（`place.py` 的通用部分）
 
@@ -144,6 +189,8 @@
 
 **规模**：小到中。**被依赖**：T1。
 
+**现状（2026-11-24）**：部分。通用部分在 `placement.place`（板框、规则区、停放、`--pcb` / `--rot`），坐标表是 `place.toml`；粗筛没做。
+
 ### T10 手改检测（PROC-13 的缺口）
 
 **现在**：没有。inbox 信号：没有东西能发现用户在重新生成之前手改过某一页原理图，靠先问。
@@ -151,6 +198,8 @@
 **要做的**（**推**）：生成时记下每个输出文件的摘要，下次生成前比对，变了就停下来报"这些文件被手改过"。原理图、`.kicad_pro`、`busroute` 写过的板子都能用。
 
 **规模**：小。**依赖**：无。
+
+**现状（2026-11-24）**：搁置。确定的 uuid（`ef36bbd`）让同一构建的板文件逐字节相同，可以作为摘要比对的基础。
 
 ### T11 分步构建骨架（`stm32h743_sdram/build.sh`）
 
@@ -160,11 +209,17 @@
 
 **规模**：小。
 
+**现状（2026-11-24）**：做完：驱动 `Tools/KiCadDesignTools/build.py`（`1c2c342`），每块板只写 `board.toml`；`build.sh` 是薄壳（`dfbb1ab`）。指标表汇总（T7）没合进来。
+
 ### 已经通用、收尾时只需维护的
 
 `dru_canary`、`dru_match`、`drc_probe`、`len_rules`、`regress`、`kisch`、`net2pcb`、`pcb_view`、`layer_view`、`via_spots`、`pour_islands`、`teardrops`、`silk_refs`。`track_shape.py` 还不认圆弧（RTE-8 信号），SPEC 第 11 节把"圆弧几何检查并进 `track_shape.py`"列为本项目要写的，停点 6 之后看是否已做。
 
+**现状（2026-11-24）**：都在 `Tools/KiCadDesignTools/` 的类别下（阶段 1，`1c356fb`）；`analysis.track_shape` 认圆弧（2026-11-22，带基准）。
+
 ## 3. Skill 候选
+
+**现状（2026-11-24）**：S1–S11 都还没写（搁置）。表里的脚本名是当时的；写的时候按 README 的工具表换成模块名，坑按 tools.md 的编号（K1…）引用。
 
 共同原则：
 
@@ -234,9 +289,9 @@
 1. 线序分配工具的范围：只管"两颗器件之间一条总线"，还是要支持一对多（多颗 DDR、fly-by）？
 2. "CPU 核心的扇出连接"指什么：应用处理器 BGA 出线到外围器件的分配，还是核心电源球的扇出和过孔分配？
 3. DDR 的分配单位：除了差分对整体，DQS 是否跟着它的字节通道一起换、DM 跟字节走，和这次 NBL 的做法一样？
-4. `line_order.py` 的两条求解路（默认的动态规划、要 scipy 的 `milp`）留哪条？`milp` 那条还按"内层也严格判"，要么改口径要么删。
-5. 规格档 C：补模板文件，还是把 `make_project.py` 做成通用生成器？
+4. `line_order.py` 的两条求解路（默认的动态规划、要 scipy 的 `milp`）留哪条？`milp` 那条还按"内层也严格判"，要么改口径要么删。**不用再问**：`line_order.py` 已删（最后在 `a889ac4`）；通用的线序工具重写时只按用户定的口径（带焊盘的层严格判、内层按容量）写一条。
+5. 规格档 C：补模板文件，还是把 `make_project.py` 做成通用生成器？**已定（2026-11-24 的整合）**：两样都做了，见 T3 的现状。
 6. Skill 放哪里：本仓库 `.claude/skills/`（只这个工作区用），还是用户级 `~/.claude/skills/`（别的仓库也用）？
 7. Skill 的粒度：一个 `pcb-board` 带分阶段子文件，还是每个阶段一个 skill？
 8. 收尾时这份清单要不要按仓库的惯例拆成 GitHub issue（每个候选一张），还是保留这个文件逐条做？
-9. KiCadRoutingTools 和 `auto_*` 三个脚本：留着不动，还是收尾时移出 `scripts/`？
+9. KiCadRoutingTools 和 `auto_*` 三个脚本：留着不动，还是收尾时移出 `scripts/`？**已定（2026-11-24 的整合）**：`auto_*` 原样搬到 `Tools/KiCadDesignTools/third_party/`，不改、不加基准；KiCadRoutingTools 留在 `Tools/KiCadRoutingTools/`（gitignore）。
