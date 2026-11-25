@@ -80,9 +80,11 @@ def measured(d, name):
         L = json.load(open(mj, encoding="utf-8"))["length"]
         drc = L.get("drc") or {}
         sw = cfg.get("schematic.swap", {})
-        lane = ["%s%d" % (sw["data_net"], i) for i in range(8)] + ["%s0" % sw["mask_net"]] if sw else []
-        if lane and all(n in drc for n in lane):
-            m["lane_spread"] = round(max(drc[n] for n in lane) - min(drc[n] for n in lane), 4)
+        # every byte lane k ([schematic.swap] lanes: data bits 8k..8k+7 and mask k); the widest lane's spread
+        lanes = [["%s%d" % (sw["data_net"], i) for i in range(8 * k, 8 * k + 8)] + ["%s%d" % (sw["mask_net"], k)]
+                 for k in range(sw["lanes"])] if sw else []
+        if lanes and all(n in drc for lane in lanes for n in lane):
+            m["lane_spread"] = max(round(max(drc[n] for n in lane) - min(drc[n] for n in lane), 4) for lane in lanes)
         clock = cfg.get("tune_sites.clock", [])
         addr = cfg.get("tune_sites.addr", [])
         lg = json.load(open(os.path.join(d, "length_groups.json"), encoding="utf-8"))
