@@ -101,7 +101,7 @@ demo board (`templates/demo_board/`), `build init` / `pcb-update` and `regress -
 | analysis | `route_table` | `-m ...analysis.route_table <board dir> <board> <out>` (env ROUTE2_GROUPS) | the route step's table: the bus group's lengths, serpentines, vias against the limit, order, copper, slots (listed over `[route.table] slot_list`), escape; one row per routes file, gap crossings, pairs, placement (`[route.table]`) | PROC-4, RTE-5, RTE-8, PROC-12 | demo | K24, K28 |
 | analysis | `track_shape` | `-m ...analysis.track_shape <board>`; `track_shape.run(board)` -> the report parsed (route_table, busroute metrics) | track shapes DRC does not check (non-45, steps, small chamfers, crowded bends, arcs) | RTE-8, 9, 10, 11 | `tests/track_shape` | K48, K59, K60 |
 | analysis | `board_diff` | `-m ...analysis.board_diff <a> <b>` | two board files item by item (uuids aside, fills as areas) | LAY-10, PROC-13 | `tests/board_diff` | |
-| analysis | `compare_runs` | `-m ...analysis.compare_runs <out A> <out B>` | two builds' reports number by number (the driver's `compare`) | PROC-4, LAY-10 | `tests/compare_runs` | |
+| analysis | `compare_runs` | `-m ...analysis.compare_runs <out A> <out B> [--report-only]` | two builds' reports number by number (the driver's `compare`); items with a direction (lower / higher is better, the module's docstring) that moved the wrong way listed first under 变差 / worse, exit 1 when there is one (`--report-only`: 0) | PROC-4, LAY-10 | `tests/compare_runs` | |
 | third_party | `auto_tracks`, `auto_clean`, `auto_tidy` | `-m ...third_party.<tool> ...` | KiCadRoutingTools output: to JSON for replay, clean-up, straighten (by exception only) | RTE-4 | | docs/tools.md "用 KiCadRoutingTools 时" |
 
 Benchmarks (`tests/`): `board_diff`, `boardtext`, `compare_runs`, `uuids` (small texts in a temp folder, R3), `busroute` (`check.py` with `bench_routes`, `bench_tune`, `bench_ties`, `bench_obstacles`;
@@ -213,7 +213,7 @@ SPEC's table 本板取值 with these sources (which side rules: `templates/C-bga
 | PROC-12 提交前核对走线数和未连接数 | `route_table`、`finish` 的 DRC 报告 | 部分 | 没有提交前自动核对 |
 | PROC-13 改脚本不改文件；手改后先问 | 板目录只放数据、`core.uuids`、写板前查锁文件 | 部分 | 没有手改检测（backlog T10） |
 | PROC-14 图片只定性；数从文件算 | `views.*` 只出图，数都在表里 | 部分 | 甄别和抽查是人做 |
-| PROC-4 每次构建同一张八组指标表，变差先解释 | `copper_table`、`route_table`、`place_check`、`compare_runs` | 部分 | 分在三张表；没有一张八组的整表，`compare_runs` 比数但不标“变差” |
+| PROC-4 每步一张指标表，两次构建对比，变差的标出来先解释 | `copper_table`、`route_table`、`place_check`、`compare_runs` | 覆盖 | 布局、铜皮、走线各一张表；`compare_runs` 2026-11-24 起给有方向的项（未连接、DRC 按类、`track_shape`、有上限的组每根的过孔、等长组的 spread、去耦超限、没有过孔的铺铜碎片、没匹配的规则：越少越好；布出的网络、能出线的球：越多越好；长度这类测量值没有方向）标“变差”，列在最前，有就退出 1 |
 | PROC-5 写新工具前先调研 | — | 未覆盖 | 做法类 |
 | PROC-6 全量 ≤ 10 分钟、快速 ≤ 1 分钟；一次一个重进程 | 驱动（分步、计时、`core.heavy` 的锁和低优先级）、`busroute --fast` | 部分 | 一次一个重进程已覆盖；H743 的全量（`all`）超过 10 分钟（2026-11-24 的 `route` 一步 691 s，`finish` 约 500 s），工具只报时间 |
 | PROC-15 原型转正重写、配基准、一条命令回归 | `Tools/KiCadDesignTools/`、`tests/`、`regress` | 覆盖 | 正文还写 `scripts/`（收件箱已有提议）；R3 给 `board_diff`、`compare_runs`、`uuids`、`boardtext` 补了基准；`planning.bga_*`、`power_ties`、`plane_slots`、`copper_table`、`pour_islands`、`layout_probe`、`tune_sites`、`finishing.*`、`views.*` 仍没有自己的基准（清单在 docs/tools-skills-backlog.md 的 T12；`finishing.*` 和多数步骤由 `regress --board demo` 整板覆盖） |
