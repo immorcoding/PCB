@@ -41,8 +41,8 @@ demo board (`templates/demo_board/`), `build init` / `pcb-update` and `regress -
 | core | `config` | `-m ...core.config <board dir>` | read and check `board.toml` (layer roles -> L1..Ln, KiCad names), the board's data files and modules | | | K27 |
 | core | `heavy` | (library) | every kicad-cli / KiCad-python launch: below-normal priority on four cores, one at a time (machine-wide lock, re-entrant), a pause between them, exit codes checked (`run`, `kicad_cli`, `kicad_py`); KiCad lock files | PROC-6, RUL-4 | `tests/heavy` | K2, K30 |
 | core | `stackup` | (library) | a fab stackup from `data/stackups/<name>.toml` (`[board] stackup`): thickness, via heights | | `tests/planning` | K15 |
-| core | `uuids` | (library) | deterministic uuids (uuid5 of a stable key) for what the board writers add: the same build gives the same board file | PROC-13 | | |
-| core | `boardtext` | `-m ...core.boardtext <board dir> unfill/strip/orphans <board> [GROUP ...]` | text edits of a `.kicad_pcb`: copper rows of the layer table; drop the saved fills; remove what busroute groups wrote (`<board>.busroute.json`); remove copper no group owns | RTE-12 | | K20, K25, K44, K50, K51 |
+| core | `uuids` | (library) | deterministic uuids (uuid5 of a stable key) for what the board writers add: the same build gives the same board file | PROC-13 | `tests/uuids` | |
+| core | `boardtext` | `-m ...core.boardtext <board dir> unfill/strip/orphans <board> [GROUP ...]` | text edits of a `.kicad_pcb`: copper rows of the layer table; drop the saved fills; remove what busroute groups wrote (`<board>.busroute.json`); remove copper no group owns | RTE-12 | `tests/boardtext` (not `strip`) | K20, K25, K44, K50, K51 |
 | project | `make_project` | `-m ...project.make_project <board dir> [--new-pcb]` | `.kicad_pro` from the profile's template (`templates/<[board] template>/`) plus `board.toml` (`[project]`, `[netclasses]`, `[netclass_patterns]`), empty board with the stackup, derived footprints (`[[footprints.derived]]`), layer table; lists template rule names missing from the board's rule file | RUL-1, RUL-11, PROC-13 | demo | K2, K12, K33 |
 | project | `spec_check` | `-m ...project.spec_check <board dir> [--profile <md>]` (any Python >= 3.11) | SPEC.md's table 本板取值 against the profile's table 布局和走线的取值 and the data files it names; the layout step runs it first | PROC-8, RUL-1 | `tests/spec_check` | |
 | rules | `fixture` | `-m ...rules.fixture <board dir> <out>` | every rule breaks and passes on a fixture board (cases: the profile's `templates/<template>/rules_cases.py`, then the board's own `<board dir>/rules_cases.py` through its hooks `widths` / `cases`); the rules step | RUL-2 | (it is one); demo | K1, K12, K57 |
@@ -95,11 +95,11 @@ demo board (`templates/demo_board/`), `build init` / `pcb-update` and `regress -
 | views | `publish` | `-m ...views.publish <board dir> [--rest 20] [--stage all/dump/svg/png] [--only ...]` (Edge) | release pictures with net names: every copper layer, outer layers with silkscreen, close-ups, layers stacked (`[publish]`) | PROC-11, PROC-14 | | K31 |
 | analysis | `route_table` | `-m ...analysis.route_table <board dir> <board> <out>` (env ROUTE2_GROUPS) | the route step's table: the bus group's lengths, serpentines, vias against the limit, order, copper, slots (listed over `[route.table] slot_list`), escape; one row per routes file, gap crossings, pairs, placement (`[route.table]`) | PROC-4, RTE-5, RTE-8, PROC-12 | demo | K24, K28 |
 | analysis | `track_shape` | `-m ...analysis.track_shape <board>`; `track_shape.run(board)` -> the report parsed (route_table, busroute metrics) | track shapes DRC does not check (non-45, steps, small chamfers, crowded bends, arcs) | RTE-8, 9, 10, 11 | `tests/track_shape` | K48, K59, K60 |
-| analysis | `board_diff` | `-m ...analysis.board_diff <a> <b>` | two board files item by item (uuids aside, fills as areas) | LAY-10, PROC-13 | | |
-| analysis | `compare_runs` | `-m ...analysis.compare_runs <out A> <out B>` | two builds' reports number by number (the driver's `compare`) | PROC-4, LAY-10 | | |
+| analysis | `board_diff` | `-m ...analysis.board_diff <a> <b>` | two board files item by item (uuids aside, fills as areas) | LAY-10, PROC-13 | `tests/board_diff` | |
+| analysis | `compare_runs` | `-m ...analysis.compare_runs <out A> <out B>` | two builds' reports number by number (the driver's `compare`) | PROC-4, LAY-10 | `tests/compare_runs` | |
 | third_party | `auto_tracks`, `auto_clean`, `auto_tidy` | `-m ...third_party.<tool> ...` | KiCadRoutingTools output: to JSON for replay, clean-up, straighten (by exception only) | RTE-4 | | docs/tools.md "用 KiCadRoutingTools 时" |
 
-Benchmarks (`tests/`): `busroute` (`check.py` with `bench_routes`, `bench_tune`, `bench_ties`, `bench_obstacles`;
+Benchmarks (`tests/`): `board_diff`, `boardtext`, `compare_runs`, `uuids` (small texts in a temp folder, R3), `busroute` (`check.py` with `bench_routes`, `bench_tune`, `bench_ties`, `bench_obstacles`;
 fixture board in `fixture/`), `cu_sketch`, `drc_tools` (canary, matching, probes, length windows), `impedance` (closed
 forms and published numbers), `kisch`, `place_check` (place_check and escape_check), `planning` (measure, check, serp,
 plan), `spec_check` (with `fixture/routes_bus.py`), `track_shape`; `demo_board/expected.json` for `regress --board demo`.
@@ -211,6 +211,6 @@ SPEC's table 本板取值 with these sources (which side rules: `templates/C-bga
 | PROC-4 每次构建同一张八组指标表，变差先解释 | `copper_table`、`route_table`、`place_check`、`compare_runs` | 部分 | 分在三张表；没有一张八组的整表，`compare_runs` 比数但不标“变差” |
 | PROC-5 写新工具前先调研 | — | 未覆盖 | 做法类 |
 | PROC-6 全量 ≤ 10 分钟、快速 ≤ 1 分钟；一次一个重进程 | 驱动（分步、计时、`core.heavy` 的锁和低优先级）、`busroute --fast` | 部分 | 一次一个重进程已覆盖；H743 的全量（`all`）超过 10 分钟（2026-11-24 的 `route` 一步 691 s，`finish` 约 500 s），工具只报时间 |
-| PROC-15 原型转正重写、配基准、一条命令回归 | `Tools/KiCadDesignTools/`、`tests/`、`regress` | 覆盖 | 正文还写 `scripts/`（收件箱已有提议）；`plane_slots`、`copper_table`、`layout_probe`、`tune_sites`、`finishing.*`、`views.*` 没有自己的基准（`finishing.*` 和多数步骤由 `regress --board demo` 整板覆盖） |
+| PROC-15 原型转正重写、配基准、一条命令回归 | `Tools/KiCadDesignTools/`、`tests/`、`regress` | 覆盖 | 正文还写 `scripts/`（收件箱已有提议）；R3 给 `board_diff`、`compare_runs`、`uuids`、`boardtext` 补了基准；`planning.bga_*`、`power_ties`、`plane_slots`、`copper_table`、`pour_islands`、`layout_probe`、`tune_sites`、`finishing.*`、`views.*` 仍没有自己的基准（清单在 docs/tools-skills-backlog.md 的 T12；`finishing.*` 和多数步骤由 `regress --board demo` 整板覆盖） |
 
 合计（65 条）：覆盖 26、部分 28、未覆盖 9（RUL-12、RUL-5、RUL-10、LAY-9、LAY-4、PROC-7、PROC-9、PROC-10、PROC-5）、不一致 2（RUL-1、RTE-5）。

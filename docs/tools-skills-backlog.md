@@ -21,6 +21,7 @@ H743 板交付、合回 `main` 之后做了一轮工具整合（合并前由用�
 | T9 摆位辅助和粗筛 | **部分**：`placement.place` 通用（坐标在 `place.toml`，`--pcb` / `--rot` 试转向）；飞线交叉数粗筛没做 | `091faea`（3C） |
 | T10 手改检测 | **搁置**：没做。写板的程序改成确定的 uuid 之后同一构建的板文件逐字节相同，比对摘要的前提有了 | `ef36bbd` |
 | T11 分步构建骨架 | **做完**：驱动 `build.py`（步骤、计时、报告目录、退出码、低优先级和重活锁、`--dry-run`、`init`、`pcb-update`、`compare`），`build.sh` 只是薄壳；整板基准 `regress --board demo`（演示板 `templates/demo_board/`） | `1c2c342`（阶段 2）、`dfbb1ab`、`562c6cf`、`78ac4a3` |
+| T12 每个工具有基准（PROC-15） | **部分**：R3 给四个纯文本工具补了小基准，进默认的 `regress`：`tests/board_diff`、`tests/compare_runs`、`tests/uuids`、`tests/boardtext`（`strip` 要 pcbnew 和 busroute 的记录，不在里面）。还没有自己基准的：`planning.bga_plan`、`planning.bga_fan`、`planning.bga_grid`、`planning.bga_dump`、`copper.power_ties`、`copper.plane_slots`、`copper.copper_table`、`copper.pour_islands`、`routing.tune_sites`、`placement.layout_probe`、`finishing.*`、`views.*`。都要 pcbnew 和一块像样的板（`bga_*` 还要 numpy / scipy 和几分钟的求解），做法是各配一块小夹具板和预期数字。整板基准 `regress --board demo` 跑过其中的 `plane_slots`、`copper_table`（R3 起有 copper 一步）、`pour_islands`、`layout_probe`、`finishing.*`、`views.copper_view` / `finish_view`，但只比最后的 DRC、长度和退出码，不比各自的输出；`bga_*`、`power_ties`、`tune_sites`、`views.publish` / `place_view` / `sketch_view` / `pcb_view` / `layer_view` 哪个基准都不跑 | R3 |
 | S1–S11 skill | **搁置**：一个都没写。整合后命令都是 `python -m Tools.KiCadDesignTools....`，skill 可以只指向 README 的工具表和规则对照、tools.md 的坑编号（K1…） | — |
 
 同一轮删掉或挪走的板目录文件（都不再被任何工具读，内容在 git 历史里）：
