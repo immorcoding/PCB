@@ -17,9 +17,17 @@ Builds a 40 x 30 mm six-layer board in a temp directory (origin 100, 100) from K
     R1 / R2 courtyards overlapping (area from the outlines)                                  -> overlap 1
     R3   across the right edge (centre inside)                                     -> outside 1
     R5   inside a board rule area that forbids footprints                          -> keepout 1
-    R6   off the board                                                             -> parked 1 (19 of 20 placed)
+    R6   off the board                                                             -> parked 1 (29 of 30 placed)
     J1   1x2 header across the left edge, declared --edge J1=L                     -> not outside, body -0.27
     TP1  test pad boxed in by R7..R10, no room for its label                       -> silk 1; TP2 free
+  LAY-4 spacing (--rules: board.toml with [layout] big_cap_min = "0805" and the profile-C rule files of the busroute
+  bench next to the board: a track needs 0.1016 + 2 x 0.127 = 0.3556 outside the rule areas, a via beside a big
+  capacitor 0.45 + 2 x 0.127 = 0.704; inside BGA_MCU 0.27 / 0.48):
+    R11 / R12  0402, pads 0.32 apart                                                -> counted (track)
+    R13 / R14  0402, pads 0.50 apart                                                -> passes
+    C6 / C7    0805, pads 0.50 apart                                                -> counted (via)
+    C8 / C9    0402, pads 0.32 apart, the facing pads both on net SN               -> one net, not counted
+    C10 / C11  bottom 0805 + 0402 inside rule area BGA_MCU, pads 0.45 apart        -> BGA field, not counted
 
 Prints one line, `OK ...` or `FAIL ...`; exit code 0 = pass. About 10 s.
 """
@@ -106,6 +114,23 @@ def build(path):
     setnets(t1, {"1": "+3V3"}); setnets(t2, {"1": "+5V"})
     for ref, x, y, rot in (("R7", 10, 23.2, 0), ("R8", 10, 26.8, 0), ("R9", 7.7, 25, 90), ("R10", 12.3, 25, 90)):
         res(ref, x, y, rot)
+    # LAY-4: 0402 pad edges 0.78 (R) / 0.76 (C) from the centre, 0805 1.45; courtyards 0.15 / 0.25 beyond the pads
+    res("R11", 15, 27, 0, "S11", "S12"); res("R12", 16.88, 27, 0, "S13", "S14")
+    res("R13", 20, 27, 0, "S15", "S16"); res("R14", 22.06, 27, 0, "S17", "S18")
+    c0805 = lambda ref, x, y, n1, n2, bottom=False: setnets(
+        fp(b, "Capacitor_SMD", "C_0805_2012Metric", ref, x, y, 0, "10uF", bottom), {"1": n1, "2": n2})
+    c0805("C6", 15, 23.5, "S21", "S22"); c0805("C7", 18.4, 23.5, "S23", "S24")
+    cap("C8", 25, 27, 0, "S31", "SN", "1nF"); cap("C9", 26.84, 27, 0, "SN", "S32", "1nF")
+    c0805("C10", 34, 28, "S41", "S42", bottom=True)
+    cap("C11", 36.66, 28, 0, "S43", "S44", "1nF", bottom=True)
+    za = pcbnew.ZONE(b)
+    za.SetIsRuleArea(True); za.SetZoneName("BGA_MCU"); za.SetLayerSet(pcbnew.LSET.AllCuMask())
+    for f_ in ("SetDoNotAllowTracks", "SetDoNotAllowVias", "SetDoNotAllowPads", "SetDoNotAllowZoneFills", "SetDoNotAllowFootprints"):
+        getattr(za, f_)(False)
+    ch = pcbnew.SHAPE_LINE_CHAIN()
+    for x, y in ((32, 25.5), (39, 25.5), (39, 29.5), (32, 29.5)):
+        ch.Append(mm(OX + x), mm(OY + y))
+    ch.SetClosed(True); za.Outline().AddOutline(ch); b.Add(za)
     # foreign copper: a ring of L1 track around U1 (L4 stays open) and a U around pin 5
     def trk(pts, w, layer=pcbnew.F_Cu, n="WALL"):
         for (xa, ya), (xb, yb) in zip(pts, pts[1:]):
@@ -144,12 +169,20 @@ def main():
         def want(name, got, exp):
             if got != exp:
                 fails.append("%s: got %r, expected %r" % (name, got, exp))
+        # the board folder: board.toml (ground net, origin, [layout] big_cap_min for place_check's LAY-4) and the rule
+        # files of profile C (the busroute bench's, next to the board: SaveBoard wrote a default project file, replaced
+        # here); the layers of the four-layer plan escape_check's part was written for
+        open(os.path.join(tmp, "board.toml"), "w", encoding="utf-8").write(
+            '[board]\nname = "bench"\norigin = [100.0, 100.0]\n\n[layers]\nroles = ["signal", "ground", "signal", "signal", '
+            '"power", "signal"]\n\n[power]\nground = "GND"\n\n[layout]\nbig_cap_min = "0805"\n')
+        for ext in (".kicad_pro", ".kicad_dru"):
+            shutil.copyfile(os.path.join(HERE, "..", "busroute", "fixture", "bench" + ext), os.path.join(tmp, "bench" + ext))
         js = os.path.join(tmp, "place.json")
         rc, out = run(["Tools.KiCadDesignTools.placement.place_check", path, "--edge", "J1=L", "--limit", "2.5", "--ground", "GND",
-                       "--json", js])
+                       "--rules", tmp, "--json", js])
         R = json.load(open(js, encoding="utf-8"))
         want("exit code", rc, 1)
-        want("placed", (R["parts"]["placed"], R["parts"]["total"]), (19, 20))
+        want("placed", (R["parts"]["placed"], R["parts"]["total"]), (29, 30))
         want("parked", R["parts"]["parked"], ["R6"])
         want("outside", R["outside"], ["R3"])
         want("overlap", [(a, b) for a, b, _ in R["overlap"]], [("R1", "R2")] if R["overlap"] and R["overlap"][0][0] == "R1" else [("R2", "R1")])
@@ -165,16 +198,16 @@ def main():
         want("cap without pin", caps["C2"]["pin"], None)
         want("C1 distance", caps["C1"]["dist"], 2.0)
         want("silk", sorted(s[0] for s in R["silk"] if s[2]), ["TP1"])
+        S = R["spacing"]
+        rows = lambda k: [(r["a"], r["b"], r["gap"], r["need"], r["for"]) for r in S[k]]
+        want("spacing needs", (S["need"], S["big_caps"]), ({"outside": {"track": 0.3556, "via": 0.704}, "inside": {"track": 0.27, "via": 0.48}},
+                                                           ["C10", "C6", "C7"]))
+        want("spacing counted", (S["count"], rows("pairs")), (2, [("C6.2", "C7.1", 0.5, 0.704, "via"), ("R11.2", "R12.1", 0.32, 0.3556, "track")]))
+        want("spacing one net", rows("same_net"), [("C8.2", "C9.1", 0.32, 0.3556, "track")])
+        want("spacing BGA field", [(r["a"], r["b"], r["gap"], r["need"], r["area"]) for r in S["bga_field"]], [("C10.2", "C11.1", 0.45, 0.48, "BGA_MCU")])
 
         je = os.path.join(tmp, "escape.json")
-        # escape_check reads the board folder: board.toml (ground net, origin) and the rule files of profile C (the
-        # busroute bench's, next to the board: SaveBoard wrote a default project file, replaced here); the layers of the
-        # four-layer plan this bench was written for
-        open(os.path.join(tmp, "board.toml"), "w", encoding="utf-8").write(
-            '[board]\nname = "bench"\norigin = [100.0, 100.0]\n\n[layers]\nroles = ["signal", "ground", "signal", "signal", '
-            '"power", "signal"]\n\n[power]\nground = "GND"\n')
-        for ext in (".kicad_pro", ".kicad_dru"):
-            shutil.copyfile(os.path.join(HERE, "..", "busroute", "fixture", "bench" + ext), os.path.join(tmp, "bench" + ext))
+        # escape_check reads the same board folder (written above)
         rc, out = run(["Tools.KiCadDesignTools.placement.escape_check", tmp, path, "--ref", "U1", "--window", "12", "7", "28", "23",
                        "--layers", "L1", "L4", "L6", "--json", je])
         E = json.load(open(je, encoding="utf-8"))["U1"]
@@ -189,8 +222,9 @@ def main():
         if fails:
             print("FAIL " + "; ".join(fails))
             return 1
-        print("OK place_check: 19/20 placed, 1 parked, outside 1, overlap 1, hole 1, keepout 1, under 1, decoupling "
-              "2.000 / 3.000 mm, silk 1; escape_check: local 1, plane 3, blocked 1, out via 1 x12")
+        print("OK place_check: 29/30 placed, 1 parked, outside 1, overlap 1, hole 1, keepout 1, under 1, decoupling "
+              "2.000 / 3.000 mm, silk 1, spacing 2 (track, via; one net 1, BGA field 1 apart, one pair passes); "
+              "escape_check: local 1, plane 3, blocked 1, out via 1 x12")
         return 0
     finally:
         shutil.rmtree(tmp, ignore_errors=True)

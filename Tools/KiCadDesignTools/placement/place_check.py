@@ -1,4 +1,5 @@
-"""Placement metrics (LAY-2, LAY-5, LAY-6, LAY-8): what is placed, overlaps, keep-outs, edges, decoupling distances.
+"""Placement metrics (LAY-2, LAY-4, LAY-5, LAY-6, LAY-8): what is placed, overlaps, keep-outs, edges, decoupling
+distances, room between neighbouring parts.
 
     D:\\KiCad\\bin\\python.exe -m Tools.KiCadDesignTools.placement.place_check <board> [options] [--json <out.json>]
 
@@ -23,6 +24,12 @@ Options:
                           as 0.9 x this wide. Reported, not enforced (the silk itself is the finishing stage)
   --silk-refs REGEX       parts that need room (default ^(J|TP|JP))
   --origin X Y            subtract this from board coordinates in the report (default 100 100)
+  --rules DIR             the board folder whose rule files give LAY-4's values (core.config cfg.rules(): track
+                          width, clearance and via inside the rule areas; outside them the narrowest net class and the
+                          smallest class via) and whose board.toml [layout] big_cap_min names the big capacitors; the
+                          build driver passes it. Without it the spacing check is skipped
+  --big-cap-min SIZE      overrides [layout] big_cap_min: an imperial size code ("0805": capacitors of that length
+                          code or longer) or a body length in mm (the F.Fab / B.Fab outline's long side)
 
 What it measures (all from the board file; nothing is written to it):
   parts      placed = courtyard centre inside the board outline; parked = the rest (listed)
@@ -39,11 +46,20 @@ What it measures (all from the board file; nothing is written to it):
              nearest capacitor of at most --small nF that has a --ground pad; per capacitor on a rail: distance to
              the nearest IC pin of its rail. Pins on rails that have no small capacitor at all are counted
              separately (bulk-only rails such as VCAP).
+  spacing    LAY-4 (needs --rules): per pair of parts on the same side, the least copper-to-copper gap between their
+             pads on that side's outer layer. A pair is reported when the gap is positive but smaller than a track
+             passing between them (track width + 2 x clearance), or, when either part is a capacitor of at least
+             big_cap_min, a via (via diameter + 2 x clearance). The values are the rule-area ones when the gap's
+             middle (between the two pad centres) is inside a rule area of the rule file, else the narrowest class's;
+             only pads closer than the largest of these are compared. Listed apart, not counted: pairs whose facing
+             pads are on one net (a decoupling pair sharing a pad net), and bottom pairs both inside a rule area
+             (the BGA's back-side decoupling field, LAY-5). A report with a count, not a verdict
   silk       LAY-8, room for labels: a test point (TP*) needs a box for its value (its net name), one text line
              high, beside its courtyard on at least one side, inside the outline and clear of other courtyards;
              a header or connector (J*, JP*) needs --silk of free space to every other courtyard on its side,
              and to the board edge unless it is an --edge part
-Exit code 1 when any of outside, overlap, hole, keepout (pads / footprints), under is not zero.
+Exit code 1 when any of outside, overlap, hole, keepout (pads / footprints), under is not zero (spacing and silk are
+reported only).
 """
 import argparse, json, math, re, sys
 import pcbnew
@@ -68,6 +84,8 @@ def opts(argv):
     p.add_argument("--silk", type=float, default=1.0)
     p.add_argument("--silk-refs", default=r"^(J|TP|JP)")
     p.add_argument("--origin", nargs=2, type=float, default=[100.0, 100.0])
+    p.add_argument("--rules")
+    p.add_argument("--big-cap-min")
     p.add_argument("--json")
     return p.parse_args(argv)
 
@@ -361,6 +379,8 @@ def measure(a):
     R["decoupling"] = {"limit": a.limit, "small_nf": a.small, "per_ic": per_ic,
                        "caps": [{k: (L(v) if k == "xy" else v) for k, v in c.items()} for c in caps]}
 
+    R["spacing"] = spacing(a, board, placed, L)
+
     # silk room (reported only)
     sr = re.compile(a.silk_refs)
     silk = []
@@ -400,6 +420,104 @@ def measure(a):
     return R
 
 
+SIZE_CODE = re.compile(r"(?<!\d)(\d{4})_\d{4}Metric")
+
+
+def big_capacitor(p, big):
+    """True when part p is a capacitor of at least `big`: an imperial code ("0805": length code, the first two digits,
+    compared) or a body length in mm (long side of the Fab outline, else of the courtyard)."""
+    if big is None or not p.ref.startswith("C"):
+        return False
+    if isinstance(big, str) and re.fullmatch(r"\d{4}", big.strip()):
+        m = SIZE_CODE.search(str(p.fp.GetFPID().GetLibItemName()))
+        return bool(m) and int(m.group(1)[:2]) >= int(big.strip()[:2])
+    box = fab_bbox(p.fp, p.bottom) or p.bbox
+    return max(box[2] - box[0], box[3] - box[1]) >= float(big) - 1e-9
+
+
+def spacing(a, board, placed, L):
+    """LAY-4: the pairs of neighbouring parts on one side with too little room between their pads (module text)."""
+    if not a.rules:
+        return None
+    from Tools.KiCadDesignTools.core import config
+    cfg = config.load(a.rules)
+    pr = cfg.rules()
+    big = a.big_cap_min if a.big_cap_min is not None else cfg.get("layout.big_cap_min")
+    names = pr.area_names
+    areas = []
+    for z in board.Zones():
+        if not z.GetIsRuleArea():
+            continue
+        flags = (z.GetDoNotAllowPads() or z.GetDoNotAllowFootprints() or z.GetDoNotAllowTracks() or z.GetDoNotAllowVias()
+                 or z.GetDoNotAllowZoneFills())
+        if (z.GetZoneName() in names) if names is not None else not flags:
+            areas.append((z.GetZoneName(), [poly_pts(z.Outline().Outline(k)) for k in range(z.Outline().OutlineCount())]))
+    need = {False: {"track": pr.w_out() + 2 * pr.clr_out(), "via": pr.via_out_min()[0] + 2 * pr.clr_out()},
+            True: {"track": pr.w_area + 2 * pr.clr_area, "via": pr.via_area[0] + 2 * pr.clr_area}}
+    reach = max(v for d in need.values() for v in d.values())
+    area_at = lambda q: next((n for n, ol in areas if any(inside(q, o) for o in ol)), None)
+
+    def pads(p):
+        layer = pcbnew.B_Cu if p.bottom else pcbnew.F_Cu
+        out = []
+        for pd in p.fp.Pads():
+            if not pd.IsOnLayer(layer):
+                continue
+            polys = [o for o in pad_poly(pd, layer) if o]
+            if not polys:
+                continue
+            xs = [x for o in polys for x, _ in o]
+            ys = [y for o in polys for _, y in o]
+            c = pd.GetPosition()
+            out.append((pd.GetNumber(), pd.GetNetname(), polys, (min(xs), min(ys), max(xs), max(ys)), (ToMM(c.x), ToMM(c.y))))
+        return out
+    P = {p.ref: pads(p) for p in placed}
+    box = {}
+    for p in placed:
+        bs = [x[3] for x in P[p.ref]]
+        if bs:
+            box[p.ref] = (min(x[0] for x in bs), min(x[1] for x in bs), max(x[2] for x in bs), max(x[3] for x in bs))
+    apart = lambda u, v, m: u[0] > v[2] + m or v[0] > u[2] + m or u[1] > v[3] + m or v[1] > u[3] + m
+    bigs = {p.ref for p in placed if big_capacitor(p, big)}
+    counted, same_net, field, n_pairs = [], [], [], 0
+    nat = lambda r: [int(t) if t.isdigit() else t for t in re.split(r"(\d+)", r)]
+    parts = sorted((p for p in placed if p.ref in box), key=lambda p: nat(p.ref))     # pairs and rows in reference order
+    for i, p in enumerate(parts):
+        for q in parts[i + 1:]:
+            if p.bottom != q.bottom or apart(box[p.ref], box[q.ref], reach):
+                continue
+            best = None
+            for pa in P[p.ref]:
+                for qa in P[q.ref]:
+                    if apart(pa[3], qa[3], reach):
+                        continue
+                    d = min(poly_poly_dist(x, y) for x in pa[2] for y in qa[2])
+                    if best is None or d < best[0]:
+                        best = (d, pa, qa)
+            if best is None or best[0] <= 1e-6:            # touching or overlapping pads: not this check's case
+                continue
+            n_pairs += 1
+            d, pa, qa = best
+            mid = ((pa[4][0] + qa[4][0]) / 2, (pa[4][1] + qa[4][1]) / 2)
+            ar = area_at(mid)
+            kind = "via" if (p.ref in bigs or q.ref in bigs) else "track"
+            lim = need[ar is not None][kind]
+            if d >= lim - 1e-6:
+                continue
+            row = {"a": p.ref + "." + pa[0], "b": q.ref + "." + qa[0], "gap": round(d, 3), "need": round(lim, 4), "for": kind,
+                   "area": ar, "side": "B" if p.bottom else "F", "at": list(L(mid))}
+            if pa[1] and pa[1] == qa[1]:
+                same_net.append(dict(row, net=pa[1]))
+            elif p.bottom and ar is not None and area_at(p.centre) and area_at(q.centre):
+                field.append(row)
+            else:
+                counted.append(row)
+    return {"need": {"outside": {k: round(v, 4) for k, v in need[False].items()},
+                     "inside": {k: round(v, 4) for k, v in need[True].items()}},
+            "areas": [n for n, _ in areas], "big_cap_min": big, "big_caps": sorted(bigs), "pairs_checked": n_pairs,
+            "count": len(counted), "pairs": counted, "same_net": same_net, "bga_field": field}
+
+
 def report(R):
     P = R["parts"]
     print("[parts]     placed %d / %d; parked %d%s" % (P["placed"], P["total"], len(P["parked"]),
@@ -427,6 +545,20 @@ def report(R):
     far = sorted((c for c in D["caps"] if c["dist"] is not None), key=lambda c: -c["dist"])
     print("            capacitors to their nearest pin: %d; farthest %s" % (
         len(D["caps"]), " ".join("%s %.2f" % (c["ref"], c["dist"]) for c in far[:6])))
+    S = R.get("spacing")
+    if S is None:
+        print("[spacing]   LAY-4 not checked (no --rules board folder)")
+    else:
+        n = S["need"]
+        print("[spacing]   LAY-4: %d pairs with less room than a track (w + 2 x clr: %.4g outside, %.4g in %s) or, beside a "
+              "capacitor >= %s, a via (%.4g / %.4g) (of %d neighbouring pairs); not counted: %d on one net, %d in a BGA "
+              "back-side field" % (S["count"], n["outside"]["track"], n["inside"]["track"], "/".join(S["areas"]) or "rule areas",
+                                   S["big_cap_min"] if S["big_cap_min"] is not None else "(no big_cap_min: off)",
+                                   n["outside"]["via"], n["inside"]["via"], S["pairs_checked"], len(S["same_net"]), len(S["bga_field"])))
+        for title, rows in (("", S["pairs"]), ("one net: ", S["same_net"]), ("BGA field: ", S["bga_field"])):
+            if rows:
+                print("            %s%s" % (title, " ".join("%s|%s %.3f<%.3g%s" % (r["a"], r["b"], r["gap"], r["need"],
+                                                                                    "v" if r["for"] == "via" else "") for r in rows)))
     flag = [s for s in R["silk"] if s[2]]
     print("[silk]      %d headers / test points; %d without room (test point: no side for its name; header: under %.1f mm "
           "to the next part or edge) %s" % (len(R["silk"]), len(flag), R["silk_mm"],

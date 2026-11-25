@@ -83,6 +83,8 @@ balls = 90
 [layout]
 decap_limit = 2.5                # mm, a 100 nF to the supply pin or ball it serves (LAY-2; SPEC 7.2)
 allow_under = ["U1", "U2"]       # bottom parts under these (the decoupling under the BGAs, SPEC 6)
+big_cap_min = "0805"             # LAY-4: capacitors of this size code and up want room for a via beside them
+                                 # (place_check spacing; a report, not a verdict)
 sketch = { routes = "routes_sdram.py", out = "out/sketch" }   # the bus on a copy of the placed board (RTE-13)
 
 [layout.edges]                   # connector -> board edge it faces (LAY-6)
