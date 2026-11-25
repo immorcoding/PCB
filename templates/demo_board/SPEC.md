@@ -140,7 +140,7 @@ J1 +3V3（外部供电）→ C9 4.7 µF → +3V3（L5 的块）→ U1 的 VDD、
 | 项目 | 本板取值 | 数据源 | 依据 / 说明 |
 |---|---|---|---|
 | 信号层数 | 4 个信号层：信号 / 地 / 信号 / 信号 / 电源 / 信号 | `board.toml:layers.roles` | PROC-8；和 H743 板相同。15 根总线用不满三层，但这块板要把 L3、L4 都走一遍 |
-| 小去耦到电源球的距离上限 | 2.5 mm | — | LAY-2；`place_check` 的默认值在代码里，不是数据文件 |
+| 小去耦到电源球的距离上限 | 2.5 mm | `board.toml:layout.decap_limit` | LAY-2；驱动把它传给 `place_check --limit`，铜皮表也读它 |
 | BGA 背面去耦的封装 | 0402 | — | LAY-5 |
 | 蛇形腿中心距：数据 | 0.3 mm（3H），半径取一半 | `routes_sdram.py:TUNING.pitch.default` | RTE-7 |
 | 蛇形腿中心距：时钟 | 0.5 mm（5H），半径取一半 | `routes_sdram.py:TUNING.pitch.FMC_SDCLK` | RTE-7 |

@@ -78,6 +78,7 @@ data_net = "FMC_D"
 mask_net = "FMC_NBL"
 
 [layout]
+decap_limit = 2.5                # mm, a 100 nF to the supply pin or ball it serves (LAY-2; SPEC 7.2)
 allow_under = ["U1", "U2"]       # bottom parts under these (the decoupling under the BGAs, SPEC 6)
 sketch = { routes = "routes_sdram.py", out = "out/sketch" }   # the bus on a copy of the placed board (RTE-13)
 
@@ -180,6 +181,7 @@ part_title = "== SDRAM 组（同一块板、同一次填充和 DRC）=="
 lane_rule = "sdram_lane"         # the byte lane's skew rule <lane_rule>0 of the rule file
 straight = 2.5                   # data / mask straights at least this long are serpentine candidates (straights.json)
 slot_mark = 3.0                  # plane slots longer than this are named (report only)
+slot_list = 2.5                  # plane slots longer than this are listed one by one (report only, RTE-5: no limit)
 sites = "power_bga_sites.json"   # the BGA power group's via sites
 place_refs = ["U1", "U2"]        # their pin lines of place_check.txt go into the table
 

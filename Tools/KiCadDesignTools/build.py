@@ -279,6 +279,7 @@ class Build:
             args += ["--not-supply", ",".join(lay["not_supply"])]
         if lay.get("silk_refs"):
             args += ["--silk-refs", lay["silk_refs"]]
+        args += ["--limit", "%g" % self.cfg.need("layout.decap_limit")]      # LAY-2: the profile's value, SPEC 本板取值
         args += ["--json", O + "/place_check.json"]
         rc, data = self.r.py("Tools.KiCadDesignTools.placement.place_check", *args, out=O + "/place_check.txt")
         echo(show(data))

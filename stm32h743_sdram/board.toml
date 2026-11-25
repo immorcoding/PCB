@@ -156,6 +156,7 @@ I2C4_SCL = "pull-ups are on the audio page; the lcd page only taps it through 0 
 I2C4_SDA = "as I2C4_SCL"
 
 [layout]
+decap_limit = 2.5                # mm, a 100 nF to the supply pin or ball it serves (LAY-2; rule profile C)
 allow_under = ["U201", "U301"]   # bottom parts under these (the decoupling under the BGAs, SPEC 6)
 not_supply = ["U101.5", "U103.5", "U104.5"]
 silk_refs = "^(TP|JP|J80[234])"
@@ -388,6 +389,7 @@ part_title = "== SDRAM 组（route1 的表，同一块板、同一次填充和 D
 lane_rule = "sdram_lane"         # the byte lanes' skew rules <lane_rule>0..3 of the rule file
 straight = 2.5                   # data / mask straights at least this long are serpentine candidates (straights.json)
 slot_mark = 3.0                  # plane slots longer than this are named (the old slot limit; report only)
+slot_list = 2.5                  # plane slots longer than this are listed one by one (report only, RTE-5: no limit)
 sites = "power_bga_sites.json"   # the BGA power group's via sites (balls without a site, [[route.table.ball_via]])
 place_refs = ["U501", "U101", "U102", "U601", "U801"]   # their pin lines of place_check.txt go into the table
 

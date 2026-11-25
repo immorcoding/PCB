@@ -13,7 +13,7 @@ when a copper-class net of this task is not connected. COPPER_SECONDS (environme
 board.toml [copper.table]: nets (the copper-class nets), rails ([label, [feed pads], vias required]), no_vias (the
 line for the rails without supply vias), loops (ground pads of the switcher loops), crystal_ground, ground_skip /
 ground_skip_refs (ground pads that need no via of their own), part_a / part_b (the routes modules of the power
-groups: PART_B, PLANE_NETS of the first, POWER of the second), decap_skip (balls left out of the 100 nF distance),
+groups: PART_B, PLANE_NETS of the first, POWER of the second), decap_skip (balls left out of the 100 nF distance; its limit is [layout] decap_limit),
 clusters (nets listed piece by piece), bga_areas (the BGA rule areas); [power] ground; the power plane is the layer of
 role "power".
 """
@@ -202,7 +202,8 @@ def part_b_text(cfg, b, odir):
             if n in nets and n not in skip:
                 d = min((pcbnew.ToMM((q.GetPosition() - p.GetPosition()).EuclideanNorm()) for r, q in small if q.GetNetname() == n), default=99)
                 rows.append((round(d, 2), "%s.%s" % (ref, p.GetNumber())))
-    L.append("  每个电源球到最近 100 nF 的距离（LAY-2）: 最远 %.2f mm（%s），超过 2.5 mm 的 %d" % (max(rows)[0], max(rows)[1], sum(1 for r in rows if r[0] > 2.5)))
+    lim = cfg.need("layout.decap_limit")                 # LAY-2: the profile's value, as place_check gets it
+    L.append("  每个电源球到最近 100 nF 的距离（LAY-2）: 最远 %.2f mm（%s），超过 %g mm 的 %d" % (max(rows)[0], max(rows)[1], lim, sum(1 for r in rows if r[0] > lim)))
     cl = clusters(b, list(T["clusters"]))
     L.append("  %s 连通块: %s" % (" / ".join(T["clusters"]), "  ".join("%s %d（%s）" % (n, len(g), " | ".join(" ".join(x) for x in g)[:110]) for n, g in cl.items())))
     areas = tuple(T["bga_areas"])

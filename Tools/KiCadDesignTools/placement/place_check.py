@@ -15,7 +15,8 @@ Options:
   --ic REGEX              references that are ICs (default ^U)
   --not-supply REF.PIN,.. IC pins on a rail that are not supply inputs (regulator outputs, enables tied to a rail)
   --small NF              capacitors up to this value are the per-pin decoupling (default 100)
-  --limit MM              per-pin distance limit for those (default 2.5, LAY-2)
+  --limit MM              per-pin distance limit for those (required: the rule profile's value, which the board
+                          gives in board.toml [layout] decap_limit; the build driver passes it, LAY-2)
   --silk MM               text height for LAY-8 (default 1.0, the board's silk minimum); a character is taken
                           as 0.9 x this wide. Reported, not enforced (the silk itself is the finishing stage)
   --silk-refs REGEX       parts that need room (default ^(J|TP|JP))
@@ -60,7 +61,7 @@ def opts(argv):
     p.add_argument("--ic", default=r"^U")
     p.add_argument("--not-supply", default="")
     p.add_argument("--small", type=float, default=100.0)
-    p.add_argument("--limit", type=float, default=2.5)
+    p.add_argument("--limit", type=float, required=True)
     p.add_argument("--silk", type=float, default=1.0)
     p.add_argument("--silk-refs", default=r"^(J|TP|JP)")
     p.add_argument("--origin", nargs=2, type=float, default=[100.0, 100.0])

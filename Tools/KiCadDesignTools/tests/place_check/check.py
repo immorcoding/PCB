@@ -143,7 +143,7 @@ def main():
             if got != exp:
                 fails.append("%s: got %r, expected %r" % (name, got, exp))
         js = os.path.join(tmp, "place.json")
-        rc, out = run(["Tools.KiCadDesignTools.placement.place_check", path, "--edge", "J1=L", "--json", js])
+        rc, out = run(["Tools.KiCadDesignTools.placement.place_check", path, "--edge", "J1=L", "--limit", "2.5", "--json", js])
         R = json.load(open(js, encoding="utf-8"))
         want("exit code", rc, 1)
         want("placed", (R["parts"]["placed"], R["parts"]["total"]), (19, 20))

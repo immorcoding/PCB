@@ -32,7 +32,7 @@ serpentines). Writes <out dir>/table.txt (the bus part also as table_route1.txt)
 hard number is off. ROUTE2_SECONDS / ROUND (environment): the step's time, the round.
 
 board.toml [route.table]: bus, label (the bus part in the verdict), title / part_title (the bus part's heading alone and inside the full table),
-lane_rule, straight, slot_mark, sites, place_refs; [route.table.escape] (json, before, skip, title);
+lane_rule, straight, slot_mark, slot_list, sites, place_refs; [route.table.escape] (json, before, skip, title);
 [[route.table.ball_via]] (named checks: a ball's via in the sites file); [route.table.pairs] (title, prefix, pairs,
 skew_max, layer). Also read: [[route.group]], [[route.slots]], [[route.escape]], [schematic.swap] (byte lanes),
 [tune_sites] clock, place.toml [rule_areas], [copper] sketch, [copper.slots] ref_layers, [power] ground, the copper
@@ -108,7 +108,7 @@ def bus_table(cfg, board_path, odir):
     from Tools.KiCadDesignTools.copper import copper_table as CR
     T = cfg.need("route.table")
     BUS = T["bus"]
-    STRAIGHT, SLOT_MAX = T["straight"], T["slot_mark"]
+    STRAIGHT, SLOT_MAX, SLOT_LIST = T["straight"], T["slot_mark"], T["slot_list"]
     GND = cfg.need("power.ground")
     sw = cfg.need("schematic.swap")
     DN, MN, LANES = sw["data_net"], sw["mask_net"], sw["lanes"]
@@ -293,12 +293,13 @@ def bus_table(cfg, board_path, odir):
     # the via limit holds for the data lanes, their NBL and the clock only (SPEC 9, rule sdram_via_max); address and
     # command lines over it are reported
     tight = [n for n in v["over_limit"] if n in data or n in clock]
-    A("[过孔] 每根最多 %d，合计 %d；上限 %s 超过的 %d 根%s；目标 %s 超过的 %d 根%s；数据 / NBL / 时钟用到 3 个的：%s" % (
+    lim = v["limit"]                                     # the routes file's VIA_LIMIT, else the rule file's via_count
+    A("[过孔] 每根最多 %d，合计 %d；上限 %s 超过的 %d 根%s；目标 %s 超过的 %d 根%s；数据 / NBL / 时钟用到 %s 个的：%s" % (
         v["max"], v["total"], v["limit"], len(v["over_limit"]),
         "（数据 / NBL / 时钟 %d 根%s；地址命令线不设上限，只报告）" % (len(tight), "：" + " ".join(tight) if tight else "") if len(tight) < len(v["over_limit"]) else "",
         v["target"], len(v["above_target"]),
-        "（" + " ".join(v["above_target"]) + "）" if v["above_target"] else "",
-        " ".join(n for n, k in sorted(per.items()) if k >= 3 and (n in data or n in clock)) or "无"))
+        "（" + " ".join(v["above_target"]) + "）" if v["above_target"] else "", lim if lim is not None else "上限",
+        " ".join(n for n, k in sorted(per.items()) if lim is not None and k >= lim and (n in data or n in clock)) or "无"))
     A("       本组放的地过孔（换层处的回流，RTE-5）%d 个：%s" % (len(stitch), " ".join("(%.2f, %.2f)" % (x, y) for n, x, y in stitch)))
     if tight:
         bad.append("vias")
@@ -319,7 +320,7 @@ def bus_table(cfg, board_path, odir):
         " ".join(sj.get("windows", [])), "  ".join("%s %.2f mm (%.2f, %.2f)-(%.2f, %.2f)" % (k, r["length"], r["ends"][0][0], r["ends"][0][1], r["ends"][1][0], r["ends"][1][1])
                                        for k, r in sorted(sj["longest"].items())), len(sj["cut_off"])))
     for r in sj["slots"]:
-        if r["length"] > 2.5:
+        if r["length"] > SLOT_LIST:
             A("         %s %-5s %.2f mm (%.2f, %.2f)-(%.2f, %.2f) 过孔 %d：%s" % (r["layer"], r["window"], r["length"], r["ends"][0][0], r["ends"][0][1],
                                                                       r["ends"][1][0], r["ends"][1][1], r["vias"], " ".join(r["via_nets"][:9])))
     # slot length: reported, not judged (the user removed the plane-slot limit); a cut-off via still fails

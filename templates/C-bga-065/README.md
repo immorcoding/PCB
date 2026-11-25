@@ -20,7 +20,7 @@
 | 项目 | 为准的一份 | `spec_check` 对着查的副本 | 说明 |
 |---|---|---|---|
 | 信号层数（各层用途） | SPEC | `board.toml:layers.roles` | `make_project` 和所有工具按 `roles` 认层 |
-| 小去耦到电源球的距离上限 | SPEC | — | 工具里是 `place_check --limit` 的默认值 2.5 和 `copper_table` 的常数 2.5（代码，不是数据文件），没有接到 SPEC |
+| 小去耦到电源球的距离上限 | SPEC | `board.toml:layout.decap_limit` | 驱动把它传给 `place_check --limit`（2026-11-24 起必填，代码里不再有默认值），`copper_table` 也读它 |
 | BGA 背面去耦的封装 | SPEC | — | 原理图页按它选封装，没有单独的数据 |
 | 蛇形腿中心距（每类一行） | SPEC | 走线文件 `TUNING.pitch`（`default` 是数据线，按网络名的是时钟） | busroute 的蛇形按 `TUNING` 画 |
 | 蛇形起始摆幅 | SPEC | 走线文件 `TUNING.amp` | |
@@ -31,6 +31,6 @@
 | 过孔数上限：个数 | 规则文件 `sdram_via_max.via_count.max` | SPEC；走线文件 `VIA_LIMIT` | |
 | 电源层块间的缝 | SPEC | `copper.sketch:gap` | `cu_sketch` 按草图的参数生成铺铜区 |
 | 外层铺铜最小铜宽 | SPEC | `copper.sketch` 铺地区的 `minwidth`（和局部铜皮的默认 `minwidth`） | |
-| 平面上过孔避让连成的槽 | SPEC | — | “不设上限”；`[copper.slots] report` 只是列出的门槛，不是上限 |
+| 平面上过孔避让连成的槽 | SPEC | — | “不设上限”；`[copper.slots] report`、`[route.table] slot_mark` / `slot_list` 只是列出的门槛，不是上限；离线规划器 `planning.bga_fan` 的 `bga_block.toml [block] slot_max` 仍按上限用（只在重新规划时） |
 
 改值的顺序：先改为准的一份（SPEC 的“已定”项先问用户），再改副本，`spec_check` 通过才算改完。
