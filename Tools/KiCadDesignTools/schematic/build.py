@@ -15,18 +15,18 @@ Prints the generator's line, a warning for each page file the root no longer poi
 <lib>.pretty; nothing in the board folder is written. Prints the ERC messages counted by type; ERC errors about pins
 driven from other pages are expected.
 
-Runs below normal priority on four cores (core.heavy.low_priority), inherited by kicad-cli.
+Runs below normal priority on four cores (core.heavy.low_priority); kicad-cli and KiCad's python through core.heavy.run.
 """
-import collections, glob, os, re, shutil, subprocess, sys
+import collections, glob, os, re, shutil, sys
 
 from Tools.KiCadDesignTools.core import config, heavy, paths
 from Tools.KiCadDesignTools.schematic import generate
 
 
-def _run(argv, **kw):
-    """A child process; its error output passes, a failure stops the build (as `set -e` did)."""
-    sys.stdout.flush()
-    r = subprocess.run([str(a) for a in argv], stdin=subprocess.DEVNULL, **kw)
+def _run(argv, stdout=None, cwd=None):
+    """A child process (core.heavy.run: below normal, four cores, the heavy lock); its output passes unless `stdout`
+    says otherwise, a failure stops the build (as `set -e` did)."""
+    r = heavy.run(argv, stdout=stdout, stderr=None, cwd=cwd)
     if r.returncode:
         raise SystemExit(r.returncode)
 
@@ -38,7 +38,7 @@ def echo(lines):
 
 def cli(*args):
     """kicad-cli with its standard output dropped."""
-    _run([paths.KICAD_CLI] + list(args), stdout=subprocess.DEVNULL)
+    _run([paths.KICAD_CLI] + list(args), stdout=heavy.DEVNULL)
 
 
 def board_dir(path):

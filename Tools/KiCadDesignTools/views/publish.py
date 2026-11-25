@@ -15,7 +15,7 @@ How: 1. dump (KiCad python, pcbnew): tracks, arcs, vias, pads (polygons per laye
 from these plots, the silkscreen is inlined from them); 3. the SVGs are drawn here (copper in layer colours, zone fills
 slightly transparent, vias as rings, net names as text, rules in label_* below); 4. headless Edge turns each SVG into a PNG,
 in tiles of at most 4000 px that PIL puts together. Every heavy command runs alone, below normal priority on four cores
-(core.heavy.run_low), with a pause between them (--rest seconds).
+(core.heavy.run), with a pause between them (--rest seconds).
 
 board.toml [publish]: out, work, view, px, close_px, close ({name: window}), titles ({L: picture title}); the layers
 and the signal layers from [layers].
@@ -78,8 +78,9 @@ CAP = 0.716               # Arial cap height / em
 
 
 def run_low(args, timeout=None):
-    """One heavy command, below normal priority, four cores, in the foreground (from the repository root)."""
-    return heavy.run_low(args, timeout=timeout, cwd=paths.REPO)
+    """One heavy command through core.heavy.run (below normal priority, four cores, the heavy lock), in the
+    foreground, from the repository root; returncode 124 after a timeout."""
+    return heavy.run(args, timeout=timeout, cwd=paths.REPO)
 
 
 def rest(s):

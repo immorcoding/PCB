@@ -4,18 +4,20 @@
     D:\\KiCad\\bin\\python.exe -m Tools.KiCadDesignTools.regress --board demo [--keep]
 
 Each check prints one `OK ...` or `FAIL ...` line and exits 0 on pass; nothing is written into the repo. The checks run
-one after the other, below normal priority on four cores, holding the machine-wide heavy lock (core/heavy.py).
+one after the other, each through core/heavy.py's run (below normal priority on four cores), this run holding the
+machine-wide heavy lock (the checks' own heavy commands take it again: re-entrant).
 
 --board demo: a whole board built from its data (not part of the default run: about 12 minutes). The template folder
 (templates/demo_board) is copied by the driver's init into a scratch folder out/regress/<name> of the repository
 (git-ignored; board folders are imported as packages, so it has to be inside the repository), every driver step is
 run on the copy one after the other (project, rules --skip-match, sch, pcb-update, layout, route --skip-match, rules
---skip-match again (the length windows of the routed bus), finish --no-render; each step takes the heavy lock itself), and its numbers are checked against the expected values stored
+--skip-match again (the length windows of the routed bus), finish --no-render; regress holds the heavy lock, each
+step takes it again), and its numbers are checked against the expected values stored
 with the bench (tests/<board bench>/expected.json): step exit codes, the rule fixture, the schematic checks, the final
 DRC with schematic parity by type, unconnected items, the byte lane's spread and the address window (DRC-measured
 lengths of the route step's bus build). The copy is deleted afterwards unless --keep.
 """
-import collections, json, os, re, shutil, subprocess, sys, time
+import collections, json, os, re, shutil, sys, time
 
 from Tools.KiCadDesignTools.core import heavy
 
@@ -37,7 +39,7 @@ def main(names):
     failed = []
     for n in names:
         t = time.time()
-        r = subprocess.run([sys.executable, "-m", "Tools.KiCadDesignTools.tests.%s.check" % n], cwd=REPO, capture_output=True, text=True, encoding="utf-8", errors="replace")
+        r = heavy.kicad_py("Tools.KiCadDesignTools.tests.%s.check" % n, encoding="utf-8", errors="replace")
         out = [l for l in (r.stdout + r.stderr).splitlines() if "image handler" not in l]
         ok = r.returncode == 0
         print("%-12s %5.1f s  %s" % (n, time.time() - t, out[0] if ok and out else "FAIL (exit %d)" % r.returncode))
@@ -132,8 +134,7 @@ def board(name, keep=False):
     codes, times = {}, {}
     for step, flags in STEPS:
         t = time.time()
-        r = subprocess.run([sys.executable, "-m", "Tools.KiCadDesignTools.build", rel, step] + flags, cwd=REPO, stdin=subprocess.DEVNULL,
-                           capture_output=True, creationflags=getattr(subprocess, "BELOW_NORMAL_PRIORITY_CLASS", 0))
+        r = heavy.kicad_py("Tools.KiCadDesignTools.build", rel, step, *flags)
         os.makedirs(os.path.join(d, "out"), exist_ok=True)
         with open(os.path.join(d, "out", "regress_%s%s.log" % (step, "2" if step in codes else "")), "wb") as f:
             f.write(r.stdout + r.stderr)
@@ -170,8 +171,9 @@ if __name__ == "__main__":
         if k + 1 >= len(argv):
             sys.exit(__doc__)
         heavy.low_priority()
-        # no heavy lock here: every driver step takes it for itself
-        sys.exit(board(argv[k + 1], keep="--keep" in argv))
+        # the whole bench under the heavy lock: every driver step takes it again (re-entrant, PCB_HEAVY_TOKEN)
+        with heavy.HeavyLock("Tools.KiCadDesignTools.regress --board %s" % argv[k + 1]):
+            sys.exit(board(argv[k + 1], keep="--keep" in argv))
     heavy.low_priority()
     with heavy.HeavyLock("Tools.KiCadDesignTools.regress"):
         sys.exit(main(argv))

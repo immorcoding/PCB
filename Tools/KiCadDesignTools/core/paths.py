@@ -4,9 +4,9 @@ KiCad 10 is not on PATH on this machine. Its folder is taken from, in this order
 the folder of the running interpreter when that is KiCad's own python.exe (it sits next to kicad-cli.exe), and
 D:\\KiCad\\bin. Every tool reads these names from here instead of writing the path itself.
 
-Tools run as modules from the repository root: `python -m Tools.KiCadDesignTools.<category>.<tool>`. `tool_cmd` builds that command
-line for a subprocess and `REPO` is the folder to run it in, so a tool that starts another tool passes absolute paths
-as its arguments.
+Tools run as modules from the repository root: `python -m Tools.KiCadDesignTools.<category>.<tool>`. A tool that starts
+another tool (or kicad-cli) does it through Tools.KiCadDesignTools.core.heavy (kicad_py, kicad_cli: below normal
+priority, four cores, one at a time), which runs it from `REPO`, so it passes absolute paths as the arguments.
 """
 import os, sys
 
@@ -35,8 +35,3 @@ KICAD_FP = os.path.join(KICAD_SHARE, "footprints")
 KICAD_SYM = os.path.join(KICAD_SHARE, "symbols")
 EDGE = r"C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe"
 
-
-def tool_cmd(module, *args, python=None):
-    """Command line that runs Tools.KiCadDesignTools.<module> (e.g. "analysis.track_shape") as a module; run it with
-    cwd=REPO and absolute paths as arguments."""
-    return [python or sys.executable, "-m", "Tools.KiCadDesignTools." + module] + [str(a) for a in args]

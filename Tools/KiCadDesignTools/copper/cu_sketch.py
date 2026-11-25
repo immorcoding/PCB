@@ -85,7 +85,7 @@ fill shrunk by w/2, every pad, via and track end it joins still hangs on one par
 nets of --ground (shrinking a whole-board pour takes minutes), and anchors inside the rule areas named by
 --skip-areas (BGA via fields) are left out.
 """
-import argparse, collections, json, math, os, re, shutil, subprocess, sys, tempfile, time, uuid
+import argparse, collections, json, math, os, re, shutil, sys, tempfile, time, uuid
 from decimal import Decimal, InvalidOperation
 from fractions import Fraction
 
@@ -97,9 +97,6 @@ WHOLE_MARGIN = 1000000                        # the board rectangle of a `whole`
 WHOLE_SNAP = 100000                           # ... snapped outward to this
 MIN_PIECE = 10 ** 12                          # nm2 (1 mm2): smaller leftovers of a `whole` region are not written
 UUID_NS = uuid.UUID("6f0c1d4e-5b1a-4c57-9d53-0c7a63b1c001")
-KICAD_CLI = os.path.join(os.path.dirname(sys.executable), "kicad-cli.exe")
-if not os.path.isfile(KICAD_CLI):
-    KICAD_CLI = r"D:\KiCad\bin\kicad-cli.exe"
 
 
 # ------------------------------------------------------------------------------------------- numbers and text
@@ -895,8 +892,9 @@ def read_board(board, old=None):
 
 def run_drc(board_path, report):
     """Refill, save the board and write the JSON DRC report (PWR-6: connectivity is what KiCad's own fill says)."""
-    subprocess.run([KICAD_CLI, "pcb", "drc", "--refill-zones", "--save-board", "--severity-all", "--units", "mm",
-                    "--format", "json", "-o", report, board_path], capture_output=True)
+    from Tools.KiCadDesignTools.core import heavy
+    heavy.kicad_cli("pcb", "drc", "--refill-zones", "--save-board", "--severity-all", "--units", "mm",
+                    "--format", "json", "-o", report, board_path, check=False)
     if not os.path.isfile(report):
         raise RuntimeError("kicad-cli wrote no DRC report for " + board_path)
 

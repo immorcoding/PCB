@@ -9,10 +9,10 @@ Run with KiCad's bundled Python (it needs pcbnew):
     D:\KiCad\bin\python.exe -m Tools.KiCadDesignTools.rules.dru_canary path\to\board.kicad_pcb
 Exit 0 = rules loaded; exit 1 = rules NOT loaded (or no corner_angle rule).
 """
-import os, shutil, subprocess, sys, tempfile
+import os, shutil, sys, tempfile
 import pcbnew
 
-KICAD_CLI = os.path.join(os.path.dirname(sys.executable), "kicad-cli.exe")
+from Tools.KiCadDesignTools.core import heavy
 
 def main(board_path):
     board_path = os.path.abspath(board_path)
@@ -34,7 +34,7 @@ def main(board_path):
             t.SetWidth(mm(0.2)); t.SetLayer(pcbnew.F_Cu); t.SetNet(net); b.Add(t)
         pcbnew.SaveBoard(pcb, b)
         rpt = os.path.join(tmp, "drc.rpt")
-        subprocess.run([KICAD_CLI, "pcb", "drc", "--severity-all", pcb, "-o", rpt], capture_output=True)
+        heavy.kicad_cli("pcb", "drc", "--severity-all", pcb, "-o", rpt, outputs=[rpt])     # failed to run: HeavyError
         text = open(rpt, encoding="utf-8", errors="replace").read()
         if "Rule: corner_angle" in text:  # locale-independent line; the message line is translated
             print("OK: custom rules loaded (corner_angle fired on the canary bend)"); return 0

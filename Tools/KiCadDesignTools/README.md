@@ -39,7 +39,7 @@ demo board (`templates/demo_board/`), `build init` / `pcb-update` and `regress -
 | (driver) | `regress` | `-m ...regress [name ...]`; `--board demo [--keep]` | after a change to any tool or to a rule file (RUL-2) | PROC-15, RUL-2 | (it runs them) | K30 |
 | core | `paths` | (library) | KiCad, Edge and repository paths (`KICAD_BIN`) | | | |
 | core | `config` | `-m ...core.config <board dir>` | read and check `board.toml` (layer roles -> L1..Ln, KiCad names), the board's data files and modules | | | K27 |
-| core | `heavy` | (library) | below-normal priority on four cores, one heavy run at a time (machine-wide lock), KiCad lock files, pauses | PROC-6, RUL-4 | | K2, K30 |
+| core | `heavy` | (library) | every kicad-cli / KiCad-python launch: below-normal priority on four cores, one at a time (machine-wide lock, re-entrant), a pause between them, exit codes checked (`run`, `kicad_cli`, `kicad_py`); KiCad lock files | PROC-6, RUL-4 | `tests/heavy` | K2, K30 |
 | core | `stackup` | (library) | a fab stackup from `data/stackups/<name>.toml` (`[board] stackup`): thickness, via heights | | `tests/planning` | K15 |
 | core | `uuids` | (library) | deterministic uuids (uuid5 of a stable key) for what the board writers add: the same build gives the same board file | PROC-13 | | |
 | core | `boardtext` | `-m ...core.boardtext <board dir> unfill/strip/orphans <board> [GROUP ...]` | text edits of a `.kicad_pcb`: copper rows of the layer table; drop the saved fills; remove what busroute groups wrote (`<board>.busroute.json`); remove copper no group owns | RTE-12 | | K20, K25, K44, K50, K51 |

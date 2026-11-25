@@ -23,9 +23,11 @@ Builds a 40 x 30 mm six-layer board in a temp directory (origin 100, 100) from K
 
 Prints one line, `OK ...` or `FAIL ...`; exit code 0 = pass. About 10 s.
 """
-import json, os, shutil, subprocess, sys, tempfile
+import json, os, shutil, sys, tempfile
 import pcbnew
 from pcbnew import VECTOR2I, FromMM as mm, ToMM
+
+from Tools.KiCadDesignTools.core import heavy
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.normpath(os.path.join(HERE, "..", "..", "..", ".."))
@@ -119,7 +121,7 @@ def build(path):
 
 
 def run(args):
-    r = subprocess.run([sys.executable, "-m"] + args, cwd=REPO, capture_output=True)
+    r = heavy.kicad_py(*args)
     return r.returncode, r.stdout.decode("utf-8", "replace")
 
 

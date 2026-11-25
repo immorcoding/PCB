@@ -20,7 +20,7 @@ D:\KiCad\bin\python.exe -m Tools.KiCadDesignTools.regress                       
 ```
 
 - 构建驱动（`Tools/KiCadDesignTools/build.py`）读板目录的 `board.toml`，步骤是 `project`、`rules`、`sch`、`pcb-update`、`layout`、`copper`、`route`、`finish`、`checks`、`publish`、`all`、`compare`，新板用 `init`；每步的内容和耗时见驱动开头的说明。`--dry-run` 只打印命令。板目录只放数据（`board.toml`、`place.toml`、`silk.toml`、`rules_cases.py`、`routes_*.py`、`sch/<页>.py` 等），`stm32h743_sdram/build.sh` 只是转给驱动的薄壳。
-- 驱动的每一步自己降到低于正常的优先级、四核，并持有全机的重活锁（`core/heavy.py`），一次只跑一个 KiCad 进程；别的长命令从 Git Bash 这样跑：`cmd //c "start /low /affinity F /wait /b D:\KiCad\bin\python.exe -m Tools.KiCadDesignTools.<...>"`。
+- 包里每次启动 kicad-cli 或 KiCad 的 python 都经过 `core/heavy.py` 的 `run`（`kicad_cli`、`kicad_py`）：子进程低于正常优先级、四核，持有全机的重活锁（可重入：持锁进程的子进程凭环境变量 `PCB_HEAVY_TOKEN` 不等自己的父进程），两次之间停顿 `heavy.GAP`（2 秒，上一条更短就停它跑的时长；`PCB_HEAVY_GAP` 可改），并检查退出码：没跑成（退出码不对、超时、该写的报告没写）就报 `HeavyError`。不管从驱动、regress 还是手工直接启动工具都一样。驱动的每一步遇到没跑成的子进程就停，返回它的退出码。工具自己进程里的 pcbnew 工作在第一次重活调用前仍是启动它的优先级，所以手工跑长命令仍从 Git Bash 这样跑：`cmd //c "start /low /affinity F /wait /b D:\KiCad\bin\python.exe -m Tools.KiCadDesignTools.<...>"`。
 - 两块旧板（`stm32f411_minsys/`、`steval_fcu001v2/`）仍用各自目录里的脚本（`steval_fcu001v2/build_pcb.sh`：`place.py` → `route.py` → `silk.py` → 泪滴，顺序不能换）。
 
 不属于哪个工具的命令：

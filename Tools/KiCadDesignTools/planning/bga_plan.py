@@ -2305,9 +2305,9 @@ def main(argv):
         print("wrote", os.path.join(out, "plan.txt"))
         return 0
     if "--board" in argv:
-        from Tools.KiCadDesignTools.core import paths
+        from Tools.KiCadDesignTools.core import heavy, paths
         from Tools.KiCadDesignTools.planning import bga_dump
-        import shutil, subprocess, tempfile
+        import shutil, tempfile
         gp = os.path.join(tempfile.mkdtemp(prefix="bga_plan_"), "geo.json")
         bga_dump.dump(opt("--board"), gp, cfg.origin)
         py = shutil.which("python") or shutil.which("python3")       # the model needs numpy / scipy / scikit-image: not KiCad's Python
@@ -2315,7 +2315,8 @@ def main(argv):
             print("no system Python on PATH; run (from %s):  python -m Tools.KiCadDesignTools.planning.bga_plan %s check --geo %s" % (paths.REPO, cfg.dir, gp))
             return 2
         rest = [a for i, a in enumerate(argv[1:]) if a != "--board" and argv[i] != "--board"]
-        return subprocess.run([py, "-m", "Tools.KiCadDesignTools.planning.bga_plan", cfg.dir, "check", "--geo", gp] + rest, cwd=paths.REPO).returncode
+        return heavy.run([py, "-m", "Tools.KiCadDesignTools.planning.bga_plan", cfg.dir, "check", "--geo", gp] + rest, stdout=None, stderr=None,
+                         cwd=paths.REPO).returncode
     geo = json.load(open(opt("--geo"), encoding="utf-8"))
     if "--plan" in argv:
         return check_plan(geo, json.load(open(opt("--plan"), encoding="utf-8")))

@@ -35,13 +35,15 @@ repository root. Reports go to <out>/<step folder>/, <out> = <board dir>/out unl
               replaced by NAME; then run the steps on it (project, rules, sch, pcb-update, layout, route, finish)
 
 Every step first looks for KiCad's lock files in the board folder (hidden ones too) and stops when one is there,
-runs below normal priority on four cores (inherited by every child) and holds the machine-wide heavy lock, so that
-only one KiCad process runs at a time (Tools.KiCadDesignTools.core.heavy). --dry-run prints the commands instead of running them.
+runs below normal priority on four cores and holds the machine-wide heavy lock; every child goes through
+Tools.KiCadDesignTools.core.heavy.run (below normal, four cores, the lock, a pause of heavy.GAP seconds after the
+previous heavy command, PCB_HEAVY_GAP), so that only one KiCad process runs at a time. --dry-run prints the commands
+instead of running them.
 
 Every step calls Tools modules only, with the board folder as their first argument where they read board data
 (stage 3 of the consolidation); the commands and their order are those of stm32h743_sdram/build.sh.
 """
-import json, os, re, shutil, subprocess, sys, time, collections
+import json, os, re, shutil, sys, time, collections
 
 from Tools.KiCadDesignTools.core import config, heavy, paths
 
@@ -100,11 +102,6 @@ def grep(data, pattern, invert=False):
     return [l for l in text(data).splitlines() if bool(rx.search(l)) != invert]
 
 
-# every child below normal priority whatever the driver's own class; the affinity (four cores) is inherited from
-# the driver (heavy.low_priority)
-CHILD_FLAGS = getattr(subprocess, "BELOW_NORMAL_PRIORITY_CLASS", 0)
-
-
 class Stop(Exception):
     def __init__(self, code, why=""):
         super().__init__(why)
@@ -130,17 +127,13 @@ class Runner:
         if self.dry:
             self.show(argv, env, out, append, note)
             return 0, b""
-        e = dict(os.environ)
         # set iteration over strings follows Python's per-process hash seed: escape_check's choice among equivalent
         # layers / partners (and bga_fan's program order) changed from run to run; a fixed seed makes them repeat
-        e.setdefault("PYTHONHASHSEED", "0")
+        e = {} if "PYTHONHASHSEED" in os.environ else {"PYTHONHASHSEED": "0"}
         e.update({k: str(v) for k, v in (env or {}).items()})
-        try:
-            r = subprocess.run(argv, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, stdin=subprocess.DEVNULL, env=e, creationflags=CHILD_FLAGS,
-                               cwd=paths.REPO, timeout=timeout)
-            data, rc = r.stdout, r.returncode
-        except subprocess.TimeoutExpired as x:
-            data, rc = x.stdout or b"", 124
+        # below normal priority on four cores, under the heavy lock (the driver holds it: re-entrant), after the gap
+        r = heavy.run(argv, stdout=heavy.PIPE, stderr=heavy.STDOUT, env=e, cwd=paths.REPO, timeout=timeout)
+        data, rc = r.stdout or b"", r.returncode
         if filt:
             data = filt(data)
         if out:
@@ -349,8 +342,7 @@ class Build:
     def _kicad_happy(self, O):
         py = shutil.which("python") or "python"
         with open(O + "/kicad_happy_sch.txt", "wb") as so, open(O + "/kicad_happy_sch.err", "wb") as se:
-            subprocess.run([py, KH, self.D + "/" + self.N + ".kicad_sch", "--text", "--stage", "schematic"], stdout=so, stderr=se,
-                           stdin=subprocess.DEVNULL, cwd=O)
+            heavy.run([py, KH, self.D + "/" + self.N + ".kicad_sch", "--text", "--stage", "schematic"], stdout=so, stderr=se, cwd=O)
         n = sum(1 for l in open(O + "/kicad_happy_sch.txt", encoding="utf-8", errors="replace") if l.startswith("  ["))
         print("kicad-happy: %d findings in %s/kicad_happy_sch.txt" % (n, O))
 

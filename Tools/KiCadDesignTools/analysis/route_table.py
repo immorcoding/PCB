@@ -38,9 +38,9 @@ skew_max, layer). Also read: [[route.group]], [[route.slots]], [[route.escape]],
 [tune_sites] clock, place.toml [rule_areas], [copper] sketch, [copper.slots] ref_layers, [power] ground, the copper
 nets of [copper.table], the layer roles.
 """
-import collections, contextlib, io, json, math, os, re, subprocess, sys
+import collections, contextlib, io, json, math, os, re, sys
 
-from Tools.KiCadDesignTools.core import config, paths
+from Tools.KiCadDesignTools.core import config, heavy
 from Tools.KiCadDesignTools.copper.power_ties import power_plane
 from Tools.KiCadDesignTools.routing.busroute.metrics import LEN_TOL
 
@@ -172,7 +172,7 @@ def bus_table(cfg, board_path, odir):
             p2 = s["ball_via"].get(chk["ball"])
             A("       %s: %s (%s) 的过孔 %s" % (chk["name"], chk["ball"], chk["net"], ("(%.3f, %.3f)" % tuple(p2)) if p2 else "没有"))
     # ---- shape
-    r = subprocess.run([sys.executable, "-m", "Tools.KiCadDesignTools.analysis.track_shape", os.path.abspath(board_path)], cwd=paths.REPO, capture_output=True, text=True, encoding="utf-8", errors="replace")
+    r = heavy.kicad_py("Tools.KiCadDesignTools.analysis.track_shape", os.path.abspath(board_path), encoding="utf-8", errors="replace")
     ts, kind, lines = {}, None, collections.defaultdict(list)
     for l in r.stdout.splitlines():
         m = re.match(r"^(off-grid|staircase|sharp|crowded): (\d+)", l)
@@ -541,8 +541,7 @@ def table(cfg, board_path, odir):
     def net_of(it):
         m = re.search(r"\[([^\]]+)\]", it.get("description", ""))
         return m.group(1) if m else None
-    r = subprocess.run([sys.executable, "-m", "Tools.KiCadDesignTools.analysis.track_shape", os.path.abspath(board_path)], cwd=paths.REPO, capture_output=True, text=True,
-                       encoding="utf-8", errors="replace")
+    r = heavy.kicad_py("Tools.KiCadDesignTools.analysis.track_shape", os.path.abspath(board_path), encoding="utf-8", errors="replace")
     shape_lines, kind = collections.defaultdict(list), None
     for l in r.stdout.splitlines():
         m = re.match(r"^(off-grid|staircase|sharp|crowded|arc-joint): (\d+)", l)

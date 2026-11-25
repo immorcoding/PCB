@@ -9,12 +9,13 @@ DRC then reports exactly the one net outside it; a fixed skew rule (max 2 mm ove
 as given and DRC reports the shorter net; --check says the block is current, and stale after
 the clock is made longer. Prints one line, `OK ...` or `FAIL ...`; exit code 0 = pass.
 """
-import os, shutil, subprocess, sys, tempfile
+import os, shutil, sys, tempfile
 import pcbnew
 from pcbnew import VECTOR2I, FromMM as mm
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.normpath(os.path.join(HERE, "..", "..", "..", ".."))
+from Tools.KiCadDesignTools.core import heavy
 from Tools.KiCadDesignTools.rules import drc_probe, dru_match, len_rules
 
 DRU = """(version 1)
@@ -48,7 +49,7 @@ def board(path, clk_r):
 
 
 def run(script, *args):
-    r = subprocess.run([sys.executable, "-m", "Tools.KiCadDesignTools.rules." + script[:-3]] + list(args), cwd=REPO, capture_output=True, text=True, encoding="utf-8")
+    r = heavy.kicad_py("Tools.KiCadDesignTools.rules." + script[:-3], *args, encoding="utf-8")
     return r.returncode, r.stdout
 
 

@@ -14,15 +14,14 @@ to a net length.
 Writes <out dir>/fixture.kicad_pcb (.kicad_pro, .kicad_dru) for looking at in KiCad and
 <out dir>/rules_fixture.txt; exit code 0 = every case as expected.
 """
-import json, math, os, shutil, subprocess, sys
+import json, math, os, shutil, sys
 import pcbnew
 from pcbnew import VECTOR2I, FromMM as mm
 
-from Tools.KiCadDesignTools.core import config, paths, stackup
+from Tools.KiCadDesignTools.core import config, heavy, stackup
 from Tools.KiCadDesignTools.project import make_project
 from Tools.KiCadDesignTools.rules import drc_probe, dru_match, len_rules
 
-PY = sys.executable
 V = lambda x, y: VECTOR2I(mm(x), mm(y))
 # Violation types that say nothing about the rules under test (loose track ends on a board without parts).
 IGNORE = {"track_dangling", "via_dangling", "isolated_copper", "lib_footprint_issues", "lib_footprint_mismatch",
@@ -187,8 +186,8 @@ def main(board_dir, out):
     open(stem + ".kicad_dru", "w", encoding="utf-8", newline="\n").write(dru[:i] + len_rules.BEGIN + "\n" + dru[j:])
     shutil.copy(os.path.join(cfg.dir, "length_groups.json"), os.path.join(out, "length_groups.json"))
     # fill the pour once and keep it in the board file
-    subprocess.run([drc_probe.KICAD_CLI, "pcb", "drc", "--refill-zones", "--save-board", "--severity-all", "--format", "json",
-                    "-o", os.path.join(out, "fill.json"), stem + ".kicad_pcb"], capture_output=True)
+    heavy.kicad_cli("pcb", "drc", "--refill-zones", "--save-board", "--severity-all", "--format", "json",
+                    "-o", os.path.join(out, "fill.json"), stem + ".kicad_pcb", check=False)
     os.remove(os.path.join(out, "fill.json"))
 
     lines, bad = [], 0
@@ -197,11 +196,11 @@ def main(board_dir, out):
         bad += not ok
         lines.append(("ok   " if ok else "FAIL ") + text)
 
-    canary = subprocess.run([PY, "-m", "Tools.KiCadDesignTools.rules.dru_canary", os.path.abspath(stem + ".kicad_pcb")], cwd=paths.REPO, capture_output=True, text=True)
+    canary = heavy.kicad_py("Tools.KiCadDesignTools.rules.dru_canary", os.path.abspath(stem + ".kicad_pcb"), text=True)
     check(canary.returncode == 0, "金丝雀：" + canary.stdout.strip())
 
     static = classify(drc_probe.run_drc(stem + ".kicad_pcb"), f)
-    lr = subprocess.run([PY, "-m", "Tools.KiCadDesignTools.rules.len_rules", os.path.abspath(stem + ".kicad_pcb")], cwd=paths.REPO, capture_output=True, text=True, encoding="utf-8")
+    lr = heavy.kicad_py("Tools.KiCadDesignTools.rules.len_rules", os.path.abspath(stem + ".kicad_pcb"), encoding="utf-8")
     lines.append(lr.stdout.strip())
     for texts, code, what in cases.LEN_RULES:
         check(all(t in lr.stdout for t in texts) and (code is None or lr.returncode == code), what)

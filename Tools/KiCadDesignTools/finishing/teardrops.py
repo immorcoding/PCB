@@ -18,11 +18,10 @@ gap). Vias inside a box, the pads of footprints whose position is inside one
 (the BGAs and the parts under them) and the pads of footprints with their own
 keep-outs get the setting off.
 """
-import os, subprocess, sys
-from Tools.KiCadDesignTools.core import paths
+import os, sys
+from Tools.KiCadDesignTools.core import heavy
 from Tools.KiCadDesignTools.schematic.kisch import parse, dump, find, Q
 
-KICAD_CLI = paths.KICAD_CLI
 TD = ["teardrops", ["best_length_ratio", "0.5"], ["max_length", "1"], ["best_width_ratio", "1"],
       ["max_width", "2"], ["curved_edges", "no"], ["filter_ratio", "0.9"], ["enabled", "yes"],
       ["allow_two_segments", "yes"], ["prefer_zone_connections", "yes"]]
@@ -50,8 +49,8 @@ def main(path):
     tree = parse(open(path, encoding="utf-8").read())
     n = enable(tree)
     open(path, "w", encoding="utf-8", newline="\n").write(dump(tree) + "\n")
-    subprocess.run([KICAD_CLI, "pcb", "drc", "--refill-zones", "--save-board", "--severity-all",
-                    "-o", os.devnull, path], capture_output=True)
+    heavy.kicad_cli("pcb", "drc", "--refill-zones", "--save-board", "--severity-all",
+                    "-o", os.devnull, path, check=False)
     text = open(path, encoding="utf-8").read()
     print(f"teardrops enabled on {n} pads/vias; teardrop zones in the saved board: {text.count('(teardrop')  - n}")
 
@@ -94,8 +93,7 @@ def board_teardrops(cfg, path):
                     put(p, on)
                     n_on, n_off = n_on + on, n_off + (not on)
     open(path, "w", encoding="utf-8", newline="\n").write(dump(tree) + "\n")
-    subprocess.run([KICAD_CLI, "pcb", "drc", "--refill-zones", "--save-board", "--severity-all", "-o", os.devnull, path],
-                   capture_output=True)
+    heavy.kicad_cli("pcb", "drc", "--refill-zones", "--save-board", "--severity-all", "-o", os.devnull, path, check=False)
     text = open(path, encoding="utf-8").read()
     print("teardrops: enabled on %d pads / vias, off on %d (BGA areas); teardrop areas in the saved board: %d"
           % (n_on, n_off, text.count("(teardrop") - n_on - n_off))

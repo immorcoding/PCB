@@ -9,16 +9,13 @@ values below. Prints one line, `OK ...` or `FAIL ...` (details follow a FAIL);
 exit code 0 = pass. Nothing is written into the repository. `--keep` leaves
 the temp directory in place (it is also kept after a FAIL).
 """
-import json, os, shutil, subprocess, sys, tempfile
+import json, os, shutil, sys, tempfile
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.normpath(os.path.join(HERE, "..", "..", "..", ".."))
+from Tools.KiCadDesignTools.core import heavy
 from Tools.KiCadDesignTools.schematic import kisch
 from Tools.KiCadDesignTools.schematic.kisch import Design, Sch
-
-CLI = os.path.join(os.path.dirname(sys.executable), "kicad-cli.exe")
-if not os.path.exists(CLI):
-    CLI = r"D:\KiCad\bin\kicad-cli.exe"
 
 PROJECT = "bench"
 U = 2.54
@@ -125,7 +122,7 @@ def generate(directory):
 
 # --------------------------------------------------------------------- tools
 def cli(*args):
-    r = subprocess.run([CLI] + list(args), capture_output=True, text=True, encoding="utf-8", errors="replace")
+    r = heavy.kicad_cli(*args, check=False, encoding="utf-8", errors="replace")
     if r.returncode != 0:
         raise RuntimeError(f"kicad-cli {' '.join(args)}\n{r.stdout}{r.stderr}")
     return r.stdout
@@ -193,9 +190,7 @@ def run(tmp):
     if files != want_files or sorted(os.listdir(a)) != sorted(want_files):
         fails.append(f"files written: {sorted(os.listdir(a))}, expected {want_files}")
     generate(b)
-    env = dict(os.environ, PYTHONHASHSEED="12345")
-    r = subprocess.run([sys.executable, "-m", "Tools.KiCadDesignTools.tests.kisch.check", "--generate", c], env=env, cwd=REPO,
-                       capture_output=True, text=True)
+    r = heavy.kicad_py("Tools.KiCadDesignTools.tests.kisch.check", "--generate", c, env={"PYTHONHASHSEED": "12345"}, text=True)
     if r.returncode != 0:
         fails.append("generation in a fresh process failed:\n" + r.stdout + r.stderr)
     for other in (b, c):

@@ -56,9 +56,9 @@ def probe_condition(cond):
 
 def match(board_path):
     """[{rule, constraints, matched (int or None), note}] and whether probing works at all on this board.
-    One DRC run per rule (in parallel): of several assertion rules that match the same object KiCad
-    reports only one, so the probes cannot share a rule file."""
-    from concurrent.futures import ThreadPoolExecutor
+    One DRC run per rule, one after the other (core.heavy: one heavy command at a time, a short pause between
+    them): of several assertion rules that match the same object KiCad reports only one, so the probes cannot
+    share a rule file."""
     dru = os.path.splitext(board_path)[0] + ".kicad_dru"
     rules = drc_probe.parse_rules(open(dru, encoding="utf-8").read())
     probe = '(version 1)\n(rule "probe"\n%s  (constraint assertion "A.Type == \'no_such_type\'"))\n'
@@ -74,10 +74,9 @@ def match(board_path):
                 jobs.append(probe % ('  (condition "%s")\n' % pc))
         rows.append(row)
     count = lambda text: sum(v["type"] == "assertion_failure" for v in drc_probe.run_drc(board_path, text)["violations"])
-    # One DRC at a time by default: every kicad-cli DRC is multi-threaded and takes over 1 GB on a routed board;
-    # eight of them at once hard-reset the PC twice on 2026-11-23. DRU_MATCH_JOBS raises it for small boards.
-    with ThreadPoolExecutor(max_workers=max(1, int(os.environ.get("DRU_MATCH_JOBS", "1")))) as ex:
-        counts = list(ex.map(count, jobs))
+    # One DRC at a time: every kicad-cli DRC is multi-threaded and takes over 1 GB on a routed board; eight of them
+    # at once hard-reset the PC twice on 2026-11-23.
+    counts = [count(j) for j in jobs]
     for row in rows:
         j = row.pop("job")
         if j is not None:

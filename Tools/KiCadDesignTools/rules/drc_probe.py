@@ -4,11 +4,9 @@ Used by dru_match.py (does every rule match something?) and len_rules.py (DRC as
 The board, its .kicad_pro and the rule text are copied to a temp folder, so the project is never touched.
 Report wording is localised; only violation types, quoted rule names and numbers are parsed.
 """
-import json, os, re, shutil, subprocess, sys, tempfile
+import json, os, re, shutil, tempfile
 
-KICAD_CLI = os.path.join(os.path.dirname(sys.executable), "kicad-cli.exe")
-if not os.path.isfile(KICAD_CLI):
-    KICAD_CLI = r"D:\KiCad\bin\kicad-cli.exe"
+from Tools.KiCadDesignTools.core import heavy
 
 
 def run_drc(board_path, dru_text=None, refill=False):
@@ -25,10 +23,9 @@ def run_drc(board_path, dru_text=None, refill=False):
         if dru_text is not None:
             open(os.path.join(tmp, "b.kicad_dru"), "w", encoding="utf-8", newline="\n").write(dru_text)
         rpt = os.path.join(tmp, "drc.json")
-        cmd = [KICAD_CLI, "pcb", "drc", "--severity-all", "--units", "mm", "--format", "json", "-o", rpt]
-        subprocess.run(cmd + (["--refill-zones"] if refill else []) + [os.path.join(tmp, "b.kicad_pcb")], capture_output=True)
-        if not os.path.isfile(rpt):
-            raise RuntimeError("kicad-cli wrote no DRC report for " + board_path)
+        args = ["pcb", "drc", "--severity-all", "--units", "mm", "--format", "json", "-o", rpt]
+        # a non-zero exit or no report: heavy.HeavyError (a RuntimeError), as the missing report was before
+        heavy.kicad_cli(*args + (["--refill-zones"] if refill else []) + [os.path.join(tmp, "b.kicad_pcb")], outputs=[rpt])
         return json.load(open(rpt, encoding="utf-8"))
     finally:
         shutil.rmtree(tmp, ignore_errors=True)

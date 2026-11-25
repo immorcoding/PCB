@@ -8,10 +8,10 @@ print it, board edge; KiCad's colours), Edge (headless) turns the SVG into a PNG
 box of board.toml [finish.view] close ({name: [x0, y0, x1, y1]}, local mm). The page is the board extent of
 place.toml [outline].
 """
-import os, subprocess, sys
+import os, sys
 from PIL import Image
 
-from Tools.KiCadDesignTools.core import config, paths
+from Tools.KiCadDesignTools.core import config, heavy, paths
 
 CLI = paths.KICAD_CLI
 EDGE = paths.EDGE
@@ -24,8 +24,8 @@ def shot(svg, png, px_per_mm, W_MM, H_MM):
         '<html><body style="margin:0;background:#0c2412"><img src="%s" style="width:%dpx;height:%dpx"></body></html>'
         % (os.path.basename(svg), w, h))
     url = "file:///" + os.path.abspath(html).replace("\\", "/")
-    subprocess.run([EDGE, "--headless=new", "--disable-gpu", "--hide-scrollbars", "--window-size=%d,%d" % (w, h),
-                    "--screenshot=" + os.path.abspath(png), url], capture_output=True)
+    heavy.run([EDGE, "--headless=new", "--disable-gpu", "--hide-scrollbars", "--window-size=%d,%d" % (w, h),
+               "--screenshot=" + os.path.abspath(png), url])
     os.remove(html)
     return png
 
@@ -37,7 +37,7 @@ def svg(board, out, side):
             "--subtract-soldermask", "-o", path, board]
     if side == "B":
         args.insert(-1, "--mirror")
-    subprocess.run(args, capture_output=True)
+    heavy.run(args)
     return path
 
 

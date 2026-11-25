@@ -17,10 +17,11 @@ The track_shape.py before arcs were followed reported sharp 1 (D only) on this b
 
 Prints one line, `OK ...` or `FAIL ...`; exit code 0 = pass.
 """
-import math, os, re, shutil, subprocess, sys, tempfile, time
+import math, os, re, shutil, sys, tempfile, time
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.normpath(os.path.join(HERE, "..", "..", "..", ".."))
+from Tools.KiCadDesignTools.core import heavy                       # noqa: E402
 from Tools.KiCadDesignTools.routing.busroute.board import write   # noqa: E402
 from Tools.KiCadDesignTools.routing.busroute import tune            # noqa: E402
 
@@ -91,7 +92,7 @@ def main(argv):
         segs, arcs = routes()
         dst = os.path.join(tmp, "shapes.kicad_pcb")
         write(src, dst, "shapes", segs, [], [], (100.0, 100.0), CU, arcs=arcs)
-        r = subprocess.run([sys.executable, "-m", "Tools.KiCadDesignTools.analysis.track_shape", dst], cwd=REPO, capture_output=True, text=True, encoding="utf-8", errors="replace")
+        r = heavy.kicad_py("Tools.KiCadDesignTools.analysis.track_shape", dst, encoding="utf-8", errors="replace")
         out = r.stdout
         num = lambda k: int(re.search(r"^%s: (\d+)" % re.escape(k), out, re.M).group(1)) if re.search(r"^%s: (\d+)" % re.escape(k), out, re.M) else None
         got = {k: num(k) for k in ("off-grid", "staircase", "sharp", "crowded", "arc-joint")}

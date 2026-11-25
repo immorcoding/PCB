@@ -3,13 +3,14 @@
 external(board file, nets)   what KiCad says about the written board: DRC (unconnected, items by type, split
                              into "touches a net of the group" and "elsewhere"), net lengths as DRC measures
                              them (a probe rule), analysis/track_shape.py, rules/dru_canary.py. The four
-                             run one after the other (BUSROUTE_PARALLEL=1: at the same time).
+                             run one after the other (core.heavy: one heavy command at a time).
 collect(...)                 the dict that is saved as metrics.json
 table(m)                     the same as text
 """
-import collections, os, re, subprocess, sys, threading
+import collections, os, re
 
-REPO = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))))
+from Tools.KiCadDesignTools.core import heavy
+
 PROBE = '(version 1)\n(rule "busroute_probe"\n  (constraint length (max 0.001mm)))\n'
 
 
@@ -29,25 +30,20 @@ def external(pcb, nets, refill=True, canary=True):
             err.append("%s: %s" % (key, e))
 
     def shape():
-        r = subprocess.run([sys.executable, "-m", "Tools.KiCadDesignTools.analysis.track_shape", os.path.abspath(pcb)], cwd=REPO, capture_output=True, text=True, encoding="utf-8", errors="replace")
+        r = heavy.kicad_py("Tools.KiCadDesignTools.analysis.track_shape", os.path.abspath(pcb), encoding="utf-8", errors="replace")
         return r.stdout
 
     def can():
-        r = subprocess.run([sys.executable, "-m", "Tools.KiCadDesignTools.rules.dru_canary", os.path.abspath(pcb)], cwd=REPO, capture_output=True, text=True, encoding="utf-8", errors="replace")
+        r = heavy.kicad_py("Tools.KiCadDesignTools.rules.dru_canary", os.path.abspath(pcb), encoding="utf-8", errors="replace")
         return {"ok": r.returncode == 0, "text": ((r.stdout or "").strip().splitlines() or [""])[-1]}
 
     jobs = [("drc", lambda: dp.run_drc(pcb, refill=refill)), ("probe", lambda: dp.run_drc(pcb, PROBE)), ("shape", shape)]
     if canary and os.path.isfile(os.path.splitext(pcb)[0] + ".kicad_dru"):
         jobs.append(("canary", can))
     # One after the other: these are three kicad-cli DRC runs plus a pcbnew script; started together on a routed
-    # board they load every core (the PC hard-reset under parallel DRC on 2026-11-23). BUSROUTE_PARALLEL=1 restores it.
-    if os.environ.get("BUSROUTE_PARALLEL") == "1":
-        th = [threading.Thread(target=job, args=j) for j in jobs]
-        [t.start() for t in th]
-        [t.join() for t in th]
-    else:
-        for j in jobs:
-            job(*j)
+    # board they load every core (the PC hard-reset under parallel DRC on 2026-11-23).
+    for j in jobs:
+        job(*j)
     if err:
         raise RuntimeError("; ".join(err))
     drc = res["drc"]

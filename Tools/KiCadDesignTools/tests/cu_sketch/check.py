@@ -33,13 +33,14 @@ Expected:
            out-of-date `whole` zone are reported and comments survive
 Prints one line, `OK ...` or `FAIL ...`; exit code 0 = pass. About 10 s.
 """
-import json, os, shutil, subprocess, sys, tempfile, time
+import json, os, shutil, sys, tempfile, time
 import pcbnew
 from pcbnew import VECTOR2I, FromMM as mm
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.normpath(os.path.join(HERE, "..", "..", "..", ".."))
 from Tools.KiCadDesignTools.copper import cu_sketch
+from Tools.KiCadDesignTools.core import heavy
 
 OX, OY = 100, 100
 GAP_TOL, NECK_TOL, NECK_TOL_ROUND = 0.01, 0.02, 0.05
@@ -143,7 +144,7 @@ def board(path):
 
 
 def run(*args):
-    r = subprocess.run([sys.executable, "-m", "Tools.KiCadDesignTools.copper.cu_sketch"] + list(args), cwd=REPO, capture_output=True, text=True, encoding="utf-8", errors="replace")
+    r = heavy.kicad_py("Tools.KiCadDesignTools.copper.cu_sketch", *args, encoding="utf-8", errors="replace")
     out = "\n".join(l for l in (r.stdout + r.stderr).splitlines() if "image handler" not in l)
     return r.returncode, out
 
