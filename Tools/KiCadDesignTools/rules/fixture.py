@@ -3,8 +3,14 @@
     D:\\KiCad\\bin\\python.exe -m Tools.KiCadDesignTools.rules.fixture <board dir> <out dir>
 
 Builds a fixture board from the board's own empty board (Tools.KiCadDesignTools.project.make_project: its layers
-and real stackup), its .kicad_pro and its .kicad_dru; the board's rules_cases.py (build(f, cfg)) places rule areas
-named like the real ones and, per case, a few objects that either obey or deliberately break one rule. DRC is run
+and real stackup), its .kicad_pro and its .kicad_dru. The cases place rule areas named like the real ones and, per
+case, a few objects that either obey or deliberately break one rule. They come from two files: the rule profile's
+templates/<[board] template>/rules_cases.py, when the template has one (build(f, cfg, board): the profile's rules,
+calling the board's hooks widths(f, cfg, X) and cases(f, cfg, X) in its case order), and the board's own
+rules_cases.py (its own rules; without a profile file it has build(f, cfg) and places every case). The lists of
+measurements (POUR_GAPS, PAD_CONNECTIONS, VIA_LENGTHS, LEN_RULES, MEASURED_RULES) are the profile's and then the
+board's; POUR_LAYER, POUR_GAP_RANGE, POUR_GAP_NOTE the board's when it sets them; WHAT = {case: text} in the board
+file rewords a profile case. DRC is run
 twice: with the rule file as it is (phase "static") and after Tools.KiCadDesignTools.rules.len_rules has generated
 the length windows (phase "window"). The violations of each case must be exactly the expected set. Three things DRC
 cannot report are measured instead (rules_cases.py says where and what to expect): the pour-to-track distance next
@@ -14,11 +20,11 @@ to a net length.
 Writes <out dir>/fixture.kicad_pcb (.kicad_pro, .kicad_dru) for looking at in KiCad and
 <out dir>/rules_fixture.txt; exit code 0 = every case as expected.
 """
-import json, math, os, shutil, sys
+import importlib.util, json, math, os, shutil, sys
 import pcbnew
 from pcbnew import VECTOR2I, FromMM as mm
 
-from Tools.KiCadDesignTools.core import config, heavy, stackup
+from Tools.KiCadDesignTools.core import config, heavy, paths, stackup
 from Tools.KiCadDesignTools.project import make_project
 from Tools.KiCadDesignTools.rules import drc_probe, dru_match, len_rules
 
@@ -33,17 +39,61 @@ def layer_map(cfg):
     return {l.L: getattr(pcbnew, l.kicad.replace(".", "_")) for l in cfg.layers}
 
 
+LISTS = ("POUR_GAPS", "PAD_CONNECTIONS", "VIA_LENGTHS", "LEN_RULES")      # the profile's, then the board's
+SCALARS = ("POUR_LAYER", "POUR_GAP_RANGE", "POUR_GAP_NOTE")              # the board's when it sets them
+
+
+class Cases:
+    """The cases of a board: the profile's file (or none) and the board's own rules_cases.py as one."""
+
+    def __init__(self, profile, board):
+        self.profile, self.board = profile, board
+        mods = [m for m in (profile, board) if m is not None]
+        for k in LISTS:
+            setattr(self, k, [x for m in mods for x in getattr(m, k, [])])
+        self.MEASURED_RULES = set().union(*(getattr(m, "MEASURED_RULES", set()) for m in mods))
+        for k in SCALARS:
+            for m in mods:
+                if hasattr(m, k):
+                    setattr(self, k, getattr(m, k))
+        self.WHAT = dict(getattr(board, "WHAT", {}))
+
+    def build(self, f, cfg):
+        if self.profile is not None:
+            self.profile.build(f, cfg, self.board)
+        else:
+            self.board.build(f, cfg)
+
+
+def profile_cases(cfg):
+    """The rule profile's case module templates/<[board] template>/rules_cases.py, or None (no template, or a template
+    without one). Loaded from its file: template folder names are not Python names (C-bga-065)."""
+    t = cfg.get("board.template")
+    p = os.path.join(paths.TEMPLATES, t, "rules_cases.py") if t else None
+    if not p or not os.path.isfile(p):
+        return None
+    spec = importlib.util.spec_from_file_location("rules_cases_profile_" + "".join(c if c.isalnum() else "_" for c in t), p)
+    m = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(m)
+    return m
+
+
+def load_cases(cfg):
+    return Cases(profile_cases(cfg), cfg.module("rules_cases"))
+
+
 class Fixture:
-    def __init__(self, base_pcb, L):
+    def __init__(self, base_pcb, L, what=None):
         self.b = pcbnew.LoadBoard(base_pcb)
         self.L = L
         self.nets, self.owner, self.expect, self.what = {}, {}, {}, {}
+        self.reword = dict(what or {})          # the board's wording of a profile case (WHAT)
         self.cur = None
 
     def case(self, cid, what, static=(), window=None):
         """Start a case. static / window: expected {(violation type, rule name or None)} per phase."""
         self.cur = cid
-        self.what[cid] = what
+        self.what[cid] = self.reword.get(cid, what)
         self.expect[cid] = {"static": set(static), "window": set(static if window is None else window)}
 
     def own(self, item):
@@ -68,6 +118,10 @@ class Fixture:
             self.trk(net, (x, y), (x + d, y), w, layer)
             length -= d; y += 0.5
         return y
+
+    def pair(self, na, nb, x, y, w, gap, length=4, layer="L1"):
+        """Two parallel tracks of width w, `gap` edge to edge, from (x, y) to the right."""
+        self.trk(na, (x, y), (x + length, y), w, layer); self.trk(nb, (x, y + w + gap), (x + length, y + w + gap), w, layer)
 
     def via(self, net, x, y, dia=0.45, drill=0.2, a="L1", c="L6", strip_inner=False):
         v = pcbnew.PCB_VIA(self.b)
@@ -166,14 +220,14 @@ def classify(report, f):
 
 def main(board_dir, out):
     cfg = config.load(board_dir)
-    cases = cfg.module("rules_cases")
+    cases = load_cases(cfg)
     L = layer_map(cfg)
     st = stackup.for_board(cfg)
     os.makedirs(out, exist_ok=True)
     stem = os.path.join(out, "fixture")
     base = os.path.join(out, "base.kicad_pcb")
     make_project.make_pcb(cfg, base)
-    f = Fixture(base, L)
+    f = Fixture(base, L, cases.WHAT)
     cases.build(f, cfg)
     pcbnew.SaveBoard(stem + ".kicad_pcb", f.b)
     os.remove(base)

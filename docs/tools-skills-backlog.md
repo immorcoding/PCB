@@ -134,7 +134,7 @@ H743 板交付、合回 `main` 之后做了一轮工具整合（合并前由用�
 
 **规模**：中。**依赖**：T3。
 
-**现状（2026-11-24）**：做完（`b89692b`）：`rules.fixture <板目录> <输出目录>` 是框架，用例表是板目录的 `rules_cases.py`（和规则文件放在一起）；演示板有自己的一份。和 `tests/drc_tools` 没有共用框架。
+**现状（2026-11-24）**：做完（`b89692b`）：`rules.fixture <板目录> <输出目录>` 是框架；规格档的 15 条规则的用例在模板 `templates/C-bga-065/rules_cases.py`，板目录的 `rules_cases.py` 只放本板规则的用例（R3 起；以前 H743 板和演示板各抄一份）。和 `tests/drc_tools` 没有共用框架。
 
 ### T5 原理图：画法层和网表核对（`sch/common.py`、`sch_check.py`、`build.sh sch`、`sch/try_page.sh`）
 
