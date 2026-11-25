@@ -1,5 +1,6 @@
 """Power group of the two BGAs: every supply and ground ball of U1 (MCU) and U2 (SDRAM) on a 0.30 / 0.15 via of its
-own by an L1 dog-bone (GND: the L2 plane; +3V3: the L5 block), and the bottom decoupling C3-C8 over those vias.
+own by an L1 dog-bone (GND: the L2 plane; +3V3: the L5 block; VCAP1 / VCAP2: no plane, the via only carries the ball to
+its capacitor's pad on L6), and the bottom decoupling C3-C8 and the VCAP capacitors C10 / C11 over those vias.
 
     D:\\KiCad\\bin\\python.exe -m Tools.KiCadDesignTools.build templates/demo_board route   (after the bus group)
     D:\\KiCad\\bin\\python.exe -m Tools.KiCadDesignTools.routing.busroute.build templates\\demo_board\\routes_power_bga.py --fast
@@ -11,7 +12,7 @@ in-pad over a via of its net, an L6 stub to one, or a via of its own. Ground is 
 and nothing else). A SHARED group: it replaces only what it wrote itself.
 """
 import json, os
-from Tools.KiCadDesignTools.copper.bga_power import BgaPlanner
+from Tools.KiCadDesignTools.copper.bga_power import BgaPlanner, WIDE_W
 from Tools.KiCadDesignTools.routing.busroute.board import old_items
 
 BOARD = os.environ.get("BOARD", "demo_board.kicad_pcb")
@@ -25,8 +26,8 @@ PROFILE = {"area_free_classes": ["PWR"]}     # the rule file lets PWR tracks be 
 ALLOW_VIA_ON = []             # the capacitor pads over a via (the profile's via-in-pad exception), filled by routes()
 DRC_IGNORE = {"via_dangling": "this build does not refill the pours; the route step judges connectivity on the refilled board"}
 HERE = os.path.dirname(os.path.abspath(__file__))
-POWER = {"U1": ["GND", "+3V3"], "U2": ["GND", "+3V3"]}      # per package: the nets whose balls get a via here
-PARTS = ["C3", "C4", "C5", "C6", "C7", "C8"]                 # the bottom decoupling under the two packages
+POWER = {"U1": ["GND", "+3V3", "VCAP1", "VCAP2"], "U2": ["GND", "+3V3"]}   # per package: the nets whose balls get a via here
+PARTS = ["C3", "C4", "C5", "C6", "C7", "C8", "C10", "C11"]   # the bottom decoupling and the VCAP capacitors under the packages
 
 
 def routes(job):
@@ -35,7 +36,7 @@ def routes(job):
     P = BgaPlanner(b, job.profile, os.path.join(HERE, "copper.sketch"), POWER, caps, skip_items=old_items(b.path, GROUP))
     for ref in POWER:
         P.place_balls(ref)
-    P.connect_caps()
+    P.connect_caps(widths_for={"VCAP1": WIDE_W, "VCAP2": WIDE_W})    # a VCAP stub, if one is needed: short and wide
     ALLOW_VIA_ON[:] = sorted(P.allow)
     job.stitch += P.extras
     job.notes += P.log

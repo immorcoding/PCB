@@ -6,8 +6,9 @@ SDRAM's data bits follow ../swap.csv (DQn -> FMC net); its unused balls are no-c
 
 Choices (SPEC 2.2, 4; unverified.md):
   - one rail +3V3 from J1; every VDD, VDD33USB, VBAT, PDR_ON, VDDA and VREF+ ball on +3V3, VSS, VSSA, VREF- on GND
-  - VCAP1 / VCAP2 left open (no-connect): tying them to +3V3 or GND would short the core regulator; the circuit is not
-    meant to run (SPEC 1), the two 2.2 uF capacitors a working board needs are left out (unverified U2)
+  - VCAP1 (F13) / VCAP2 (M10): the internal LDO's output (the default supply configuration), 2.2 uF each to GND,
+    ESR < 100 mOhm (DS12110 Table 15), 0402 under the BGA; two nets, as on the H743 board (user 2026-11-21: the two
+    balls are not tied together on the board)
   - BOOT0 straight to GND (boot from flash), NRST to a test pad (internal pull-up)
   - HSE: the H743 board's crystal and load capacitors (ABM8 25 MHz, 15 pF)
   - decoupling: four 100 nF under U1, two under U2 (0402, bottom), one 4.7 uF at J1
@@ -22,7 +23,7 @@ HDR = "Connector_PinHeader_2.54mm:PinHeader_1x%02d_P2.54mm_Vertical"
 
 # non-IO balls of the MCU (KiCad symbol MCU_ST_STM32H7:STM32H743IIKx, pin names)
 SUPPLY = {"VDD": "+3V3", "VSS": "GND", "VBAT": "+3V3", "VDD33_USB": "+3V3", "VDDA": "+3V3", "VREF+": "+3V3",
-          "VSSA": "GND", "VREF-": "GND", "F13": NC, "M10": NC}
+          "VSSA": "GND", "VREF-": "GND", "F13": "VCAP1", "M10": "VCAP2"}
 
 # SDRAM ISSI IS42S32800J ball map (datasheet Rev C p.4, top view; the H743 board's page sdram.py): rows A..R, columns
 # 1 2 3 | 7 8 9
@@ -140,3 +141,7 @@ def build(sh):
 
     sh.title("Reset test pad (NRST has an internal pull-up)", x, 92)
     sh.tp("TP1", "NRST", x + 6, 98, kind="TP_1.0")
+
+    sh.title("VCAP: 2.2 uF each, ESR < 0.1 Ohm (bottom, 0402, under U1)", x, 104)
+    sh.C("C10", "2.2uF", x + 2, 112, "VCAP1", fp=FP["C0402"])
+    sh.C("C11", "2.2uF", x + 12, 112, "VCAP2", fp=FP["C0402"])

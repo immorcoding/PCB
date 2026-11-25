@@ -29,7 +29,8 @@ SDRAM = { track_width = 0.1016, via_diameter = 0.45, via_drill = 0.2, priority =
 # Net-class patterns after the template's (PWR and XTAL by name): the pins.csv rows of these groups, then nets.
 [netclass_patterns]
 pins = "pins.csv"
-nets = [["SDRAM", "FMC_SDCLK_R"]]     # the SDRAM side of the clock's series resistor (not an MCU pin)
+nets = [["SDRAM", "FMC_SDCLK_R"],     # the SDRAM side of the clock's series resistor (not an MCU pin)
+        ["PWR", "VCAP*"]]             # the core regulator's capacitors: short and wide (SPEC 5)
 
 [netclass_patterns.groups]         # pins.csv group -> net class
 SDRAM_DATA = "SDRAM"
@@ -185,7 +186,7 @@ place_refs = ["U1", "U2"]        # their pin lines of place_check.txt go into th
 [route.table.escape]             # escape_check of the route step against the layout step's
 json = "escape_bga.json"
 before = "out/layout/escape_bga.json"
-skip = ["FMC_", "+", "GND"]      # the bus and the supplies: signal balls are the rest
+skip = ["FMC_", "+", "GND", "VCAP"]   # the bus and the supplies: signal balls are the rest
 title = "escape_check（两颗 BGA），非总线、非电源的信号球，现在对布局一步："
 
 [[route.views]]

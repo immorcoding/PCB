@@ -52,7 +52,16 @@ J2 = [13.96, 26.6, 90]
 # clear of the bus vias. U1: north VDD row C, west F3 / G3, south row N, east J12 / J13 / H13; U2: N9 / M9 (west column), R7 / P7 (north)
 C3 = [14.0, 11.075, 0, "B"]
 C4 = [10.75, 13.025, 0, "B"]
-C5 = [14.65, 16.925, 0, "B"]
+# C5 upright between N9's +3V3 site (south, pad 1) and M8's ground site (north), so that its courtyard leaves M10's
+# south-east site to C11
+C5 = [14.325, 16.6, 90, "B"]
 C6 = [16.925, 14.0, 90, "B"]
 C7 = [25.4, 12.0, 90, "B"]
 C8 = [27.4, 10.8, 0, "B"]
+# VCAP capacitors (2.2 uF, 0402, bottom): pad 1 over a free ball-gap site next to the VCAP ball (its via, in-pad),
+# pad 2 over a ground site. C10: VCAP1 = F13, pad 1 east over (17.575, 12.375), pad 2 over F12's ground via; C11:
+# VCAP2 = M10, upright south of it, pad 1 north over (15.625, 16.925), pad 2 over (15.625, 17.575) (own ground via).
+# Not north of M10: a ground pad over the ground core's sites draws the planner to own vias there (K9, K10), whose
+# 0.65 mm squares cut tiny +3V3 islands out of L5 (DRC isolated_copper)
+C10 = [17.25, 12.375, 180, "B"]
+C11 = [15.625, 17.25, 270, "B"]
