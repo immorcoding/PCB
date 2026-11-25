@@ -1,4 +1,4 @@
-# Copper region sketch of the STM32H743 + SDRAM board (LAY-1, PWR-1, 3, 7, 8). Read by scripts/cu_sketch.py.
+# Copper region sketch of the STM32H743 + SDRAM board (LAY-1, PWR-1, 3, 7, 8). Read by copper.cu_sketch (Tools/KiCadDesignTools).
 # This text is the source of truth for every pour; after a zone is dragged in KiCad it is read back
 # into this file before anything else runs (PWR-7).
 #
@@ -6,12 +6,12 @@
 # State: stop 5 (power and copper), part A. The outer-layer regions hug the pads of their nets and are kept clear
 # of the SDRAM line-order sketch (its L1 tracks east of the SDRAM run at x 61.6-62.6, y 37-46.3; nothing of +12V
 # may go there). Current paths are at least 1.0 mm wide on the 12 V chain, the two buck outputs, +5V_BL and
-# LED_A, and at least 2.0 mm on L5 (cu_sketch measure, build.sh copper). A through-hole pad a region touches is
+# LED_A, and at least 2.0 mm on L5 (cu_sketch measure, the build's copper step). A through-hole pad a region touches is
 # covered by pad + 0.5 mm or more, so its thermal relief (gap 0.254) keeps a ring of copper and no crumbs.
 # Pads a region does not reach are tied by routes_power.py: QFN pins (0.5 mm pitch: a pour cannot pass between
 # the neighbouring pins), the enable and feedback ends, pull-ups, and the vias to L5 and between L1 and L6.
 #
-# Floor plan (stop 4, see place.py):
+# Floor plan (stop 4, see place.toml):
 #   top edge     headphone jack x 11-22, line-in jack x 23-34, SWD x 36-45, microSD x 47-63
 #   left edge    RJ45 y 40-59, its body 4.1 mm over the edge (try/eth-west); PHY right of it at (22.4, 50.5);
 #                QSPI flash under the MCU's SW corner (36, 58); user LEDs and key x 12-23, y 62-70
@@ -25,7 +25,7 @@
 origin 100 100
 # Layer order signal / ground / signal / signal / power / signal (user 2026-11-23, SPEC 6): L2 the only ground
 # plane, L5 the power plane with the five blocks (they were on L3 until 2026-11-23, same shapes), L3 and L4 signal
-# layers. Their ground pours are not drawn here: the finishing step makes them (finish_pour.py, user 2026-11-24), after
+# layers. Their ground pours are not drawn here: the finishing step makes them (finishing.pour, user 2026-11-24), after
 # the routing, with keep-outs over the two BGA via fields and over every serpentine the route2 groups wrote.
 planes L2 L5
 gap 0.5                   # L5: distance between blocks of different nets (PWR-8)
@@ -122,7 +122,7 @@ region L1_3V3_AUD +3V3_AUD L1
 # (FMC_A6), L4 (FMC_A10) and L6 (FMC_SDNWE): the filter and its capacitors are on the bottom under the corner
 # (L6 pocket). On L1 the balls reach their vias by dog-bones only (part B of stop 5): no pour of any net on L1
 # inside the BGA rule areas (user 2026-11-22: "a BGA is not suited to taking power from copper pours; just
-# track and via"; place.py draws F.Cu keep-outs NOPOUR_L1_MCU / NOPOUR_L1_SDRAM that forbid zone fills), so the
+# track and via"; placement.place draws F.Cu keep-outs NOPOUR_L1_MCU / NOPOUR_L1_SDRAM that forbid zone fills), so the
 # L1 pocket west of the balls is gone. The P1 via (35.775, 41.225, in C220's pad) and the R1 via (35.125,
 # 41.875) stand in the L6 pocket. Part B moved C221, C223 and FB201 into the L6 corner bounded by FMC_SDNWE
 # (x 33.6, y 45.6) and FMC_SDNRAS (x 38.375): the L6 pocket reaches down to y 43.5 over the VDDA pads of the two

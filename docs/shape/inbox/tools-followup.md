@@ -1,3 +1,4 @@
 # 收件箱：tools-followup
 
 - 2026-11-24 · routing · cite · RTE-5 · 起作用：平面槽长的两处上限改成可选、缺省不限（routing.md Signals 里 2026-11-24 那条“不一致”可以关掉）：`busroute` 的 `Profile.slot_max` 缺省 `None`，换层过孔阵连成的槽只记进 `metrics.json` 的 `slots`（表里一行“[槽]”），走线文件 `PROFILE = {"slot_max": ...}` 设了才出 `SLOT`；`planning.bga_fan` 不写 `[block] slot_max` 就不加槽的约束，只报最长的链。H743 的 `slot_max = 3.0` 没删：它是规划程序里的约束（台阶行和惰性割），删了重新规划可能出不同的 `bga_fan.json`，文件里注明“只为复现 2026-11-23 的方案，不是新板的上限”；老模型 `planning.bga_plan` 仍要一个值（没有时报错退出 2）。两块板的走线文件都没有用换层过孔阵，`SLOT` 一直是 0；H743 的 `routes_sdram.py` 在副本上快速构建，58 根线的长度和过孔数和 `out/final` 逐根相同。
+- 2026-11-24 · process · cite · PROC-15 · 上一个收件箱留下的“SPEC.md 和 copper.sketch 里还点着搬走的脚本”做了：H743 的 SPEC 第 6、11、14.2 节和第 16 节 2026-11-21 一条里的脚本名和路径改成 `Tools/KiCadDesignTools/` 下的位置（`probes/line_order/`），第 16 节记了一行；copper.sketch 的五行注释同样改了。只动名字和路径；草图解析前后相同（34 块、303 个顶点，去掉原文行后的解析结果逐项相同，检查 0 个问题）。
