@@ -1,6 +1,7 @@
 """Generate steval_fcu001v2.kicad_sch.
 
-    D:\\KiCad\\bin\\python.exe steval_fcu001v2\\gen_sch.py
+    D:\\KiCad\\bin\\python.exe -m steval_fcu001v2.gen_sch      (from the repository root: it imports
+                                                           Tools.KiCadDesignTools, so running the file itself fails)
 
 Re-capture of ST's STEVAL-FCU001V2 flight controller schematic (schematic pack
 Rev 2, June 2024, in ref/). Reference designators follow ST's so the result can

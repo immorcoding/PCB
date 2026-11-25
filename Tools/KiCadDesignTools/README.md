@@ -113,6 +113,11 @@ address window against `tests/demo_board/expected.json`; not part of the default
 
 Several older tools read `sys.argv` when imported (script style); run them only as commands.
 
+The two older boards (`stm32f411_minsys/`, `steval_fcu001v2/`) keep their own scripts. Their `gen_sch.py` imports
+`Tools.KiCadDesignTools.schematic.kisch`, so it runs only in module form from the repository root
+(`D:\KiCad\bin\python.exe -m stm32f411_minsys.gen_sch`; `schematic.build <board dir> <out>` calls it so); running it
+as a plain file (`python stm32f411_minsys\gen_sch.py`) no longer works: the package is not found.
+
 ## Board values
 
 Numbers the rules put into the rule profile (`docs/rule-profiles/<profile>.md`, table 布局和走线的取值) or the board's

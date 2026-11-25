@@ -1,6 +1,7 @@
 """Generate stm32f411_minsys.kicad_sch (STM32F411CEU6 minimal system board).
 
-    D:\\KiCad\\bin\\python.exe stm32f411_minsys\\gen_sch.py
+    D:\\KiCad\\bin\\python.exe -m stm32f411_minsys.gen_sch      (from the repository root: it imports
+                                                            Tools.KiCadDesignTools, so running the file itself fails)
 
 Used to create the first version of the schematic. Once the schematic is
 edited by hand in KiCad, the .kicad_sch is the source of truth and re-running
