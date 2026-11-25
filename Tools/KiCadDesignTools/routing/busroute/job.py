@@ -220,7 +220,8 @@ def run(routes_file, fast=False, sketch=False, out=None, write_board=False, refi
             "groups": getattr(mod, "GROUPS", None) or {"all": nets}, "ref": getattr(mod, "REF", None),
             "via_limit": getattr(mod, "VIA_LIMIT", None) or (profile.limit(nets[0], "via_max") if nets else None), "via_target": getattr(mod, "VIA_TARGET", None),
             "len_max": getattr(mod, "LEN_MAX", None), "not_routed": c["missing"], "profile": profile.describe()}
-    extra = {"round": getattr(mod, "ROUND", None), "notes": c["job"].notes, "tuning_sites": [s for b in c["job"].buses for s in b.tuning()]}
+    extra = {"round": getattr(mod, "ROUND", None), "notes": c["job"].notes, "tuning_sites": [s for b in c["job"].buses for s in b.tuning()],
+             "slots": {"limit": profile.slot_max, "chains": [x for b in c["job"].buses for x in b.slots]}}
     if c["tuning"] is not None:
         info["built"]["arcs"] = len(arcs)
         extra["tuning"] = c["tuning"]

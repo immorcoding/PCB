@@ -218,6 +218,7 @@ class Bus:
         self.plan, self.kept, self.secs, self.bundles = {}, {}, [], []
         self.cont, self.stitch, self.fields = {}, [], []
         self.problems, self._routes = [], None
+        self.slots = []                                     # chains of merged antipads of the via fields (all, any length)
 
     # ---- input
     def _pt(self, net, p):
@@ -371,7 +372,9 @@ class Bus:
         (via + 2 x plane_clr) keep plane_web of copper between them; rows / step are chosen for that when not
         given. gnd = name of the ground net: stitching vias beside the field, one per row on each side in
         gnd_sides ("L", "R" or "LR"). A bundle added afterwards on another layer starts from these vias.
-        Raises PitchError when a lane cannot pass the via of its neighbour."""
+        Raises PitchError when a lane cannot pass the via of its neighbour. Antipads that still merge into a chain
+        (rows / step given) are listed in self.slots (metrics "slots"); a SLOT finding only when the profile's
+        slot_max is set (no limit by default, RTE-5)."""
         pr = self.profile
         k = len(bundle.legs) - 1 if leg is None else leg
         L = bundle.legs[k]
@@ -439,7 +442,10 @@ class Bus:
             groups.setdefault(root(i), []).append(i)
         for g in groups.values():
             ext = max(ilen(pts[a], pts[c]) for a in g for c in g) + d + 2 * pr.plane_clr
-            if len(g) > 1 and ext > pr.slot_max + 1e-6:
+            if len(g) > 1:                                  # reported always (metrics "slots"); a limit only when set (RTE-5)
+                self.slots.append({"bundle": bundle.name, "leg": k, "vias": len(g), "from": bundle.nets[g[0]], "to": bundle.nets[g[-1]],
+                                   "length": round(ext, 4)})
+            if len(g) > 1 and pr.slot_max is not None and ext > pr.slot_max + 1e-6:
                 self.problems.append(F("SLOT", "%s leg %d via field: the antipads of %d vias (%s .. %s) merge into a slot %.2f mm long in the planes "
                                        "(via %g + 2 x %g plane clearance, %g web; longest accepted %.2f): use more rows or a longer step (rows=%d, step=%s now)" % (
                                            bundle.name, k, len(g), bundle.nets[g[0]], bundle.nets[g[-1]], ext, d, pr.plane_clr, pr.plane_web, pr.slot_max, rows,

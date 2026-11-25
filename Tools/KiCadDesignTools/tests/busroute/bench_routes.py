@@ -11,7 +11,8 @@ Twelve nets between U1 (UFBGA 0.65 mm, centre 13, 12) and U2 (BGA-90 0.8 mm, cen
   hand    FMC_D10 (L1 only) and FMC_D11 (L1 - L6 - L1, a 0.45 / 0.20 via outside and a 0.30 / 0.15 via inside
           a rule area) written as plain coordinate lists
 BUSROUTE_BENCH selects a variant: ok; hand / main10 (the two halves as separate groups); and the negative
-cases order, pitch, viapad, channel.
+cases order, pitch, viapad, channel; slot / slot_limit: the via field of `under` in two rows 0.3 mm apart, whose
+antipads merge into one chain (reported; a SLOT finding only with slot_limit, PROFILE slot_max 1.5, RTE-5).
 """
 import os
 from Tools.KiCadDesignTools.routing.busroute import Bundle
@@ -24,6 +25,7 @@ REF = ["FMC_D0"]
 GROUPS = {"trunk": ["FMC_D%d" % i for i in range(6)], "under": ["FMC_D%d" % i for i in range(6, 10)], "hand": ["FMC_D10", "FMC_D11"]}
 VIA_TARGET = 2
 VIEWS = [("bus", 14.5, 9.5, 26.0, 20.5, 90)]
+PROFILE = {"slot_max": 1.5} if VARIANT == "slot_limit" else None     # no slot limit unless a routes file sets one
 DRC_IGNORE = {"skew_out_of_range": "the project rule file matches FMC_D0-D7 as a byte lane; matching is not part of this benchmark"}
 
 
@@ -63,7 +65,8 @@ def routes(job):
     under = Bundle("under", ["FMC_D6", "FMC_D7", "FMC_D8", "FMC_D9"], "L4", anchor="FMC_D6",
                    path=[(19.0, 13.3), (19.6, 13.3), (20.6, 14.3), (23.0, 14.3)], pitch=0.4 / 2 ** 0.5, gaps={0: 0.65, 2: 0.4})
     bus.add(under, start={n: m[n] for n in under.nets})
-    field = bus.vias(under, at=1.7, gnd="GND")              # two rows 0.7 mm apart, chosen by the tool
+    rs = {"rows": 2, "step": 0.3} if VARIANT.startswith("slot") else {}
+    field = bus.vias(under, at=1.7, gnd="GND", **rs)        # two rows 0.7 mm apart, chosen by the tool (slot: 0.3)
     job.notes.append("via field: %d rows, step %.2f, via %g / %g, ground vias %s" % (field.rows, field.step, field.size[0], field.size[1], field.gnd))
     top = Bundle("top", under.nets, "L1", anchor="FMC_D6", path=[(22.3, 14.3), (24.0, 14.3)], pitch=0.4)
     bus.add(top, end={"FMC_D6": "U2.F1", "FMC_D7": [(24.2, 14.7), "U2.F2"], "FMC_D8": "U2.G1", "FMC_D9": [(24.2, 15.5), "U2.G2"]})

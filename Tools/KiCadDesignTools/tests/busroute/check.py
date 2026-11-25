@@ -17,6 +17,9 @@ bench_routes.py and expects:
                     the same copper as the single build (a group build does not disturb other nets)
   negative cases    two lanes that must cross (ORDER), a pitch below the clearance (PitchError with the
                     missing 0.0286 mm), a via on a ball pad (VIAPAD), a channel used twice (CHANNEL)
+  plane slots       (fast) no slot limit by default (RTE-5): the full build's metrics say limit None and no chain;
+                    the via field in two rows 0.3 mm apart merges into one 1.9369 mm chain, reported, no finding;
+                    the same with PROFILE slot_max 1.5 (slot_limit): a SLOT finding, exit 1
   obstacles         part X1 with two plated pads numbered SH and an F.Cu keep-out inside the footprint
                     (bench_obstacles.py): the fast check reports the track over the first SH pad and in the keep-out
   length verdict    metrics.length_check: a geometry-vs-DRC difference fails only nets with a length rule
@@ -367,6 +370,8 @@ def main(argv):
         ts = m["shape"]["track_shape"]
         want(all(ts[k] == 0 for k in ("off-grid", "staircase", "sharp", "tiny")), "track_shape: %r" % ({k: ts[k] for k in ("off-grid", "staircase", "sharp", "crowded", "tiny")},))
         want(m["vias"]["stitching"] == 4 and m["vias"]["max"] == 2 and not m["vias"]["over_limit"], "vias: %r" % (m["vias"],))
+        want(m.get("slots") == {"limit": None, "chains": []} and m["profile"]["slot_max"] is None, "slots: %r, profile slot_max %r" % (
+            m.get("slots"), m["profile"].get("slot_max")))
         want(code == 0 and m["ok"], "the full build did not pass (exit %d)" % code)
         want(len(m.get("pictures", [])) == 4 and all(os.path.getsize(os.path.join(o1, p)) > 20000 for p in m["pictures"]), "pictures: %r" % (m.get("pictures"),))
 
@@ -417,6 +422,14 @@ def main(argv):
              and "0.0286 mm missing" in lv, "negative case pitch: exit %d\n%s" % (cv, lv[-1500:]))
         mv, cv, lv = neg["viapad"]
         want(cv == 1 and any(f["kind"] == "VIAPAD" and "is on pad U2.B1" in f["text"] for f in mv.get("findings", [])), "negative case viapad: exit %d\n%s" % (cv, lv[-1500:]))
+        chain = [{"bundle": "under", "leg": 2, "vias": 4, "from": "FMC_D6", "to": "FMC_D9", "length": 1.9369}]
+        mv, cv, lv = run(tmp, "slot", fast=True)
+        want(cv == 0 and mv.get("slots") == {"limit": None, "chains": chain} and not any(f["kind"] == "SLOT" for f in mv.get("findings", []))
+             and "[槽] 换层过孔阵的避让连成的槽 1 条，最长 1.94 mm" in lv, "plane slots without a limit: exit %d, slots %r\n%s" % (cv, mv.get("slots"), lv[-800:]))
+        mv, cv, lv = run(tmp, "slot_limit", fast=True)
+        want(cv == 1 and mv.get("slots") == {"limit": 1.5, "chains": chain}
+             and [f["kind"] for f in mv.get("findings", []) if f["hard"]] == ["SLOT"] and "merge into a slot 1.94 mm long" in lv,
+             "plane slots with PROFILE slot_max 1.5: exit %d, slots %r\n%s" % (cv, mv.get("slots"), lv[-800:]))
         mv, cv, lv = neg["channel"]
         want(cv == 2 and any(f["kind"] == "CHANNEL" and "U1.P14" in f["text"] and "already carries FMC_D1 (N14)" in f["text"] for f in mv.get("findings", [])),
              "negative case channel: exit %d\n%s" % (cv, lv[-1500:]))
@@ -481,7 +494,7 @@ def main(argv):
             print("\n".join("  " + f for f in fails))
         else:
             print("OK busroute: 12 nets (ring 0-3 fan-out, bundle with corner and per-leg gaps, join, via field), DRC clean, "
-                  "geometry = DRC lengths, 2 builds identical, 2 groups = 1 build, 4 negative cases, obstacles (shield tab, footprint keep-out), "
+                  "geometry = DRC lengths, 2 builds identical, 2 groups = 1 build, 4 negative cases, plane slots (no limit; PROFILE limit), obstacles (shield tab, footprint keep-out), "
                   "length verdict, fan-out @layer and keep, a shared group of ties; "
                   "tuning (bundle slots, bump, free site both-sided, raised amp, missing, humps=n, summed reference group, obstacle board, budget %.1f s) %.0f s; %.0f s%s" % (
                       times.get("budget", 0), times.get("tune", 0), time.time() - t0, "; kept " + tmp if keep else ""))

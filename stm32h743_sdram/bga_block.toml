@@ -16,7 +16,10 @@ xtal_box = [29.0, 33.5, 34.0, 38.5]   # x0 y0 x1 y1: L1 kept for the crystals (n
 xtal_prefixes = ["HSE_", "LSE_"]      # nets drawn at the crystal width
 xtal_width = 0.254
 bus_width = 0.1016               # the bus width (the classes' minimum) ball options are checked at
-slot_max = 3.0                   # --slot-max default: longest chain of joined plane clearance holes (U31)
+slot_max = 3.0                   # --slot-max default: longest chain of joined plane clearance holes (U31). Kept only to
+                                 # reproduce the 2026-11-23 plan (bga_fan.json; the program cuts chains over it, so without
+                                 # it a replan can differ) and for bga_plan, which needs one; not a limit for new boards
+                                 # (RTE-5: no slot limit; leave it out and bga_fan only reports the chains)
 
 [block.caps_100n]                # the 100 nF parts in naming order (SPEC 4)
 U201 = ["C201", "C202", "C203", "C204", "C205", "C206", "C207", "C208", "C209", "C210", "C211", "C212", "C213", "C214", "C215"]

@@ -13,7 +13,8 @@ Where each number comes from:
                        plated part holes (hole to copper, hole to hole), via-count and length limits per net class
                        (.kicad_dru)
   not in any file      `extend` (how far past a rule-area edge a track stays thin), `chamfer` (the `sharp`
-                       rule of docs/design-rules.md), `lane_min_seg`, the plane numbers of a via field
+                       rule of docs/design-rules.md), `lane_min_seg`, the plane numbers of a via field (`slot_max`:
+                       no limit unless a routes file sets one, RTE-5)
 A routes file may override any attribute with PROFILE = {"extend": 0.3, ...}.
 """
 import fnmatch, json, os, re
@@ -34,7 +35,8 @@ class Profile:
     chamfer = 0.35            # `sharp`: two corners the same way closer than this read as a right angle
     plane_clr = 0.2           # a plane's clearance round a via of another net (antipad = via + 2 x this)
     plane_web = 0.1           # copper that must remain between two antipads
-    slot_max = 1.5            # longest chain of merged antipads accepted in a via field, mm
+    slot_max = None           # longest chain of merged antipads accepted in a via field, mm; None = no limit (RTE-5:
+                              # the chains are only reported); a routes file may set one with PROFILE = {"slot_max": ..}
     tracks_per_channel = 1    # tracks between two neighbouring pads / two neighbouring vias
     area_free_classes = ()    # net classes whose pieces with a given width keep it inside rule areas (the .kicad_dru
                               # lets them be wider there, e.g. PWR); every other track is w_area inside an area

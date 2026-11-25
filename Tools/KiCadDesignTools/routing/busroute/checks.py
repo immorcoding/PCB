@@ -11,7 +11,8 @@ Finding kinds (HARD ones fail a build; SHAPE_KINDS are only reported in sketch m
   PATH     not one pad-to-pad line                  VIAS   more vias than the limit
   LEN      longer than the limit                    EDGE   too close to the board edge
   KEEPOUT  inside a keep-out area                   ZONE   a track through another net's pour
-  ORDER, PITCH, FAN, SLOT, CHANNEL                  from the generators (bundle.py, fanout.py)
+  ORDER, PITCH, FAN, SLOT, CHANNEL                  from the generators (bundle.py, fanout.py); SLOT only when the
+                                                    routes file's PROFILE sets slot_max (no limit by default, RTE-5)
   TUNE     a net that does not reach its length target (missing mm), a site off its route   (tune.py)
   SHAPE, CORNER, SHARP, ARC                         0/45/90, shortest segment, corners (design-rules.md);
                                                     serpentine arcs: tangency, radius, pieces, heights, clr (tune.py)

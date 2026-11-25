@@ -5,7 +5,7 @@ decided together by one mixed integer program (scipy / HiGHS) on the half-pitch 
 as it is on the board.
 
     D:\\KiCad\\bin\\python.exe -m Tools.KiCadDesignTools.planning.bga_dump <board dir> <base board> --out <geo.json>   (pcbnew: the state)
-    python -m Tools.KiCadDesignTools.planning.bga_fan <board dir> --geo <geo.json> --out <dir> [--slot-max 3.0] [--time 120]  (system Python)
+    python -m Tools.KiCadDesignTools.planning.bga_fan <board dir> --geo <geo.json> --out <dir> [--slot-max MM] [--time 120]  (system Python)
 
 The base board is the real board with the groups power_bga, mcu_east, mcu_south (and the newer MCU groups) stripped
 and no fill (core.boardtext unfill / strip); its bottom parts (H743: C201-C219 and C301-C308) are taken out of the
@@ -29,8 +29,10 @@ The program (per package, the MCU with everything, the SDRAM with its supply bal
   points    one thing per lattice point and layer (one track between two vias / balls), capacitor pads block L6
   caps      each bottom part on two sites in line over a via of each of its nets (a ball's via, else one of its own),
             every 3.3 V ball with a 100 nF supply pad within CAP_REACH
-  slots     no chain of joined plane clearance holes (L2: every via but GND; L5: every via but the block's net)
-            longer than --slot-max: added lazily, exact (bga_grid.Slots over the fixed vias and the chosen ones)
+  slots     only with a limit (--slot-max, else bga_block.toml [block] slot_max; neither: no limit, RTE-5): no chain
+            of joined plane clearance holes (L2: every via but GND; L5: every via but the block's net) longer than
+            it: added lazily, exact (bga_grid.Slots over the fixed vias and the chosen ones). Without a limit the
+            chains are only reported (fan.json "longest", fan.log)
 
 The rule values (vias, widths, clearances in and out of the rule areas) are the geo's (planning.bga_dump: the board's
 rule files), the planes' zone values the copper sketch's (bga_grid.configure). Environment switches for experiments
@@ -86,7 +88,7 @@ IMPORTANT = None                 # net prefixes that prefer IMPORTANT_LAYER (nex
 IMPORTANT_LAYER = None
 SIDES = None                     # net -> the MCU sides it may leave through; nets not listed: any side
 NOVDDA = None                    # the VDDA filter's parts, zone and net; taken out of the state when its drop is true
-SLOT_MAX = None                  # --slot-max default
+SLOT_MAX = None                  # --slot-max default: [block] slot_max, optional (None = no limit, RTE-5)
 AREA = None                      # {ref: its BGA rule area name} (place.toml [rule_areas])
 BUS_W = None                     # the bus width the options are checked at
 BUS_PREFIX = None                # the SDRAM bus's nets ([power] bus_prefix): not fanned out here
@@ -135,7 +137,7 @@ def setup(cfg):
     IMPORTANT_LAYER = f["important_layer"]
     SIDES = dict(f["sides"])
     NOVDDA = f["novdda"]
-    SLOT_MAX = b["slot_max"]
+    SLOT_MAX = b.get("slot_max")
     INNER = G.LAYERS[1:]
     AREA = {a["ref"]: a["name"] for a in cfg.datafile("place.toml")["rule_areas"]["areas"]}
     BUS_W = b["bus_width"]
@@ -251,7 +253,7 @@ def site_ok_fixed(f, cc, fixed_vias):
 
 class Fan:
     def __init__(self, geo, slot_max, log=print):
-        self.log, self.slot_max = log, slot_max
+        self.log, self.slot_max = log, (slot_max if slot_max else None)     # None or 0: no slot limit (RTE-5)
         self.geo = g = state(geo)
         t0 = time.time()
         reserve = [G.Item("<xtal>", (G.TOP,), "poly", poly=[(XTAL_BOX[0], XTAL_BOX[1]), (XTAL_BOX[2], XTAL_BOX[1]),
@@ -415,9 +417,10 @@ class Fan:
             uv = lat.uv(p)
             if uv[0] % 2 and uv[1] % 2 and math.dist(lat.xy(*uv), p) < 1e-3:
                 fixed_at[uv] = n
-        reach = (self.slot_max - f.via_in[0] - 2 * G.PLANE_CLR) / lat.pitch
-        paths = (staircases(reach * reach + 1e-9) if G.merge_dist(f.via_in[0], f.via_in[0]) > lat.pitch and not os.environ.get("FAN_NOSTAIR")
-                 and self.slot_max < 10 else [])        # no slot limit (user 2026-11-23): --slot-max 0 or large
+        limited = self.slot_max is not None and self.slot_max < 10           # no staircase rows without a limit or a large one
+        reach = (self.slot_max - f.via_in[0] - 2 * G.PLANE_CLR) / lat.pitch if limited else 0.0
+        paths = (staircases(reach * reach + 1e-9) if limited and G.merge_dist(f.via_in[0], f.via_in[0]) > lat.pitch
+                 and not os.environ.get("FAN_NOSTAIR") else [])
         all_pts = [(uu, vv) for uu in range(lat.u0, lat.u1 + 1) for vv in range(lat.v0, lat.v1 + 1)]
         cuts = []
         for rnd in range(int(os.environ.get("FAN_ROUNDS", "30"))):
@@ -583,7 +586,7 @@ class Fan:
                         chosen[s_] = n_
             vias = [(n, p, d) for n, p, d, h in self.fixed_vias] + [(n_, pos(s_), f.via_in[0]) for s_, n_ in chosen.items()]
             S = G.Slots(self.geo, vias)
-            bad = [c for c in S.longest() if c[0] > self.slot_max + 1e-6]
+            bad = [c for c in S.longest() if self.slot_max is not None and c[0] > self.slot_max + 1e-6]
             mine = {tuple(map(float, pos(s_))): s_ for s_ in chosen}
             new_cuts = set()
             for ln, pl, mem in bad:
@@ -595,9 +598,14 @@ class Fan:
             # sorted: a set of (site, plane) tuples iterates in the order of the string hash seed, and the order of
             # the rows changes the solver's answer (PYTHONHASHSEED)
             new_cuts = sorted((c for c in new_cuts if c not in cuts), key=str)
-            self.log("  %s round %d: %d vars, %d rows (%d staircase), objective %.2f, %.1f s; chains over %.2f: %d (%s)" % (
-                ref, rnd + 1, len(lp.c), len(lp.lo), nst, res.fun, time.time() - t1, self.slot_max, len(bad),
-                ", ".join("%.2f %s" % (b_[0], b_[1]) for b_ in bad[:6])))
+            if self.slot_max is None:
+                self.log("  %s round %d: %d vars, %d rows (%d staircase), objective %.2f, %.1f s; no slot limit, longest chains: %s" % (
+                    ref, rnd + 1, len(lp.c), len(lp.lo), nst, res.fun, time.time() - t1,
+                    ", ".join("%.2f %s" % (b_[0], b_[1]) for b_ in S.longest()[:6]) or "none"))
+            else:
+                self.log("  %s round %d: %d vars, %d rows (%d staircase), objective %.2f, %.1f s; chains over %.2f: %d (%s)" % (
+                    ref, rnd + 1, len(lp.c), len(lp.lo), nst, res.fun, time.time() - t1, self.slot_max, len(bad),
+                    ", ".join("%.2f %s" % (b_[0], b_[1]) for b_ in bad[:6])))
             if not new_cuts:
                 break
             cuts += new_cuts
@@ -768,7 +776,7 @@ def main(argv=None):
     ap.add_argument("board", help="board folder (board.toml, bga_block.toml)")
     ap.add_argument("--geo", required=True)
     ap.add_argument("--out", required=True)
-    ap.add_argument("--slot-max", type=float, default=None, help="default: bga_block.toml [block] slot_max")
+    ap.add_argument("--slot-max", type=float, default=None, help="default: bga_block.toml [block] slot_max; neither: no limit (RTE-5)")
     ap.add_argument("--time", type=float, default=120.0)
     ap.add_argument("--only", default=None, help="packages, comma-separated (default: the MCU and the SDRAM)")
     ap.add_argument("--staged", action="store_true", help="supply vias and capacitors first, then the signal fan-out")
