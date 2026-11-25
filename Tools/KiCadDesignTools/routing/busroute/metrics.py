@@ -224,6 +224,12 @@ def table(m):
         od["crossings"], od["order_problems"], "，".join("%s %.3f" % kv for kv in od["direct_spread"].items()) or "—"))
     cl = m["clearance"]
     A("[间距] " + "，".join("%s %d" % (k, n) for k, n in cl.items()))
+    sl = m.get("slots")
+    if sl is not None:
+        ch = sorted(sl["chains"], key=lambda x: -x["length"])
+        A("[槽] 换层过孔阵的避让连成的槽 %d 条%s；上限 %s" % (
+            len(ch), "，最长 %.2f mm（%s 第 %d 段，%d 个过孔 %s .. %s）" % (ch[0]["length"], ch[0]["bundle"], ch[0]["leg"], ch[0]["vias"], ch[0]["from"], ch[0]["to"]) if ch else "",
+            "%g mm（走线文件 PROFILE 设的）" % sl["limit"] if sl["limit"] is not None else "无（RTE-5：只报）"))
     A("[铜皮] 不适用（本工具不铺铜）")
     A("[规则生效] %s" % (("金丝雀 " + ("OK" if m["rules"]["canary"]["ok"] else "失败：" + m["rules"]["canary"]["text"])) if m.get("rules") and m["rules"].get("canary") else "没跑（快速构建或没有规则文件）"))
     A("[构建] %.1f 秒%s" % (m.get("build_seconds", 0), "，第 %s 轮" % m["round"] if m.get("round") else ""))

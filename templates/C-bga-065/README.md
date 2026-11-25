@@ -32,6 +32,7 @@
 | 过孔数上限：个数 | 规则文件 `sdram_via_max.via_count.max` | SPEC；走线文件 `VIA_LIMIT` | |
 | 电源层块间的缝 | SPEC | `copper.sketch:gap` | `cu_sketch` 按草图的参数生成铺铜区 |
 | 外层铺铜最小铜宽 | SPEC | `copper.sketch` 铺地区的 `minwidth`（和局部铜皮的默认 `minwidth`） | |
-| 平面上过孔避让连成的槽 | SPEC | — | “不设上限”；`[copper.slots] report`、`[route.table] slot_mark` / `slot_list` 只是列出的门槛，不是上限；仍按上限用的有两处：`busroute` 换层过孔阵的 `SLOT` 检查（代码里 `Profile.slot_max = 1.5`，走线文件的 `PROFILE` 可改）和离线规划器 `planning.bga_fan` 的 `bga_block.toml [block] slot_max`（只在重新规划时） |
+| 平面上过孔避让连成的槽 | SPEC | — | “不设上限”；`[copper.slots] report`、`[route.table] slot_mark` / `slot_list` 只是列出的门槛，不是上限；`busroute` 换层过孔阵的 `SLOT` 检查和离线规划器 `planning.bga_fan` 2026-11-24 起缺省不限、只报槽长，板子要上限时才写（走线文件的 `PROFILE = {"slot_max": ...}`、`bga_block.toml [block] slot_max`） |
+| 铺地里不带焊盘的小片，面积阈值 | SPEC | `board.toml:finish.pour.island_min` | 收尾一步的 `finishing.pour` 按它删小片（KiCad 的孤岛面积） |
 
 改值的顺序：先改为准的一份（SPEC 的“已定”项先问用户），再改副本，`spec_check` 通过才算改完。

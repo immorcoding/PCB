@@ -299,6 +299,7 @@ class Build:
             args += ["--silk-refs", lay["silk_refs"]]
         args += ["--limit", "%g" % self.cfg.need("layout.decap_limit")]      # LAY-2: the profile's value, SPEC 本板取值
         args += ["--ground", self.cfg.need("power.ground")]                  # a decoupling capacitor has a pad on it
+        args += ["--rules", self.D]                                          # LAY-4: rule files, [layout] big_cap_min
         args += ["--json", O + "/place_check.json"]
         rc, data = self.r.py("Tools.KiCadDesignTools.placement.place_check", *args, out=O + "/place_check.txt", ok=KEEP)
         echo(show(data))

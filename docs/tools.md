@@ -60,7 +60,7 @@ D:\KiCad\bin\python.exe -m Tools.KiCadDesignTools.regress                       
 
 ## 指标表的列（PROC-4）
 
-每次构建输出同一张，数字只从板文件和 DRC 报告取。现在分在三张表里：布局一步的 `placement.place_check` 和 `placement.layout_probe`，铜皮一步的 `copper.copper_table`（`out/copper/table.txt`），走线一步的 `analysis.route_table`（`out/<route>/table.txt`，总线组那部分来自 `routing/busroute/metrics.py`）；两次构建按数字比用 `analysis.compare_runs`（驱动的 `compare`）。
+每次构建输出同一张，数字只从板文件和 DRC 报告取。现在分在三张表里：布局一步的 `placement.place_check` 和 `placement.layout_probe`，铜皮一步的 `copper.copper_table`（`out/copper/table.txt`），走线一步的 `analysis.route_table`（`out/<route>/table.txt`，总线组那部分来自 `routing/busroute/metrics.py`）；两次构建按数字比用 `analysis.compare_runs`（驱动的 `compare`）：有方向的项变差了列在最前（“变差 / worse”），有就退出 1，`--report-only` 只报。
 
 | 组 | 列 |
 |---|---|

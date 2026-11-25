@@ -157,6 +157,7 @@ J1 +3V3（外部供电）→ C9 4.7 µF → +3V3（L5 的块）→ U1 的 VDD、
 | 电源层块间的缝 | 0.5 mm（L5 的 `+3V3` 块到 L5 的地） | `copper.sketch:gap` | PWR-8 |
 | 外层铺铜最小铜宽 | 0.3 mm（L1、L6 的铺地）；局部铜皮 0.2 mm | `copper.sketch:L1_GND.minwidth`；`copper.sketch:minwidth` | PWR-5 |
 | 平面上过孔避让连成的槽 | 不设长度上限，只报数 | — | RTE-5；用户 2026-11-23 在 H743 板上定 |
+| 铺地里不带焊盘的小片，面积阈值 | 2.0 mm² | `board.toml:finish.pour.island_min` | FIN-4、PWR-5；沿用 H743 板的值（规格档建议新板从 5 mm² 起，这块板没改）；带地焊盘且有过孔的小片保留 |
 
 ## 8. 板子尺寸和布局约定
 

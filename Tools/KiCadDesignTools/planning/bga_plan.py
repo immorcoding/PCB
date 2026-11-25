@@ -129,10 +129,12 @@ IDENTITY = None                        # the SDRAM's pin functions (line_order.p
 CLOCK = CLOCK_R = CLOCK_RES = None     # the SDRAM clock, its piece after the series resistor, the resistor
 BUS_W = None                           # the bus width every signal is drawn at up to its gate
 DEFAULT_W = None                       # a net's width outside the rule areas when the geo has none
-SLOT_MAX = None                        # --slot-max default
+SLOT_MAX = None                        # --slot-max default ([block] slot_max; this model needs one, see main)
 SLOT_REPORT = None                     # a second slot length the report lists chains over
 LANE_WINDOW = LANE_MARGIN = None       # byte-lane target = longest - window + margin
 GROUND_FAR = None                      # signal vias farther than this from a ground via are listed
+NEED_SLOT = ("bga_plan (the try/fanout-first model) is written round a plane-slot length: give --slot-max or bga_block.toml "
+             "[block] slot_max (RTE-5 sets no limit; bga_fan runs without one)")
 SPEC = None                            # length limits of the estimates ([plan.spec])
 SEEDS = None                           # whole layer patterns of the fence mode ([plan.seeds])
 XTAL_SEC_SIDE = None                   # index of the crystals' side in "ESWN" (the sections)
@@ -187,7 +189,7 @@ def setup(cfg):
     CLOCK, CLOCK_R = p["clock"]
     CLOCK_RES = p["clock_resistor"]
     BUS_W, DEFAULT_W = b["bus_width"], p["default_width"]
-    SLOT_MAX = b["slot_max"]
+    SLOT_MAX = b.get("slot_max")        # optional for bga_fan (RTE-5: no limit); this model still needs one
     SLOT_REPORT = p["slot_report"]
     LANE_WINDOW, LANE_MARGIN = p["lane_window"], p["lane_margin"]
     GROUND_FAR = p["ground_far"]
@@ -2299,6 +2301,9 @@ def main(argv):
         name = opt("--name", "x%g_y%g_r%g" % (pos[0], pos[1], rot))
         lanes = tuple(int(ch) for ch in opt("--lanes", "".join(str(i) for i in range(NLANES))))
         out = os.path.join(os.path.dirname(os.path.abspath(opt("--geo"))), name)
+        if opt("--slot-max", SLOT_MAX) is None:
+            print(NEED_SLOT)
+            return 2
         plan, m = run_plan(geo, pos, rot, float(opt("--slot-max", SLOT_MAX)), lanes, name, out, do_draw="--no-draw" not in argv, tx=float(opt("--time", 150.0)),
                            order=opt("--order", "fence"))
         print(plan_text(plan).split("\n\nRIVERS")[0])
@@ -2322,6 +2327,9 @@ def main(argv):
         return check_plan(geo, json.load(open(opt("--plan"), encoding="utf-8")))
     bga_check = _optional("bga_check")                       # the per-ball verdict only; check --plan does without it
     nets = opt("--nets").split(",") if "--nets" in argv else None
+    if opt("--slot-max", SLOT_MAX) is None:
+        print(NEED_SLOT)
+        return 2
     r = bga_check.check_state(geo, float(opt("--slot-max", SLOT_MAX)), nets, log=None, joint="--joint" in argv)
     if "--out" in argv:
         json.dump(r, open(opt("--out"), "w", encoding="utf-8"), indent=0)
