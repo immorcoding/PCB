@@ -7,7 +7,11 @@ outside the rule areas and the room beside them, read from the board file.
 board: default the board folder's own board file. board.toml [tune_sites]: layers (the SDRAM's signal layers), clock
 (the clock's pieces, summed), addr (address / command nets), area_prefix (the rule areas the sites keep out of), box
 (x0 y0 x1 y1: the board less the edge clearance); the byte lanes from [schematic.swap] (data_net, mask_net, lanes:
-8 data bits and one mask per lane); [power] ground (its pours are no obstacle); the origin from [board] origin.
+8 data bits and one mask per lane); [power] ground (its pours are no obstacle); the origin from [board] origin;
+[route.table] straight (the shortest straight that is a site). The serpentine's numbers are the bus routes file's
+TUNING (the [[route.group]] named by [route.table] bus): keep, clr, amp .. amp_max, area_gap, pitch (default, per
+net), margin (the --margin default); a track's half width is its net class's (the board's .kicad_pro), the pours'
+clearance the copper sketch's outer-layer clearance.
 Lengths: track (arcs by their true length) plus the height between the layers a via joins (the via heights of the
 board's stackup, Tools.KiCadDesignTools.core.stackup: KiCad 10's Python does not expose the stackup list);
 --natural takes the lengths from a busroute metrics.json instead (its tuning "natural", i.e. without the
@@ -16,9 +20,10 @@ Needs:
   byte lane k (D8k..D8k+7, NBLk): (longest of the lane - spread + margin) - length
   address / command against the clock C = the clock's pieces summed: the clock is aimed at (longest address - window +
   margin), each address at (that clock - window + margin); the clock's row is its pieces' straights (pitch 0.5 there).
-For each straight of 2.5 mm or more at the outside width: per side, the largest gain of ONE block of equal humps
-(pitch 0.3, clock 0.5; 0.7 mm kept at both ends, amplitude 0.5 to 2.0, RTE-2: n * (2a - 0.858 p)) that fits between
-the foreign copper found there (0.19 mm kept), and the nets that limit it. Neighbours that also need length compete
+For each straight of [route.table] straight (2.5 mm) or more at the outside width: per side, the largest gain of ONE
+block of equal humps (TUNING pitch, H743 0.3, clock 0.5; keep 0.7 mm at both ends, amplitude amp 0.5 to amp_max 2.0,
+RTE-2: n * (2a - 0.858 p)) that fits between the foreign copper found there (clr 0.19 mm kept), and the nets that
+limit it. Neighbours that also need length compete
 for the same room: the table is a budget, not a plan. Coordinates are local mm (board mm - origin). Run it on a build
 without the serpentines (the routes file with NOTUNE=1).
 """
@@ -27,7 +32,8 @@ import pcbnew
 
 from Tools.KiCadDesignTools.core import config, stackup
 
-KEEP, CLR, AMAX, REACH = 0.7, 0.19, 2.0, 2.3
+AMPS = (0.5, 0.6, 0.75, 1.0, 1.25, 1.5, 1.75, 2.0)   # the hump heights tried (method), within TUNING amp .. amp_max
+PROBE = 0.3                      # the room beside a straight is probed this far beyond amp_max (blockers listed)
 
 
 def dseg(px, py, s):
@@ -38,10 +44,10 @@ def dseg(px, py, s):
     return math.hypot(px - x1 - t * dx, py - y1 - t * dy)
 
 
-def block_gain(prof, P):
+def block_gain(prof, P, amps):
     """prof = [(station, amax)] every 0.2 mm. Best single block: (gain, s0, s1, a, n)."""
     best = (0, 0, 0, 0, 0)
-    for h in (0.5, 0.6, 0.75, 1.0, 1.25, 1.5, 1.75, 2.0):
+    for h in amps:
         i = 0
         while i < len(prof):
             if prof[i][1] >= h:
@@ -72,7 +78,21 @@ def main(argv):
     def opt(name, d):
         return float(argv[argv.index(name) + 1]) if name in argv else d
     BOARD = A[0] if A else cfg.pcb
-    SPREAD, MARGIN, WINDOW = opt("--spread", 5.0), opt("--margin", 0.3), opt("--window", 20.0)
+    # the serpentine's numbers: the bus routes file's TUNING (busroute tune.DEFAULTS where it says nothing)
+    from Tools.KiCadDesignTools.routing.busroute import tune
+    bus = cfg.need("route.table.bus")
+    rmod = cfg.module(os.path.splitext(next(g["file"] for g in cfg.groups if g["name"] == bus))[0])
+    if not getattr(rmod, "TUNING", None):
+        print("%s has no TUNING (run without NOTUNE in the environment)" % rmod.__name__)
+        return 2
+    TU = dict(tune.DEFAULTS, **rmod.TUNING)
+    KEEP, CLR, AMP, AMAX, AREA_GAP = TU["keep"], TU["clr"], TU["amp"], TU["amp_max"], TU["area_gap"]
+    REACH = AMAX + PROBE
+    AMPL = sorted({AMP, AMAX} | {h for h in AMPS if AMP <= h <= AMAX})
+    STRAIGHT = cfg.need("route.table.straight")
+    pr = cfg.rules()                                        # the nets' class widths (the board's .kicad_pro)
+    ZCLR = cfg.copper_sketch().p["clearance"] / 1e6         # pours on the signal layers: the sketch's outer clearance
+    SPREAD, MARGIN, WINDOW = opt("--spread", 5.0), opt("--margin", TU["margin"]), opt("--window", 20.0)
     CLOCK = list(ts["clock"])
     ADDR = list(ts["addr"])
     GND = cfg.need("power.ground")
@@ -178,33 +198,35 @@ def main(argv):
             need[n] = target["addr"] - LEN[n]
 
     def room(layer, net, px, py, nx, ny, obs):
-        """Largest t (<= REACH) so that the centre line may go to p + n*t: copper edge (0.0508) + CLR clear of everything."""
+        """Largest t (<= REACH) so that the centre line may go to p + n*t: copper edge (half the net's class width) +
+        CLR clear of everything."""
         S, C, R, ZN = obs
+        hw = pr.width(net) / 2
         t, blocker = 0.0, None
         while t < REACH:
             t2 = t + 0.05
             x, y = px + nx * t2, py + ny * t2
             hit = None
             for s in S:
-                if dseg(x, y, s) < s[4] / 2 + 0.0508 + CLR:
+                if dseg(x, y, s) < s[4] / 2 + hw + CLR:
                     hit = s[5]; break
             if not hit:
                 for c in C:
-                    if math.hypot(x - c[0], y - c[1]) < c[2] + 0.0508 + CLR:
+                    if math.hypot(x - c[0], y - c[1]) < c[2] + hw + CLR:
                         hit = c[3] + "(via)"; break
             if not hit:
                 for r in R:
                     ddx = max(r[0] - x, 0, x - r[2]); ddy = max(r[1] - y, 0, y - r[3])
-                    if math.hypot(ddx, ddy) < 0.0508 + CLR:
+                    if math.hypot(ddx, ddy) < hw + CLR:
                         hit = r[4] + "(pad)"; break
             if not hit:
                 for r in areas:
                     ddx = max(r[0] - x, 0, x - r[2]); ddy = max(r[1] - y, 0, y - r[3])
-                    if math.hypot(ddx, ddy) < 0.0508 + 0.127:
+                    if math.hypot(ddx, ddy) < hw + AREA_GAP:
                         hit = r[4]; break
             if not hit:
                 for o, zn in ZN:
-                    if o.Contains(pcbnew.VECTOR2I(pcbnew.FromMM(x + OX), pcbnew.FromMM(y + OY)), -1, pcbnew.FromMM(0.0508 + 0.2)):
+                    if o.Contains(pcbnew.VECTOR2I(pcbnew.FromMM(x + OX), pcbnew.FromMM(y + OY)), -1, pcbnew.FromMM(hw + ZCLR)):
                         hit = zn + "(zone)"; break
             if not hit and not (BOX[0] < x < BOX[2] and BOX[1] < y < BOX[3]):
                 hit = "edge"
@@ -219,15 +241,16 @@ def main(argv):
     ORDER = list(lanes) + ["clock", "addr"]
     out = []
     for net in sorted(need, key=lambda n: (ORDER.index(group[n]), [int(t) if t.isdigit() else t for t in re.split(r"(\d+)", n)])):
-        P = 0.5 if net in CLOCK else 0.3
+        P = TU["pitch"].get(net, TU["pitch"]["default"])
+        w_out = pr.width(net)
         rows = []
         for l in LAY.values():
             for s in segs[l]:
-                if s[5] != net or s[4] < 0.1:
+                if s[5] != net or s[4] < w_out - 1e-6:          # the outside width only (not the rule areas' 0.09)
                     continue
                 x1, y1, x2, y2 = s[:4]
                 L = math.hypot(x2 - x1, y2 - y1)
-                if L < 2.5 or (in_area(x1, y1) and in_area(x2, y2) and in_area((x1 + x2) / 2, (y1 + y2) / 2)):
+                if L < STRAIGHT or (in_area(x1, y1) and in_area(x2, y2) and in_area((x1 + x2) / 2, (y1 + y2) / 2)):
                     continue
                 ux, uy = (x2 - x1) / L, (y2 - y1) / L
                 bx0, by0, bx1, by1 = min(x1, x2) - 3, min(y1, y2) - 3, max(x1, x2) + 3, max(y1, y2) + 3
@@ -246,7 +269,7 @@ def main(argv):
                         if h:
                             blk[h] = blk.get(h, 0) + 1
                         st += 0.2
-                    g = block_gain(prof, P)
+                    g = block_gain(prof, P, AMPL)
                     res[side] = (g, sorted(blk, key=lambda k: -blk[k])[:3])
                 rows.append((l, (round(x1, 2), round(y1, 2)), (round(x2, 2), round(y2, 2)), round(L, 2), res))
         cap = sum(max(r[4]["R"][0][0], r[4]["L"][0][0]) for r in rows)
