@@ -19,9 +19,31 @@ D:\KiCad\bin\python.exe -m Tools.KiCadDesignTools.build <板目录> <步骤> [--
 D:\KiCad\bin\python.exe -m Tools.KiCadDesignTools.regress                               （全部基准，PROC-15）
 ```
 
-- 构建驱动（`Tools/KiCadDesignTools/build.py`）读板目录的 `board.toml`，步骤是 `project`、`rules`、`sch`、`pcb-update`、`layout`、`copper`、`route`、`finish`、`checks`、`publish`、`all`、`compare`，新板用 `init`；每步的内容和耗时见驱动开头的说明。`--dry-run` 只打印命令。板目录只放数据（`board.toml`、`place.toml`、`silk.toml`、`rules_cases.py`、`routes_*.py`、`sch/<页>.py` 等），`stm32h743_sdram/build.sh` 只是转给驱动的薄壳。
+- 构建驱动（`Tools/KiCadDesignTools/build.py`）读板目录的 `board.toml`，步骤是 `project`、`rules`、`sch`、`pcb-update`、`layout`、`copper`、`route`、`finish`、`checks`、`publish`、`all`、`compare`，新板用 `init`（之后 `all` 依次跑 project 到 finish；H743 板的 `all` 由 `[build] all` 定为 rules、sch、route、finish）；每步的内容和耗时见驱动开头的说明。`--dry-run` 只打印命令。板目录只放数据（`board.toml`、`place.toml`、`silk.toml`、`rules_cases.py`、`routes_*.py`、`sch/<页>.py` 等），`stm32h743_sdram/build.sh` 只是转给驱动的薄壳。
 - 包里每次启动 kicad-cli 或 KiCad 的 python 都经过 `core/heavy.py` 的 `run`（`kicad_cli`、`kicad_py`）：子进程低于正常优先级、四核，持有全机的重活锁（可重入：持锁进程的子进程凭环境变量 `PCB_HEAVY_TOKEN` 不等自己的父进程），两次之间停顿 `heavy.GAP`（2 秒，上一条更短就停它跑的时长；`PCB_HEAVY_GAP` 可改），并检查退出码：没跑成（退出码不对、超时、该写的报告没写）就报 `HeavyError`。不管从驱动、regress 还是手工直接启动工具都一样。驱动的每一步遇到没跑成的子进程就停，返回它的退出码。工具自己进程里的 pcbnew 工作在第一次重活调用前仍是启动它的优先级，所以手工跑长命令仍从 Git Bash 这样跑：`cmd //c "start /low /affinity F /wait /b D:\KiCad\bin\python.exe -m Tools.KiCadDesignTools.<...>"`。
-- 两块旧板（`stm32f411_minsys/`、`steval_fcu001v2/`）仍用各自目录里的脚本（`steval_fcu001v2/build_pcb.sh`：`place.py` → `route.py` → `silk.py` → 泪滴，顺序不能换）。
+- 两块旧板（`stm32f411_minsys/`、`steval_fcu001v2/`）仍用各自目录里的脚本（`steval_fcu001v2/build_pcb.sh`：`place.py` → `route.py` → `silk.py` → 泪滴，顺序不能换）。它们的 `gen_sch.py` 从包里导入 `kisch`，只能从仓库根按模块跑（`D:\KiCad\bin\python.exe -m stm32f411_minsys.gen_sch`，`schematic.build <板目录> <输出目录>` 就是这样调它）；当普通文件跑（`python stm32f411_minsys\gen_sch.py`）找不到包。
+
+### 各步和工具的事实
+
+以前的命令表（2026-11-24 合并前）里的事实，命令换成现在的模块名；耗时是 H743 板上实测的。模块名省略前缀 `Tools.KiCadDesignTools.`。
+
+- **规则一步**（驱动 `rules`）：工程文件、规则基准板（`rules.fixture`）、金丝雀、规则匹配、等长窗口。规则基准板约 4 分钟（演示板约 2 分钟），2026-11-24 整步 225 s（不含规则匹配）。`project.make_project` 还把已有板文件层表里的铜层行改成 `board.toml` 的 `[layers]`（只改这几行）。
+- **规则是否生效**：`rules.dru_canary <板>` 输出 `OK`。**每条规则是否匹配到对象**：`rules.dru_match <板> [--json F]`，空匹配的规则标 `EMPTY`（RUL-2）；每条规则单独跑一次 DRC（K13），31 条规则的空板约 1 分钟，H743 真板上整套以前约 8 分钟，现在有两次重活之间的停顿，驱动说明按约 30 分钟算。所以 `rules`、`route` 加 `--skip-match` 跳过它（报告里写“skipped”），最后单独跑一次驱动的 `checks`。
+- **等长窗口规则**：`rules.len_rules <板> [--check]` 读板子旁边的 `length_groups.json`，改写 `.kicad_dru` 末尾两行标记之间的生成段（生成段必须在文件最后）；只在内容变了时写；`--check` 只报告是否过期，过期或某个长度和超限时退出 1。窗口按走好的基准线量，所以驱动的 `rules` 和 `route` 两步都跑它（R3 起 `route` 在各组建完、填充和 DRC 之前跑，第一次布通的板不用再跑一次 `rules`；`route --upto` 时不跑）。
+- **走线阻抗**：`rules.impedance [--layer L]`，嘉立创 JLC06161H-3313E 上的单端和差分，二维场解；结果是计算值，以板厂计算器为准（RUL-3）。
+- **铜皮区域草图**：`copper.cu_sketch check <草图> [--board <板>]`；`apply <草图> <板>` 按草图写铺铜区，只动它自己建的 `cu:` / `cu-whole:` 开头的区；`read` 从板读回草图（手改之后，PWR-7）；`measure` 量铜皮那组指标。草图格式见模块开头和 `stm32h743_sdram/copper.sketch`。
+- **总线走线**（线束、BGA 扇出、蛇形等长）：`routing.busroute.build <走线描述.py> [--fast] [--sketch] [--out 目录] [--write-board]`。默认在 `--out` 下的板子副本上构建，加 `--write-board` 才写真板；`--fast` 只做几何检查（57 根不到 1 秒），完整构建含 DRC、长度、指标、图片（一组 7–14 秒，有重活停顿后更长）。描述文件的格式见 `routing/busroute/job.py` 开头；蛇形是 `TUNING` 加补线位置 `Bundle.slot` / `job.slot`，画法和限制在 `routing/busroute/tune.py` 开头；例子 `tests/busroute/bench_routes.py`、`bench_tune.py`。
+- **等长预算**（只算不画）：同上加 `--tuning-budget`：每组的目标（组内最长 − 容差 + 余量）、每根的自然长度和要补多少、每个补线位置在摆幅 amp 和 amp_max 时按 RTE-2 的式子能补多少（不查间距），列出容量不够的网络，有不够的退出码 1；读板不写板，基准板上 0.1 秒。
+- **对时钟的等长组**（基准分段相加）：`TUNING` 的组写成 `{"nets": [...], "ref": ["FMC_SDCLK", "FMC_SDCLK_R"], "lo": -20, "hi": 20}`（不写 `spread`）：先补基准到“最长成员 − hi + 余量”（几段的补线位置按写的顺序分摊），再按补到的基准把短的成员补到“基准 + lo + 余量”。DRC 一侧在 `length_groups.json` 写同样的窗口，`rules.len_rules` 生成规则。
+- **蛇形避让后建的组**：走线描述里 `TUNE_OBSTACLES = <板>`，那块板上别的网络的线、圆弧、过孔也当障碍；驱动的 `route` 一步按 `[route] obstacles_group` 先拷一份去掉该组自己铜的板（`out/<route>/obstacles.kicad_pcb`），见 K52。
+- **补线空间**：`routing.tune_sites <板目录> [<板>] [--natural <metrics.json>] [--json F]`：每根要补的线在规则区外的直线段两侧各能放一块多高、补多少、被谁挡住；在不带蛇形的构建结果上跑（构建时设 `NOTUNE=1`，跑它时不设）。
+- **摆位**：`placement.place <板目录> [--pcb <副本>] [--rot <角度>]`，`--pcb` / `--rot` 在副本上试别的转向。**布局指标**：`placement.place_check`（摆进板框的个数、courtyard 重叠、安装孔周禁布、封装禁布区、连接器到板边、背面焊盘压顶面焊盘、每个电源脚到最近 100 nF 的距离、排针和测试点旁的丝印位置；几秒）。**出线通道**：`placement.escape_check`（每个焊盘单独查能否走出去，最多两个过孔，不算容量；两颗 BGA 加 40 mm 窗口约 15 秒）。驱动的 `layout` 一步把这些和线序草图、铜皮草图检查、`layout_probe` 连起来，约 70 秒。
+- **电源与铜皮一步**（驱动 `copper`）：摆位 → 铺铜区 → 各电源组写真板 → 填充 → 同样的组写线序草图副本、填充、平面开槽 → 出线检查 → 图 → `out/copper/table.txt`；约 3.5 分钟。
+- **走线一步**（驱动 `route`）：剥掉全部组、摆位、铺铜区，按 `[[route.group]]` 的顺序重建（加一组 = 在 `board.toml` 加一个 `[[route.group]]`，`in_report = true` 的进表），等长窗口，填充、DRC、平面开槽、`pour_islands.txt`、图、布局检查，`analysis.route_table` 出 `out/<route>/table.txt`；2026-11-24 实测 697 s。
+- **收尾一步**（驱动 `finish`）：`route` 之后，可重复：剥掉上次收尾写的东西 → 光学定位点 → 内层铺地和禁止铺铜区 → 窄铜和小碎片加禁止铺铜区（最多两轮）→ 缝合地过孔两轮 → 没处放过孔的内层碎片加禁止铺铜区 → 铜皮报告 → 丝印 → 泪滴 → 带原理图一致性的 DRC、金丝雀、渲染图；2026-11-24 实测 496 s。`FINISH_BOARD=<副本>` 在副本上跑：副本目录里要有同名的 `.kicad_pro`、`.kicad_dru`，查原理图一致性还要原理图（根图和各页）和库表（`sym-lib-table`、`fp-lib-table`）；这时不看锁文件、不重写工程文件。`--no-render` 不出 3D 图。
+- **发布用图**（驱动 `publish`，`views.publish <板目录> [--rest 20] [--stage all/dump/svg/png] [--only L1,L3,silk,all_layers,signal_layers]`）：板子拷到 `[publish] work`（`out/publish_work/`）只读；pcbnew 取线、圆弧、过孔、焊盘、铺铜填充，`kicad-cli pcb export svg --theme _builtin_default` 取层颜色和丝印，模块画 SVG 并加网络名，无头 Edge 按 ≤ 4000 px 分块截成 PNG 再拼。输出 `[publish] out`（`<板目录>/publish/`：每层整板 100 px/mm、MCU / SDRAM 局部 250 px/mm、叠层图，说明见那里的 `README.md`）。重活一次一个、低优先级四核、间隔 `--rest` 秒，约 15 分钟（每张 PNG 约 50 s）。不出 3D 图（3D 渲染在 `finish` 一步，或用户在 KiCad 的 3D 查看器里手工截）。
+- **原理图**：`schematic.build <板目录> <输出目录>`（生成 → 升级到 KiCad 10 格式 → ERC → 网表 → PDF）；单独试几页：加 `--page <页名>`（只写输出目录，不动板目录）。驱动的 `sch` 一步再加网表对意图、对 `pins.csv`、对 `swap.csv` 的检查和 kicad-happy 审查，约 18 秒。
+- **线形检查**：`analysis.track_shape <板>`。
 
 不属于哪个工具的命令：
 
