@@ -129,12 +129,16 @@ file = "pins.csv"
 ref = "U201"
 page = "mcu"
 
-[schematic.swap]                 # netlist check 3: SDRAM byte lanes (SPEC 9); the page's ball_map() reads swap.csv
+[schematic.swap]                 # netlist check 3: SDRAM byte lanes (SPEC 9); the page's ball map and the swap table: schematic.swap
 ref = "U301"
 page = "sdram"
 lanes = 4
 data_net = "FMC_D"               # MCU data bit n = <data_net>n, byte mask m = <mask_net>m
 mask_net = "FMC_NBL"
+table = "swap.csv"               # sdram (DQn, DQMn) -> MCU-side net (Tools.KiCadDesignTools.schematic.swap)
+columns = [1, 2, 3, 7, 8, 9]     # the ball columns of the page's grid BALLS (ISSI Rev C p.4, top view)
+balls = 90
+nc_as = { H3 = "A12" }           # NC on the 256 Mb part, A12 on the 512 Mb parts: FMC_A12 is wired to it (SPEC 2.1)
 
 # Nets that cross pages. The name is the contract between page modules; the page in the text owns the circuit
 # that creates or terminates the net. MCU signals are the pins.csv signal names (FMC_*, QSPI_*, LCD_*, RMII_*,

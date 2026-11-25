@@ -70,12 +70,15 @@ file = "pins.csv"
 ref = "U1"
 page = "main"
 
-[schematic.swap]                 # netlist check 3: the SDRAM byte lane (SPEC 9); the page's ball_map() reads swap.csv
+[schematic.swap]                 # netlist check 3: the SDRAM byte lane (SPEC 9); the page's ball map and the swap table: schematic.swap
 ref = "U2"
 page = "main"
 lanes = 1
 data_net = "FMC_D"
 mask_net = "FMC_NBL"
+table = "swap.csv"               # sdram (DQn, DQMn) -> MCU-side net (Tools.KiCadDesignTools.schematic.swap)
+columns = [1, 2, 3, 7, 8, 9]     # the ball columns of the page's grid BALLS (ISSI Rev C p.4, top view)
+balls = 90
 
 [layout]
 decap_limit = 2.5                # mm, a 100 nF to the supply pin or ball it serves (LAY-2; SPEC 7.2)

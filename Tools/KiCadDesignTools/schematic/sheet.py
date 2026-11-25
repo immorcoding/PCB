@@ -18,6 +18,7 @@ The board's values come from board.toml through configure(cfg), which generate c
   FP       [schematic.footprints]: short name -> footprint; the helpers use the keys C0402 C0603 C0805 C1206
            (cap_fp), R0402 (R), R0603 R0805 (link), TP_1.5 (tp)
   COPIES   [schematic.power_copies]: a power net without a stock symbol -> the stock one copied under its name
+  CFG      the board itself (Tools.KiCadDesignTools.schematic.swap reads [schematic.swap] through it)
 FP and POWER are filled in place, so `from ...sheet import FP` in a page sees the board's table.
 
 Connectivity is judged from the exported netlist (RUL-6, Tools.KiCadDesignTools.schematic.check), never from the
@@ -34,11 +35,13 @@ LIB = None                           # project symbol library and footprint libr
 POWER = set()                        # nets drawn with power symbols ([schematic] power_symbols)
 FP = {}                              # footprints by short name ([schematic.footprints])
 COPIES = {}                          # power net -> stock power symbol it is a renamed copy of ([schematic.power_copies])
+CFG = None                           # the board (core.config), for schematic.swap
 
 
 def configure(cfg):
     """The board's library name, power nets, footprint table and power-symbol copies from board.toml."""
-    global LIB
+    global LIB, CFG
+    CFG = cfg
     LIB = cfg.need("board.lib")
     POWER.clear()
     POWER.update(cfg.need("schematic.power_symbols"))

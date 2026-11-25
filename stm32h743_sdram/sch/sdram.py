@@ -16,10 +16,8 @@ Footprint: h743:BGA-90_8.0x13.0mm_Layout2x3x15_P0.8mm_Pad0.33mm (stock footprint
 Decoupling: one 100 nF per two supply balls plus one bulk capacitor is a starting value; whether they fit
 in the 5 mm gap to the MCU is checked at placement (unverified item U21).
 """
-import csv, os
 from Tools.KiCadDesignTools.schematic.sheet import NC, symbol
-
-HERE = os.path.dirname(os.path.abspath(__file__))
+from Tools.KiCadDesignTools.schematic.swap import ball_map as balls_of, swap_table
 
 # rows A..R, columns 1 2 3 | 7 8 9, exactly as printed in the datasheet's top view
 BALLS = """
@@ -42,21 +40,8 @@ R DQ13 DQ15 VSS   VDD  DQ0  DQ2
 
 
 def ball_map():
-    """{ball: datasheet signal name}; H3 becomes 'A12' (NC on 256 Mb)."""
-    out = {}
-    for line in BALLS.strip().splitlines():
-        row, *names = line.split()
-        for col, name in zip((1, 2, 3, 7, 8, 9), names):
-            out["%s%d" % (row, col)] = name
-    assert len(out) == 90 and out["H3"] == "NC"
-    out["H3"] = "A12"
-    return out
-
-
-def swap_table():
-    """{SDRAM signal (DQn, DQMn): MCU-side net} from ../swap.csv."""
-    rows = list(csv.DictReader(open(os.path.join(HERE, "..", "swap.csv"), encoding="utf-8")))
-    return {r["sdram"]: r["net"] for r in rows}
+    """{ball: datasheet signal name}; H3 becomes 'A12' (NC on 256 Mb; [schematic.swap] nc_as)."""
+    return balls_of(BALLS)
 
 
 CONTROL = {"CLK": "FMC_SDCLK_R", "CKE": "FMC_SDCKE0", "CS": "FMC_SDNE0", "RAS": "FMC_SDNRAS", "CAS": "FMC_SDNCAS",

@@ -11,8 +11,9 @@ The drawing's intent is collected by generating the pages again into <netlist fo
    assigned MCU ball is on the net named by its signal; the balls of group FREE are unconnected; the occupancy
    (assigned / all rows) is counted here, not typed in. Only when that page is drawn.
 3. Data-bit swap ([schematic.swap]): each SDRAM byte lane carries the eight data bits of one MCU byte, and its DQM is
-   that byte's mask net (SPEC 9). The page module named there gives ball_map() {ball: DQn, DQMn ...} and reads the
-   swap table (swap.csv) itself. Only when that page is drawn.
+   that byte's mask net (SPEC 9). The page module named there gives ball_map() {ball: DQn, DQMn ...} (one line:
+   Tools.KiCadDesignTools.schematic.swap.ball_map of its grid; the page wires [schematic.swap] table through
+   schematic.swap.swap_table). Only when that page is drawn.
 4. Single-pin nets and names used on one page only, as lists for review (not failures).
 Exit code 0 = checks 1-3 pass.
 """

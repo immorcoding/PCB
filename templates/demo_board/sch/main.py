@@ -15,6 +15,7 @@ Choices (SPEC 2.2, 4; unverified.md):
 """
 import csv, os
 from Tools.KiCadDesignTools.schematic.sheet import NC, FP, symbol
+from Tools.KiCadDesignTools.schematic.swap import ball_map as balls_of, swap_table
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 FP_MCU = "Package_BGA:UFBGA-201_10x10mm_Layout15x15_P0.65mm"
@@ -49,19 +50,8 @@ CONTROL = {"CLK": "FMC_SDCLK_R", "BA0": "FMC_BA0", "A0": "FMC_A0", "A1": "FMC_A1
 
 
 def ball_map():
-    """{ball: datasheet signal name} of the SDRAM (schematic.check reads the byte lane from it)."""
-    out = {}
-    for line in BALLS.strip().splitlines():
-        row, *names = line.split()
-        for col, name in zip((1, 2, 3, 7, 8, 9), names):
-            out["%s%d" % (row, col)] = name
-    assert len(out) == 90
-    return out
-
-
-def swap_table():
-    """{SDRAM signal (DQn, DQMn): MCU-side net} from ../swap.csv."""
-    return {r["sdram"]: r["net"] for r in csv.DictReader(open(os.path.join(HERE, "..", "swap.csv"), encoding="utf-8"))}
+    """{ball: datasheet signal name} of the SDRAM ([schematic.swap]; schematic.check reads the byte lane from it)."""
+    return balls_of(BALLS)
 
 
 def mcu_nets():
