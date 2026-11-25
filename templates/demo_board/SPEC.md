@@ -206,7 +206,7 @@ J1 +3V3（外部供电）→ C9 4.7 µF → +3V3（L5 的块）→ U1 的 VDD、
 
 ## 11. 工具路线（已定）
 
-全部由构建驱动跑：`python -m Tools.KiCadDesignTools.build templates/demo_board <步骤>`（project、rules、sch、pcb-update、layout、route、finish；copper 一步用不到：电源只有两颗 BGA 的电源地球，在 route 一步由 `routes_power_bga.py` 做）。板目录只放数据：`board.toml`、`place.toml`、`silk.toml`、`copper.sketch`、`length_groups.json`、`rules_cases.py`、规则文件、`routes_*.py`、`sch/<页>.py`、`pins.csv`、`swap.csv`、`unverified.md`。新板从这里起：`python -m Tools.KiCadDesignTools.build init <板名>`。
+全部由构建驱动跑：`python -m Tools.KiCadDesignTools.build templates/demo_board all`，即依次 project、rules、sch、pcb-update、layout、copper、route、finish（也可以一步一步跑）。copper 一步在本板上没有电源组（电源只有两颗 BGA 的电源地球，在 route 一步由 `routes_power_bga.py` 做），只摆件、按草图写铺铜区、填充、出铜皮表；等长窗口规则由 route 一步按走好的长度生成，不用再跑一次 rules。板目录只放数据：`board.toml`、`place.toml`、`silk.toml`、`copper.sketch`、`length_groups.json`、`rules_cases.py`、规则文件、`routes_*.py`、`sch/<页>.py`、`pins.csv`、`swap.csv`、`unverified.md`。新板从这里起：`python -m Tools.KiCadDesignTools.build init <板名>`。
 
 | 项 | 决定 |
 |---|---|

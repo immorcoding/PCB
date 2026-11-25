@@ -83,6 +83,12 @@ name = "BGA-90_8.0x13.0mm_Layout2x3x15_P0.8mm_Pad0.33mm"
 pad_size = [0.4, 0.33]             # every pad of size 0.4 x 0.4 becomes 0.33 x 0.33
 pads = 90                          # how many such pads the stock footprint has (it must not have changed)
 
+[build]
+# the driver's `all` (build.sh's sequence): the board and its netlist exist (no project / pcb-update), and the route
+# step places every part, applies the copper sketch and rebuilds the power groups itself (no layout / copper: their
+# reports are reviews, run them on their own); a new board's `all` is the full list (build.py ALL)
+all = ["rules", "sch", "route", "finish"]
+
 [build.out]                      # report folders under out/ when they are not named after the step
 route = "route2"                 # build.sh's step was route2 (stop 7); finish reads route2/power_bga_sites.json
 checks = "finish"                # build.sh finish-checks wrote into out/finish

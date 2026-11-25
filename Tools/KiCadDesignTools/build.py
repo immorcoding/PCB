@@ -21,18 +21,20 @@ repository root. Reports go to <out>/<step folder>/, <out> = <board dir>/out unl
               (placement.layout_probe, [probe])
   copper      placement, pours, the power groups on the board and on the sketch copy, refill, measures, pictures, table
   route       every [[route.group]] stripped, placement, pours, the groups rebuilt in order (--upto GROUP: only up to
-              that one), refill, DRC, measures, plane slots, escape check, canary, pictures, placement check, table
+              that one), the length-window rules from the routed lengths (len_rules; not with --upto), refill, DRC,
+              measures, plane slots, escape check, canary, pictures, placement check, table
   finish      after every route: fiducials, inner pours and clean-up, stitching, silkscreen, teardrops, final DRC with
               schematic parity, canary, pictures (FINISH_BOARD=<copy> runs it on a copy, as build.sh did)
   checks      every rule of the rule file matches something (one DRC per rule, one at a time: about 30 minutes)
   publish     release pictures with net names (views.publish, [publish])
-  all         rules, sch, route, finish
+  all         the steps of board.toml [build] all in order (the H743 board: rules, sch, route, finish), by default
+              project, rules, sch, pcb-update, layout, copper, route, finish: a board from its data files alone
   compare     compare_runs on two out trees, and board_diff on the board copies they hold (<name>.kicad_pcb)
   init NAME   a new board folder <parent>/NAME (parent: the repository root, or --parent, a folder inside the
               repository: board folders are imported as packages) from a template folder (--from, default
               templates/demo_board): its data files copied (no out/, no generated KiCad files: those come from the
               steps), file names and the text of the data files with the template's board name (and folder path)
-              replaced by NAME; then run the steps on it (project, rules, sch, pcb-update, layout, route, finish)
+              replaced by NAME; then `all` builds it (project, rules, sch, pcb-update, layout, copper, route, finish)
 
 Every step first looks for KiCad's lock files in the board folder (hidden ones too) and stops when one is there,
 runs below normal priority on four cores and holds the machine-wide heavy lock; every child goes through
@@ -41,7 +43,8 @@ previous heavy command, PCB_HEAVY_GAP), so that only one KiCad process runs at a
 instead of running them.
 
 Every step calls Tools modules only, with the board folder as their first argument where they read board data
-(stage 3 of the consolidation); the commands and their order are those of stm32h743_sdram/build.sh.
+(stage 3 of the consolidation); the commands and their order are those of stm32h743_sdram/build.sh, except that the
+route step runs len_rules itself (R3).
 
 A step stops at the first child that fails and returns its exit code ("step <name> stopped: ..."): a non-zero exit
 (a timeout: 124) or an expected output missing (a refill's DRC report: 3). A child whose exit code is a verdict
@@ -56,6 +59,8 @@ from Tools.KiCadDesignTools.core import config, heavy, paths
 
 STEPS = ("project", "rules", "sch", "pcb-update", "layout", "copper", "route", "finish", "checks", "publish", "all",
          "compare", "init")
+# `all` on a board without [build] all: a new board from its data files, init to the finished board
+ALL = ("project", "rules", "sch", "pcb-update", "layout", "copper", "route", "finish")
 PROJECT = "Tools.KiCadDesignTools.project.make_project"      # the project file, after every SaveBoard too
 SPEC_CHECK = "Tools.KiCadDesignTools.project.spec_check"     # SPEC.md's table 本板取值 against the profile and the data
 PLACE = "Tools.KiCadDesignTools.placement.place"             # every part from <board dir>/place.toml
@@ -518,6 +523,15 @@ class Build:
                                      O + "/" + g["name"] + "_build.txt", env=env, ok=KEEP)
             codes[g["name"]] = rc
             echo(grep(data, r"^写入|^\[间距\]|^结论|^ERROR|^  ! [A-Z]") or text(data).splitlines()[-5:])
+        if self.upto:
+            print("== length-window rules left as they are (--upto: the board is built only in part)")
+        else:
+            # the windows of the rule file's generated block from the lengths just routed (RTE-2), before the DRC that
+            # judges them: a board routed for the first time needs no second rules step. Exit 1: a sum over its
+            # limit (a verdict, in len_rules.txt); the block is written either way, only when it changed.
+            print("== length-window rules (Tools.KiCadDesignTools.rules.len_rules)")
+            rc, data = self.r.py("Tools.KiCadDesignTools.rules.len_rules", BRD, filt=quiet, out=O + "/len_rules.txt", ok=KEEP)
+            self.pr(data)
         print("== refill and save (kicad-cli), DRC, measure")
         self.r.cli("pcb", "drc", "--refill-zones", "--save-board", "--severity-all", "--units", "mm", "--format", "json", "-o",
                    O + "/drc.json", BRD, outputs=[O + "/drc.json"])
@@ -691,10 +705,19 @@ class Build:
 
     def step_all(self):
         code = 0
-        for s in ("rules", "sch", "route", "finish"):
+        for s in all_steps(self.cfg):
             print("==== %s" % s)
-            code = getattr(self, "step_" + s)() or code
+            code = getattr(self, "step_" + s.replace("-", "_"))() or code
         return code
+
+
+def all_steps(cfg):
+    """The steps of `all`: board.toml [build] all, or ALL (a board built from its data files alone)."""
+    steps = list(cfg.get("build.all", ALL))
+    bad = [s for s in steps if s not in STEPS or s in ("all", "compare", "init")]
+    if bad:
+        raise config.ConfigError("[build] all: %s are not steps (%s)" % (bad, ", ".join(ALL)))
+    return steps
 
 
 def _num(v):
@@ -778,7 +801,8 @@ def init(name, src=None, parent=None, dry=False):
     cfg = config.load(dst)
     print("wrote %s: %d files (%d renamed, %d with the name replaced); board %s, package %s" % (
         rel_dst, len(files), renamed, edited, cfg.name, cfg.package))
-    print("next: python -m Tools.KiCadDesignTools.build %s project | rules | sch | pcb-update | layout | route | finish" % rel_dst)
+    print("next: python -m Tools.KiCadDesignTools.build %s all   (or one step at a time, in this order: %s)"
+          % (rel_dst, " | ".join(all_steps(cfg))))
     return 0
 
 

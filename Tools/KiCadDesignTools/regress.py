@@ -9,9 +9,10 @@ machine-wide heavy lock (the checks' own heavy commands take it again: re-entran
 
 --board demo: a whole board built from its data (not part of the default run: about 12 minutes). The template folder
 (templates/demo_board) is copied by the driver's init into a scratch folder out/regress/<name> of the repository
-(git-ignored; board folders are imported as packages, so it has to be inside the repository), every driver step is
-run on the copy one after the other (project, rules --skip-match, sch, pcb-update, layout, route --skip-match, rules
---skip-match again (the length windows of the routed bus), finish --no-render; regress holds the heavy lock, each
+(git-ignored; board folders are imported as packages, so it has to be inside the repository), the steps of the
+driver's `all` are run on the copy one after the other (build.all_steps: project, rules --skip-match, sch,
+pcb-update, layout, copper, route --skip-match (it writes the length windows of the routed bus itself), finish
+--no-render; one driver run per step, so that each has its exit code and log; regress holds the heavy lock, each
 step takes it again), and its numbers are checked against the expected values stored
 with the bench (tests/<board bench>/expected.json): step exit codes, the rule fixture, the schematic checks, the final
 DRC with schematic parity by type, unconnected items, the byte lane's spread and the address window (DRC-measured
@@ -27,10 +28,8 @@ REPO = os.path.dirname(os.path.dirname(HERE))
 # whole-board benches: name -> template folder (relative to the repository), expected values
 BOARDS = {"demo": ("templates/demo_board", os.path.join(TESTS, "demo_board", "expected.json"))}
 SCRATCH = "out/regress"
-# the rules step twice: its length-window rules (len_rules) are measured on the routed bus, so a board routed for the
-# first time gets them on the second run, before the final DRC of the finish step judges them
-STEPS = [("project", []), ("rules", ["--skip-match"]), ("sch", []), ("pcb-update", []), ("layout", []), ("route", ["--skip-match"]),
-         ("rules", ["--skip-match"]), ("finish", ["--no-render"])]
+# the flags of the driver's steps in the bench (the steps: build.all_steps, the board's `all`)
+FLAGS = {"rules": ["--skip-match"], "route": ["--skip-match"], "finish": ["--no-render"]}
 TOL = 0.005                          # mm: lengths against the stored values
 
 
@@ -133,8 +132,10 @@ def board(name, keep=False):
     if build.init(bname, src, SCRATCH) != 0:
         print("FAIL board %s: init refused" % name)
         return 1
+    from Tools.KiCadDesignTools.core import config
     codes, times = {}, {}
-    for step, flags in STEPS:
+    for step in build.all_steps(config.load(d)):
+        flags = FLAGS.get(step, [])
         t = time.time()
         r = heavy.kicad_py("Tools.KiCadDesignTools.build", rel, step, *flags)
         os.makedirs(os.path.join(d, "out"), exist_ok=True)
@@ -148,6 +149,7 @@ def board(name, keep=False):
     m["steps"] = codes
     bad = compare(m, want)
     bad += ["step %s: exit %s, expected %s" % (s, codes.get(s), c) for s, c in want.get("steps", {}).items() if codes.get(s) != c]
+    bad += ["step %s: run (exit %s), not in the expected steps" % (s, c) for s, c in codes.items() if s not in want.get("steps", {})]
     total = time.time() - T0
     head = "%s board %s: %d s; lane spread %s mm, clock %s mm, window %s, address margin %s mm; DRC %s, unconnected %s, parity %s" % (
         "FAIL" if bad else "OK", name, total, m.get("lane_spread"), m.get("clock"), m.get("window"), m.get("addr_margin"), m.get("drc"),

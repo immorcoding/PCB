@@ -35,7 +35,7 @@ demo board (`templates/demo_board/`), `build init` / `pcb-update` and `regress -
 
 | Category | Tool | Command | When | Rules | Benchmark | Pitfalls |
 |---|---|---|---|---|---|---|
-| (driver) | `build` | `-m ...build <board dir> <step> [--out DIR] [--skip-match] [--upto GROUP] [--no-render] [--dry-run]`; `... <board dir> compare <out A> <out B>`; `... init NAME [--from DIR] [--parent DIR]` | every build step of a board: project, rules, sch, pcb-update, layout, copper, route, finish, checks, publish, all, compare; init: a new board folder from a template folder (default `templates/demo_board`) | PROC-1, 2, 4, 6, 13; FIN-4 | `--dry-run`; demo | K2, K28, K30 |
+| (driver) | `build` | `-m ...build <board dir> <step> [--out DIR] [--skip-match] [--upto GROUP] [--no-render] [--dry-run]`; `... <board dir> compare <out A> <out B>`; `... init NAME [--from DIR] [--parent DIR]` | every build step of a board: project, rules, sch, pcb-update, layout, copper, route (with the length-window rules), finish, checks, publish, all (`[build] all`, by default project to finish), compare; init: a new board folder from a template folder (default `templates/demo_board`), then `all` | PROC-1, 2, 4, 6, 13; FIN-4 | `--dry-run`; demo | K2, K28, K30 |
 | (driver) | `regress` | `-m ...regress [name ...]`; `--board demo [--keep]` | after a change to any tool or to a rule file (RUL-2) | PROC-15, RUL-2 | (it runs them) | K30 |
 | core | `paths` | (library) | KiCad, Edge and repository paths (`KICAD_BIN`) | | | |
 | core | `config` | `-m ...core.config <board dir>` | read and check `board.toml` (layer roles -> L1..Ln, KiCad names), the board's data files and modules | | | K27 |
@@ -105,8 +105,9 @@ forms and published numbers), `kisch`, `place_check` (place_check and escape_che
 plan), `spec_check` (with `fixture/routes_bus.py`), `track_shape`; `demo_board/expected.json` for `regress --board demo`.
 
 Whole-board bench: `regress --board demo` copies `templates/demo_board` with `build init` into `out/regress/` (git-ignored,
-inside the repository: board folders are imported as packages), runs project, rules --skip-match, sch, pcb-update,
-layout, route --skip-match and finish --no-render on the copy, and checks the step exit codes, the rule fixture, the
+inside the repository: board folders are imported as packages), runs the steps of the driver's `all` one at a time
+on the copy (project, rules --skip-match, sch, pcb-update, layout, copper, route --skip-match, finish --no-render; the
+route step writes the length windows of the routed bus itself), and checks the step exit codes, the rule fixture, the
 schematic checks, the final DRC with schematic parity by type, unconnected items, the byte lane's spread and the
 address window against `tests/demo_board/expected.json`; not part of the default run (about 12 minutes).
 
