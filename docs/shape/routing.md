@@ -27,7 +27,6 @@ Next id: RTE-16
 
 - 2026-11-21 · RTE-5 / SPEC 第 6 节 · 没守住：外两圈走 L1 的约定在分到内层的球上没守住，在规则区内打 0.30 的孔下去；过孔成排对地层开缝的情况草图没查（板上还没有铺铜）。
 - 2026-11-22 · RTE-5 · 起作用，有缺口：换层处配了 8 个地过孔，每个和别的避让圈之间留 0.2 mm 以上的铜；A3 的换层处没有位置。SDRAM 一侧的换层都在球阵里，没有另配。
-- 2026-11-24 · contradiction · RTE-5 · 规则说平面上过孔避让连成的槽不设长度上限、BGA 下方更不设；报表一侧已只报不判（`[copper.slots] report`、`[route.table] slot_mark` / `slot_list`），但还有两处当上限用：(1) `busroute` 换层过孔阵的 `SLOT` 检查，上限是代码里的 `Profile.slot_max = 1.5`（走线文件可用 `PROFILE` 改），超了构建失败，两块板现在都是 `SLOT 0`；(2) 离线 BGA 规划器 `planning.bga_fan` 以 `bga_block.toml [block] slot_max = 3.0` 当上限（含 BGA 下方），重新规划时会按它拒绝出线方案。建议两处都改成可选、缺省不限（H743 的 3.0 删掉或注明“只为复现 2026-11-23 的 bga_fan.json”）；(1) 会让每组 `metrics.json` 里的 `slot_max` 从 1.5 变成空，按“报告不变”本批没改，请主会话定。
 
 ## order-and-length
 

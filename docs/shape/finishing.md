@@ -32,4 +32,4 @@ Next id: FIN-5
 - **FIN-4** · provisional · 收尾顺序：铺地（外层和内层信号层，含禁铺区和清碎铜，见 PWR-5）→ 地过孔 → 丝印 → 泪滴 → 渲染图；然后带 `--schematic-parity` 重跑 DRC、重跑金丝雀、甄别 kicad-happy 的发现。重新走线之后收尾整套重跑。 _Why:_ 泪滴和缝合地过孔都会被重新走线清掉；原理图一致性只有带这个选项才查；用户 2026-11-24 定内层铺地排在丝印之前。
 
 ### Signals
-
+- 2026-11-24 · cite · FIN-4 · 规格档 C 的“布局和走线的取值”加了一行“铺地里不带焊盘的小片，面积阈值”（H743 2.0 mm²，`board.toml [finish.pour] island_min`；新板起点建议 5 mm²，带地焊盘且有过孔的小片保留）。`spec_check` 的项目是从这张表读的（没有写死），所以演示板 SPEC 第 7.2 节补了对应一行（2.0 mm²，数据源 `board.toml:finish.pour.island_min`，值没改），`templates/C-bga-065/README.md` 的“为准的一份”表也补了一行；`spec_check templates/demo_board` 13 项齐全、一致，退出 0。H743 的 SPEC 没有这张表（`spec_table = false`），只多一条警告。
