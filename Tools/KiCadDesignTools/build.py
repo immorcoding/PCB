@@ -138,7 +138,8 @@ class Runner:
         print("%s%s%s%s" % (e + " " if e else "", cmd, red, ("   # " + note) if note else ""))
 
     def run(self, argv, out=None, append=False, filt=None, env=None, timeout=None, note="", ok=(0,), outputs=()):
-        """-> (exit code, output bytes after the filter). The output goes to `out` (a file) when given.
+        """-> (exit code, output bytes after the filter). The output goes to `out` (a file) when given. argv items are
+        written with str(): board.toml numbers as build.sh wrote them (27, 28.5, -1).
         ok: the exit codes that let the step go on (KEEP: any); outputs: files the child must write (removed first).
         Otherwise Stop (the step ends with the child's exit code, MISSING when it exited 0)."""
         argv = [str(a) for a in argv]
@@ -260,7 +261,7 @@ class Build:
         for ref in run["refs"]:
             args += ["--ref", ref]
         if run.get("window"):
-            args += ["--window"] + [_num(v) for v in run["window"]]
+            args += ["--window"] + list(run["window"])
         # the layers tracks may use: the tool takes the board's signal layers (layer roles) unless the run names its own
         if run.get("layers"):
             args += ["--layers"] + list(run["layers"])
@@ -269,9 +270,9 @@ class Build:
     def view(self, board, O, v):
         args = [board, O] + list(v["layers"])
         if "scale" in v:
-            args += ["--scale", _num(v["scale"])]
+            args += ["--scale", v["scale"]]
         if v.get("window"):
-            args += ["--window"] + [_num(x) for x in v["window"]]
+            args += ["--window"] + list(v["window"])
         if v.get("name"):
             args += ["--name", v["name"]]
         if v.get("slots"):
@@ -540,7 +541,7 @@ class Build:
         self.r.py("Tools.KiCadDesignTools.copper.cu_sketch", "measure", BRD, "--drc", O + "/drc.json", "--json", O + "/measure.json", "--skip-areas",
                   ",".join(cu["skip_areas"]), out=O + "/measure.txt")
         for s in rt.get("slots", []):
-            args = [self.D, BRD, O, "--window", s["name"]] + [_num(v) for v in s["window"]]
+            args = [self.D, BRD, O, "--window", s["name"]] + list(s["window"])
             if s.get("layers"):
                 args += ["--layers"] + list(s["layers"])
             if s.get("stem"):
@@ -649,7 +650,7 @@ class Build:
         s = fin.get("slots")
         if s:
             # the planes after the new ground vias: no plane-net via cut off, feed necks, longest slots
-            args = [self.D, BRD, O, "--window", s["name"]] + [_num(v) for v in s["window"]] + ["--stem", s["stem"]]
+            args = [self.D, BRD, O, "--window", s["name"]] + list(s["window"]) + ["--stem", s["stem"]]
             if s.get("part_b"):
                 args += ["--part-b", self.out_root + "/" + self.cfg.get("build.out.route", "route") + "/" + s["part_b"]]
             rc, data = self.r.py(SLOTS, *args, filt=quiet)
@@ -718,11 +719,6 @@ def all_steps(cfg):
     if bad:
         raise config.ConfigError("[build] all: %s are not steps (%s)" % (bad, ", ".join(ALL)))
     return steps
-
-
-def _num(v):
-    """A number of board.toml as build.sh wrote it on the command line (27, 28.5, -1): write ints as ints there."""
-    return str(v)
 
 
 def compare(a, b, name):
