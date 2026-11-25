@@ -40,7 +40,8 @@ nets of [copper.table], the layer roles.
 """
 import collections, contextlib, io, json, math, os, re, sys
 
-from Tools.KiCadDesignTools.core import config, heavy
+from Tools.KiCadDesignTools.analysis import track_shape
+from Tools.KiCadDesignTools.core import config
 from Tools.KiCadDesignTools.copper.power_ties import power_plane
 from Tools.KiCadDesignTools.routing.busroute.metrics import LEN_TOL
 
@@ -171,21 +172,14 @@ def bus_table(cfg, board_path, odir):
         for chk in T.get("ball_via", []):
             p2 = s["ball_via"].get(chk["ball"])
             A("       %s: %s (%s) 的过孔 %s" % (chk["name"], chk["ball"], chk["net"], ("(%.3f, %.3f)" % tuple(p2)) if p2 else "没有"))
-    # ---- shape
-    r = heavy.kicad_py("Tools.KiCadDesignTools.analysis.track_shape", os.path.abspath(board_path), encoding="utf-8", errors="replace")
-    ts, kind, lines = {}, None, collections.defaultdict(list)
-    for l in r.stdout.splitlines():
-        m = re.match(r"^(off-grid|staircase|sharp|crowded): (\d+)", l)
-        if m:
-            kind = m.group(1); ts[kind] = int(m.group(2)); continue
-        m = re.match(r"^tiny \(< 0.1 mm\): (\d+)", l)
-        if m:
-            ts["tiny"] = int(m.group(1)); kind = None; continue
-        m = re.match(r"^(\d+) segments, (\d+) arcs", l)
-        if m:
-            ts["arcs"] = int(m.group(2))
-        if l.startswith("    ") and kind and l.split()[0] in nets:
-            lines[kind].append(l.strip())
+    # ---- shape (a report that did not run through raises: no silently empty columns)
+    shape = track_shape.run(board_path)
+    four = ("off-grid", "staircase", "sharp", "crowded")
+    ts = {k: n for k, n in shape["counts"].items() if k in four}
+    ts["tiny"], ts["arcs"] = shape["tiny"], shape["arcs"]
+    lines = collections.defaultdict(list)
+    for kind in four:
+        lines[kind] = [l for l in shape["lines"].get(kind, []) if l.split()[0] in nets]
     geo = sd["shape"]["geometry"]
     A("[线形] 几何检查（本组）：非 0/45/90 或过短 %d，大于 45° 的拐角 %d，小倒角直角 %d，过孔处转弯 90° 及以上 %d" % (geo["SHAPE"], geo["CORNER"], geo["SHARP"], geo["VIATURN"]))
     A("       track_shape.py（全板 / 本组）：off-grid %s / %d，staircase %s / %d，sharp %s / %d，crowded %s / %d，tiny %s；圆弧 %s 段" % (
@@ -541,16 +535,10 @@ def table(cfg, board_path, odir):
     def net_of(it):
         m = re.search(r"\[([^\]]+)\]", it.get("description", ""))
         return m.group(1) if m else None
-    r = heavy.kicad_py("Tools.KiCadDesignTools.analysis.track_shape", os.path.abspath(board_path), encoding="utf-8", errors="replace")
-    shape_lines, kind = collections.defaultdict(list), None
-    for l in r.stdout.splitlines():
-        m = re.match(r"^(off-grid|staircase|sharp|crowded|arc-joint): (\d+)", l)
-        if m:
-            kind = m.group(1); continue
-        if l.startswith("tiny"):
-            kind = None
-        if l.startswith("    ") and kind:
-            shape_lines[l.split()[0]].append("%s: %s" % (kind, l.strip()))
+    shape_lines = collections.defaultdict(list)
+    for kind, ls in track_shape.run(board_path)["lines"].items():
+        for l in ls:
+            shape_lines[l.split()[0]].append("%s: %s" % (kind, l))
     # ---- per group
     A("")
     A("[每组] 板上每个走线描述文件一行（连通从板文件读回；DRC 是最后一次填充后的全板报告里碰到本组网络的项）")

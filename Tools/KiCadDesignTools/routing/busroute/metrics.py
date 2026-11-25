@@ -9,6 +9,7 @@ table(m)                     the same as text
 """
 import collections, os, re
 
+from Tools.KiCadDesignTools.analysis import track_shape
 from Tools.KiCadDesignTools.core import heavy
 
 PROBE = '(version 1)\n(rule "busroute_probe"\n  (constraint length (max 0.001mm)))\n'
@@ -30,8 +31,7 @@ def external(pcb, nets, refill=True, canary=True):
             err.append("%s: %s" % (key, e))
 
     def shape():
-        r = heavy.kicad_py("Tools.KiCadDesignTools.analysis.track_shape", os.path.abspath(pcb), encoding="utf-8", errors="replace")
-        return r.stdout
+        return track_shape.run(pcb)                          # did not run through: HeavyError, reported below
 
     def can():
         r = heavy.kicad_py("Tools.KiCadDesignTools.rules.dru_canary", os.path.abspath(pcb), encoding="utf-8", errors="replace")
@@ -57,26 +57,19 @@ def external(pcb, nets, refill=True, canary=True):
     for v in res["probe"]["violations"]:
         if v["type"] == "length_out_of_range":
             lens[dp.net_of(v["items"][0])] = dp.numbers(v)[-1]
-    txt = res["shape"]
+    sh = res["shape"]
     ts = {"lines": []}
     for k in ("off-grid", "staircase", "sharp", "crowded"):
-        m = re.search(r"^%s: (\d+)" % k, txt, re.M)
-        ts[k] = int(m.group(1)) if m else None
-    m = re.search(r"^tiny \(< 0.1 mm\): (\d+)", txt, re.M)
-    ts["tiny"] = int(m.group(1)) if m else None
-    m = re.search(r"^(\d+) segments, (\d+) arcs", txt, re.M)
-    ts["segments"], ts["arcs"] = (int(m.group(1)), int(m.group(2))) if m else (None, None)
-    m = re.search(r"^arc-joint: (\d+)", txt, re.M)           # printed only for boards with arcs
-    if m:
-        ts["arc-joint"] = int(m.group(1))
-    kind = None
+        ts[k] = sh["counts"].get(k)
+    ts["tiny"] = sh["tiny"]
+    ts["segments"], ts["arcs"] = sh["segments"], sh["arcs"]
+    if "arc-joint" in sh["counts"]:                          # printed only for boards with arcs
+        ts["arc-joint"] = sh["counts"]["arc-joint"]
     ts["group"] = collections.Counter()
-    for l in txt.splitlines():
-        m = re.match(r"^(off-grid|staircase|sharp|crowded|arc-joint): ", l)
-        if m:
-            kind = m.group(1)
-        elif l.startswith("    ") and kind and l.split()[0] in nets:
-            ts["group"][kind] += 1; ts["lines"].append("%s: %s" % (kind, l.strip()))
+    for kind, ls in sh["lines"].items():
+        for l in ls:
+            if l.split()[0] in nets:
+                ts["group"][kind] += 1; ts["lines"].append("%s: %s" % (kind, l))
     ts["group"] = dict(ts["group"])
     return {"drc": {"kicad": drc.get("kicad_version"), "unconnected_board": len(drc["unconnected_items"]), "unconnected_group": len(ug),
                     "unconnected_group_items": rows(ug), "by_type_board": dict(sorted(collections.Counter(v["type"] for v in drc["violations"]).items())),

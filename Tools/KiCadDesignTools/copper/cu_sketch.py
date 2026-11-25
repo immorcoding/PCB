@@ -893,10 +893,9 @@ def read_board(board, old=None):
 def run_drc(board_path, report):
     """Refill, save the board and write the JSON DRC report (PWR-6: connectivity is what KiCad's own fill says)."""
     from Tools.KiCadDesignTools.core import heavy
+    # a non-zero exit or no report: heavy.HeavyError (a RuntimeError)
     heavy.kicad_cli("pcb", "drc", "--refill-zones", "--save-board", "--severity-all", "--units", "mm",
-                    "--format", "json", "-o", report, board_path, check=False)
-    if not os.path.isfile(report):
-        raise RuntimeError("kicad-cli wrote no DRC report for " + board_path)
+                    "--format", "json", "-o", report, board_path, outputs=[report])
 
 
 class EdgeGrid:

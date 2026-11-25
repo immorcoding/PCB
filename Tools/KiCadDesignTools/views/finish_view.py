@@ -25,7 +25,7 @@ def shot(svg, png, px_per_mm, W_MM, H_MM):
         % (os.path.basename(svg), w, h))
     url = "file:///" + os.path.abspath(html).replace("\\", "/")
     heavy.run([EDGE, "--headless=new", "--disable-gpu", "--hide-scrollbars", "--window-size=%d,%d" % (w, h),
-               "--screenshot=" + os.path.abspath(png), url])
+               "--screenshot=" + os.path.abspath(png), url], check=True, ok=None, outputs=[png])     # Edge: the PNG decides
     os.remove(html)
     return png
 
@@ -37,7 +37,7 @@ def svg(board, out, side):
             "--subtract-soldermask", "-o", path, board]
     if side == "B":
         args.insert(-1, "--mirror")
-    heavy.run(args)
+    heavy.run(args, check=True, outputs=[path])
     return path
 
 

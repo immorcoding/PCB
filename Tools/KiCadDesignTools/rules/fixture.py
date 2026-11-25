@@ -187,7 +187,7 @@ def main(board_dir, out):
     shutil.copy(os.path.join(cfg.dir, "length_groups.json"), os.path.join(out, "length_groups.json"))
     # fill the pour once and keep it in the board file
     heavy.kicad_cli("pcb", "drc", "--refill-zones", "--save-board", "--severity-all", "--format", "json",
-                    "-o", os.path.join(out, "fill.json"), stem + ".kicad_pcb", check=False)
+                    "-o", os.path.join(out, "fill.json"), stem + ".kicad_pcb", outputs=[os.path.join(out, "fill.json")])
     os.remove(os.path.join(out, "fill.json"))
 
     lines, bad = [], 0

@@ -21,7 +21,7 @@ import math, os, re, shutil, sys, tempfile, time
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.normpath(os.path.join(HERE, "..", "..", "..", ".."))
-from Tools.KiCadDesignTools.core import heavy                       # noqa: E402
+from Tools.KiCadDesignTools.analysis import track_shape              # noqa: E402
 from Tools.KiCadDesignTools.routing.busroute.board import write   # noqa: E402
 from Tools.KiCadDesignTools.routing.busroute import tune            # noqa: E402
 
@@ -92,16 +92,14 @@ def main(argv):
         segs, arcs = routes()
         dst = os.path.join(tmp, "shapes.kicad_pcb")
         write(src, dst, "shapes", segs, [], [], (100.0, 100.0), CU, arcs=arcs)
-        r = heavy.kicad_py("Tools.KiCadDesignTools.analysis.track_shape", dst, encoding="utf-8", errors="replace")
-        out = r.stdout
-        num = lambda k: int(re.search(r"^%s: (\d+)" % re.escape(k), out, re.M).group(1)) if re.search(r"^%s: (\d+)" % re.escape(k), out, re.M) else None
-        got = {k: num(k) for k in ("off-grid", "staircase", "sharp", "crowded", "arc-joint")}
-        got["tiny"] = int(re.search(r"^tiny \(< 0.1 mm\): (\d+)", out, re.M).group(1))
-        got["arcs"] = int(re.search(r"^\d+ segments, (\d+) arcs", out, re.M).group(1))
+        shape = track_shape.run(dst)                                 # the parser the route table and busroute use
+        out = shape["text"]
+        got = {k: shape["counts"].get(k) for k in ("off-grid", "staircase", "sharp", "crowded", "arc-joint")}
+        got["tiny"], got["arcs"] = shape["tiny"], shape["arcs"]
         want = {"off-grid": 0, "staircase": 0, "sharp": 2, "crowded": 0, "arc-joint": 1, "tiny": 0, "arcs": 8}
         if got != want:
             fails.append("counts %r, expected %r\n%s" % (got, want, out))
-        sharp = [l.split()[0] for l in out.splitlines() if l.startswith("    ") and "turns" in l and "segment" in l]
+        sharp = [l.split()[0] for l in shape["lines"].get("sharp", [])]
         if sorted(sharp) != ["A", "D"]:
             fails.append("sharp on %r, expected A and D\n%s" % (sharp, out))
         if not re.search(r"^    C F\.Cu at \(4\.0, 7\.0\): an arc joint turns 30\.0 deg", out, re.M):

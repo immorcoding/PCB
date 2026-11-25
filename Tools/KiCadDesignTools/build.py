@@ -42,6 +42,13 @@ instead of running them.
 
 Every step calls Tools modules only, with the board folder as their first argument where they read board data
 (stage 3 of the consolidation); the commands and their order are those of stm32h743_sdram/build.sh.
+
+A step stops at the first child that fails and returns its exit code ("step <name> stopped: ..."): a non-zero exit
+(a timeout: 124) or an expected output missing (a refill's DRC report: 3). A child whose exit code is a verdict
+(findings) does not stop the step; its code is reported in the step's last line, as build.sh did: the rule fixture,
+the canary, rule matching, len_rules, the schematic checks and kicad-happy, the line-order sketch builds, the groups'
+builds (their findings go to the tables), place_check, escape_check, the layout step's sketch check, the tables, the
+finish step's clean-up (exit 10: keep-outs added, refill and run again) and the 3D renders.
 """
 import json, os, re, shutil, sys, time, collections
 
@@ -108,6 +115,10 @@ class Stop(Exception):
         self.code = code
 
 
+KEEP = None          # Runner.run(ok=KEEP): any exit code is a verdict of the child, the step goes on
+MISSING = 3          # the step's exit code when a child exited 0 but did not write an expected file
+
+
 # ---------------------------------------------------------------------------------------------------- the runner
 class Runner:
     """Runs (or, with dry=True, prints) the commands of one step, one at a time, from the repository root."""
@@ -121,8 +132,10 @@ class Runner:
         red = (" >> " if append else " > ") + _q(out) if out else ""
         print("%s%s%s%s" % (e + " " if e else "", cmd, red, ("   # " + note) if note else ""))
 
-    def run(self, argv, out=None, append=False, filt=None, env=None, timeout=None, note=""):
-        """-> (exit code, output bytes after the filter). The output goes to `out` (a file) when given."""
+    def run(self, argv, out=None, append=False, filt=None, env=None, timeout=None, note="", ok=(0,), outputs=()):
+        """-> (exit code, output bytes after the filter). The output goes to `out` (a file) when given.
+        ok: the exit codes that let the step go on (KEEP: any); outputs: files the child must write (removed first).
+        Otherwise Stop (the step ends with the child's exit code, MISSING when it exited 0)."""
         argv = [str(a) for a in argv]
         if self.dry:
             self.show(argv, env, out, append, note)
@@ -132,7 +145,7 @@ class Runner:
         e = {} if "PYTHONHASHSEED" in os.environ else {"PYTHONHASHSEED": "0"}
         e.update({k: str(v) for k, v in (env or {}).items()})
         # below normal priority on four cores, under the heavy lock (the driver holds it: re-entrant), after the gap
-        r = heavy.run(argv, stdout=heavy.PIPE, stderr=heavy.STDOUT, env=e, cwd=paths.REPO, timeout=timeout)
+        r = heavy.run(argv, stdout=heavy.PIPE, stderr=heavy.STDOUT, env=e, cwd=paths.REPO, timeout=timeout, outputs=outputs)
         data, rc = r.stdout or b"", r.returncode
         if filt:
             data = filt(data)
@@ -140,6 +153,12 @@ class Runner:
             os.makedirs(os.path.dirname(out) or ".", exist_ok=True)
             with open(out, "ab" if append else "wb") as f:
                 f.write(data)
+        if (ok is not KEEP and rc not in ok) or r.missing:
+            why = ("timed out after %s s" % timeout if r.timed_out else "exit %d" % rc if ok is not KEEP and rc not in ok
+                   else "no %s" % ", ".join(r.missing))
+            tail = heavy.decode(data).strip().splitlines()[-15:]
+            raise Stop(rc or MISSING, "%s: %s%s" % (" ".join(_q(a) for a in argv[:6]), why,
+                                                    "".join("\n    " + l for l in tail) + ("\n    (output: %s)" % out if out else "")))
         return rc, data
 
     def py(self, target, *args, **kw):
@@ -226,10 +245,10 @@ class Build:
                 return g
         raise config.ConfigError("no [[route.group]] named %s" % name)
 
-    def busroute(self, routes, flags, O_group, log, env=None, after=()):
+    def busroute(self, routes, flags, O_group, log, env=None, after=(), ok=(0,)):
         """busroute.build <routes> <flags> --out <O_group> <after> (build.sh's order; build.py takes flags anywhere)."""
         args = [self.D + "/" + routes] + flags + ["--out", O_group] + list(after)
-        return self.r.py("Tools.KiCadDesignTools.routing.busroute.build", *args, out=log, env=env)
+        return self.r.py("Tools.KiCadDesignTools.routing.busroute.build", *args, out=log, env=env, ok=ok)
 
     def escape(self, board, run, out, append):
         args = [board]
@@ -254,7 +273,7 @@ class Build:
             args += ["--slots", O + "/" + v["slots"]]
         if v.get("via_labels"):
             args += ["--via-labels"]
-        rc, data = self.r.py(COPPER_VIEW, self.D, *args, filt=quiet)
+        rc, data = self.r.py(COPPER_VIEW, self.D, *args, filt=quiet)                       # stops the step on a failure
         if data:
             print(" ".join(text(data).splitlines()) + " ")
         if v.get("rename"):
@@ -274,7 +293,7 @@ class Build:
             args += ["--silk-refs", lay["silk_refs"]]
         args += ["--limit", "%g" % self.cfg.need("layout.decap_limit")]      # LAY-2: the profile's value, SPEC 本板取值
         args += ["--json", O + "/place_check.json"]
-        rc, data = self.r.py("Tools.KiCadDesignTools.placement.place_check", *args, out=O + "/place_check.txt")
+        rc, data = self.r.py("Tools.KiCadDesignTools.placement.place_check", *args, out=O + "/place_check.txt", ok=KEEP)
         echo(show(data))
         return rc
 
@@ -290,7 +309,7 @@ class Build:
 
     # steps -----------------------------------------------------------------------------------------------------
     def step_project(self):
-        rc, data = self.r.py(PROJECT, self.D, filt=quiet)
+        rc, data = self.r.py(PROJECT, self.D, filt=quiet, ok=KEEP)                 # its exit code is the step's
         self.pr(data)
         return rc
 
@@ -299,20 +318,22 @@ class Build:
         rc, data = self.r.py(PROJECT, self.D, filt=quiet)
         self.pr(data)
         # 1. every rule behaves as written (fixture board with the project's own rules and stackup)
-        FX, _ = self.r.py("Tools.KiCadDesignTools.rules.fixture", self.D, O, out=O + "/fixture.log")
+        FX, _ = self.r.py("Tools.KiCadDesignTools.rules.fixture", self.D, O, out=O + "/fixture.log", ok=KEEP)
         if not self.dry and os.path.isfile(O + "/rules_fixture.txt"):
             lines = open(O + "/rules_fixture.txt", encoding="utf-8").read().splitlines()
             echo(lines[:1] + [l for l in lines if l.startswith("FAIL")])
         # 2. the real board: rule file loaded, rules that match nothing, length windows current
-        rc, data = self.r.py("Tools.KiCadDesignTools.rules.dru_canary", self.BRD, filt=quiet, out=O + "/canary.txt")
+        rc, data = self.r.py("Tools.KiCadDesignTools.rules.dru_canary", self.BRD, filt=quiet, out=O + "/canary.txt", ok=KEEP)
         self.pr(data)
         if self.skip_match:
             self.match_skipped(O)
             DM = "-"
         else:
-            DM, data = self.r.py("Tools.KiCadDesignTools.rules.dru_match", self.BRD, "--json", O + "/dru_match.json", out=O + "/dru_match.txt")
+            DM, data = self.r.py("Tools.KiCadDesignTools.rules.dru_match", self.BRD, "--json", O + "/dru_match.json", out=O + "/dru_match.txt",
+                                 ok=KEEP)
             echo(text(data).splitlines()[-1:])
-        rc, data = self.r.py("Tools.KiCadDesignTools.rules.len_rules", self.BRD, filt=quiet, out=O + "/len_rules.txt")
+        # exit 1: a length sum over its limit (reported in len_rules.txt); the generated block is written either way
+        rc, data = self.r.py("Tools.KiCadDesignTools.rules.len_rules", self.BRD, filt=quiet, out=O + "/len_rules.txt", ok=KEEP)
         self.pr(data)
         print("rules step: %d s; fixture exit %s, dru_match exit %s (2 = the board has no objects yet)" % (time.time() - T0, FX, DM))
         return FX
@@ -326,7 +347,7 @@ class Build:
             c = collections.Counter(l for l in open(O + "/erc.rpt", encoding="utf-8", errors="replace").read().splitlines() if l.startswith("["))
             echo("%7d %s" % (n, l) for l, n in sorted(c.items()))
         SC, data = self.r.py("Tools.KiCadDesignTools.schematic.check", self.D, O + "/" + self.N + ".net", filt=quiet,
-                             out=O + "/sch_check.txt")
+                             out=O + "/sch_check.txt", ok=KEEP)
         echo(l[:400] for l in text(data).splitlines() if l)
         if self.cfg.get("schematic.review", False):
             if os.path.isfile(KH):
@@ -342,6 +363,7 @@ class Build:
     def _kicad_happy(self, O):
         py = shutil.which("python") or "python"
         with open(O + "/kicad_happy_sch.txt", "wb") as so, open(O + "/kicad_happy_sch.err", "wb") as se:
+            # its exit code is not judged (build.sh: `|| true`): the findings are triaged by hand
             heavy.run([py, KH, self.D + "/" + self.N + ".kicad_sch", "--text", "--stage", "schematic"], stdout=so, stderr=se, cwd=O)
         n = sum(1 for l in open(O + "/kicad_happy_sch.txt", encoding="utf-8", errors="replace") if l.startswith("  ["))
         print("kicad-happy: %d findings in %s/kicad_happy_sch.txt" % (n, O))
@@ -366,7 +388,7 @@ class Build:
     def step_layout(self):
         O, T0 = self.out("layout"), time.time()
         # PROC-8: the SPEC's 本板取值 complete and in line with the data files before anything is placed
-        SC, data = self.r.py(SPEC_CHECK, self.D, filt=quiet, out=O + "/spec_check.txt")
+        SC, data = self.r.py(SPEC_CHECK, self.D, filt=quiet, out=O + "/spec_check.txt", ok=(0, 1))
         self.pr(data)
         if SC == 1:
             print("layout step: stopped, SPEC.md's table 本板取值 is incomplete or disagrees with the data (%s/spec_check.txt)" % O)
@@ -377,7 +399,7 @@ class Build:
         SK = SKO + "/" + self.N + ".kicad_pcb"
         rc, data = self.r.py(PLACE, self.D, filt=quiet)
         self.pr(data)
-        SB, data = self.busroute(sk["routes"], ["--sketch"], SKO, O + "/sketch_build.txt")
+        SB, data = self.busroute(sk["routes"], ["--sketch"], SKO, O + "/sketch_build.txt", ok=KEEP)
         print("== line-order sketch on the placed board")
         echo(grep(data, r"^\[间距\]|^结论") or text(data).splitlines()[-3:])
         echo(grep(data, r"^  ! "))
@@ -385,10 +407,13 @@ class Build:
         PC = self.place_check(O, lambda d: grep(quiet(d), r"keep-out \[", invert=True))
         print("== ways out of the fine-pitch parts (Tools.KiCadDesignTools.placement.escape_check)")
         for run in lay.get("escape", []):
-            rc, data = self.r.py("Tools.KiCadDesignTools.placement.escape_check", *self.escape(SK, run, None, False), "--json", O + "/" + run["json"], filt=quiet)
+            rc, data = self.r.py("Tools.KiCadDesignTools.placement.escape_check", *self.escape(SK, run, None, False), "--json", O + "/" + run["json"], filt=quiet,
+                                 ok=KEEP)
             self.pr(data)
         print("== copper region sketch (Tools.KiCadDesignTools.copper.cu_sketch check)")
-        rc, data = self.r.py("Tools.KiCadDesignTools.copper.cu_sketch", "check", self.D + "/" + self.cfg.need("copper.sketch"), "--board", self.BRD, filt=quiet)
+        # a report here (the copper and route steps stop on a rejected sketch)
+        rc, data = self.r.py("Tools.KiCadDesignTools.copper.cu_sketch", "check", self.D + "/" + self.cfg.need("copper.sketch"), "--board", self.BRD, filt=quiet,
+                             ok=KEEP)
         echo(text(data).splitlines()[-40:])
         print("== measured trial checks")
         rc, data = self.r.py("Tools.KiCadDesignTools.placement.layout_probe", self.D, "--json", O + "/layout_probe.json", filt=quiet)
@@ -411,41 +436,41 @@ class Build:
         echo(grep(data, r"^warning: a ~", invert=True))
         print("== line-order sketch on a copy of the board (the obstacles of the power groups)")
         self.r.py(BOARDTEXT, self.D, "unfill", SK, filt=quiet)
-        SB, data = self.busroute(lay["sketch"]["routes"], ["--sketch"], SKO, O + "/sketch_build.txt", after=["--no-refill", "--no-pictures"])
+        SB, data = self.busroute(lay["sketch"]["routes"], ["--sketch"], SKO, O + "/sketch_build.txt", after=["--no-refill", "--no-pictures"], ok=KEEP)
         echo(grep(data, r"^\[间距\]|^结论") or text(data).splitlines()[-3:])
         codes = []
         for g in cu.get("group", []):
             print("== group %s on %s" % (g["name"], g.get("board", "board")))
             env = {k: self._fill(v, O, SK) for k, v in (g.get("env") or {}).items()}
             flags = ["--write-board"] + list(g.get("flags", [])) + ["--no-refill", "--no-pictures"]
-            rc, data = self.busroute(g["file"], flags, O + "/" + g["out"], O + "/" + g["out"] + "_build.txt", env=env)
+            rc, data = self.busroute(g["file"], flags, O + "/" + g["out"], O + "/" + g["out"] + "_build.txt", env=env, ok=KEEP)
             codes.append(rc)
             echo(grep(data, r"^写入|^\[间距\]|^结论|^ERROR") or text(data).splitlines()[-5:])
             if g.get("after") == "refill_board":
                 print("== refill and save (kicad-cli), measure")
                 self.r.cli("pcb", "drc", "--refill-zones", "--save-board", "--severity-all", "--units", "mm", "--format", "json", "-o",
-                           O + "/drc.json", BRD)
+                           O + "/drc.json", BRD, outputs=[O + "/drc.json"])
                 self.r.py("Tools.KiCadDesignTools.copper.cu_sketch", "measure", BRD, "--drc", O + "/drc.json", "--json", O + "/measure.json",
                           "--skip-areas", ",".join(cu["skip_areas"]), out=O + "/measure.txt")
                 rc, data = self.r.py("Tools.KiCadDesignTools.copper.pour_islands", BRD, *cu["pour_check"], filt=quiet, out=O + "/pour_islands.txt")
                 echo(grep(data, " 0 without", invert=True))
         self.r.cli("pcb", "drc", "--refill-zones", "--save-board", "--severity-all", "--units", "mm", "--format", "json", "-o",
-                   O + "/sketch_drc.json", SK)
+                   O + "/sketch_drc.json", SK, outputs=[O + "/sketch_drc.json"])
         rc, data = self.r.py(SLOTS, self.D, SK, O, filt=quiet)
         echo(text(data).splitlines()[-12:])
         first = True
         for run in lay.get("escape", []):
             self.r.py("Tools.KiCadDesignTools.placement.escape_check", *self.escape(SK, run, None, False), "--json", O + "/" + run["json"], filt=quiet,
-                      out=O + "/escape.txt", append=not first)
+                      out=O + "/escape.txt", append=not first, ok=KEEP)
             first = False
         print("== pictures of the filled layers (qualitative review only)")
         for v in cu.get("views", []):
             self.view(SK if v.get("board") == "sketch" else BRD, O, v)
         self.project_quiet()
         print("== copper table")
-        rc, data = self.r.py(COPPER_TABLE, self.D, BRD, O, filt=quiet, env={"COPPER_SECONDS": "%d s" % (time.time() - T0)})
+        CT, data = self.r.py(COPPER_TABLE, self.D, BRD, O, filt=quiet, env={"COPPER_SECONDS": "%d s" % (time.time() - T0)}, ok=KEEP)
         self.pr(data)
-        print("copper step: %d s; sketch build exit %s, group exits %s" % (time.time() - T0, SB, codes))
+        print("copper step: %d s; sketch build exit %s, group exits %s, table exit %s" % (time.time() - T0, SB, codes, CT))
         return 0
 
     def _fill(self, v, O, SK=None, obstacles=None):
@@ -487,13 +512,14 @@ class Build:
                 continue
             print("== group %s (%s) on the board" % (g["name"], g["file"]))
             env = {k: self._fill(v, O, obstacles=OBST) for k, v in (g.get("env") or {}).items()}
+            # a group's findings (exit 1) or a group that could not be built (exit 2) go to the route table
             rc, data = self.busroute(g["file"], ["--write-board", "--no-refill", "--no-pictures"], O + "/" + g["name"],
-                                     O + "/" + g["name"] + "_build.txt", env=env)
+                                     O + "/" + g["name"] + "_build.txt", env=env, ok=KEEP)
             codes[g["name"]] = rc
             echo(grep(data, r"^写入|^\[间距\]|^结论|^ERROR|^  ! [A-Z]") or text(data).splitlines()[-5:])
         print("== refill and save (kicad-cli), DRC, measure")
         self.r.cli("pcb", "drc", "--refill-zones", "--save-board", "--severity-all", "--units", "mm", "--format", "json", "-o",
-                   O + "/drc.json", BRD)
+                   O + "/drc.json", BRD, outputs=[O + "/drc.json"])
         self.project_quiet()
         cu = self.cfg.need("copper")
         self.r.py("Tools.KiCadDesignTools.copper.cu_sketch", "measure", BRD, "--drc", O + "/drc.json", "--json", O + "/measure.json", "--skip-areas",
@@ -513,13 +539,13 @@ class Build:
         first = True
         for run in rt.get("escape", []):
             self.r.py("Tools.KiCadDesignTools.placement.escape_check", *self.escape(BRD, run, None, False), "--json", O + "/" + run["json"], filt=quiet,
-                      out=O + "/escape.txt", append=not first)
+                      out=O + "/escape.txt", append=not first, ok=KEEP)
             first = False
-        self.r.py("Tools.KiCadDesignTools.rules.dru_canary", BRD, filt=quiet, out=O + "/canary.txt")
+        self.r.py("Tools.KiCadDesignTools.rules.dru_canary", BRD, filt=quiet, out=O + "/canary.txt", ok=KEEP)
         if self.skip_match:
             self.match_skipped(O, tee=False)
         else:
-            self.r.py("Tools.KiCadDesignTools.rules.dru_match", BRD, "--json", O + "/dru_match.json", out=O + "/dru_match.txt")
+            self.r.py("Tools.KiCadDesignTools.rules.dru_match", BRD, "--json", O + "/dru_match.json", out=O + "/dru_match.txt", ok=KEEP)
         print("== pictures (qualitative review only)")
         for v in rt.get("views", []):
             self.view(BRD, O, v)
@@ -528,7 +554,7 @@ class Build:
         print("== route table")
         listed = "\n" + "".join("%s %s\n" % (g["name"], g["file"]) for g in groups if g.get("in_report") and g["name"] in build)
         RT, data = self.r.py(ROUTE_TABLE, self.D, BRD, O, out=O + "/table.log",
-                             env={"ROUTE2_GROUPS": listed, "ROUTE2_SECONDS": "%d s" % (time.time() - T0)})
+                             env={"ROUTE2_GROUPS": listed, "ROUTE2_SECONDS": "%d s" % (time.time() - T0)}, ok=KEEP)
         lines = text(quiet(data)).splitlines()
         part = rt.get("table", {}).get("part_title")         # the full table's own part ends here; the bus part follows
         for l in lines:
@@ -547,7 +573,8 @@ class Build:
         F, D = "Tools.KiCadDesignTools.finishing.finish", self.D
 
         def refill(js):
-            self.r.cli("pcb", "drc", "--refill-zones", "--save-board", "--severity-all", "--units", "mm", "--format", "json", "-o", js, BRD)
+            self.r.cli("pcb", "drc", "--refill-zones", "--save-board", "--severity-all", "--units", "mm", "--format", "json", "-o", js, BRD,
+                       outputs=[js])
             self.r.rest(rest)
 
         def p(rc_data):
@@ -563,7 +590,7 @@ class Build:
         p(self.r.py(F, D, "pours", BRD, O, filt=q2))
         refill(O + "/drc_pour.json")
         for P in range(1, int(fin.get("clean_passes", 2)) + 1):
-            CL, data = self.r.py(F, D, "clean", BRD, O, "shape", out=O + "/clean.log")
+            CL, data = self.r.py(F, D, "clean", BRD, O, "shape", out=O + "/clean.log", ok=(0, 10))
             self.pr(q2(data))
             if self.dry:
                 print("# exit 10 (keep-outs added): refill %s/drc_clean%d.json and run the next pass" % (O, P))
@@ -577,7 +604,7 @@ class Build:
         p(self.r.py(F, D, "stitch", BRD, O, "--pieces", filt=q2))      # the pieces the first pass's vias made or left on one via
         refill(O + "/drc_stitch2.json")
         # an inner piece the stitching could not hold (no legal site) goes by a keep-out
-        CL, data = self.r.py(F, D, "clean", BRD, O, "anchor", out=O + "/clean.log")
+        CL, data = self.r.py(F, D, "clean", BRD, O, "anchor", out=O + "/clean.log", ok=(0, 10))
         self.pr(q2(data))
         if self.dry:
             print("# exit 10 (keep-outs added): refill %s/drc_anchor.json" % O)
@@ -597,12 +624,12 @@ class Build:
             self.project_quiet()                                    # SaveBoard may have rewritten the project file
         print("== final DRC (schematic parity), canary, rules matching nothing")
         self.r.cli("pcb", "drc", "--refill-zones", "--save-board", "--severity-all", "--schematic-parity", "--units", "mm", "--format",
-                   "json", "-o", O + "/drc.json", BRD)
+                   "json", "-o", O + "/drc.json", BRD, outputs=[O + "/drc.json"])
         self.r.rest(rest)
         if not copy:
             self.project_quiet()
         self.drc_summary(O + "/drc.json", O + "/drc_summary.txt")
-        rc, data = self.r.py("Tools.KiCadDesignTools.rules.dru_canary", BRD, filt=quiet, out=O + "/canary.txt")
+        rc, data = self.r.py("Tools.KiCadDesignTools.rules.dru_canary", BRD, filt=quiet, out=O + "/canary.txt", ok=KEEP)
         self.pr(data)
         s = fin.get("slots")
         if s:
@@ -625,7 +652,7 @@ class Build:
         for side in sides:
             rc, _ = self.r.cli("pcb", "render", "--side", side, "--width", rd.get("width", 1600), "--height", rd.get("height", 1410),
                                "--quality", rd.get("quality", "basic"), "--background", "opaque", "-o", O + "/render_%s.png" % side, BRD,
-                               timeout=int(rd.get("timeout", 180)))
+                               timeout=int(rd.get("timeout", 180)), ok=KEEP)
             if rc:
                 print("render %s failed or took over %d s" % (side, int(rd.get("timeout", 180))))
             self.r.rest(rest)
@@ -648,14 +675,15 @@ class Build:
 
     def step_checks(self):
         O, T0 = self.out("checks"), time.time()
-        rc, data = self.r.py("Tools.KiCadDesignTools.rules.dru_match", self.BRD, "--json", O + "/dru_match.json", out=O + "/dru_match.txt")
+        rc, data = self.r.py("Tools.KiCadDesignTools.rules.dru_match", self.BRD, "--json", O + "/dru_match.json", out=O + "/dru_match.txt",
+                             ok=KEEP)
         echo(text(data).splitlines()[-1:])
         print("checks step: %d s" % (time.time() - T0))
         return 0
 
     def step_publish(self):
         T0 = time.time()
-        rc, data = self.r.py(PUBLISH, self.D, "--rest", int(self.cfg.get("publish.rest", 20)), filt=quiet)
+        rc, data = self.r.py(PUBLISH, self.D, "--rest", int(self.cfg.get("publish.rest", 20)), filt=quiet, ok=KEEP)   # the step's exit code
         self.pr(data)
         print("publish step: %d s" % (time.time() - T0))
         return rc
@@ -829,6 +857,7 @@ def main(argv):
         try:
             return getattr(b, "step_" + step.replace("-", "_"))()
         except Stop as s:
+            print("step %s stopped: %s" % (step, s))
             return s.code
 
 

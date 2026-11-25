@@ -242,9 +242,17 @@ def _ended(t0):
 
 
 # ---------------------------------------------------------------------------------------------------- run
+def decode(data):
+    """A child's output bytes as text: UTF-8 (the Tools), else the console code page (kicad-cli's messages)."""
+    try:
+        return data.decode("utf-8")
+    except UnicodeDecodeError:
+        return data.decode("mbcs" if os.name == "nt" else "latin-1", "replace")
+
+
 def _tail(data, n=20):
     if isinstance(data, bytes):
-        data = data.decode("utf-8", "replace")
+        data = decode(data)
     return "\n".join((data or "").strip().splitlines()[-n:])
 
 
