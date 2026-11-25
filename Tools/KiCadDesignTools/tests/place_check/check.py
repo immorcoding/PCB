@@ -145,7 +145,8 @@ def main():
             if got != exp:
                 fails.append("%s: got %r, expected %r" % (name, got, exp))
         js = os.path.join(tmp, "place.json")
-        rc, out = run(["Tools.KiCadDesignTools.placement.place_check", path, "--edge", "J1=L", "--limit", "2.5", "--json", js])
+        rc, out = run(["Tools.KiCadDesignTools.placement.place_check", path, "--edge", "J1=L", "--limit", "2.5", "--ground", "GND",
+                       "--json", js])
         R = json.load(open(js, encoding="utf-8"))
         want("exit code", rc, 1)
         want("placed", (R["parts"]["placed"], R["parts"]["total"]), (19, 20))
@@ -166,8 +167,16 @@ def main():
         want("silk", sorted(s[0] for s in R["silk"] if s[2]), ["TP1"])
 
         je = os.path.join(tmp, "escape.json")
-        rc, out = run(["Tools.KiCadDesignTools.placement.escape_check", path, "--ref", "U1", "--window", "12", "7", "28", "23",
-                       "--json", je])
+        # escape_check reads the board folder: board.toml (ground net, origin) and the rule files of profile C (the
+        # busroute bench's, next to the board: SaveBoard wrote a default project file, replaced here); the layers of the
+        # four-layer plan this bench was written for
+        open(os.path.join(tmp, "board.toml"), "w", encoding="utf-8").write(
+            '[board]\nname = "bench"\norigin = [100.0, 100.0]\n\n[layers]\nroles = ["signal", "ground", "signal", "signal", '
+            '"power", "signal"]\n\n[power]\nground = "GND"\n')
+        for ext in (".kicad_pro", ".kicad_dru"):
+            shutil.copyfile(os.path.join(HERE, "..", "busroute", "fixture", "bench" + ext), os.path.join(tmp, "bench" + ext))
+        rc, out = run(["Tools.KiCadDesignTools.placement.escape_check", tmp, path, "--ref", "U1", "--window", "12", "7", "28", "23",
+                       "--layers", "L1", "L4", "L6", "--json", je])
         E = json.load(open(je, encoding="utf-8"))["U1"]
         want("escape exit code", rc, 1)
         st = {p: (r["status"], r["vias"]) for p, r in E.items()}

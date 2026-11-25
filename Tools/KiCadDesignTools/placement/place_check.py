@@ -17,7 +17,9 @@ Options:
   --small NF              capacitors up to this value are the per-pin decoupling (default 100)
   --limit MM              per-pin distance limit for those (required: the rule profile's value, which the board
                           gives in board.toml [layout] decap_limit; the build driver passes it, LAY-2)
-  --silk MM               text height for LAY-8 (default 1.0, the board's silk minimum); a character is taken
+  --ground NET            the ground net: a decoupling capacitor has one pad on it (required: board.toml [power]
+                          ground; the build driver passes it)
+  --silk MM              text height for LAY-8 (default 1.0, the board's silk minimum); a character is taken
                           as 0.9 x this wide. Reported, not enforced (the silk itself is the finishing stage)
   --silk-refs REGEX       parts that need room (default ^(J|TP|JP))
   --origin X Y            subtract this from board coordinates in the report (default 100 100)
@@ -34,7 +36,7 @@ What it measures (all from the board file; nothing is written to it):
   edge       per --edge part: body distance to its side, and whether it is on that side at all
   under      bottom pads whose outline overlaps a top pad of another part (LAY-5), except under --allow-under
   decoupling per IC supply pin (pad on a --rail net): distance from the pad centre to the rail pad of the
-             nearest capacitor of at most --small nF that has a GND pad; per capacitor on a rail: distance to
+             nearest capacitor of at most --small nF that has a --ground pad; per capacitor on a rail: distance to
              the nearest IC pin of its rail. Pins on rails that have no small capacitor at all are counted
              separately (bulk-only rails such as VCAP).
   silk       LAY-8, room for labels: a test point (TP*) needs a box for its value (its net name), one text line
@@ -62,6 +64,7 @@ def opts(argv):
     p.add_argument("--not-supply", default="")
     p.add_argument("--small", type=float, default=100.0)
     p.add_argument("--limit", type=float, required=True)
+    p.add_argument("--ground", required=True)
     p.add_argument("--silk", type=float, default=1.0)
     p.add_argument("--silk-refs", default=r"^(J|TP|JP)")
     p.add_argument("--origin", nargs=2, type=float, default=[100.0, 100.0])
@@ -310,9 +313,9 @@ def measure(a):
         nf = cap_nf(p.fp.GetValue())
         pads = list(p.fp.Pads())
         nets = [pd.GetNetname() for pd in pads]
-        if nf is None or len(pads) != 2 or "GND" not in nets:
+        if nf is None or len(pads) != 2 or a.ground not in nets:
             continue
-        rp = pads[0] if nets[1] == "GND" else pads[1]
+        rp = pads[0] if nets[1] == a.ground else pads[1]
         if not rail.search(rp.GetNetname()):
             continue
         c = rp.GetPosition()

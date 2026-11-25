@@ -1,22 +1,26 @@
 """Way out of every pad of fine-pitch parts (LAY-2): can a track get from the pad to open board, or to its partner.
 
-    D:\\KiCad\\bin\\python.exe -m Tools.KiCadDesignTools.placement.escape_check <board> --ref U201 [--ref U501 ...] [options] [--json out.json]
+    D:\\KiCad\\bin\\python.exe -m Tools.KiCadDesignTools.placement.escape_check <board dir> <board> --ref U201 [--ref U501 ...] [options] [--json out.json]
 
-Options:
+<board dir>: the board folder (board.toml); <board>: the board file checked (the line-order sketch copy, the routed
+board). Options:
   --ref REF            part whose pads are checked (repeatable)
   --window X0 Y0 X1 Y1 the open-board boundary for all parts (local mm, see --origin); default per part: its
                        courtyard box grown by --margin
   --margin MM          default 3
-  --layers L1 L4 L6    signal layers tracks may use (L1 = F.Cu, Ln = B.Cu); default L1 L4 L6
+  --layers L1 L3 ...   signal layers tracks may use (L1 = F.Cu, Ln = B.Cu); default the board's signal layers
+                       (board.toml [layers] roles)
   --plane NET ...      nets that end in a plane or pour: they are connected as soon as a via can stand
-                       somewhere the pad reaches (default GND and every net starting with +)
+                       somewhere the pad reaches (default the ground net, board.toml [power] ground, and every net
+                       starting with +)
   --max-vias N         default 2
   --grid MM            raster step, default 0.025
-  --origin X Y         default 100 100
+  --origin X Y         default board.toml [board] origin
   --debug REF.PAD PNG  paint what that pad reaches (per layer, side by side): blocked dark, free grey, reached
                        without a via green, after one via yellow, after two orange
 
-Rules (from SPEC 6, 7 and the board's net classes; inside the rule areas whose names start with BGA_):
+Rules: the board folder's .kicad_pro and .kicad_dru (core.config rules(), busroute's Profile), inside the rule areas
+the rule file names (BGA_MCU, BGA_SDRAM) and outside them the narrowest net class (H743 / profile C values):
                        inside area   outside
   track width          0.09          0.1016
   clearance            0.09          0.127
@@ -41,23 +45,32 @@ import numpy as np
 import pcbnew
 from pcbnew import ToMM
 
+from Tools.KiCadDesignTools.core import config
+
 EMPTY, MIXED = -2, -1
 
 
 def opts(argv):
     p = argparse.ArgumentParser()
+    p.add_argument("board_dir")
     p.add_argument("board")
     p.add_argument("--ref", action="append", required=True)
     p.add_argument("--window", nargs=4, type=float)
     p.add_argument("--margin", type=float, default=3.0)
-    p.add_argument("--layers", nargs="+", default=["L1", "L4", "L6"])
+    p.add_argument("--layers", nargs="+")
     p.add_argument("--plane", nargs="*")
     p.add_argument("--max-vias", type=int, default=2)
     p.add_argument("--grid", type=float, default=0.025)
-    p.add_argument("--origin", nargs=2, type=float, default=[100.0, 100.0])
+    p.add_argument("--origin", nargs=2, type=float)
     p.add_argument("--json")
     p.add_argument("--debug", nargs=2)
-    return p.parse_args(argv)
+    a = p.parse_args(argv)
+    cfg = config.load(a.board_dir)
+    a.layers = a.layers or cfg.signal_layers()
+    a.origin = a.origin or list(cfg.origin)
+    a.ground = cfg.need("power.ground")
+    a.rules = cfg.rules()
+    return a
 
 
 def layer_id(board, name):
@@ -194,7 +207,7 @@ def run(a):
             netname.append(n)
         return netid[n]
     plane = set(a.plane) if a.plane is not None else None
-    is_plane = (lambda n: n in plane) if plane is not None else (lambda n: n == "GND" or n.startswith("+"))
+    is_plane = (lambda n: n in plane) if plane is not None else (lambda n: n == a.ground or n.startswith("+"))
 
     def cbox(ref):
         f = fps[ref]
@@ -202,6 +215,10 @@ def run(a):
         bb = cy.BBox() if cy.OutlineCount() else f.GetBoundingBox(False)
         return (ToMM(bb.GetLeft()) - ox, ToMM(bb.GetTop()) - oy, ToMM(bb.GetRight()) - ox, ToMM(bb.GetBottom()) - oy)
 
+    # the rule values: inside the rule areas of the rule file, outside the narrowest net class (core.config rules())
+    pr = a.rules
+    area_names = set(pr.area_names or ())
+    via_out = pr.via_out_min()
     results = {}
     groups = collections.OrderedDict()
     for ref in a.ref:
@@ -217,7 +234,7 @@ def run(a):
         g = a.grid
         # rule areas
         for z in board.Zones():
-            if z.GetIsRuleArea() and z.GetZoneName().startswith("BGA_"):
+            if z.GetIsRuleArea() and z.GetZoneName() in area_names:
                 bb = z.GetBoundingBox()
                 box = (ToMM(bb.GetLeft()) - ox, ToMM(bb.GetTop()) - oy, ToMM(bb.GetRight()) - ox, ToMM(bb.GetBottom()) - oy)
                 wn = R.win(box, 0)
@@ -226,11 +243,11 @@ def run(a):
                     X, Y = np.meshgrid(R.xs(i0, i1), R.ys(j0, j1))
                     R.area[j0:j1, i0:i1] |= (X >= box[0]) & (X <= box[2]) & (Y >= box[1]) & (Y <= box[3])
         A = R.area
-        c = np.where(A, 0.09, 0.127)
-        hw = np.where(A, 0.045, 0.0508)
-        rv = np.where(A, 0.15, 0.225)
-        hv = np.where(A, 0.075, 0.10)
-        HC = 0.2
+        c = np.where(A, pr.clr_area, pr.clr_out())
+        hw = np.where(A, pr.w_area / 2, pr.w_out() / 2)
+        rv = np.where(A, pr.via_area[0] / 2, via_out[0] / 2)
+        hv = np.where(A, pr.via_area[1] / 2, via_out[1] / 2)
+        HC = pr.hole_clr
         tol = R.tol
         trk_thr = c + hw - tol
         via_thr = c + rv - tol

@@ -6,9 +6,12 @@ Where each number comes from:
   inside a rule area   track width, clearance, via        the .kicad_dru rules that test enclosedByArea /
                                                            intersectsArea (fallback: the board-level floors
                                                            of the .kicad_pro, which are the in-area values)
-  outside              track width, clearance, via        the net class of the net (.kicad_pro)
+  outside              track width, clearance, via        the net class of the net (.kicad_pro); for a tool that
+                                                           does not know the net: the narrowest of the classes
+                                                           (w_out(), clr_out(), via_out_min())
   everywhere           hole to copper, hole to hole, copper to board edge (.kicad_pro), shortest segment,
-                       via-count and length limits per net class (.kicad_dru)
+                       plated part holes (hole to copper, hole to hole), via-count and length limits per net class
+                       (.kicad_dru)
   not in any file      `extend` (how far past a rule-area edge a track stays thin), `chamfer` (the `sharp`
                        rule of docs/design-rules.md), `lane_min_seg`, the plane numbers of a via field
 A routes file may override any attribute with PROFILE = {"extend": 0.3, ...}.
@@ -24,6 +27,7 @@ class Profile:
     hole_clr = 0.2            # via hole edge to copper of another net
     pth_hole_clr = 0.3        # plated pad hole edge to copper of another net
     hole_hole = 0.254         # hole edge to hole edge
+    pth_hole_hole = 0.254     # plated pad hole edge to hole edge (the rule file's Through-hole rule, else hole_hole)
     edge_clr = 0.254          # copper to board edge
     min_seg = 0.1             # DRC: shortest track segment
     lane_min_seg = 0.15       # shortest piece a generator may draw
@@ -62,6 +66,17 @@ class Profile:
     def limit(self, net, key):
         return self.limits.get(self.net_class(net), {}).get(key)
 
+    # ---- outside the rule areas, any net: the narrowest net class (escape and site checks that do not know the net)
+    def w_out(self):
+        return min(c["width"] for c in self.classes.values())
+
+    def clr_out(self):
+        return min(c["clearance"] for c in self.classes.values())
+
+    def via_out_min(self):
+        """(diameter, drill) of the smallest class via."""
+        return min(tuple(c["via"]) for c in self.classes.values())
+
     # ---- reading
     @classmethod
     def from_project(cls, pcb_path, override=None):
@@ -74,7 +89,7 @@ class Profile:
             p.clr_area = r.get("min_clearance", p.clr_area)
             p.via_area = (r.get("min_via_diameter", p.via_area[0]), r.get("min_through_hole_diameter", p.via_area[1]))
             p.hole_clr = p.pth_hole_clr = r.get("min_hole_clearance", p.hole_clr)
-            p.hole_hole = r.get("min_hole_to_hole", p.hole_hole)
+            p.hole_hole = p.pth_hole_hole = r.get("min_hole_to_hole", p.hole_hole)
             p.edge_clr = r.get("min_copper_edge_clearance", p.edge_clr)
             ns = d.get("net_settings", {})
             for c in ns.get("classes", []):
@@ -114,6 +129,8 @@ class Profile:
                 self.min_seg = cons["track_segment_length"]["min"]
             if "Through-hole" in cond and "min" in cons.get("hole_clearance", {}):
                 self.pth_hole_clr = cons["hole_clearance"]["min"]
+            if "Through-hole" in cond and "min" in cons.get("hole_to_hole", {}):
+                self.pth_hole_hole = cons["hole_to_hole"]["min"]
             k = re.fullmatch(r"\s*A\.NetClass == '([^']+)'\s*", cond)
             if k:
                 lim = self.limits.setdefault(k.group(1), {})

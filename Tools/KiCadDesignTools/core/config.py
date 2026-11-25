@@ -7,6 +7,8 @@
     cfg.kicad("L5") -> "In4.Cu";  cfg.L("In4.Cu") -> "L5";  cfg.signal_layers() -> ["L1", "L3", "L4", "L6"]
     cfg.groups                                    # [[route.group]] in build order (dicts)
     cfg.get("layout.edges", {})                   # any value by dotted path
+    cfg.rules()                                   # the rule values of the board's .kicad_pro / .kicad_dru (busroute Profile)
+    cfg.copper_sketch(), cfg.copper_plane()       # the copper sketch; its plane clearance and minimum width (mm)
     python -m Tools.KiCadDesignTools.core.config <board dir>       # print the checked configuration
 
 Layer roles: signal, ground, power, mixed (a ground or power layer is a plane layer: busroute refuses tracks on it,
@@ -147,6 +149,29 @@ class Board:
         """Import a Python data module of the board folder (e.g. "rules_cases", "routes_sdram", "sch.mcu")."""
         import importlib
         return importlib.import_module(self.package + "." + name)
+
+    def rules(self):
+        """The rule values of the board's .kicad_pro (floors, net classes) and .kicad_dru (rule-area widths,
+        clearances and vias, plated holes, limits) as a routing.busroute.profile.Profile, read once: the one source
+        of the rule profile's numbers for a tool (RUL-1; make_project writes them from templates/<[board] template>)."""
+        if "_rules" not in self.__dict__:
+            from Tools.KiCadDesignTools.routing.busroute.profile import Profile
+            self._rules = Profile.from_project(self.pcb)
+        return self._rules
+
+    def copper_sketch(self):
+        """The board's copper sketch ([copper] sketch) parsed by copper.cu_sketch, read once (its parameters in nm:
+        .p["gap"], ["clearance"], ["plane_clearance"], ["minwidth"]; its regions)."""
+        if "_sketch" not in self.__dict__:
+            from Tools.KiCadDesignTools.copper import cu_sketch
+            self._sketch = cu_sketch.load_sketch(self.path(self.need("copper.sketch")), len(self.layers))
+        return self._sketch
+
+    def copper_plane(self):
+        """(plane clearance, minimum width) in mm of the board's copper sketch: the zone clearance its plane layers
+        are written with (a foreign via's antipad) and the narrowest copper a zone keeps."""
+        p = self.copper_sketch().p
+        return p["plane_clearance"] / 1e6, p["minwidth"] / 1e6
 
     # ------------------------------------------------------------------ checks
     def _check(self):

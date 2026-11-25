@@ -251,14 +251,14 @@ class Build:
         return self.r.py("Tools.KiCadDesignTools.routing.busroute.build", *args, out=log, env=env, ok=ok)
 
     def escape(self, board, run, out, append):
-        args = [board]
+        args = [self.D, board]
         for ref in run["refs"]:
             args += ["--ref", ref]
         if run.get("window"):
             args += ["--window"] + [_num(v) for v in run["window"]]
-        # the layers tracks may use: the board's signal layers (layer roles), unless the run names its own; the tool's
-        # own default (L1 L4 L6) was the four-layer plan before L3 became a signal layer (2026-11-23)
-        args += ["--layers"] + list(run.get("layers") or self.cfg.signal_layers())
+        # the layers tracks may use: the tool takes the board's signal layers (layer roles) unless the run names its own
+        if run.get("layers"):
+            args += ["--layers"] + list(run["layers"])
         return args
 
     def view(self, board, O, v):
@@ -292,6 +292,7 @@ class Build:
         if lay.get("silk_refs"):
             args += ["--silk-refs", lay["silk_refs"]]
         args += ["--limit", "%g" % self.cfg.need("layout.decap_limit")]      # LAY-2: the profile's value, SPEC 本板取值
+        args += ["--ground", self.cfg.need("power.ground")]                  # a decoupling capacitor has a pad on it
         args += ["--json", O + "/place_check.json"]
         rc, data = self.r.py("Tools.KiCadDesignTools.placement.place_check", *args, out=O + "/place_check.txt", ok=KEEP)
         echo(show(data))
