@@ -216,7 +216,7 @@ def routes(job):
     job.slot("SDMMC1_D3", "L3", (46.65, 18.75), (51.3, 18.75), side="R")
     job.slot("SDMMC1_D2", "L6", (46.25, 18.75), (49.7, 18.75), side="R")
     job.slot("SDMMC1_CMD", "L3", (42.95, 18.5), (52.5, 18.5), side="L")
-    # crystals: L1 only, 0.254, ball - crystal pad - load capacitor (routes_probe_xtal.py)
+    # crystals: L1 only, 0.254, ball - crystal pad - load capacitor (probes/routes_probe_xtal.py)
     R = {n: ([thin(c) for c in p] if p and isinstance(p[0], list) else thin(p)) for n, p in R.items()}
     R.update({
         "LSE_IN": [("L1", ["U201.E1", (31.9, 35.05), (30.4, 33.55), "Y202.1", "C227.1"], 0.254)],

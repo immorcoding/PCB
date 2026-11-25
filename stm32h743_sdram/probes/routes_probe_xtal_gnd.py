@@ -13,7 +13,7 @@ pwr_width; GND's class width 0.3048 does not fit between two crystal tracks at t
 ground pour would drop a sliver this narrow (minwidth 0.3), so it is a track. The via shows as dangling here
 (the sketch board has no plane fills).
 """
-BOARD = "out/probe_xtal/stm32h743_sdram.kicad_pcb"
+BOARD = "../out/probe_xtal/stm32h743_sdram.kicad_pcb"
 ORIGIN = (100, 100)
 GROUP = "probe_xtal_gnd"
 SKETCH = True

@@ -5,7 +5,8 @@
 # [x, y, rot, "B"] (on the bottom). Re-running moves every listed part back to its position, redraws Edge.Cuts, the
 # rule areas and their F.Cu no-pour keep-outs, and parks every part that is not listed in rows below the board.
 # Stop 3 placed the two BGAs; stop 4 placed the rest around copper.sketch (LAY-1), keeping the SDRAM line-order sketch
-# valid; the bottom decoupling positions come from decap_search.py and the BGA block plan (fan below).
+# valid; the bottom decoupling positions came from decap_search.py (deleted, last in c38fa0d) and the BGA block plan
+# (fan below).
 # Fixed by the SPEC (section 8.1): the MCU is not rotated (A1 top-left); the SDRAM sits next to it; connectors on the
 # board edge. Starting values (section 8.2): board 85 x 75 mm with R2 corners, M3 holes in the corners, SDRAM to the
 # right of the MCU with about 5 mm between the package bodies.
@@ -83,7 +84,7 @@ R201 = [47.2, 36.675, 0]
 # crystal pad: C225 west of HSE IN, C226 south-east of HSE OUT, C227 / C228 west of the LSE pads, ground pads
 # outward to free board (try/eth-west: the PHY's passives no longer sit under the crystals). Y201's
 # north-east ground pad, closed in by HSE_IN and HSE_OUT, reaches ground ball G2 by an L1 guard between them;
-# trial routes in routes_probe_xtal.py (all four nets on L1, no via) and routes_probe_xtal_gnd.py (guards).
+# trial routes in probes/routes_probe_xtal.py (all four nets on L1, no via) and probes/routes_probe_xtal_gnd.py (guards).
 Y201 = [31.4, 39.0, 270]
 C225 = [28.65, 37.9, 180]
 C226 = [32.4, 41.65, 180]
@@ -252,7 +253,7 @@ R707 = [55.2, 63.6, 0]
 R706 = [57.8, 55.4, 90]
 TP701 = [57.6, 58.9, 0]
 # ---- bottom side under the BGAs (SPEC 6, agreed exception to LAY-5): MCU decoupling, VCAP, VDDA filter, and
-# the SDRAM decoupling. Positions from decap_search.py on the SDRAM sketch board: pads clear of every L6
+# the SDRAM decoupling. Positions from decap_search.py (deleted) on the SDRAM sketch board: pads clear of every L6
 # track and foreign via, every ball keeps a free via site, every VDD ball has a 100 nF within 2.5 mm.
 # L5_3V3_MCU and L5_3V3_SDRAM under them; VDDA_MCU is an L6 pour here (the SW corner is closed on L1, L4, L6).
 # The BGA block plan ([fan]) places most of them again.

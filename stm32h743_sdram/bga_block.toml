@@ -34,7 +34,7 @@ cap_kinds.U201 = [{ name = "100n", size = "0402", net = "+3V3_MCU", count = 15 }
                   { name = "C216", size = "0603", net = "+3V3_MCU", count = 1 }]
 cap_kinds.U301 = [{ name = "100n", size = "0402", net = "+3V3_SDRAM", count = 8 }]
 cap_reach = 1.9                       # every 3.3 V ball needs a 100 nF this close
-identity = "line_order/balls_identity.json"   # the SDRAM's pin functions (line_order.py's identity dump)
+identity = "probes/line_order/balls_identity.json"   # the SDRAM's pin functions (dump of line_order.py, deleted)
 clock = ["FMC_SDCLK", "FMC_SDCLK_R"]  # the SDRAM clock and its piece after the series resistor
 clock_resistor = "R201"
 # gates on the planning window: direction (clockwise from north, degrees), the direction a gate counts as in the

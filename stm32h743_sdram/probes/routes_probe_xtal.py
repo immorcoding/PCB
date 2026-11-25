@@ -4,10 +4,10 @@ runs ball - crystal pad - capacitor and the build reports "3 pads, a route joins
 pad is passed through mid-chain, which the PATH check does not count). Built on the sketch build's output board
 (never on the real board):
 
-    D:\\KiCad\\bin\\python.exe -m Tools.KiCadDesignTools.routing.busroute.build stm32h743_sdram\\routes_probe_xtal.py --sketch --out stm32h743_sdram\\out\\probe_xtal
-    D:\\KiCad\\bin\\python.exe -m Tools.KiCadDesignTools.routing.busroute.build stm32h743_sdram\\routes_probe_xtal_gnd.py --sketch --out stm32h743_sdram\\out\\probe_xtal_gnd
+    D:\\KiCad\\bin\\python.exe -m Tools.KiCadDesignTools.routing.busroute.build stm32h743_sdram\\probes\\routes_probe_xtal.py --sketch --out stm32h743_sdram\\out\\probe_xtal
+    D:\\KiCad\\bin\\python.exe -m Tools.KiCadDesignTools.routing.busroute.build stm32h743_sdram\\probes\\routes_probe_xtal_gnd.py --sketch --out stm32h743_sdram\\out\\probe_xtal_gnd
 
-(build routes_sdram.py into out\\sketch\\rot0 first; the second file adds the ground guards on top of this one's
+(build ../routes_sdram.py into out\\sketch\\rot0 first; the second file adds the ground guards on top of this one's
 output). Placement of try/eth-west: LSE Y202 vertical at (29.5, 34.8), HSE Y201 at 270 degrees centred on the
 FMC_A6 via at (31.4, 39.0), the via in its row gap and the A6 track in its column gap. Every chain enters its
 crystal pad at the pad centre and goes on to the load capacitor beyond it.
@@ -23,7 +23,7 @@ Between LSE_OUT and HSE_IN, and between HSE_IN and HSE_OUT, runs a ground guard 
 two small steps of LSE_OUT and HSE_IN make room for it at GND's minimum width (0.1524 mm, rule pwr_width) outside
 the rule area.
 """
-BOARD = "out/sketch/rot0/stm32h743_sdram.kicad_pcb"
+BOARD = "../out/sketch/rot0/stm32h743_sdram.kicad_pcb"
 ORIGIN = (100, 100)
 GROUP = "probe_xtal"
 SKETCH = True

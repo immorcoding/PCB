@@ -2,7 +2,7 @@
 SDRAM rivers, and at what cost? Built on a snapshot of the committed board (SDRAM group as formal routing, power vias
 and pours, fills removed with core.boardtext unfill), never on the real board:
 
-    D:\\KiCad\\bin\\python.exe -m Tools.KiCadDesignTools.routing.busroute.build stm32h743_sdram\\routes_probe_east.py --sketch --out stm32h743_sdram\\out\\probe_east\\run
+    D:\\KiCad\\bin\\python.exe -m Tools.KiCadDesignTools.routing.busroute.build stm32h743_sdram\\probes\\routes_probe_east.py --sketch --out stm32h743_sdram\\out\\probe_east\\run
 
 Open ends: north y = 26.5, south y = 50.8, CAN also x >= 63 (east). Local mm (MCU centre (40, 37)).
 Corridors used (see the report in issue #22 for capacities):
@@ -15,7 +15,7 @@ Corridors used (see the report in issue #22 for capacities):
   east   L1 pocket P2 (D3 / D24) -> L6 R1 -> under the SDRAM (one track between the via rows) -> x 63 -> south: LCD_B4
 Not drawn (enclosed or no capacity left): SDMMC1_D3 (B13), LCD_R5, LCD_G6, LCD_HSYNC, LCD_R7, TP_INT.
 """
-BOARD = "out/probe_east/base/stm32h743_sdram.kicad_pcb"
+BOARD = "../out/probe_east/base/stm32h743_sdram.kicad_pcb"
 ORIGIN = (100, 100)
 GROUP = "probe_east"
 SKETCH = True
