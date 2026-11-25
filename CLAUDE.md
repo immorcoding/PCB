@@ -2,15 +2,19 @@
 
 KiCad 10 硬件设计。分工：Claude 完成原理图、布局、布线；用户（Altium 背景，KiCad 新手）负责审查。交付时附上审查清单，概念用 AD 的对应说法解释。
 
-已做完的板子：`stm32f411_minsys/`（双层）、`steval_fcu001v2/`（四层，40 × 40 mm）。
+已做完的板子：`stm32f411_minsys/`（双层）、`steval_fcu001v2/`（四层，40 × 40 mm）、`stm32h743_sdram/`（六层，0.65 mm BGA 加 SDRAM；布局和走线做法的范例）。
 
 ## 去哪里找什么
 
 - **该怎么做**（流程、验收标准、约定）：`docs/shape/`，见下面的 Project shape。
-- **规则的数值**（和 AD 的对照、规则文件的坑）：[docs/design-rules.md](docs/design-rules.md)；按板型分的三套规格档（A 通用、B 0.8 mm BGA、C 0.65 mm 及以下 BGA）在 `docs/rule-profiles/`。
-- **工具的命令、用法和坑**：[docs/tools.md](docs/tools.md)。
+- **规则的数值**（和 AD 的对照、规则文件的坑）：[docs/design-rules.md](docs/design-rules.md)；按板型分的三套规格档（A 通用、B 0.8 mm BGA、C 0.65 mm 及以下 BGA）在 `docs/rule-profiles/`。随板子变的取值（层数、去耦距离、蛇形参数、等长容差等）不写在规则里：起点值在规格档的“布局和走线的取值”一节，每块板的值在它的 `SPEC.md` 第 7.2 节“本板取值”表。
+- **工具**：全部在 `Tools/KiCadDesignTools/`，索引、每个数值放在哪、规则对照表在 [Tools/KiCadDesignTools/README.md](Tools/KiCadDesignTools/README.md)；踩过的坑在 [docs/tools.md](docs/tools.md)。板子目录只放数据（`board.toml`、`place.toml`、`silk.toml`、线束和原理图页），不放工具逻辑。
+- **构建**：`python -m Tools.KiCadDesignTools.build <板子目录> <步骤>`（`--dry-run` 只打印命令）；改了工具或规则文件后跑 `python -m Tools.KiCadDesignTools.regress`。
+- **起新板**：`build init <名字>` 从 `templates/demo_board/` 复制数据文件和 SPEC 样板（那块演示板只是工具链的试验件，只取它的文件结构），工程模板在 `templates/<规格档>/`。
 
 KiCad 10.0.8 在 `D:\KiCad\bin\`（`kicad-cli.exe`，带 pcbnew 的 `python.exe`），不在 PATH 上。
+
+这台电脑在多核持续满载时会硬复位。KiCad 的 DRC、铺铜、渲染、出图一次只跑一个，都经过构建入口或 `core/heavy`（低优先级、四个核、排队）；不要绕开它直接起 `kicad-cli`，不要并行跑。派构建类子任务时把这一条写进交代，并要求交回时没有进程在跑。
 
 ## 模型和思考程度
 
@@ -19,7 +23,7 @@ KiCad 10.0.8 在 `D:\KiCad\bin\`（`kicad-cli.exe`，带 pcbnew 的 `python.exe`
 | 任务 | 谁做 | 模型 | 思考程度 |
 |---|---|---|---|
 | 和用户对话、定方案、设计规则、审子任务结果 | 主会话 | Fable | 会话设置 |
-| 线序分配（每根线走哪层、从哪边绕）：用确定性脚本算，不交给子任务搜索 | 主会话 | Fable | 会话设置 |
+| 线序草图的分配（每个球的过孔位、每根线走哪层从哪边绕、补线区）：用确定性脚本算，不交给子任务搜索 | 主会话 | Fable | 会话设置 |
 | 没有先例的新工具或新算法（主会话先写清接口和基准） | 子任务 | Fable | high |
 | 读手册页面图取数（引脚表、时序、尺寸）；关键数字主会话抽查一处 | 子任务 | Sonnet | medium |
 | 网上调研（器件、工艺、应用笔记） | 子任务 | Sonnet | medium |
