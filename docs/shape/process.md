@@ -23,7 +23,7 @@ Next id: PROC-16
 - **PROC-2** · provisional · 每个阶段有可算的完成标准，不达标不进下一阶段；发现是上游阶段的问题，回退到那个阶段改。 _Why:_ 六层废弃板的布局不合格仍进了走线，后面全在补。
 - **PROC-3** · provisional · 连续两轮构建的指标没有实质改善，就停下来向用户报告根因和回退方案，不继续小修。走线优化另有轮数上限 5 + N·log₂N ÷ 7（N 是一起走的网络数，按总线组算）：达标或到上限就停，推进下一步，没达标的列给用户，连通除外：没接通就换手段（挪件、换层、回上游改），不报做不到；不设"线束走向先给用户过目"这一关。 _Why:_ 六层废弃板后期每轮只降几项未连接，仍做了十几轮才停；H7 的走线原型上 19 根线用了 5 轮和 11 轮，用户要上限随网络数增长且不是线性的，并指出走向定了走线中仍会改、布完之前也难判断；用户 2026-11-23：线接不通告诉他也给不出建议，得想办法走通。 _Source:_ [走线和等长原型](https://github.com/immorcoding/PCB/issues/21)、[工具路线票](https://github.com/immorcoding/PCB/issues/19)
 - **PROC-7** · provisional · 没做过的板型（层数、封装、接口），先做规模小一档的。 _Why:_ 从四层 STM32 直接跳到六层 BGA 加 LPDDR4，同时遇到了扇出、线序、电源面三类新问题。
-- **PROC-8** · provisional · 方案阶段把器件选型、接口、板型、叠层列成选项给用户定；层数按各总线要占几个信号层来估（并行存储总线、BGA 板外层被焊盘占掉的通道都算进去），估的依据写进 SPEC；板子尺寸按器件占地估出两三档给用户选，定了再布局；没有规格书可核对的引脚和参数记入"未核对项"，一直带到交付。定稿写成板目录里的 `SPEC.md`，文件为准，脚本要读的内容另存数据文件（引脚表、未核对项）；写明这块板验证什么和可算的判据，交付时逐条报；每节标"已定"（改之前先问用户，批准后记入变更记录）或"起点"（直接改，交接时报告并同步改正文）。后面的决定改了前面的结论时，当场回头改汇总（定稿、未核对项）；开新一轮问题前先对照已定的结论。 _Why:_ 四层板布局后缩了两次尺寸，每次整板重摆；H7 测试板的决定散在十三张票里，画板的 agent 读文件比读票可靠，没有判据交付时说不清这块板测到了什么；H7 测试板上连接器换了座而未核对项没跟着改，一张票开票时重问了三项已定的事；H743 板按三个信号层定，SDRAM 一组就占三层，改成四个信号层才走通（用户的经验：存储总线本身要三层）。 _Source:_ [定稿票](https://github.com/immorcoding/PCB/issues/20)
+- **PROC-8** · provisional · 方案阶段把器件选型、接口、板型、叠层列成选项给用户定；层数按各总线要占几个信号层来估（并行存储总线、BGA 板外层被焊盘占掉的通道都算进去），估的依据写进 SPEC；板子尺寸按器件占地估出两三档给用户选，定了再布局；没有规格书可核对的引脚和参数记入"未核对项"，一直带到交付。定稿写成板目录里的 `SPEC.md`，文件为准，脚本要读的内容另存数据文件（引脚表、未核对项）；写明这块板验证什么和可算的判据，交付时逐条报；带一张“本板取值”表，把所选规格档“布局和走线的取值”的每一项写上这块板的值或“不适用”，由 `project.spec_check` 检查齐全并和数据文件一致，不过不进布局（样板 `templates/demo_board/SPEC.md` 第 7.2 节）；每节标"已定"（改之前先问用户，批准后记入变更记录）或"起点"（直接改，交接时报告并同步改正文）。后面的决定改了前面的结论时，当场回头改汇总（定稿、未核对项）；开新一轮问题前先对照已定的结论。 _Why:_ 四层板布局后缩了两次尺寸，每次整板重摆；H7 测试板的决定散在十三张票里，画板的 agent 读文件比读票可靠，没有判据交付时说不清这块板测到了什么；H7 测试板上连接器换了座而未核对项没跟着改，一张票开票时重问了三项已定的事；H743 板按三个信号层定，SDRAM 一组就占三层，改成四个信号层才走通（用户的经验：存储总线本身要三层）。 _Source:_ [定稿票](https://github.com/immorcoding/PCB/issues/20)
 
 ### Signals
 
@@ -32,6 +32,7 @@ Next id: PROC-16
 - 2026-11-20 · PROC-8 · 起作用：原理图阶段核掉或部分核掉 U01–U05、U16、U24、U26–U30，新增 U40–U50；后面的结论和 SPEC 正文冲突时没有直接改“已定”的正文，记在变更记录里等用户定。
 - 2026-11-21 · PROC-3 · 起作用：线序草图的两个子任务各在 3–4 轮没有改善后停下来报告（90° 画通 43 / 57，180° 画通 37 / 57），没有继续小修；我把根因和可选的回退方案当场报给用户（PROC-10），没有等停点。
 - 2026-11-21 · PROC-3 · 起作用：整数规划的全扫描两轮没有结果后停下来报告，用户指出了模型的问题。
+- 2026-11-24 · cite · PROC-1 · R3：第 19 行的提议做了：驱动的 `route` 一步在各组建完之后、填充和 DRC 之前跑 `rules.len_rules`（`--upto` 时不跑），第一次布通的板不用再跑一次 `rules`；`all` 按 `board.toml [build] all` 跑，缺省是新板的全套 project、rules、sch、pcb-update、layout、copper、route、finish（H743 写明 rules、sch、route、finish，和以前一样）；`regress --board demo` 按同一顺序跑，数字和以前一样。
 
 ## review
 
@@ -57,6 +58,10 @@ Next id: PROC-16
 - 2026-11-21 · PROC-13 · 摩擦：`place.py` 存板时 pcbnew 把工程文件改写了，和 `make_project.py` 打架；改成存板前后把工程文件原样写回。
 - 2026-11-21 · 主会话看图（用户这次的指示，和 CLAUDE.md 的分工不同）：看图指出了三处脚本指标没报的问题（LSE 晶振远、热回路大、LCD 通道里有器件）。子任务留下的图是临时脚本画的，改完没更新，我第三轮差点看了旧图；补了 `place_view.py`。
 - 2026-11-22 · PROC-9 · 用户改了交接方式（这一次）：停点 6 验收后不等批准直接进停点 7，非严重的问题按 Claude 的推荐定并记录；验收流程是子任务复核通过后主会话再看（含看图），复核没通过的意见由主会话确认后返工。
+- 2026-11-24 · cite · PROC-13 · 起作用：基线重建（现有脚本、未改动）和提交的板文件相比只有对象的 uuid 不同（缝合过孔、板上图形、光学定位点及其禁布区、place.py 的四个规则区），其余逐项相同，所以脚本仍是这块板的来源。
+- 2026-11-24 · cite · PROC-13 · 起作用：板目录只剩数据（board.toml、place.toml、silk.toml、rules_cases.py、bga_block.toml、routes_*.py、sch/<页>.py），逻辑全部在 `Tools/KiCadDesignTools/`；所有写板的程序改成确定的 uuid（uuid5）后，连续两次全量构建的板文件逐字节相同，提交的板文件只换了一次 uuid（项的顺序随 uuid 变）。
+- 2026-11-24 · friction · PROC-13 · SPEC.md 和 copper.sketch 里还点着搬走的脚本（本批只改了注释，这两个文件不动，请主会话定改不改）：SPEC.md:186 `scripts/impedance.py`（现 rules/impedance.py）；SPEC.md:319 `scripts/kisch.py` 和本目录的 `gen_sch.py`（现 schematic/kisch.py、schematic.generate + sch/<页>.py）；SPEC.md:320 本目录的 `place.py`、坐标写在文件里（现 placement.place + place.toml）；SPEC.md:329 重写进 `scripts/`、`track_shape.py`（现 Tools/KiCadDesignTools/，analysis/track_shape.py）；SPEC.md:392 `kisch.py`（现 schematic/kisch.py）；copper.sketch:1 `scripts/cu_sketch.py`（现 copper.cu_sketch）；copper.sketch:9 `build.sh copper`（现驱动的 copper 一步）；copper.sketch:14 和 :125 `place.py`（现 placement.place / place.toml [rule_areas]）；copper.sketch:28 `finish_pour.py`（现 finishing.pour）。
+- 2026-11-24 · friction · PROC-13 · 板目录清理（H2）：删了 `line_order.py`（最后在 `a889ac4`）、`decap_search.py` 和 `patches/`（最后在 `c38fa0d`），四个 `routes_probe_*.py` 和 `line_order/` 挪进 `probes/`（`balls_identity.json` 仍由 `planning.bga_plan` 读）。`stm32h743_sdram/SPEC.md` 第 16 节 2026-11-21 那条变更记录写“分配表在 `line_order/`”，现在是 `probes/line_order/`；SPEC 本批不动，改不改请主会话定。
 
 ## tooling
 
@@ -67,7 +72,7 @@ Next id: PROC-16
 - **PROC-4** · exploring · 每次构建输出同一张指标表，八组：连通、线形（含圆弧）、等长、过孔、线序、铜皮、规则生效、耗时和轮数，各组的列在 [tools.md](../tools.md)；任何一项比上次差，先解释或回退。 _Why:_ 六层废弃板上放宽走线规则让开路从 35 段降到 20 段，夹角项却从 98 条涨到 182 条，没有东西拦住这种交换。
 - **PROC-5** · exploring · 写新工具前先调研现成的，并记下为什么不用。 _Why:_ 六层废弃板上自研的协商布线、盘中孔、电源面补桥，和已公开的 Claude Code KiCad skill 的做法高度重合。 _Source:_ <https://github.com/Novin3dp/claude-KiCad-pcb-designer-skill>
 - **PROC-6** · exploring · 全量重建超过 10 分钟、快速构建（只重建正在调的那组，不重新铺铜）超过 1 分钟，先解决构建速度再继续；构建按阶段分步，没改的步骤不重跑；每轮优化用快速构建，阶段交接前跑全量。KiCad 的一次 DRC、铺铜或渲染本身就是多核任务，一次只跑一个；批量计算先筛候选，再并行少数几个；派构建类子任务前查它要调的脚本里有没有进程池。 _Why:_ 六层废弃板的重建从 6 分钟涨到 70 分钟，后期每试一个想法要等一小时；H743 板上一个脚本并行跑 8 个 DRC，电脑硬复位两次。
-- **PROC-15** · exploring · 原型里的脚本转正时重写进 `scripts/`，不直接搬；每个工具配一块小基准板和预期指标，一条命令跑完全部回归；在用到它的那个阶段开头写。 _Why:_ 六层废弃板的工具没有回归基线，改一处不知道坏了哪里；原型脚本是一次性的，带着已知缺口。 _Source:_ [工具路线票](https://github.com/immorcoding/PCB/issues/19)
+- **PROC-15** · exploring · 工具都在 `Tools/KiCadDesignTools/<类别>/`，板目录只放数据文件（`board.toml` 等、线束、原理图页），不放工具逻辑，每一步由构建入口 `python -m Tools.KiCadDesignTools.build <板目录> <步骤>` 跑。原型里的脚本转正时重写进工具包，不直接搬；每个工具配自带夹具的基准（`tests/<工具>/check.py`）和预期指标，`python -m Tools.KiCadDesignTools.regress` 一条命令跑完；在用到它的那个阶段开头写。 _Why:_ 六层废弃板的工具没有回归基线，改一处不知道坏了哪里；原型脚本是一次性的，带着已知缺口；H743 板的工具逻辑散在板目录的四十多个脚本里，下一块板要整份抄，2026-11-24 收进工具包后板目录只剩数据，重建逐字节不变。 _Source:_ [工具路线票](https://github.com/immorcoding/PCB/issues/19)
 
 ### Signals
 
@@ -77,3 +82,8 @@ Next id: PROC-16
 - 2026-11-20 · PROC-5 · 起作用，缺口同前：写阻抗脚本前查过现成的（`kicad-cli` 和自带的 pcbnew 都没有传输线计算；scikit-rf、atlc 等要另装，没装），结论只记在停点评论里，规则没说“为什么不用”记在哪。
 - 2026-11-22 · PROC-6 · 相关：`build.sh route1` 全量 188 秒，快速构建不到 2 秒。`copper` 一步的电源过孔是对着线序草图副本放的，总线落到真板后由 `route1` 接替，不能再在真板上跑 `copper`。
 - 2026-11-23 · PROC-5 · 被打破：规划工具写之前没调研求解器；事后在分叉会话里测了三个（scipy 自带的 HiGHS 1.2、HiGHS 1.16、CP-SAT 9.15，分支 `try/solver-test`，留档），带精确顺序约束的程序 7 分钟都到时限（114 / 110 / 109 个球），换求解器没用，是写法的问题。主会话之前向用户建议“装新求解器可能一次解出来”，这个建议是错的。
+- 2026-11-24 · cite · PROC-15 · 起作用：工具从 `scripts/` 搬进 `Tools/KiCadDesignTools/` 后 7 个基准全过；busroute、track_shape 两个基准原来运行时从 `stm32h743_sdram/` 取空板叠层、工程文件、规则文件和 0.33 mm 焊盘的 BGA-90 封装，冻结进 `tests/busroute/fixture/`（`tests/track_shape/fixture/`）后预期数字一个没改就通过。
+- 2026-11-24 · friction · PROC-6 · H743 的全量（驱动的 `all`）超过 10 分钟：`route` 一步 691 s（out/c3），`finish` 约 500 s；工具只报时间，不拦。规则要先解决构建速度再继续，这块板已交付，下一块板开工前要不要先压 `route`（其中各组 DRC 和填充占大头）请主会话定。
+- 2026-11-24 · friction · PROC-4 · 规则要“每次构建输出同一张八组指标表”，现在是三张（布局的 `place_check` / `layout_probe`、铜皮一步的 `copper_table`、走线一步的 `route_table`），`compare_runs` 按数字比两次构建，但不标“变差”；backlog 的 T7 仍是部分。规则改成“每步一张、各组的列在 tools.md”，还是补一条汇总命令，请主会话定。
+- 2026-11-24 · cite · PROC-6 · “一次只跑一个 KiCad 多核任务”现在由 `core.heavy.run` 对包里每一次 kicad-cli / KiCad python 启动强制（驱动、regress、手工直接跑工具、工具调工具都一样：低于正常优先级、四核、全机锁可重入、两次之间停 2 秒、查退出码）；两个并行开关 `BUSROUTE_PARALLEL`、`DRU_MATCH_JOBS` 已删。代价：两次之间的停顿让 `dru_match` 在规则基准板上 151 s → 212 s、`rules.fixture` 185 s → 256 s、一组走线构建 58 s → 70 s；H743 的 `route` 一步估计多 3–4 分钟，和 PROC-6 的“全量 ≤ 10 分钟”更远。停顿长短（`heavy.GAP`，`PCB_HEAVY_GAP`）要不要再调请主会话定。
+- 2026-11-24 · friction · PROC-4 · R3：演示板的 `copper` 一步（`all` 里新加的）能跑完、退出 0，但其中的铜皮表 `copper.copper_table` 在演示板上崩溃（`[copper.table]` 没有 `part_a`）：这张表按 H743 的写法假定有一个 `routes_power.py` 电源组（`power_sites.json`、供电过孔、环路地过孔、晶振地），没有电源组的板没有表。表的退出码只是报告，不挡这一步；要不要把表拆成“铜皮连通 + 量的数”通用部分和电源组部分（后者可选）请主会话定。

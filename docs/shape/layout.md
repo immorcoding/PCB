@@ -28,6 +28,9 @@ Next id: LAY-11
 - 2026-11-21 · LAY-3 · 起作用：晶振的线真的试画了一遍（另开一个试走文件），查出入端负载电容接不上；只量距离的那一版报的是“已摆好”。量距离代替不了试走。
 - 2026-11-21 · LAY-2 · 摩擦（子任务报）：出线检查的 local / out 计数随配对器件是否落在固定窗口内变化，PHY 挪出窗口后 U201 的 6 个球从 local 变成 out，实际没有变化。
 - 2026-11-22 · LAY-3、PWR-2 · 被打破，上游的缺口：以太网 PHY 一侧 10 根线画不出（两对差分、PHY 晶振、LED、RBIAS、RXER）：L1 的 `VDDA_PHY` 竖条挡在 PHY 和 RJ45 之间，端接电阻不在差分对路径上，R506、R504 方向反了，`+3V3_PHY` 的连接线围住了 PHY 的 10–12 脚。布局的试走没有包括以太网差分对、端接和 PHY 晶振。按块内小改返工（LAY-10）。
+- 2026-11-24 · friction · LAY-2 · 演示板 SPEC 2.2 只给 U2 两颗 100 nF，`place_check` 的 2.5 mm 上限对 U2 的大部分电源球做不到（U1 也有 K4、VREF+、VDDA 三个超出），记为未核对项 U5；样板 SPEC 的去耦个数应按电源球数给。
+- 2026-11-24 · cite · LAY-2 · 去耦距离上限从代码搬进数据：`board.toml [layout] decap_limit`（H743、演示板都是规格档 C 的 2.5 mm），驱动把它传给 `place_check --limit`（不再有代码默认值），铜皮表也读它；两块板的报告前后逐字节相同。演示板 SPEC 第 7.2 节这一行的“数据源”改成 `board.toml:layout.decap_limit`，`spec_check` 对得上。
+- 2026-11-24 · friction · LAY-9 · 规则对照里没有工具覆盖：驱动的 `layout` 一步不跑 kicad-happy 的 `emc`（`sch` 一步会跑 `analyze_schematic.py`）。建议 layout 一步照 sch 的做法在系统 Python 下跑它的 PCB 分析，结果计数写进 `out/layout/`，甄别仍由人做；改不改请主会话定。
 
 ## placement
 
@@ -52,6 +55,8 @@ Next id: LAY-11
 - 2026-11-21 · LAY-1 · 用户纠正：我把“伸出去一小截”读成板框加凸台，用户的意思是连接器探出板边（常见做法）。连接器探出量应在摆件时当作可用的变量，上限按焊盘铜到板边算。
 - 2026-11-21 · LAY-5、LAY-7 · 起作用（子任务报）：LAY-5 的检查拦下了 C226 压在背面 C223 上的摆法；FPC 座的本体下沿从板文件读是 74.995，不是 75.0。
 - 2026-11-22 · LAY-5 的信号（去耦接到相邻狗骨过孔）· 部分守不住：12 个背面去耦的电源焊盘 0.7 mm 内没有所服务球的过孔，用了自己的过孔。
+- 2026-11-24 · friction · LAY-4 · 没有工具查“阵列里器件的间隔够过一根线、大电容之间放得下过孔”：`place_check` 只查 courtyard 重叠。要不要给 `place_check` 加一项（相邻同侧器件焊盘间距对当板线宽 + 2 × 间距）请主会话定。
+- 2026-11-24 · cite · LAY-5 · R2：上面那条提议里的 `STUB_MAX = 0.7`、`GND_VIA_MAX = 1.0` 已从 `copper.bga_power` 代码挪进 `board.toml [power.bga]`（`stub_max`、`gnd_via_max`，铜皮表的“超过 1.0 mm”也读它）；归不归规格档 C 仍等用户定，定了以后规格档表里写一行、`spec_check` 对着查 `board.toml`。
 
 ## changes
 
