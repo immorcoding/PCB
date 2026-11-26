@@ -7,7 +7,7 @@ KiCad 10 硬件设计。分工：Claude 完成原理图、布局、布线；用�
 ## 去哪里找什么
 
 - **该怎么做**（流程、验收标准、约定）：`docs/shape/`，见下面的 Project shape。
-- **规则的数值**（和 AD 的对照、规则文件的坑）：[docs/design-rules.md](docs/design-rules.md)；按板型分的三套规格档（A 通用、B 0.8 mm BGA、C 0.65 mm 及以下 BGA）在 `docs/rule-profiles/`。随板子变的取值（层数、去耦距离、蛇形参数、等长容差等）不写在规则里：起点值在规格档的“布局和走线的取值”一节，每块板的值在它的 `SPEC.md` 第 7.2 节“本板取值”表。
+- **规则的数值**（和 AD 的对照、规则文件的坑）：[docs/design-rules.md](docs/design-rules.md)；按板型分的三套规格档（A 通用、B 0.8 mm BGA、C 0.65 mm 及以下 BGA）在 `docs/rule-profiles/`，跟接口走的起点值在同目录的接口档（`if-ddr3.md`）。随板子变的取值（层数、去耦距离、蛇形参数、等长容差等）不写在规则里：起点值在规格档的“布局和走线的取值”一节，每块板的值在它的 `SPEC.md` 第 7.2 节“本板取值”表。
 - **工具**：全部在 `Tools/KiCadDesignTools/`，索引、每个数值放在哪、规则对照表在 [Tools/KiCadDesignTools/README.md](Tools/KiCadDesignTools/README.md)；踩过的坑在 [docs/tools.md](docs/tools.md)。板子目录只放数据（`board.toml`、`place.toml`、`silk.toml`、线束和原理图页），不放工具逻辑。
 - **构建**：`python -m Tools.KiCadDesignTools.build <板子目录> <步骤>`（`--dry-run` 只打印命令）；改了工具或规则文件后跑 `python -m Tools.KiCadDesignTools.regress`。
 - **起新板**：`build init <名字>` 从 `templates/demo_board/` 复制数据文件和 SPEC 样板（那块演示板只是工具链的试验件，只取它的文件结构），工程模板在 `templates/<规格档>/`。
