@@ -33,6 +33,7 @@ Next id: PROC-16
 - 2026-11-21 · PROC-3 · 起作用：线序草图的两个子任务各在 3–4 轮没有改善后停下来报告（90° 画通 43 / 57，180° 画通 37 / 57），没有继续小修；我把根因和可选的回退方案当场报给用户（PROC-10），没有等停点。
 - 2026-11-21 · PROC-3 · 起作用：整数规划的全扫描两轮没有结果后停下来报告，用户指出了模型的问题。
 - 2026-11-24 · cite · PROC-1 · R3：第 19 行的提议做了：驱动的 `route` 一步在各组建完之后、填充和 DRC 之前跑 `rules.len_rules`（`--upto` 时不跑），第一次布通的板不用再跑一次 `rules`；`all` 按 `board.toml [build] all` 跑，缺省是新板的全套 project、rules、sch、pcb-update、layout、copper、route、finish（H743 写明 rules、sch、route、finish，和以前一样）；`regress --board demo` 按同一顺序跑，数字和以前一样。
+- 2026-11-26 · friction · PROC-8 · [#33](https://github.com/immorcoding/PCB/issues/33)：层数先后被预设成 8 层、6 层，用户两次更正为“按扇出需求和容量算出来，再用参考板的实际出线统计核对”；规则里“按各总线占几个信号层来估”对深球阵 BGA 不够，缺按圈的需求和通道容量这一步。
 
 ## review
 
@@ -61,8 +62,8 @@ Next id: PROC-16
 - 2026-11-24 · cite · PROC-13 · 起作用：基线重建（现有脚本、未改动）和提交的板文件相比只有对象的 uuid 不同（缝合过孔、板上图形、光学定位点及其禁布区、place.py 的四个规则区），其余逐项相同，所以脚本仍是这块板的来源。
 - 2026-11-24 · cite · PROC-13 · 起作用：板目录只剩数据（board.toml、place.toml、silk.toml、rules_cases.py、bga_block.toml、routes_*.py、sch/<页>.py），逻辑全部在 `Tools/KiCadDesignTools/`；所有写板的程序改成确定的 uuid（uuid5）后，连续两次全量构建的板文件逐字节相同，提交的板文件只换了一次 uuid（项的顺序随 uuid 变）。
 - 2026-11-24 · friction · PROC-13 · 板目录清理（H2）：删了 `line_order.py`（最后在 `a889ac4`）、`decap_search.py` 和 `patches/`（最后在 `c38fa0d`），四个 `routes_probe_*.py` 和 `line_order/` 挪进 `probes/`（`balls_identity.json` 仍由 `planning.bga_plan` 读）。`stm32h743_sdram/SPEC.md` 第 16 节 2026-11-21 那条变更记录写“分配表在 `line_order/`”，现在是 `probes/line_order/`；SPEC 本批不动，改不改请主会话定。
-
 - 2026-11-26 · cite · PROC-14 · 起作用：差分对调研里只读源码、没运行得出的三条 DRC 行为，在夹具板上实测都不成立：平行判定其实有约 1e-4 rad 的角度容差，不要求整数叉积恰为 0；间隙越界不论非耦合预算都报；凸起顶边会不会被挡，看的是重叠段起点那一端。命令和输出记在 [#44](https://github.com/immorcoding/PCB/issues/44)，分支 `research/diff-pair-drc`。读源码得出的行为在实测前只当线索。
+
 ## tooling
 
 指标、工具选型和构建速度。

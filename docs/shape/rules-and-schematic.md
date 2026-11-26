@@ -33,6 +33,7 @@ Next id: RUL-13
 - 2026-11-24 · friction · RUL-12 · 球距计算表没有工具，规格档 C 里的三张表是手算的；下一档（0.5 mm 球距）要重算时，可以写一个从焊盘直径和规则值出余量表的小脚本（输入：球距、焊盘、区内线宽 / 间距 / 过孔、孔到铜）。是否值得做请主会话定。
 - 2026-11-24 · cite · RUL-1 · R2：工具代码里的规则数值副本（规则区内外的线宽 / 间距 / 过孔、孔到铜、孔到孔、插件孔间距、平面铺铜间距和最小宽度）去掉了，`escape_check`、`bga_power`、`power_ties`、`bga_grid` / `bga_fan`、`tune_sites` 从板子的 `.kicad_pro` / `.kicad_dru`（`cfg.rules()`）和 `copper.sketch` 读。规则区外不按网络时取最窄的网络类。没建 `templates/C-bga-065/profile.toml`：这些数已经在模板生成的工程文件和规则文件里，再写一份就违反“别处不重复”。
 - 2026-11-24 · cite · RUL-2 · R3：规格档 C 的 15 条规则（和 Default 类间距）的基准用例搬进模板 `templates/C-bga-065/rules_cases.py`，板目录的 `rules_cases.py` 只写本板规则的用例（`widths`、`cases` 两个钩子，`WHAT` 可改写某个用例的说明）；两块板的 `rules_fixture.txt` 前后逐字节相同（H743 92 例、演示板 59 例，0 项不符）。
+- 2026-11-26 · cite · RUL-3 · 起作用：[#33](https://github.com/immorcoding/PCB/issues/33) 按叠层算了 RK3568 验证板的 50 Ω 和 100 Ω 线宽作起点，计算器核对另开了用户的任务票 [#46](https://github.com/immorcoding/PCB/issues/46)。摩擦：`impedance.py` 把叠层和 H743 的层用途写死在代码里，换层序要改代码；已定改成读叠层文件和 `board.toml` 的层用途。
 
 ## schematic
 

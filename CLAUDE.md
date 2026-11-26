@@ -39,6 +39,8 @@ KiCad 10.0.8 在 `D:\KiCad\bin\`（`kicad-cli.exe`，带 pcbnew 的 `python.exe`
 
 表里没有的任务，按出错代价就近套一行；拿不准就问用户。
 
+后台同时运行的子任务最多 3 个（用户 2026-11-26 定）。要派的更多时分批：先派 3 个，有一个交回再派下一个。
+
 ## Project shape
 
 Current standards, one file per area, rules grouped under titles. Before planning, specifying or changing anything that touches an area, read its file (once split, its index and the title files involved), hand those files to any subagent you start, and raise any Proposed items with the user.
