@@ -1,6 +1,6 @@
 # Issue tracker: GitHub
 
-Issues and specs for this repo live as GitHub issues in `immorcoding/PCB` (private). Use the `gh` CLI for all operations.
+Issues and specs for this repo live as GitHub issues in `immorcoding/PCB` (public). Use the `gh` CLI for all operations.
 
 ## Conventions
 

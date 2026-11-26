@@ -57,7 +57,7 @@ Area files change only on `main` (the writer branch); on any other branch, write
 
 ### Issue tracker
 
-Issues and specs live as GitHub issues in `immorcoding/PCB` (remote `origin`, private), through the `gh` CLI. See `docs/agents/issue-tracker.md`.
+Issues and specs live as GitHub issues in `immorcoding/PCB` (remote `origin`, public; license CC BY-NC-SA 4.0, see `LICENSE` and `README.md`), through the `gh` CLI. See `docs/agents/issue-tracker.md`.
 
 ### Triage labels
 
