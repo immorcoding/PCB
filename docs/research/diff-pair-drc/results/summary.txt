@@ -1,0 +1,173 @@
+====================================================================================================
+rs1_window_unc
+  counts: diff_pair_gap_out_of_range 16, diff_pair_uncoupled_length_too_long 26, missing_courtyard 6, track_dangling 134, via_dangling 7
+  [diff_pair_uncoupled_length_too_long] 差分未耦合长度太长 (dp_unc 最大未耦合长度 0.0001 mm; 实际 0.2071 mm )  ::  走线 [/E1G_P] (F.Cu), 长度: 3.0518 mm @(0.0000,11.8750) | 走线 [/E1G_N] (F.Cu), 长度: 2.8284 mm @(2.9482,12.1250)
+  [diff_pair_uncoupled_length_too_long] 差分未耦合长度太长 (dp_unc 最大未耦合长度 0.0001 mm; 实际 0.2071 mm )  ::  走线 [/E1H_P] (F.Cu), 长度: 2.9482 mm @(19.0518,13.8750) | 走线 [/E1H_N] (F.Cu), 长度: 3.0518 mm @(18.9482,14.1250)
+  [diff_pair_uncoupled_length_too_long] 差分未耦合长度太长 (dp_unc 最大未耦合长度 0.0001 mm; 实际 1.2000 mm )  ::  走线 [/E2A_P] (F.Cu), 长度: 0.6000 mm @(18.7000,19.7000) | 走线 [/E2A_N] (F.Cu), 长度: 10.0000 mm @(14.0000,20.2500)
+  [diff_pair_gap_out_of_range] 差分对间隙超出范围 (dp_gap 最小间隙 0.1400 mm; 实际 0.1300 mm)  ::  走线 [/E2B_P] (F.Cu), 长度: 0.6000 mm @(4.7000,23.0200) | 走线 [/E2B_N] (F.Cu), 长度: 10.0000 mm @(0.0000,23.2500)
+  [diff_pair_uncoupled_length_too_long] 差分未耦合长度太长 (dp_unc 最大未耦合长度 0.0001 mm; 实际 0.6400 mm )  ::  走线 [/E2B_P] (F.Cu), 长度: 4.7000 mm @(0.0000,23.0000) | 走线 [/E2B_N] (F.Cu), 长度: 10.0000 mm @(0.0000,23.2500)
+  [diff_pair_gap_out_of_range] 差分对间隙超出范围 (dp_gap 最小间隙 0.1400 mm; 实际 0.1300 mm)  ::  走线 [/E2B_P] (F.Cu), 长度: 0.6000 mm @(4.7000,23.0200) | 走线 [/E2B_N] (F.Cu), 长度: 10.0000 mm @(0.0000,23.2500)
+  [diff_pair_gap_out_of_range] 差分对间隙超出范围 (dp_gap 最大间隙 0.2000 mm; 实际 0.4500 mm)  ::  走线 [/E2C_P] (F.Cu), 长度: 0.6000 mm @(18.7000,22.7000) | 走线 [/E2C_N] (F.Cu), 长度: 10.0000 mm @(14.0000,23.2500)
+  [diff_pair_uncoupled_length_too_long] 差分未耦合长度太长 (dp_unc 最大未耦合长度 0.0001 mm; 实际 1.4485 mm )  ::  走线 [/E2C_P] (F.Cu), 长度: 4.4000 mm @(14.0000,23.0000) | 走线 [/E2C_N] (F.Cu), 长度: 10.0000 mm @(14.0000,23.2500)
+  [diff_pair_gap_out_of_range] 差分对间隙超出范围 (dp_gap 最大间隙 0.2000 mm; 实际 0.4500 mm)  ::  走线 [/E2C_P] (F.Cu), 长度: 0.6000 mm @(18.7000,22.7000) | 走线 [/E2C_N] (F.Cu), 长度: 10.0000 mm @(14.0000,23.2500)
+  [diff_pair_gap_out_of_range] 差分对间隙超出范围 (dp_gap 最大间隙 0.2000 mm; 实际 0.4500 mm)  ::  走线 [/E2D_P] (F.Cu), 长度: 0.6000 mm @(4.7000,25.7000) | 走线 [/E2D_N] (F.Cu), 长度: 10.0000 mm @(0.0000,26.2500)
+  [diff_pair_uncoupled_length_too_long] 差分未耦合长度太长 (dp_unc 最大未耦合长度 0.0001 mm; 实际 1.4283 mm )  ::  走线 (弧形) [/E2D_P] 位于 F.Cu, 长度 0.1571 mm @(5.3000,25.8000) | 走线 [/E2D_N] (F.Cu), 长度: 10.0000 mm @(0.0000,26.2500)
+  [diff_pair_gap_out_of_range] 差分对间隙超出范围 (dp_gap 最大间隙 0.2000 mm; 实际 0.4500 mm)  ::  走线 [/E2D_P] (F.Cu), 长度: 0.6000 mm @(4.7000,25.7000) | 走线 [/E2D_N] (F.Cu), 长度: 10.0000 mm @(0.0000,26.2500)
+  [diff_pair_uncoupled_length_too_long] 差分未耦合长度太长 (dp_unc 最大未耦合长度 0.0001 mm; 实际 0.9425 mm )  ::  走线 [/E2E_P] (F.Cu), 长度: 4.7000 mm @(19.3000,26.0000) | 走线 [/E2E_N] (F.Cu), 长度: 10.0000 mm @(14.0000,26.2500)
+  [diff_pair_uncoupled_length_too_long] 差分未耦合长度太长 (dp_unc 最大未耦合长度 0.0001 mm; 实际 0.3927 mm )  ::  走线 [/E2F_P] (F.Cu), 长度: 5.0000 mm @(0.0000,29.8750) | 走线 [/E2F_N] (F.Cu), 长度: 5.0000 mm @(0.0000,30.1250)
+  [diff_pair_uncoupled_length_too_long] 差分未耦合长度太长 (dp_unc 最大未耦合长度 0.0001 mm; 实际 1.7671 mm )  ::  走线 [/E2G_P] (F.Cu), 长度: 5.0000 mm @(14.0000,29.8750) | 走线 [/E2G_N] (F.Cu), 长度: 5.0000 mm @(14.0000,30.1250)
+  [diff_pair_uncoupled_length_too_long] 差分未耦合长度太长 (dp_unc 最大未耦合长度 0.0001 mm; 实际 0.6364 mm )  ::  过孔 [/E5A_P] (F.Cu - B.Cu) @(5.0000,57.6500) | 过孔 [/E5A_N] (F.Cu - B.Cu) @(5.0000,58.3500)
+  [diff_pair_gap_out_of_range] 差分对间隙超出范围 (dp_gap 最大间隙 0.2000 mm; 实际 0.7500 mm)  ::  走线 [/E5C_P] (F.Cu), 长度: 10.0000 mm @(0.0000,62.0000) | 走线 [/E5C_N] (F.Cu), 长度: 10.0000 mm @(0.0000,62.8500)
+  [diff_pair_uncoupled_length_too_long] 差分未耦合长度太长 (dp_unc 最大未耦合长度 0.0001 mm; 实际 10.0000 mm )  ::  走线 [/E5C_P] (F.Cu), 长度: 10.0000 mm @(0.0000,62.0000) | 走线 [/E5C_N] (F.Cu), 长度: 10.0000 mm @(0.0000,62.8500)
+  [diff_pair_gap_out_of_range] 差分对间隙超出范围 (dp_gap 最大间隙 0.2000 mm; 实际 0.7500 mm)  ::  走线 [/E5C_P] (F.Cu), 长度: 10.0000 mm @(0.0000,62.0000) | 走线 [/E5C_N] (F.Cu), 长度: 10.0000 mm @(0.0000,62.8500)
+  [diff_pair_gap_out_of_range] 差分对间隙超出范围 (dp_gap 最大间隙 0.2000 mm; 实际 0.7500 mm)  ::  走线 [/E5E_P] (F.Cu), 长度: 10.0000 mm @(14.0000,62.0000) | 走线 [/E5E_N] (F.Cu), 长度: 10.0000 mm @(14.0000,62.8500)
+  [diff_pair_uncoupled_length_too_long] 差分未耦合长度太长 (dp_unc 最大未耦合长度 0.0001 mm; 实际 10.0000 mm )  ::  走线 [/E5E_P] (F.Cu), 长度: 10.0000 mm @(14.0000,62.0000) | 走线 [/E5E_N] (F.Cu), 长度: 10.0000 mm @(14.0000,62.8500)
+  [diff_pair_gap_out_of_range] 差分对间隙超出范围 (dp_gap 最大间隙 0.2000 mm; 实际 0.7500 mm)  ::  走线 [/E5E_P] (F.Cu), 长度: 10.0000 mm @(14.0000,62.0000) | 走线 [/E5E_N] (F.Cu), 长度: 10.0000 mm @(14.0000,62.8500)
+  [diff_pair_gap_out_of_range] 差分对间隙超出范围 (dp_gap 最大间隙 0.2000 mm; 实际 0.7500 mm)  ::  走线 [/E5F_P] (F.Cu), 长度: 10.0000 mm @(0.0000,66.0000) | 走线 [/E5F_N] (F.Cu), 长度: 10.0000 mm @(0.0000,66.8500)
+  [diff_pair_uncoupled_length_too_long] 差分未耦合长度太长 (dp_unc 最大未耦合长度 0.0001 mm; 实际 10.0000 mm )  ::  走线 [/E5F_P] (F.Cu), 长度: 10.0000 mm @(0.0000,66.0000) | 走线 [/E5F_N] (F.Cu), 长度: 10.0000 mm @(0.0000,66.8500)
+  [diff_pair_gap_out_of_range] 差分对间隙超出范围 (dp_gap 最大间隙 0.2000 mm; 实际 0.7500 mm)  ::  走线 [/E5F_P] (F.Cu), 长度: 10.0000 mm @(0.0000,66.0000) | 走线 [/E5F_N] (F.Cu), 长度: 10.0000 mm @(0.0000,66.8500)
+  [diff_pair_gap_out_of_range] 差分对间隙超出范围 (dp_gap 最大间隙 0.2000 mm; 实际 0.7500 mm)  ::  走线 [/E5D_P] (F.Cu), 长度: 10.0000 mm @(14.0000,66.0000) | 走线 [/E5D_N] (F.Cu), 长度: 10.0000 mm @(14.0000,66.8500)
+  [diff_pair_uncoupled_length_too_long] 差分未耦合长度太长 (dp_unc 最大未耦合长度 0.0001 mm; 实际 10.0000 mm )  ::  走线 [/E5D_P] (F.Cu), 长度: 10.0000 mm @(14.0000,66.0000) | 走线 [/E5D_N] (F.Cu), 长度: 10.0000 mm @(14.0000,66.8500)
+  [diff_pair_gap_out_of_range] 差分对间隙超出范围 (dp_gap 最大间隙 0.2000 mm; 实际 0.7500 mm)  ::  走线 [/E5D_P] (F.Cu), 长度: 10.0000 mm @(14.0000,66.0000) | 走线 [/E5D_N] (F.Cu), 长度: 10.0000 mm @(14.0000,66.8500)
+  [diff_pair_uncoupled_length_too_long] 差分未耦合长度太长 (dp_unc 最大未耦合长度 0.0001 mm; 实际 10.0000 mm )  ::  走线 [/E5G_P] (F.Cu), 长度: 10.0000 mm @(0.0000,70.0000) | 走线 [/E5G_N] (F.Cu), 长度: 10.0000 mm @(0.0000,70.8500)
+  [diff_pair_gap_out_of_range] 差分对间隙超出范围 (dp_gap 最大间隙 0.2000 mm; 实际 0.7500 mm)  ::  走线 [/E5H_P] (F.Cu), 长度: 10.0000 mm @(14.0000,70.0000) | 走线 [/E5H_N] (F.Cu), 长度: 10.0000 mm @(14.0000,70.8500)
+  [diff_pair_uncoupled_length_too_long] 差分未耦合长度太长 (dp_unc 最大未耦合长度 0.0001 mm; 实际 10.0000 mm )  ::  走线 [/E5H_P] (F.Cu), 长度: 10.0000 mm @(14.0000,70.0000) | 走线 [/E5H_N] (F.Cu), 长度: 10.0000 mm @(14.0000,70.8500)
+  [diff_pair_gap_out_of_range] 差分对间隙超出范围 (dp_gap 最大间隙 0.2000 mm; 实际 0.7500 mm)  ::  走线 [/E5H_P] (F.Cu), 长度: 10.0000 mm @(14.0000,70.0000) | 走线 [/E5H_N] (F.Cu), 长度: 10.0000 mm @(14.0000,70.8500)
+  [diff_pair_uncoupled_length_too_long] 差分未耦合长度太长 (dp_unc 最大未耦合长度 0.0001 mm; 实际 10.0000 mm )  ::  走线 [/E1T09_P] (F.Cu), 长度: 10.0000 mm @(35.0000,9.0000) | 走线 [/E1T09_N] (F.Cu), 长度: 10.0000 mm @(35.0000,9.2500)
+  [diff_pair_uncoupled_length_too_long] 差分未耦合长度太长 (dp_unc 最大未耦合长度 0.0001 mm; 实际 10.0000 mm )  ::  走线 [/E1T10_P] (F.Cu), 长度: 10.0000 mm @(35.0000,10.0000) | 走线 [/E1T10_N] (F.Cu), 长度: 10.0000 mm @(35.0000,10.2500)
+  [diff_pair_uncoupled_length_too_long] 差分未耦合长度太长 (dp_unc 最大未耦合长度 0.0001 mm; 实际 1.0000 mm )  ::  走线 [/E1U07_P] (F.Cu), 长度: 1.0000 mm @(35.0000,19.0000) | 走线 [/E1U07_N] (F.Cu), 长度: 1.0000 mm @(35.0000,19.2500)
+  [diff_pair_uncoupled_length_too_long] 差分未耦合长度太长 (dp_unc 最大未耦合长度 0.0001 mm; 实际 1.0000 mm )  ::  走线 [/E1U08_P] (F.Cu), 长度: 1.0000 mm @(35.0000,20.0000) | 走线 [/E1U08_N] (F.Cu), 长度: 1.0000 mm @(35.0000,20.2500)
+  [diff_pair_uncoupled_length_too_long] 差分未耦合长度太长 (dp_unc 最大未耦合长度 0.0001 mm; 实际 1.0000 mm )  ::  走线 [/E1U09_P] (F.Cu), 长度: 1.0000 mm @(35.0000,21.0000) | 走线 [/E1U09_N] (F.Cu), 长度: 1.0000 mm @(35.0000,21.2500)
+  [diff_pair_uncoupled_length_too_long] 差分未耦合长度太长 (dp_unc 最大未耦合长度 0.0001 mm; 实际 1.0000 mm )  ::  走线 [/E1U10_P] (F.Cu), 长度: 1.0000 mm @(35.0000,22.0000) | 走线 [/E1U10_N] (F.Cu), 长度: 1.0000 mm @(35.0000,22.2500)
+  [diff_pair_uncoupled_length_too_long] 差分未耦合长度太长 (dp_unc 最大未耦合长度 0.0001 mm; 实际 0.0002 mm )  ::  走线 [/E1V07_P] (F.Cu), 长度: 7.0711 mm @(40.0000,31.0000) | 走线 [/E1V07_N] (F.Cu), 长度: 7.0713 mm @(40.1768,30.8232)
+  [diff_pair_uncoupled_length_too_long] 差分未耦合长度太长 (dp_unc 最大未耦合长度 0.0001 mm; 实际 7.0718 mm )  ::  走线 [/E1V08_P] (F.Cu), 长度: 7.0711 mm @(40.0000,32.0000) | 走线 [/E1V08_N] (F.Cu), 长度: 7.0718 mm @(40.1768,31.8232)
+  [diff_pair_uncoupled_length_too_long] 差分未耦合长度太长 (dp_unc 最大未耦合长度 0.0001 mm; 实际 7.0732 mm )  ::  走线 [/E1V09_P] (F.Cu), 长度: 7.0711 mm @(40.0000,33.0000) | 走线 [/E1V09_N] (F.Cu), 长度: 7.0732 mm @(40.1768,32.8232)
+  [diff_pair_uncoupled_length_too_long] 差分未耦合长度太长 (dp_unc 最大未耦合长度 0.0001 mm; 实际 7.0781 mm )  ::  走线 [/E1V10_P] (F.Cu), 长度: 7.0711 mm @(40.0000,34.0000) | 走线 [/E1V10_N] (F.Cu), 长度: 7.0781 mm @(40.1768,33.8232)
+====================================================================================================
+rs2_minonly_unc
+  counts: diff_pair_gap_out_of_range 2, diff_pair_uncoupled_length_too_long 21, missing_courtyard 6, track_dangling 134, via_dangling 7
+  [diff_pair_uncoupled_length_too_long] 差分未耦合长度太长 (dp_unc 最大未耦合长度 0.0001 mm; 实际 0.2071 mm )  ::  走线 [/E1G_P] (F.Cu), 长度: 2.9482 mm @(5.0518,13.8750) | 走线 [/E1G_N] (F.Cu), 长度: 2.8284 mm @(2.9482,12.1250)
+  [diff_pair_uncoupled_length_too_long] 差分未耦合长度太长 (dp_unc 最大未耦合长度 0.0001 mm; 实际 0.2071 mm )  ::  走线 [/E1H_P] (F.Cu), 长度: 2.8284 mm @(17.0518,11.8750) | 走线 [/E1H_N] (F.Cu), 长度: 2.9482 mm @(14.0000,12.1250)
+  [diff_pair_uncoupled_length_too_long] 差分未耦合长度太长 (dp_unc 最大未耦合长度 0.0001 mm; 实际 1.2000 mm )  ::  走线 [/E2A_P] (F.Cu), 长度: 0.6000 mm @(18.7000,19.7000) | 走线 [/E2A_N] (F.Cu), 长度: 10.0000 mm @(14.0000,20.2500)
+  [diff_pair_gap_out_of_range] 差分对间隙超出范围 (dp_gap 最小间隙 0.1400 mm; 实际 0.1300 mm)  ::  走线 [/E2B_P] (F.Cu), 长度: 0.6000 mm @(4.7000,23.0200) | 走线 [/E2B_N] (F.Cu), 长度: 10.0000 mm @(0.0000,23.2500)
+  [diff_pair_uncoupled_length_too_long] 差分未耦合长度太长 (dp_unc 最大未耦合长度 0.0001 mm; 实际 0.6400 mm )  ::  走线 [/E2B_P] (F.Cu), 长度: 4.7000 mm @(0.0000,23.0000) | 走线 [/E2B_N] (F.Cu), 长度: 10.0000 mm @(0.0000,23.2500)
+  [diff_pair_gap_out_of_range] 差分对间隙超出范围 (dp_gap 最小间隙 0.1400 mm; 实际 0.1300 mm)  ::  走线 [/E2B_P] (F.Cu), 长度: 0.6000 mm @(4.7000,23.0200) | 走线 [/E2B_N] (F.Cu), 长度: 10.0000 mm @(0.0000,23.2500)
+  [diff_pair_uncoupled_length_too_long] 差分未耦合长度太长 (dp_unc 最大未耦合长度 0.0001 mm; 实际 0.8485 mm )  ::  走线 [/E2C_P] (F.Cu), 长度: 4.4000 mm @(19.6000,23.0000) | 走线 [/E2C_N] (F.Cu), 长度: 10.0000 mm @(14.0000,23.2500)
+  [diff_pair_uncoupled_length_too_long] 差分未耦合长度太长 (dp_unc 最大未耦合长度 0.0001 mm; 实际 0.8283 mm )  ::  走线 [/E2D_P] (F.Cu), 长度: 4.5000 mm @(5.5000,26.0000) | 走线 [/E2D_N] (F.Cu), 长度: 10.0000 mm @(0.0000,26.2500)
+  [diff_pair_uncoupled_length_too_long] 差分未耦合长度太长 (dp_unc 最大未耦合长度 0.0001 mm; 实际 0.9425 mm )  ::  走线 [/E2E_P] (F.Cu), 长度: 4.7000 mm @(19.3000,26.0000) | 走线 [/E2E_N] (F.Cu), 长度: 10.0000 mm @(14.0000,26.2500)
+  [diff_pair_uncoupled_length_too_long] 差分未耦合长度太长 (dp_unc 最大未耦合长度 0.0001 mm; 实际 0.3927 mm )  ::  走线 [/E2F_P] (F.Cu), 长度: 3.0000 mm @(6.1250,31.0000) | 走线 [/E2F_N] (F.Cu), 长度: 3.0000 mm @(5.8750,31.0000)
+  [diff_pair_uncoupled_length_too_long] 差分未耦合长度太长 (dp_unc 最大未耦合长度 0.0001 mm; 实际 1.7671 mm )  ::  走线 [/E2G_P] (F.Cu), 长度: 3.0000 mm @(20.1250,31.0000) | 走线 [/E2G_N] (F.Cu), 长度: 5.0000 mm @(14.0000,30.1250)
+  [diff_pair_uncoupled_length_too_long] 差分未耦合长度太长 (dp_unc 最大未耦合长度 0.0001 mm; 实际 0.6364 mm )  ::  过孔 [/E5A_P] (F.Cu - B.Cu) @(5.0000,57.6500) | 过孔 [/E5A_N] (F.Cu - B.Cu) @(5.0000,58.3500)
+  [diff_pair_uncoupled_length_too_long] 差分未耦合长度太长 (dp_unc 最大未耦合长度 0.0001 mm; 实际 10.0000 mm )  ::  走线 [/E5G_P] (F.Cu), 长度: 10.0000 mm @(0.0000,70.0000) | 走线 [/E5G_N] (F.Cu), 长度: 10.0000 mm @(0.0000,70.8500)
+  [diff_pair_uncoupled_length_too_long] 差分未耦合长度太长 (dp_unc 最大未耦合长度 0.0001 mm; 实际 10.0000 mm )  ::  走线 [/E1T09_P] (F.Cu), 长度: 10.0000 mm @(35.0000,9.0000) | 走线 [/E1T09_N] (F.Cu), 长度: 10.0000 mm @(35.0000,9.2500)
+  [diff_pair_uncoupled_length_too_long] 差分未耦合长度太长 (dp_unc 最大未耦合长度 0.0001 mm; 实际 10.0000 mm )  ::  走线 [/E1T10_P] (F.Cu), 长度: 10.0000 mm @(35.0000,10.0000) | 走线 [/E1T10_N] (F.Cu), 长度: 10.0000 mm @(35.0000,10.2500)
+  [diff_pair_uncoupled_length_too_long] 差分未耦合长度太长 (dp_unc 最大未耦合长度 0.0001 mm; 实际 1.0000 mm )  ::  走线 [/E1U07_P] (F.Cu), 长度: 1.0000 mm @(35.0000,19.0000) | 走线 [/E1U07_N] (F.Cu), 长度: 1.0000 mm @(35.0000,19.2500)
+  [diff_pair_uncoupled_length_too_long] 差分未耦合长度太长 (dp_unc 最大未耦合长度 0.0001 mm; 实际 1.0000 mm )  ::  走线 [/E1U08_P] (F.Cu), 长度: 1.0000 mm @(35.0000,20.0000) | 走线 [/E1U08_N] (F.Cu), 长度: 1.0000 mm @(35.0000,20.2500)
+  [diff_pair_uncoupled_length_too_long] 差分未耦合长度太长 (dp_unc 最大未耦合长度 0.0001 mm; 实际 1.0000 mm )  ::  走线 [/E1U09_P] (F.Cu), 长度: 1.0000 mm @(35.0000,21.0000) | 走线 [/E1U09_N] (F.Cu), 长度: 1.0000 mm @(35.0000,21.2500)
+  [diff_pair_uncoupled_length_too_long] 差分未耦合长度太长 (dp_unc 最大未耦合长度 0.0001 mm; 实际 1.0000 mm )  ::  走线 [/E1U10_P] (F.Cu), 长度: 1.0000 mm @(35.0000,22.0000) | 走线 [/E1U10_N] (F.Cu), 长度: 1.0000 mm @(35.0000,22.2500)
+  [diff_pair_uncoupled_length_too_long] 差分未耦合长度太长 (dp_unc 最大未耦合长度 0.0001 mm; 实际 0.0002 mm )  ::  走线 [/E1V07_P] (F.Cu), 长度: 7.0711 mm @(40.0000,31.0000) | 走线 [/E1V07_N] (F.Cu), 长度: 7.0713 mm @(40.1768,30.8232)
+  [diff_pair_uncoupled_length_too_long] 差分未耦合长度太长 (dp_unc 最大未耦合长度 0.0001 mm; 实际 7.0718 mm )  ::  走线 [/E1V08_P] (F.Cu), 长度: 7.0711 mm @(40.0000,32.0000) | 走线 [/E1V08_N] (F.Cu), 长度: 7.0718 mm @(40.1768,31.8232)
+  [diff_pair_uncoupled_length_too_long] 差分未耦合长度太长 (dp_unc 最大未耦合长度 0.0001 mm; 实际 7.0732 mm )  ::  走线 [/E1V09_P] (F.Cu), 长度: 7.0711 mm @(40.0000,33.0000) | 走线 [/E1V09_N] (F.Cu), 长度: 7.0732 mm @(40.1768,32.8232)
+  [diff_pair_uncoupled_length_too_long] 差分未耦合长度太长 (dp_unc 最大未耦合长度 0.0001 mm; 实际 7.0781 mm )  ::  走线 [/E1V10_P] (F.Cu), 长度: 7.0711 mm @(40.0000,34.0000) | 走线 [/E1V10_N] (F.Cu), 长度: 7.0781 mm @(40.1768,33.8232)
+====================================================================================================
+rs3_window_only
+  counts: diff_pair_gap_out_of_range 8, missing_courtyard 6, track_dangling 134, via_dangling 7
+  [diff_pair_gap_out_of_range] 差分对间隙超出范围 (dp_gap 最小间隙 0.1400 mm; 实际 0.1300 mm)  ::  走线 [/E2B_P] (F.Cu), 长度: 0.6000 mm @(4.7000,23.0200) | 走线 [/E2B_N] (F.Cu), 长度: 10.0000 mm @(0.0000,23.2500)
+  [diff_pair_gap_out_of_range] 差分对间隙超出范围 (dp_gap 最大间隙 0.2000 mm; 实际 0.4500 mm)  ::  走线 [/E2C_P] (F.Cu), 长度: 0.6000 mm @(18.7000,22.7000) | 走线 [/E2C_N] (F.Cu), 长度: 10.0000 mm @(14.0000,23.2500)
+  [diff_pair_gap_out_of_range] 差分对间隙超出范围 (dp_gap 最大间隙 0.2000 mm; 实际 0.4500 mm)  ::  走线 [/E2D_P] (F.Cu), 长度: 0.6000 mm @(4.7000,25.7000) | 走线 [/E2D_N] (F.Cu), 长度: 10.0000 mm @(0.0000,26.2500)
+  [diff_pair_gap_out_of_range] 差分对间隙超出范围 (dp_gap 最大间隙 0.2000 mm; 实际 0.7500 mm)  ::  走线 [/E5C_P] (F.Cu), 长度: 10.0000 mm @(0.0000,62.0000) | 走线 [/E5C_N] (F.Cu), 长度: 10.0000 mm @(0.0000,62.8500)
+  [diff_pair_gap_out_of_range] 差分对间隙超出范围 (dp_gap 最大间隙 0.2000 mm; 实际 0.7500 mm)  ::  走线 [/E5E_P] (F.Cu), 长度: 10.0000 mm @(14.0000,62.0000) | 走线 [/E5E_N] (F.Cu), 长度: 10.0000 mm @(14.0000,62.8500)
+  [diff_pair_gap_out_of_range] 差分对间隙超出范围 (dp_gap 最大间隙 0.2000 mm; 实际 0.7500 mm)  ::  走线 [/E5F_P] (F.Cu), 长度: 10.0000 mm @(0.0000,66.0000) | 走线 [/E5F_N] (F.Cu), 长度: 10.0000 mm @(0.0000,66.8500)
+  [diff_pair_gap_out_of_range] 差分对间隙超出范围 (dp_gap 最大间隙 0.2000 mm; 实际 0.7500 mm)  ::  走线 [/E5D_P] (F.Cu), 长度: 10.0000 mm @(14.0000,66.0000) | 走线 [/E5D_N] (F.Cu), 长度: 10.0000 mm @(14.0000,66.8500)
+  [diff_pair_gap_out_of_range] 差分对间隙超出范围 (dp_gap 最大间隙 0.2000 mm; 实际 0.7500 mm)  ::  走线 [/E5H_P] (F.Cu), 长度: 10.0000 mm @(14.0000,70.0000) | 走线 [/E5H_N] (F.Cu), 长度: 10.0000 mm @(14.0000,70.8500)
+====================================================================================================
+rs4_window_unc_loose
+  counts: diff_pair_gap_out_of_range 8, missing_courtyard 6, track_dangling 134, via_dangling 7
+  [diff_pair_gap_out_of_range] 差分对间隙超出范围 (dp_gap 最小间隙 0.1400 mm; 实际 0.1300 mm)  ::  走线 [/E2B_P] (F.Cu), 长度: 0.6000 mm @(4.7000,23.0200) | 走线 [/E2B_N] (F.Cu), 长度: 10.0000 mm @(0.0000,23.2500)
+  [diff_pair_gap_out_of_range] 差分对间隙超出范围 (dp_gap 最大间隙 0.2000 mm; 实际 0.4500 mm)  ::  走线 [/E2C_P] (F.Cu), 长度: 0.6000 mm @(18.7000,22.7000) | 走线 [/E2C_N] (F.Cu), 长度: 10.0000 mm @(14.0000,23.2500)
+  [diff_pair_gap_out_of_range] 差分对间隙超出范围 (dp_gap 最大间隙 0.2000 mm; 实际 0.4500 mm)  ::  走线 [/E2D_P] (F.Cu), 长度: 0.6000 mm @(4.7000,25.7000) | 走线 [/E2D_N] (F.Cu), 长度: 10.0000 mm @(0.0000,26.2500)
+  [diff_pair_gap_out_of_range] 差分对间隙超出范围 (dp_gap 最大间隙 0.2000 mm; 实际 0.7500 mm)  ::  走线 [/E5C_P] (F.Cu), 长度: 10.0000 mm @(0.0000,62.0000) | 走线 [/E5C_N] (F.Cu), 长度: 10.0000 mm @(0.0000,62.8500)
+  [diff_pair_gap_out_of_range] 差分对间隙超出范围 (dp_gap 最大间隙 0.2000 mm; 实际 0.7500 mm)  ::  走线 [/E5E_P] (F.Cu), 长度: 10.0000 mm @(14.0000,62.0000) | 走线 [/E5E_N] (F.Cu), 长度: 10.0000 mm @(14.0000,62.8500)
+  [diff_pair_gap_out_of_range] 差分对间隙超出范围 (dp_gap 最大间隙 0.2000 mm; 实际 0.7500 mm)  ::  走线 [/E5F_P] (F.Cu), 长度: 10.0000 mm @(0.0000,66.0000) | 走线 [/E5F_N] (F.Cu), 长度: 10.0000 mm @(0.0000,66.8500)
+  [diff_pair_gap_out_of_range] 差分对间隙超出范围 (dp_gap 最大间隙 0.2000 mm; 实际 0.7500 mm)  ::  走线 [/E5D_P] (F.Cu), 长度: 10.0000 mm @(14.0000,66.0000) | 走线 [/E5D_N] (F.Cu), 长度: 10.0000 mm @(14.0000,66.8500)
+  [diff_pair_gap_out_of_range] 差分对间隙超出范围 (dp_gap 最大间隙 0.2000 mm; 实际 0.7500 mm)  ::  走线 [/E5H_P] (F.Cu), 长度: 10.0000 mm @(14.0000,70.0000) | 走线 [/E5H_N] (F.Cu), 长度: 10.0000 mm @(14.0000,70.8500)
+====================================================================================================
+rs5_skew_length
+  counts: length_out_of_range 9, missing_courtyard 6, skew_out_of_range 4, track_dangling 134, via_dangling 7
+  [skew_out_of_range] 走线之间的 skew 超出范围 (约束条件 规则 'e4b_skew_both' 中, 最大 skew 0.0001 mm; 实际 skew -1.0000 mm; 网络目标长度 11.0000 mm (网络名 /E4B_N); 实际长度 10.0000 mm)  ::  走线 [/E4B_P] (F.Cu), 长度: 10.0000 mm @(14.0000,50.0000)
+  [length_out_of_range] 走线长度超出范围 (约束条件 规则 'e3_len' 中, 最大长度 0.0010 mm; 实际 10.0000 mm)  ::  F.Cu 上 AE3A 的焊盘 2 [/E3A_N] @(0.0000,41.0000) | F.Cu 上 BE3A 的焊盘 2 [/E3A_N] @(10.0000,41.0000)
+  [length_out_of_range] 走线长度超出范围 (约束条件 规则 'e3_len' 中, 最大长度 0.0010 mm; 实际 11.0000 mm)  ::  F.Cu 上 AE3A 的焊盘 1 [/E3A_P] @(0.0000,40.0000) | F.Cu 上 BE3A 的焊盘 1 [/E3A_P] @(10.0000,40.0000)
+  [length_out_of_range] 走线长度超出范围 (约束条件 规则 'e3_len' 中, 最大长度 0.0010 mm; 实际 10.0000 mm)  ::  F.Cu 上 AE3B 的焊盘 2 [/E3B_N] @(14.0000,41.0000) | F.Cu 上 BE3B 的焊盘 2 [/E3B_N] @(24.0000,41.0000)
+  [length_out_of_range] 走线长度超出范围 (约束条件 规则 'e3_len' 中, 最大长度 0.0010 mm; 实际 10.1434 mm)  ::  F.Cu 上 AE3B 的焊盘 1 [/E3B_P] @(14.0000,40.0000) | F.Cu 上 BE3B 的焊盘 1 [/E3B_P] @(24.0000,40.0000)
+  [length_out_of_range] 走线长度超出范围 (约束条件 规则 'e3_len' 中, 最大长度 0.0010 mm; 实际 10.0000 mm)  ::  F.Cu 上 BE3C 的焊盘 2 [/E3C_N] @(10.0000,45.0000) | F.Cu 上 AE3C 的焊盘 2 [/E3C_N] @(0.0000,45.0000)
+  [length_out_of_range] 走线长度超出范围 (约束条件 规则 'e3_len' 中, 最大长度 0.0010 mm; 实际 10.2071 mm)  ::  F.Cu 上 BE3C 的焊盘 1 [/E3C_P] @(10.0000,44.0000) | F.Cu 上 AE3C 的焊盘 1 [/E3C_P] @(0.0000,44.0000)
+  [skew_out_of_range] 走线之间的 skew 超出范围 (约束条件 规则 'e3_skew' 中, 最大 skew 0.0001 mm; 实际 skew -0.2071 mm; 网络目标长度 10.2071 mm (网络名 /E3C_P); 实际长度 10.0000 mm)  ::  走线 [/E3C_N] (F.Cu), 长度: 10.0000 mm @(0.0000,45.0000)
+  [skew_out_of_range] 走线之间的 skew 超出范围 (约束条件 规则 'e3_skew' 中, 最大 skew 0.0001 mm; 实际 skew -1.0000 mm; 网络目标长度 11.0000 mm (网络名 /E3A_P); 实际长度 10.0000 mm)  ::  走线 [/E3A_N] (F.Cu), 长度: 10.0000 mm @(0.0000,41.0000)
+  [skew_out_of_range] 走线之间的 skew 超出范围 (约束条件 规则 'e3_skew' 中, 最大 skew 0.0001 mm; 实际 skew -0.1434 mm; 网络目标长度 10.1434 mm (网络名 /E3B_P); 实际长度 10.0000 mm)  ::  走线 [/E3B_N] (F.Cu), 长度: 10.0000 mm @(14.0000,41.0000)
+  [length_out_of_range] 走线长度超出范围 (约束条件 规则 'e4_len' 中, 最大长度 0.0010 mm; 实际 11.0000 mm)  ::  走线 [/E4A_N] (F.Cu), 长度: 0.5000 mm @(6.0000,50.7500) | 走线 [/E4A_N] (F.Cu), 长度: 4.0000 mm @(6.0000,50.2500)
+  [length_out_of_range] 走线长度超出范围 (约束条件 规则 'e4_len' 中, 最大长度 0.0010 mm; 实际 10.0000 mm)  ::  走线 [/E4A_P] (F.Cu), 长度: 10.0000 mm @(0.0000,50.0000)
+  [length_out_of_range] 走线长度超出范围 (约束条件 规则 'e4_len' 中, 最大长度 0.0010 mm; 实际 10.0000 mm)  ::  走线 [/E4C_P] (F.Cu), 长度: 10.0000 mm @(0.0000,53.0000)
+====================================================================================================
+predictions (source reading of 3.4, no 'other copper between' test):
+  E1A   lenP 7.071068 lenN 7.071068  window: uncoupled -0.000000 coupled 7.071068  min_only: uncoupled -0.000000 coupled 7.071068   # 45 deg, N = P + the same integer vector at both ends
+  E1B   lenP 7.071068 lenN 7.071069  window: uncoupled 7.071069 coupled 0.000000  min_only: uncoupled 7.071069 coupled 0.000000   # 45 deg, float centreline, each end of P and N rounded separately: direction vectors differ by (-1, 0) nm, cross product -5000000
+  E1B2  lenP 7.071071 lenN 7.071071  window: uncoupled 0.000001 coupled 7.071070  min_only: uncoupled 0.000001 coupled 7.071070   # as E1B, a centreline where the separate rounding happens to stay parallel (cross 0)
+  E1C   lenP 7.071068 lenN 7.071069  window: uncoupled 7.071069 coupled 0.000000  min_only: uncoupled 7.071069 coupled 0.000000   # 45 deg, as E1A with N's far end moved 1 nm in x
+  E1D   lenP 10.000000 lenN 10.000000  window: uncoupled 10.000000 coupled 0.000000  min_only: uncoupled 10.000000 coupled 0.000000   # horizontal 10 mm, N's far end 1 nm off in y
+  E1E   lenP 10.000000 lenN 10.000000  window: uncoupled 0.000000 coupled 10.000000  min_only: uncoupled 0.000000 coupled 10.000000   # horizontal 10 mm, exact (control)
+  E1G   lenP 8.828427 lenN 8.828427  window: uncoupled 0.207107 coupled 8.621320  min_only: uncoupled 0.207107 coupled 8.621320   # two 45 deg bends; offset by bisector, rounded per vertex
+  E1H   lenP 8.828427 lenN 8.828427  window: uncoupled 0.207106 coupled 8.621321  min_only: uncoupled 0.207106 coupled 8.621321   # two 45 deg bends; offset by integer offset lines, exact corners
+  E2Z   lenP 10.000000 lenN 10.000000  window: uncoupled 0.000000 coupled 10.000000  min_only: uncoupled 0.000000 coupled 10.000000   # straight pair 10 mm (control)
+  E2A   lenP 10.600000 lenN 10.000000  window: uncoupled 1.200000 coupled 9.400000  min_only: uncoupled 0.600000 coupled 10.000000   # rectangular bump on P away from N: h 0.3, top 0.6, vertical legs
+  E2B   lenP 10.040000 lenN 10.000000  window: uncoupled 0.640000 coupled 9.400000  min_only: uncoupled 0.640000 coupled 9.400000   # rectangular bump on P towards N: h 0.02 (gap 0.15 -> 0.13), top 0.6
+  E2C   lenP 10.248528 lenN 10.000000  window: uncoupled 1.448528 coupled 8.800000  min_only: uncoupled 0.848528 coupled 9.400000   # trapezoid bump on P away from N: 45 deg legs, h 0.3, top 0.6
+  E2D   lenP 10.428319 lenN 10.000000  window: uncoupled 1.428319 coupled 9.000000  min_only: uncoupled 0.828319 coupled 9.600000   # rounded bump on P away from N: quarter arcs r 0.1, legs 0.1, straight top 0.6 at h 0.3
+  E2E   lenP 10.342478 lenN 10.000000  window: uncoupled 0.942478 coupled 9.400000  min_only: uncoupled 0.942478 coupled 9.400000   # semicircle bump on P away from N, r 0.3
+  E2F   lenP 9.767146 lenN 9.374447  window: uncoupled 0.392699 coupled 9.374447  min_only: uncoupled 0.392699 coupled 9.374447   # 90 deg turn, concentric arcs r 1.125 / 0.875, then 3 mm down
+  E2G   lenP 9.767146 lenN 9.237437  window: uncoupled 1.767146 coupled 8.000000  min_only: uncoupled 1.767146 coupled 8.000000   # 90 deg turn, P arc r 1.125, N two-segment 45 deg chamfer
+  E3A   lenP 10.000000 lenN 10.000000  window: uncoupled 10.000000 coupled 0.000000  min_only: uncoupled 0.000000 coupled 10.000000   # straight 10 mm both; P's start pad has die_length 1.0 mm
+  E3B   lenP 10.207107 lenN 10.000000  window: uncoupled 10.207107 coupled 0.000000  min_only: uncoupled 0.707107 coupled 9.500000   # P bends inside its 0.6 mm start pad: (0,0)->(0.25,-0.25)->(0.5,0)->(10,0)
+  E3C   lenP 10.207107 lenN 10.000000  window: uncoupled 10.207107 coupled 0.000000  min_only: uncoupled 0.707107 coupled 9.500000   # as E3B with a 0.3 mm start pad: the bend (0.25,-0.25) is outside the pad
+  E4A   lenP 10.000000 lenN 11.000000  window: uncoupled 3.000000 coupled 8.000000  min_only: uncoupled 1.000000 coupled 10.000000   # skew within_diff_pairs, condition names only the P net
+  E4B   lenP 10.000000 lenN 11.000000  window: uncoupled 3.000000 coupled 8.000000  min_only: uncoupled 1.000000 coupled 10.000000   # skew within_diff_pairs, condition hits both nets (control)
+  E4C   lenP 10.000000 lenN 0.000000   # lone net /E4C_P (no /E4C_N on the board), skew within_diff_pairs on it
+  E5A   lenP 10.186396 lenN 10.186396  window: uncoupled 0.636396 coupled 9.550000  min_only: uncoupled 0.636396 coupled 9.550000   # F.Cu pair jogs 45 deg out to a via pair (pitch 0.7), B.Cu pair jogs back; GND vias outside
+  E5C   lenP 10.000000 lenN 10.000000  window: uncoupled 10.000000 coupled 0.000000  min_only: uncoupled 0.000000 coupled 10.000000   # wide pair (gap 0.75), GND via between them at the middle (x 5)
+  E5E   lenP 10.000000 lenN 10.000000  window: uncoupled 10.000000 coupled 0.000000  min_only: uncoupled 0.000000 coupled 10.000000   # wide pair, GND via between them near the start (x 0.3)
+  E5F   lenP 10.000000 lenN 10.000000  window: uncoupled 10.000000 coupled 0.000000  min_only: uncoupled 0.000000 coupled 10.000000   # wide pair, GND via between them near the end (x 9.7)
+  E5D   lenP 10.000000 lenN 10.000000  window: uncoupled 10.000000 coupled 0.000000  min_only: uncoupled 0.000000 coupled 10.000000   # wide pair, no via (control)
+  E5G   lenP 10.000000 lenN 10.000000  window: uncoupled 10.000000 coupled 0.000000  min_only: uncoupled 0.000000 coupled 10.000000   # wide pair, GND via between them centred at x 0 (an end of the overlap)
+  E5H   lenP 10.000000 lenN 10.000000  window: uncoupled 10.000000 coupled 0.000000  min_only: uncoupled 0.000000 coupled 10.000000   # wide pair, GND via between them centred at x 10 (an end of the overlap)
+  E1T00 lenP 10.000000 lenN 10.000000  window: uncoupled 10.000000 coupled 0.000000  min_only: uncoupled 10.000000 coupled 0.000000   # horizontal 10 mm, N's far end 1 nm off (away from P)
+  E1T01 lenP 10.000000 lenN 10.000000  window: uncoupled 10.000000 coupled 0.000000  min_only: uncoupled 10.000000 coupled 0.000000   # horizontal 10 mm, N's far end 2 nm off (away from P)
+  E1T02 lenP 10.000000 lenN 10.000000  window: uncoupled 10.000000 coupled 0.000000  min_only: uncoupled 10.000000 coupled 0.000000   # horizontal 10 mm, N's far end 3 nm off (away from P)
+  E1T03 lenP 10.000000 lenN 10.000000  window: uncoupled 10.000000 coupled 0.000000  min_only: uncoupled 10.000000 coupled 0.000000   # horizontal 10 mm, N's far end 5 nm off (away from P)
+  E1T04 lenP 10.000000 lenN 10.000000  window: uncoupled 10.000000 coupled 0.000000  min_only: uncoupled 10.000000 coupled 0.000000   # horizontal 10 mm, N's far end 10 nm off (away from P)
+  E1T05 lenP 10.000000 lenN 10.000000  window: uncoupled 10.000000 coupled 0.000000  min_only: uncoupled 10.000000 coupled 0.000000   # horizontal 10 mm, N's far end 30 nm off (away from P)
+  E1T06 lenP 10.000000 lenN 10.000000  window: uncoupled 10.000000 coupled 0.000000  min_only: uncoupled 10.000000 coupled 0.000000   # horizontal 10 mm, N's far end 100 nm off (away from P)
+  E1T07 lenP 10.000000 lenN 10.000000  window: uncoupled 10.000000 coupled 0.000000  min_only: uncoupled 10.000000 coupled 0.000000   # horizontal 10 mm, N's far end 300 nm off (away from P)
+  E1T08 lenP 10.000000 lenN 10.000000  window: uncoupled 10.000000 coupled 0.000000  min_only: uncoupled 10.000000 coupled 0.000000   # horizontal 10 mm, N's far end 1000 nm off (away from P)
+  E1T09 lenP 10.000000 lenN 10.000000  window: uncoupled 10.000000 coupled 0.000000  min_only: uncoupled 10.000000 coupled 0.000000   # horizontal 10 mm, N's far end 3000 nm off (away from P)
+  E1T10 lenP 10.000000 lenN 10.000005  window: uncoupled 10.000005 coupled 0.000000  min_only: uncoupled 10.000005 coupled 0.000000   # horizontal 10 mm, N's far end 10000 nm off (away from P)
+  E1U00 lenP 1.000000 lenN 1.000000  window: uncoupled 1.000000 coupled 0.000000  min_only: uncoupled 1.000000 coupled 0.000000   # horizontal 1 mm, N's far end 1 nm off (away from P)
+  E1U01 lenP 1.000000 lenN 1.000000  window: uncoupled 1.000000 coupled 0.000000  min_only: uncoupled 1.000000 coupled 0.000000   # horizontal 1 mm, N's far end 2 nm off (away from P)
+  E1U02 lenP 1.000000 lenN 1.000000  window: uncoupled 1.000000 coupled 0.000000  min_only: uncoupled 1.000000 coupled 0.000000   # horizontal 1 mm, N's far end 3 nm off (away from P)
+  E1U03 lenP 1.000000 lenN 1.000000  window: uncoupled 1.000000 coupled 0.000000  min_only: uncoupled 1.000000 coupled 0.000000   # horizontal 1 mm, N's far end 5 nm off (away from P)
+  E1U04 lenP 1.000000 lenN 1.000000  window: uncoupled 1.000000 coupled 0.000000  min_only: uncoupled 1.000000 coupled 0.000000   # horizontal 1 mm, N's far end 10 nm off (away from P)
+  E1U05 lenP 1.000000 lenN 1.000000  window: uncoupled 1.000000 coupled 0.000000  min_only: uncoupled 1.000000 coupled 0.000000   # horizontal 1 mm, N's far end 30 nm off (away from P)
+  E1U06 lenP 1.000000 lenN 1.000000  window: uncoupled 1.000000 coupled 0.000000  min_only: uncoupled 1.000000 coupled 0.000000   # horizontal 1 mm, N's far end 100 nm off (away from P)
+  E1U07 lenP 1.000000 lenN 1.000000  window: uncoupled 1.000000 coupled 0.000000  min_only: uncoupled 1.000000 coupled 0.000000   # horizontal 1 mm, N's far end 300 nm off (away from P)
+  E1U08 lenP 1.000000 lenN 1.000000  window: uncoupled 1.000000 coupled 0.000000  min_only: uncoupled 1.000000 coupled 0.000000   # horizontal 1 mm, N's far end 1000 nm off (away from P)
+  E1U09 lenP 1.000000 lenN 1.000004  window: uncoupled 1.000004 coupled 0.000000  min_only: uncoupled 1.000004 coupled 0.000000   # horizontal 1 mm, N's far end 3000 nm off (away from P)
+  E1U10 lenP 1.000000 lenN 1.000050  window: uncoupled 1.000050 coupled 0.000000  min_only: uncoupled 1.000050 coupled 0.000000   # horizontal 1 mm, N's far end 10000 nm off (away from P)
+  E1V00 lenP 7.071068 lenN 7.071069  window: uncoupled 7.071069 coupled 0.000000  min_only: uncoupled 7.071069 coupled 0.000000   # 45 deg 7.07 mm, N's far end 1 nm off in x
+  E1V01 lenP 7.071068 lenN 7.071069  window: uncoupled 7.071069 coupled 0.000000  min_only: uncoupled 7.071069 coupled 0.000000   # 45 deg 7.07 mm, N's far end 2 nm off in x
+  E1V02 lenP 7.071068 lenN 7.071070  window: uncoupled 7.071070 coupled 0.000000  min_only: uncoupled 7.071070 coupled 0.000000   # 45 deg 7.07 mm, N's far end 3 nm off in x
+  E1V03 lenP 7.071068 lenN 7.071071  window: uncoupled 7.071071 coupled 0.000000  min_only: uncoupled 7.071071 coupled 0.000000   # 45 deg 7.07 mm, N's far end 5 nm off in x
+  E1V04 lenP 7.071068 lenN 7.071075  window: uncoupled 7.071075 coupled 0.000000  min_only: uncoupled 7.071075 coupled 0.000000   # 45 deg 7.07 mm, N's far end 10 nm off in x
+  E1V05 lenP 7.071068 lenN 7.071089  window: uncoupled 7.071089 coupled 0.000000  min_only: uncoupled 7.071089 coupled 0.000000   # 45 deg 7.07 mm, N's far end 30 nm off in x
+  E1V06 lenP 7.071068 lenN 7.071139  window: uncoupled 7.071139 coupled 0.000000  min_only: uncoupled 7.071139 coupled 0.000000   # 45 deg 7.07 mm, N's far end 100 nm off in x
+  E1V07 lenP 7.071068 lenN 7.071280  window: uncoupled 7.071280 coupled 0.000000  min_only: uncoupled 7.071280 coupled 0.000000   # 45 deg 7.07 mm, N's far end 300 nm off in x
+  E1V08 lenP 7.071068 lenN 7.071775  window: uncoupled 7.071775 coupled 0.000000  min_only: uncoupled 7.071775 coupled 0.000000   # 45 deg 7.07 mm, N's far end 1000 nm off in x
+  E1V09 lenP 7.071068 lenN 7.073189  window: uncoupled 7.073189 coupled 0.000000  min_only: uncoupled 7.073189 coupled 0.000000   # 45 deg 7.07 mm, N's far end 3000 nm off in x
+  E1V10 lenP 7.071068 lenN 7.078142  window: uncoupled 7.078142 coupled 0.000000  min_only: uncoupled 7.078142 coupled 0.000000   # 45 deg 7.07 mm, N's far end 10000 nm off in x

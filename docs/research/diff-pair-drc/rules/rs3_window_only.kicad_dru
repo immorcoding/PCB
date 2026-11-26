@@ -1,0 +1,4 @@
+(version 1)
+(rule "dp_gap"
+  (condition "A.inDiffPair('/E1*') || A.inDiffPair('/E2*') || A.inDiffPair('/E5*')")
+  (constraint diff_pair_gap (min 0.14mm) (max 0.2mm)))

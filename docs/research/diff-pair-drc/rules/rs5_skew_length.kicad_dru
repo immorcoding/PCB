@@ -1,0 +1,19 @@
+(version 1)
+(rule "e3_skew"
+  (condition "A.inDiffPair('/E3*')")
+  (constraint skew (max 0.0001mm) (within_diff_pairs)))
+(rule "e3_len"
+  (condition "A.inDiffPair('/E3*')")
+  (constraint length (max 0.001mm)))
+(rule "e4a_skew_one_net"
+  (condition "A.NetName == '/E4A_P'")
+  (constraint skew (max 0.0001mm) (within_diff_pairs)))
+(rule "e4b_skew_both"
+  (condition "A.inDiffPair('/E4B')")
+  (constraint skew (max 0.0001mm) (within_diff_pairs)))
+(rule "e4c_skew_lone"
+  (condition "A.NetName == '/E4C_P'")
+  (constraint skew (max 0.0001mm) (within_diff_pairs)))
+(rule "e4_len"
+  (condition "A.NetName == '/E4A_P' || A.NetName == '/E4A_N' || A.NetName == '/E4C_P'")
+  (constraint length (max 0.001mm)))
