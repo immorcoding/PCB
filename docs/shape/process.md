@@ -62,6 +62,7 @@ Next id: PROC-16
 - 2026-11-24 · cite · PROC-13 · 起作用：板目录只剩数据（board.toml、place.toml、silk.toml、rules_cases.py、bga_block.toml、routes_*.py、sch/<页>.py），逻辑全部在 `Tools/KiCadDesignTools/`；所有写板的程序改成确定的 uuid（uuid5）后，连续两次全量构建的板文件逐字节相同，提交的板文件只换了一次 uuid（项的顺序随 uuid 变）。
 - 2026-11-24 · friction · PROC-13 · 板目录清理（H2）：删了 `line_order.py`（最后在 `a889ac4`）、`decap_search.py` 和 `patches/`（最后在 `c38fa0d`），四个 `routes_probe_*.py` 和 `line_order/` 挪进 `probes/`（`balls_identity.json` 仍由 `planning.bga_plan` 读）。`stm32h743_sdram/SPEC.md` 第 16 节 2026-11-21 那条变更记录写“分配表在 `line_order/`”，现在是 `probes/line_order/`；SPEC 本批不动，改不改请主会话定。
 
+- 2026-11-26 · cite · PROC-14 · 起作用：差分对调研里只读源码、没运行得出的三条 DRC 行为，在夹具板上实测都不成立：平行判定其实有约 1e-4 rad 的角度容差，不要求整数叉积恰为 0；间隙越界不论非耦合预算都报；凸起顶边会不会被挡，看的是重叠段起点那一端。命令和输出记在 [#44](https://github.com/immorcoding/PCB/issues/44)，分支 `research/diff-pair-drc`。读源码得出的行为在实测前只当线索。
 ## tooling
 
 指标、工具选型和构建速度。
