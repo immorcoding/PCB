@@ -1,0 +1,11 @@
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "E:\Projects\claude_workspace\PCB\.claude\worktrees\rk3568-tools\Tools\KiCadDesignTools\planning\bga_fan.py", line 814, in <module>
+    main()
+  File "E:\Projects\claude_workspace\PCB\.claude\worktrees\rk3568-tools\Tools\KiCadDesignTools\planning\bga_fan.py", line 785, in main
+    setup(config.load(a.board))
+  File "E:\Projects\claude_workspace\PCB\.claude\worktrees\rk3568-tools\Tools\KiCadDesignTools\planning\bga_fan.py", line 111, in setup
+    MCU, SDRAM = b["mcu"], b["sdram"]
+                           ~^^^^^^^^^
+KeyError: 'sdram'

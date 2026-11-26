@@ -1,0 +1,1 @@
+U1: 636 pads, 636 with a net; balls: {'power': 86, 'ground': 208, 'signal': 342}; nets: 386 (GND 1, supplies 43, signals 342)

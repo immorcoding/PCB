@@ -1,0 +1,4 @@
+state: 637 items, 0 fixed vias in the window, field 0.0 s
+U1: 294 supply balls (0 without a site), 255 signal balls (0 without an option), 25145 options, 2.8 s
+  U1 round 1: 27089 vars, 10680 rows (0 staircase), objective 2714.41, 14.9 s; no slot limit, longest chains: 25.39 L5, 9.75 L2, 9.65 L2, 8.38 L2, 7.96 L2, 5.79 L2
+U1: 294 / 294 supply balls on a via of their own, 255 signal balls placed, 0 not (), 0 capacitors, 0 own vias, 10 uncovered, 48.8 s

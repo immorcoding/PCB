@@ -1,0 +1,21 @@
+# Placement of the survey board (placement.place). Local mm from the board's top-left corner.
+
+[outline]
+width = 40.0
+height = 40.0
+corner_r = 1.0
+
+[bodies]
+U1 = [19.0, 19.0]                # FCBGA636 body 19 x 19 mm
+
+[rule_areas]
+margin = 1.0                     # package outline + 1 mm each side (profile C)
+areas = [
+    { name = "BGA_MCU", ref = "U1", label = "SoC", no_pour = "NOPOUR_L1_SOC" },   # name as in the profile C rule file
+]
+
+[pads]
+mask_margin_zero = ["U1"]
+
+[parts]
+U1 = [20.0, 20.0, 0]

@@ -1,0 +1,45 @@
+# Survey board (probe, not a design): one RK3568 BGA-636 (U1) in the middle of a 40 x 40 mm six-layer board, every
+# ball on its net from rk3568_ddr3_core/lib/rk3568_pins.json, to try planning.bga_dump, placement.escape_check and
+# planning.bga_fan on a 636-ball, 0.65 mm pitch package (2026-11-26). Built by:
+#   python -m Tools.KiCadDesignTools.build rk3568_ddr3_core/probes/survey project     (template C-bga-065: .kicad_pro,
+#                                                                                       empty board, .kicad_dru)
+#   make_survey.py (U1 and its nets, one-off), placement.place (outline, rule area BGA_MCU), project again (K33)
+# Layer order: the H743 / profile C template's signal / ground / signal / signal / power / signal, unchanged, because
+# every tool here was written and tested on it (bga_grid needs exactly one ground and one power layer).
+
+[board]
+name = "rk3568_survey"
+title = "RK3568 BGA-636 tool survey"
+rev = "-"
+profile = "C"                    # docs/rule-profiles/C-bga-065.md
+template = "C-bga-065"           # templates/C-bga-065: project file, rule file, six-layer board (RUL-1)
+lib = "survey"                   # make_project needs one (writes an empty survey.pretty and fp-lib-table)
+origin = [100.0, 100.0]
+stackup = "JLC06161H-3313E"
+
+[layers]
+roles = ["signal", "ground", "signal", "signal", "power", "signal"]
+names = ["", "L2_GND", "L3_SIG", "L4_SIG", "L5_PWR", ""]
+
+[power]
+ground = "GND"
+bus_prefix = "DDR"               # bga_fan: nets starting with this are the memory bus (not fanned out by it)
+
+[power.bga]                      # bga_fan reads bone_widths[0] (dog-bone width of a fixed stage); demo board values
+via_pitch = 0.45
+stub_max = 0.7
+gnd_via_max = 1.0
+bone_widths = [0.2, 0.15]
+stub_widths = [0.25, 0.2, 0.15, 0.1]
+wide_widths = [0.3, 0.25, 0.2]
+share90_first = true
+
+[bga.U1]
+supply = "VDD_CPU"               # bga_fan: one supply net per package (the one whose block is on the power plane)
+
+[copper]
+sketch = "copper.sketch"         # bga_grid reads plane_clearance / minwidth from it
+
+[[layout.escape]]
+refs = ["U1"]
+json = "escape_bga.json"

@@ -1,0 +1,50 @@
+# planning.bga_fan on the survey board (probe, 2026-11-26): the smallest data the program reads, for one run of the
+# supply / ground via stage only (FAN_NOSIG=1 FAN_NOCAP=1). Every key below is read unconditionally by
+# bga_fan.setup() (no default in the code), so the empty ones are written out.
+
+[block]
+mcu = "U1"
+sdram = "U1"                     # required (bga_fan.py:111, Lattice built for it at :267); no second BGA here, so the
+                                 # same part: its supply is then [bga.U1] supply too, run with --only U1
+other_power = ["DDRPHY_VDDQ", "DDRPHY_VDDQL", "EDP_TX_AVDD_0V9", "EDP_TX_AVDD_1V8", "HDMI_TX_AVDD_0V9", "HDMI_TX_AVDD_1V8",
+               "MIPI_CSI_RX_AVDD_0V9", "MIPI_CSI_RX_AVDD_1V8", "MIPI_DSI_TX0/LVDS_TX0_AVDD_0V9", "MIPI_DSI_TX0/LVDS_TX0_AVDD_1V8",
+               "MIPI_DSI_TX1_AVDD_0V9", "MIPI_DSI_TX1_AVDD_1V8", "MULTI_PHY_AVDD_0V9", "MULTI_PHY_AVDD_1V8", "OTP_VCC18",
+               "PCIE30_AVDD_0V9", "PCIE30_AVDD_1V8", "PMUIO1", "PMUIO2", "PMUPLL_AVDD_0V9", "PMUPLL_AVDD_1V8",
+               "PMU_VDD_LOGIC_0V9", "SARADC_AVDD_1V8", "SYSPLL_AVDD_0V9", "SYSPLL_AVDD_1V8", "USB2_AVDD_0V9", "USB2_AVDD_1V8",
+               "USB2_AVDD_3V3", "USB3_AVDD_0V9", "USB3_AVDD_1V8", "USB3_AVDD_3V3", "VCCIO1", "VCCIO2", "VCCIO3", "VCCIO4",
+               "VCCIO5", "VCCIO6", "VCCIO7", "VDD_CPU_COM", "VDD_GPU", "VDD_LOGIC", "VDD_NPU"]
+sdram_caps = []
+xtal_balls = {}
+xtal_box = [0.0, 0.0, 0.1, 0.1]  # required; a dummy box in the board corner, outside the window
+xtal_width = 0.254
+bus_width = 0.1016
+
+[block.caps_100n]
+U1 = []
+
+[fan]
+window = [8.5, 8.5, 31.5, 31.5]  # the rule area (9.5 - 30.5) + 1 mm
+mcu_caps = []
+cap_kinds.U1 = []
+tied = []
+cap_reach = 1.9
+cap_far = 2.5
+cap_far_other = 3.0
+xtal_end_x = 0.0
+island = []
+feed = { x = [], y = [] }
+novdda = { drop = false }
+cap_bonus = { tied = 0.0, other = 0.0 }
+default_target = [20.0, 0.0]
+important = []
+important_layer = "L3"
+extra = {}
+targets = {}
+sides = {}
+
+[fan.exits]                      # the supply run (FAN_NOSIG=1) does not read these; the one signal run: every side
+                                 # open on every inner layer (run 1 had exits = {})
+N = { L3 = [[9.5, 30.5]], L4 = [[9.5, 30.5]], L6 = [[9.5, 30.5]] }
+E = { L3 = [[9.5, 30.5]], L4 = [[9.5, 30.5]], L6 = [[9.5, 30.5]] }
+S = { L3 = [[9.5, 30.5]], L4 = [[9.5, 30.5]], L6 = [[9.5, 30.5]] }
+W = { L3 = [[9.5, 30.5]], L4 = [[9.5, 30.5]], L6 = [[9.5, 30.5]] }

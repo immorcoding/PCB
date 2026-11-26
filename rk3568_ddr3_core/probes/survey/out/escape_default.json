@@ -1,0 +1,3184 @@
+{
+ "U1": {
+  "A1": {
+   "status": "plane",
+   "vias": 1,
+   "via_layer_or_partner": "L1"
+  },
+  "A2": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "A3": {
+   "status": "plane",
+   "vias": 1,
+   "via_layer_or_partner": "L1"
+  },
+  "A4": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "A5": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "A6": {
+   "status": "plane",
+   "vias": 1,
+   "via_layer_or_partner": "L1"
+  },
+  "A7": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "A8": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "A9": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "A10": {
+   "status": "plane",
+   "vias": 1,
+   "via_layer_or_partner": "L1"
+  },
+  "A11": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "A12": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "A13": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "A14": {
+   "status": "plane",
+   "vias": 1,
+   "via_layer_or_partner": "L1"
+  },
+  "A15": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "A16": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "A17": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "A18": {
+   "status": "plane",
+   "vias": 1,
+   "via_layer_or_partner": "L1"
+  },
+  "A19": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "A20": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "A21": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "A22": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "A23": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "A24": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "A25": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "A26": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "A27": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "A28": {
+   "status": "plane",
+   "vias": 1,
+   "via_layer_or_partner": "L1"
+  },
+  "AA1": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "AA2": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "AA3": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "AA4": {
+   "status": "plane",
+   "vias": 1,
+   "via_layer_or_partner": "L1"
+  },
+  "AA5": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "AA6": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "AA7": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "AA9": {
+   "status": "plane",
+   "vias": 1,
+   "via_layer_or_partner": "L1"
+  },
+  "AA11": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "AA12": {
+   "status": "plane",
+   "vias": 1,
+   "via_layer_or_partner": "L1"
+  },
+  "AA14": {
+   "status": "plane",
+   "vias": 1,
+   "via_layer_or_partner": "L1"
+  },
+  "AA15": {
+   "status": "plane",
+   "vias": 1,
+   "via_layer_or_partner": "L1"
+  },
+  "AA17": {
+   "status": "plane",
+   "vias": 1,
+   "via_layer_or_partner": "L1"
+  },
+  "AA18": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "AA20": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "AA22": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "AA23": {
+   "status": "plane",
+   "vias": 1,
+   "via_layer_or_partner": "L1"
+  },
+  "AA24": {
+   "status": "plane",
+   "vias": 1,
+   "via_layer_or_partner": "L1"
+  },
+  "AA25": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "AA26": {
+   "status": "plane",
+   "vias": 1,
+   "via_layer_or_partner": "L1"
+  },
+  "AA27": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "AA28": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "AB1": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "AB2": {
+   "status": "plane",
+   "vias": 1,
+   "via_layer_or_partner": "L1"
+  },
+  "AB5": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "AB6": {
+   "status": "plane",
+   "vias": 1,
+   "via_layer_or_partner": "L1"
+  },
+  "AB8": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "AB9": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "AB11": {
+   "status": "plane",
+   "vias": 1,
+   "via_layer_or_partner": "L1"
+  },
+  "AB12": {
+   "status": "plane",
+   "vias": 1,
+   "via_layer_or_partner": "L1"
+  },
+  "AB14": {
+   "status": "plane",
+   "vias": 1,
+   "via_layer_or_partner": "L1"
+  },
+  "AB15": {
+   "status": "plane",
+   "vias": 1,
+   "via_layer_or_partner": "L1"
+  },
+  "AB17": {
+   "status": "plane",
+   "vias": 1,
+   "via_layer_or_partner": "L1"
+  },
+  "AB18": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "AB20": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "AB21": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "AB23": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "AB24": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "AB27": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "AB28": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "AC1": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "AC2": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "AC3": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "AC4": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "AC5": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "AC7": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "AC8": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "AC9": {
+   "status": "plane",
+   "vias": 1,
+   "via_layer_or_partner": "L1"
+  },
+  "AC11": {
+   "status": "plane",
+   "vias": 1,
+   "via_layer_or_partner": "L1"
+  },
+  "AC12": {
+   "status": "plane",
+   "vias": 1,
+   "via_layer_or_partner": "L1"
+  },
+  "AC14": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "AC15": {
+   "status": "plane",
+   "vias": 1,
+   "via_layer_or_partner": "L1"
+  },
+  "AC17": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "AC18": {
+   "status": "plane",
+   "vias": 1,
+   "via_layer_or_partner": "L1"
+  },
+  "AC20": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "AC21": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "AC22": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "AC24": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "AC25": {
+   "status": "plane",
+   "vias": 1,
+   "via_layer_or_partner": "L1"
+  },
+  "AC26": {
+   "status": "plane",
+   "vias": 1,
+   "via_layer_or_partner": "L1"
+  },
+  "AC27": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "AC28": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "AD1": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "AD2": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "AD3": {
+   "status": "plane",
+   "vias": 1,
+   "via_layer_or_partner": "L1"
+  },
+  "AD4": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "AD6": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "AD7": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "AD8": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "AD9": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "AD11": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "AD12": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "AD14": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "AD15": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "AD17": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "AD18": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "AD20": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "AD21": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "AD22": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "AD23": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "AD25": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "AD26": {
+   "status": "plane",
+   "vias": 1,
+   "via_layer_or_partner": "L1"
+  },
+  "AD27": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "AD28": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "AE1": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "AE2": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "AE3": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "AE5": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "AE6": {
+   "status": "plane",
+   "vias": 1,
+   "via_layer_or_partner": "L1"
+  },
+  "AE8": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "AE9": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "AE11": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "AE12": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "AE14": {
+   "status": "plane",
+   "vias": 1,
+   "via_layer_or_partner": "L1"
+  },
+  "AE15": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "AE17": {
+   "status": "plane",
+   "vias": 1,
+   "via_layer_or_partner": "L1"
+  },
+  "AE18": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "AE20": {
+   "status": "plane",
+   "vias": 1,
+   "via_layer_or_partner": "L1"
+  },
+  "AE21": {
+   "status": "plane",
+   "vias": 1,
+   "via_layer_or_partner": "L1"
+  },
+  "AE23": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "AE24": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "AE26": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "AE27": {
+   "status": "plane",
+   "vias": 1,
+   "via_layer_or_partner": "L1"
+  },
+  "AE28": {
+   "status": "plane",
+   "vias": 1,
+   "via_layer_or_partner": "L1"
+  },
+  "AF1": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "AF2": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "AF3": {
+   "status": "plane",
+   "vias": 1,
+   "via_layer_or_partner": "L1"
+  },
+  "AF4": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "AF5": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "AF6": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "AF8": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "AF9": {
+   "status": "plane",
+   "vias": 1,
+   "via_layer_or_partner": "L1"
+  },
+  "AF11": {
+   "status": "plane",
+   "vias": 1,
+   "via_layer_or_partner": "L1"
+  },
+  "AF12": {
+   "status": "plane",
+   "vias": 1,
+   "via_layer_or_partner": "L1"
+  },
+  "AF14": {
+   "status": "plane",
+   "vias": 1,
+   "via_layer_or_partner": "L1"
+  },
+  "AF15": {
+   "status": "plane",
+   "vias": 1,
+   "via_layer_or_partner": "L1"
+  },
+  "AF17": {
+   "status": "plane",
+   "vias": 1,
+   "via_layer_or_partner": "L1"
+  },
+  "AF18": {
+   "status": "plane",
+   "vias": 1,
+   "via_layer_or_partner": "L1"
+  },
+  "AF20": {
+   "status": "plane",
+   "vias": 1,
+   "via_layer_or_partner": "L1"
+  },
+  "AF21": {
+   "status": "plane",
+   "vias": 1,
+   "via_layer_or_partner": "L1"
+  },
+  "AF23": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "AF24": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "AF25": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "AF26": {
+   "status": "plane",
+   "vias": 1,
+   "via_layer_or_partner": "L1"
+  },
+  "AF27": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "AF28": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "AG1": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "AG2": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "AG3": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "AG4": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "AG5": {
+   "status": "plane",
+   "vias": 1,
+   "via_layer_or_partner": "L1"
+  },
+  "AG6": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "AG7": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "AG8": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "AG9": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "AG10": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "AG11": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "AG12": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "AG13": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "AG14": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "AG15": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "AG16": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "AG17": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "AG18": {
+   "status": "plane",
+   "vias": 1,
+   "via_layer_or_partner": "L1"
+  },
+  "AG19": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "AG20": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "AG21": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "AG22": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "AG23": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "AG24": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "AG25": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "AG26": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "AG27": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "AG28": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "AH1": {
+   "status": "plane",
+   "vias": 1,
+   "via_layer_or_partner": "L1"
+  },
+  "AH2": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "AH3": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "AH4": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "AH5": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "AH6": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "AH7": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "AH8": {
+   "status": "plane",
+   "vias": 1,
+   "via_layer_or_partner": "L1"
+  },
+  "AH9": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "AH10": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "AH11": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "AH12": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "AH13": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "AH14": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "AH15": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "AH16": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "AH17": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "AH18": {
+   "status": "plane",
+   "vias": 1,
+   "via_layer_or_partner": "L1"
+  },
+  "AH19": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "AH20": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "AH21": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "AH22": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "AH23": {
+   "status": "plane",
+   "vias": 1,
+   "via_layer_or_partner": "L1"
+  },
+  "AH24": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "AH25": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "AH26": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "AH27": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "AH28": {
+   "status": "plane",
+   "vias": 1,
+   "via_layer_or_partner": "L1"
+  },
+  "B1": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "B2": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "B3": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "B4": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "B5": {
+   "status": "plane",
+   "vias": 1,
+   "via_layer_or_partner": "L1"
+  },
+  "B6": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "B7": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "B8": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "B9": {
+   "status": "plane",
+   "vias": 1,
+   "via_layer_or_partner": "L1"
+  },
+  "B10": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "B11": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "B12": {
+   "status": "plane",
+   "vias": 1,
+   "via_layer_or_partner": "L1"
+  },
+  "B13": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "B14": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "B15": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "B16": {
+   "status": "plane",
+   "vias": 1,
+   "via_layer_or_partner": "L1"
+  },
+  "B17": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "B18": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "B19": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "B20": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "B21": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "B22": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "B23": {
+   "status": "plane",
+   "vias": 1,
+   "via_layer_or_partner": "L1"
+  },
+  "B24": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "B25": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "B26": {
+   "status": "plane",
+   "vias": 1,
+   "via_layer_or_partner": "L1"
+  },
+  "B27": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "B28": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "C1": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "C2": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "C3": {
+   "status": "plane",
+   "vias": 1,
+   "via_layer_or_partner": "L1"
+  },
+  "C4": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "C5": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "C6": {
+   "status": "plane",
+   "vias": 1,
+   "via_layer_or_partner": "L1"
+  },
+  "C8": {
+   "status": "plane",
+   "vias": 1,
+   "via_layer_or_partner": "L1"
+  },
+  "C9": {
+   "status": "plane",
+   "vias": 1,
+   "via_layer_or_partner": "L1"
+  },
+  "C11": {
+   "status": "plane",
+   "vias": 1,
+   "via_layer_or_partner": "L1"
+  },
+  "C12": {
+   "status": "plane",
+   "vias": 1,
+   "via_layer_or_partner": "L1"
+  },
+  "C14": {
+   "status": "plane",
+   "vias": 1,
+   "via_layer_or_partner": "L1"
+  },
+  "C15": {
+   "status": "plane",
+   "vias": 1,
+   "via_layer_or_partner": "L1"
+  },
+  "C17": {
+   "status": "plane",
+   "vias": 1,
+   "via_layer_or_partner": "L1"
+  },
+  "C18": {
+   "status": "plane",
+   "vias": 1,
+   "via_layer_or_partner": "L1"
+  },
+  "C20": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "C21": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "C23": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "C24": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "C25": {
+   "status": "plane",
+   "vias": 1,
+   "via_layer_or_partner": "L1"
+  },
+  "C26": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "C27": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "C28": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "D1": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "D2": {
+   "status": "plane",
+   "vias": 1,
+   "via_layer_or_partner": "L1"
+  },
+  "D3": {
+   "status": "plane",
+   "vias": 1,
+   "via_layer_or_partner": "L1"
+  },
+  "D5": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "D6": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "D8": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "D9": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "D11": {
+   "status": "plane",
+   "vias": 1,
+   "via_layer_or_partner": "L1"
+  },
+  "D12": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "D14": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "D15": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "D17": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "D18": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "D20": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "D21": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "D23": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "D24": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "D26": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "D27": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "D28": {
+   "status": "plane",
+   "vias": 1,
+   "via_layer_or_partner": "L1"
+  },
+  "E1": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "E2": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "E3": {
+   "status": "plane",
+   "vias": 1,
+   "via_layer_or_partner": "L1"
+  },
+  "E4": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "E6": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "E7": {
+   "status": "plane",
+   "vias": 1,
+   "via_layer_or_partner": "L1"
+  },
+  "E8": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "E9": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "E11": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "E12": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "E14": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "E15": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "E17": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "E18": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "E20": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "E21": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "E22": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "E23": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "E25": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "E26": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "E27": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "E28": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "F1": {
+   "status": "plane",
+   "vias": 1,
+   "via_layer_or_partner": "L1"
+  },
+  "F2": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "F3": {
+   "status": "plane",
+   "vias": 1,
+   "via_layer_or_partner": "L1"
+  },
+  "F4": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "F5": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "F7": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "F8": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "F9": {
+   "status": "plane",
+   "vias": 1,
+   "via_layer_or_partner": "L1"
+  },
+  "F11": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "F12": {
+   "status": "plane",
+   "vias": 1,
+   "via_layer_or_partner": "L1"
+  },
+  "F14": {
+   "status": "plane",
+   "vias": 1,
+   "via_layer_or_partner": "L1"
+  },
+  "F15": {
+   "status": "plane",
+   "vias": 1,
+   "via_layer_or_partner": "L1"
+  },
+  "F17": {
+   "status": "plane",
+   "vias": 1,
+   "via_layer_or_partner": "L1"
+  },
+  "F18": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "F20": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "F21": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "F22": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "F24": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "F25": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "F26": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "F27": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "F28": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "G1": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "G2": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "G5": {
+   "status": "plane",
+   "vias": 1,
+   "via_layer_or_partner": "L1"
+  },
+  "G6": {
+   "status": "plane",
+   "vias": 1,
+   "via_layer_or_partner": "L1"
+  },
+  "G8": {
+   "status": "plane",
+   "vias": 1,
+   "via_layer_or_partner": "L1"
+  },
+  "G9": {
+   "status": "plane",
+   "vias": 1,
+   "via_layer_or_partner": "L1"
+  },
+  "G11": {
+   "status": "plane",
+   "vias": 1,
+   "via_layer_or_partner": "L1"
+  },
+  "G12": {
+   "status": "plane",
+   "vias": 1,
+   "via_layer_or_partner": "L1"
+  },
+  "G14": {
+   "status": "plane",
+   "vias": 1,
+   "via_layer_or_partner": "L1"
+  },
+  "G15": {
+   "status": "plane",
+   "vias": 1,
+   "via_layer_or_partner": "L1"
+  },
+  "G17": {
+   "status": "plane",
+   "vias": 1,
+   "via_layer_or_partner": "L1"
+  },
+  "G18": {
+   "status": "plane",
+   "vias": 1,
+   "via_layer_or_partner": "L1"
+  },
+  "G20": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "G21": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "G23": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "G24": {
+   "status": "plane",
+   "vias": 1,
+   "via_layer_or_partner": "L1"
+  },
+  "G27": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "G28": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "H1": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "H2": {
+   "status": "plane",
+   "vias": 1,
+   "via_layer_or_partner": "L1"
+  },
+  "H3": {
+   "status": "plane",
+   "vias": 1,
+   "via_layer_or_partner": "L1"
+  },
+  "H4": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "H5": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "H6": {
+   "status": "plane",
+   "vias": 1,
+   "via_layer_or_partner": "L1"
+  },
+  "H7": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "H9": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "H11": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "H12": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "H14": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "H15": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "H17": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "H18": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "H20": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "H22": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "H23": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "H24": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "H25": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "H26": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "H27": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "H28": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "J1": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "J2": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "J3": {
+   "status": "plane",
+   "vias": 1,
+   "via_layer_or_partner": "L1"
+  },
+  "J4": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "J5": {
+   "status": "plane",
+   "vias": 1,
+   "via_layer_or_partner": "L1"
+  },
+  "J6": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "J7": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "J8": {
+   "status": "plane",
+   "vias": 1,
+   "via_layer_or_partner": "L1"
+  },
+  "J9": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "J11": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "J12": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "J14": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "J15": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "J17": {
+   "status": "plane",
+   "vias": 1,
+   "via_layer_or_partner": "L1"
+  },
+  "J18": {
+   "status": "plane",
+   "vias": 1,
+   "via_layer_or_partner": "L1"
+  },
+  "J20": {
+   "status": "plane",
+   "vias": 1,
+   "via_layer_or_partner": "L1"
+  },
+  "J21": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "J22": {
+   "status": "plane",
+   "vias": 1,
+   "via_layer_or_partner": "L1"
+  },
+  "J23": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "J24": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "J25": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "J26": {
+   "status": "plane",
+   "vias": 1,
+   "via_layer_or_partner": "L1"
+  },
+  "J27": {
+   "status": "plane",
+   "vias": 1,
+   "via_layer_or_partner": "L1"
+  },
+  "J28": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "K1": {
+   "status": "plane",
+   "vias": 1,
+   "via_layer_or_partner": "L1"
+  },
+  "K2": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "K10": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "K11": {
+   "status": "plane",
+   "vias": 1,
+   "via_layer_or_partner": "L1"
+  },
+  "K12": {
+   "status": "plane",
+   "vias": 1,
+   "via_layer_or_partner": "L1"
+  },
+  "K13": {
+   "status": "plane",
+   "vias": 1,
+   "via_layer_or_partner": "L1"
+  },
+  "K14": {
+   "status": "plane",
+   "vias": 1,
+   "via_layer_or_partner": "L1"
+  },
+  "K15": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "K16": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "K17": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "K18": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "K19": {
+   "status": "plane",
+   "vias": 1,
+   "via_layer_or_partner": "L1"
+  },
+  "K27": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "K28": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "L1": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "L2": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "L3": {
+   "status": "plane",
+   "vias": 1,
+   "via_layer_or_partner": "L1"
+  },
+  "L4": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "L5": {
+   "status": "plane",
+   "vias": 1,
+   "via_layer_or_partner": "L1"
+  },
+  "L6": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "L7": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "L8": {
+   "status": "plane",
+   "vias": 1,
+   "via_layer_or_partner": "L1"
+  },
+  "L9": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "L10": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "L11": {
+   "status": "plane",
+   "vias": 1,
+   "via_layer_or_partner": "L1"
+  },
+  "L12": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "L13": {
+   "status": "plane",
+   "vias": 1,
+   "via_layer_or_partner": "L1"
+  },
+  "L14": {
+   "status": "plane",
+   "vias": 1,
+   "via_layer_or_partner": "L1"
+  },
+  "L15": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "L16": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "L17": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "L18": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "L19": {
+   "status": "plane",
+   "vias": 1,
+   "via_layer_or_partner": "L1"
+  },
+  "L20": {
+   "status": "plane",
+   "vias": 1,
+   "via_layer_or_partner": "L1"
+  },
+  "L21": {
+   "status": "plane",
+   "vias": 1,
+   "via_layer_or_partner": "L1"
+  },
+  "L22": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "L23": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "L24": {
+   "status": "plane",
+   "vias": 1,
+   "via_layer_or_partner": "L1"
+  },
+  "L25": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "L26": {
+   "status": "plane",
+   "vias": 1,
+   "via_layer_or_partner": "L1"
+  },
+  "L27": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "L28": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "M1": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "M2": {
+   "status": "plane",
+   "vias": 1,
+   "via_layer_or_partner": "L1"
+  },
+  "M3": {
+   "status": "plane",
+   "vias": 1,
+   "via_layer_or_partner": "L1"
+  },
+  "M4": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "M5": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "M6": {
+   "status": "plane",
+   "vias": 1,
+   "via_layer_or_partner": "L1"
+  },
+  "M7": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "M8": {
+   "status": "plane",
+   "vias": 1,
+   "via_layer_or_partner": "L1"
+  },
+  "M9": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "M10": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "M11": {
+   "status": "plane",
+   "vias": 1,
+   "via_layer_or_partner": "L1"
+  },
+  "M12": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "M13": {
+   "status": "plane",
+   "vias": 1,
+   "via_layer_or_partner": "L1"
+  },
+  "M14": {
+   "status": "plane",
+   "vias": 1,
+   "via_layer_or_partner": "L1"
+  },
+  "M15": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "M16": {
+   "status": "plane",
+   "vias": 1,
+   "via_layer_or_partner": "L1"
+  },
+  "M17": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "M18": {
+   "status": "plane",
+   "vias": 1,
+   "via_layer_or_partner": "L1"
+  },
+  "M19": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "M20": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "M21": {
+   "status": "plane",
+   "vias": 1,
+   "via_layer_or_partner": "L1"
+  },
+  "M22": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "M23": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "M24": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "M25": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "M26": {
+   "status": "plane",
+   "vias": 1,
+   "via_layer_or_partner": "L1"
+  },
+  "M27": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "M28": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "N1": {
+   "status": "plane",
+   "vias": 1,
+   "via_layer_or_partner": "L1"
+  },
+  "N2": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "N10": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "N11": {
+   "status": "plane",
+   "vias": 1,
+   "via_layer_or_partner": "L1"
+  },
+  "N12": {
+   "status": "plane",
+   "vias": 1,
+   "via_layer_or_partner": "L1"
+  },
+  "N13": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "N14": {
+   "status": "plane",
+   "vias": 1,
+   "via_layer_or_partner": "L1"
+  },
+  "N15": {
+   "status": "plane",
+   "vias": 1,
+   "via_layer_or_partner": "L1"
+  },
+  "N16": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "N17": {
+   "status": "plane",
+   "vias": 1,
+   "via_layer_or_partner": "L1"
+  },
+  "N18": {
+   "status": "plane",
+   "vias": 1,
+   "via_layer_or_partner": "L1"
+  },
+  "N19": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "N27": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "N28": {
+   "status": "plane",
+   "vias": 1,
+   "via_layer_or_partner": "L1"
+  },
+  "P1": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "P2": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "P3": {
+   "status": "plane",
+   "vias": 1,
+   "via_layer_or_partner": "L1"
+  },
+  "P4": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "P5": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "P6": {
+   "status": "plane",
+   "vias": 1,
+   "via_layer_or_partner": "L1"
+  },
+  "P7": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "P8": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "P9": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "P10": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "P11": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "P12": {
+   "status": "plane",
+   "vias": 1,
+   "via_layer_or_partner": "L1"
+  },
+  "P13": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "P14": {
+   "status": "plane",
+   "vias": 1,
+   "via_layer_or_partner": "L1"
+  },
+  "P15": {
+   "status": "plane",
+   "vias": 1,
+   "via_layer_or_partner": "L1"
+  },
+  "P16": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "P17": {
+   "status": "plane",
+   "vias": 1,
+   "via_layer_or_partner": "L1"
+  },
+  "P18": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "P19": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "P20": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "P21": {
+   "status": "plane",
+   "vias": 1,
+   "via_layer_or_partner": "L1"
+  },
+  "P22": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "P23": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "P24": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "P25": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "P26": {
+   "status": "plane",
+   "vias": 1,
+   "via_layer_or_partner": "L1"
+  },
+  "P27": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "P28": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "R1": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "R2": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "R3": {
+   "status": "plane",
+   "vias": 1,
+   "via_layer_or_partner": "L1"
+  },
+  "R4": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "R5": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "R6": {
+   "status": "plane",
+   "vias": 1,
+   "via_layer_or_partner": "L1"
+  },
+  "R7": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "R8": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "R9": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "R10": {
+   "status": "plane",
+   "vias": 1,
+   "via_layer_or_partner": "L1"
+  },
+  "R11": {
+   "status": "plane",
+   "vias": 1,
+   "via_layer_or_partner": "L1"
+  },
+  "R12": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "R13": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "R14": {
+   "status": "plane",
+   "vias": 1,
+   "via_layer_or_partner": "L1"
+  },
+  "R15": {
+   "status": "plane",
+   "vias": 1,
+   "via_layer_or_partner": "L1"
+  },
+  "R16": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "R17": {
+   "status": "plane",
+   "vias": 1,
+   "via_layer_or_partner": "L1"
+  },
+  "R18": {
+   "status": "plane",
+   "vias": 1,
+   "via_layer_or_partner": "L1"
+  },
+  "R19": {
+   "status": "plane",
+   "vias": 1,
+   "via_layer_or_partner": "L1"
+  },
+  "R20": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "R21": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "R22": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "R23": {
+   "status": "plane",
+   "vias": 1,
+   "via_layer_or_partner": "L1"
+  },
+  "R24": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "R25": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "R26": {
+   "status": "plane",
+   "vias": 1,
+   "via_layer_or_partner": "L1"
+  },
+  "R27": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "R28": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "T1": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "T2": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "T10": {
+   "status": "plane",
+   "vias": 1,
+   "via_layer_or_partner": "L1"
+  },
+  "T11": {
+   "status": "plane",
+   "vias": 1,
+   "via_layer_or_partner": "L1"
+  },
+  "T12": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "T13": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "T14": {
+   "status": "plane",
+   "vias": 1,
+   "via_layer_or_partner": "L1"
+  },
+  "T15": {
+   "status": "plane",
+   "vias": 1,
+   "via_layer_or_partner": "L1"
+  },
+  "T16": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "T17": {
+   "status": "plane",
+   "vias": 1,
+   "via_layer_or_partner": "L1"
+  },
+  "T18": {
+   "status": "plane",
+   "vias": 1,
+   "via_layer_or_partner": "L1"
+  },
+  "T19": {
+   "status": "plane",
+   "vias": 1,
+   "via_layer_or_partner": "L1"
+  },
+  "T27": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "T28": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "U1": {
+   "status": "plane",
+   "vias": 1,
+   "via_layer_or_partner": "L1"
+  },
+  "U2": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "U3": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "U4": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "U5": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "U6": {
+   "status": "plane",
+   "vias": 1,
+   "via_layer_or_partner": "L1"
+  },
+  "U7": {
+   "status": "plane",
+   "vias": 1,
+   "via_layer_or_partner": "L1"
+  },
+  "U8": {
+   "status": "plane",
+   "vias": 1,
+   "via_layer_or_partner": "L1"
+  },
+  "U9": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "U10": {
+   "status": "plane",
+   "vias": 1,
+   "via_layer_or_partner": "L1"
+  },
+  "U11": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "U12": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "U13": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "U14": {
+   "status": "plane",
+   "vias": 1,
+   "via_layer_or_partner": "L1"
+  },
+  "U15": {
+   "status": "plane",
+   "vias": 1,
+   "via_layer_or_partner": "L1"
+  },
+  "U16": {
+   "status": "plane",
+   "vias": 1,
+   "via_layer_or_partner": "L1"
+  },
+  "U17": {
+   "status": "plane",
+   "vias": 1,
+   "via_layer_or_partner": "L1"
+  },
+  "U18": {
+   "status": "plane",
+   "vias": 1,
+   "via_layer_or_partner": "L1"
+  },
+  "U19": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "U20": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "U21": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "U22": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "U23": {
+   "status": "plane",
+   "vias": 1,
+   "via_layer_or_partner": "L1"
+  },
+  "U24": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "U25": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "U26": {
+   "status": "plane",
+   "vias": 1,
+   "via_layer_or_partner": "L1"
+  },
+  "U27": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "U28": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "V1": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "V2": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "V3": {
+   "status": "plane",
+   "vias": 1,
+   "via_layer_or_partner": "L1"
+  },
+  "V4": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "V5": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "V6": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "V7": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "V8": {
+   "status": "plane",
+   "vias": 1,
+   "via_layer_or_partner": "L1"
+  },
+  "V9": {
+   "status": "plane",
+   "vias": 1,
+   "via_layer_or_partner": "L1"
+  },
+  "V10": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "V11": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "V12": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "V13": {
+   "status": "plane",
+   "vias": 1,
+   "via_layer_or_partner": "L1"
+  },
+  "V14": {
+   "status": "plane",
+   "vias": 1,
+   "via_layer_or_partner": "L1"
+  },
+  "V15": {
+   "status": "plane",
+   "vias": 1,
+   "via_layer_or_partner": "L1"
+  },
+  "V16": {
+   "status": "plane",
+   "vias": 1,
+   "via_layer_or_partner": "L1"
+  },
+  "V17": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "V18": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "V19": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "V20": {
+   "status": "plane",
+   "vias": 1,
+   "via_layer_or_partner": "L1"
+  },
+  "V21": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "V22": {
+   "status": "plane",
+   "vias": 1,
+   "via_layer_or_partner": "L1"
+  },
+  "V23": {
+   "status": "plane",
+   "vias": 1,
+   "via_layer_or_partner": "L1"
+  },
+  "V24": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "V25": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "V26": {
+   "status": "plane",
+   "vias": 1,
+   "via_layer_or_partner": "L1"
+  },
+  "V27": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "V28": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "W1": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "W2": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "W10": {
+   "status": "plane",
+   "vias": 1,
+   "via_layer_or_partner": "L1"
+  },
+  "W11": {
+   "status": "plane",
+   "vias": 1,
+   "via_layer_or_partner": "L1"
+  },
+  "W12": {
+   "status": "plane",
+   "vias": 1,
+   "via_layer_or_partner": "L1"
+  },
+  "W13": {
+   "status": "plane",
+   "vias": 1,
+   "via_layer_or_partner": "L1"
+  },
+  "W14": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "W15": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "W16": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "W17": {
+   "status": "plane",
+   "vias": 1,
+   "via_layer_or_partner": "L1"
+  },
+  "W18": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "W19": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "W27": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "W28": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "Y1": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "Y2": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "Y3": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "Y4": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "Y5": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "Y6": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "Y7": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "Y8": {
+   "status": "plane",
+   "vias": 1,
+   "via_layer_or_partner": "L1"
+  },
+  "Y9": {
+   "status": "plane",
+   "vias": 1,
+   "via_layer_or_partner": "L1"
+  },
+  "Y11": {
+   "status": "plane",
+   "vias": 1,
+   "via_layer_or_partner": "L1"
+  },
+  "Y12": {
+   "status": "plane",
+   "vias": 1,
+   "via_layer_or_partner": "L1"
+  },
+  "Y14": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "Y15": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "Y17": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "Y18": {
+   "status": "plane",
+   "vias": 1,
+   "via_layer_or_partner": "L1"
+  },
+  "Y20": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "Y21": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "Y22": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "Y23": {
+   "status": "plane",
+   "vias": 1,
+   "via_layer_or_partner": "L1"
+  },
+  "Y24": {
+   "status": "plane",
+   "vias": 1,
+   "via_layer_or_partner": "L1"
+  },
+  "Y25": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "Y26": {
+   "status": "plane",
+   "vias": 1,
+   "via_layer_or_partner": "L1"
+  },
+  "Y27": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  },
+  "Y28": {
+   "status": "out",
+   "vias": 0,
+   "via_layer_or_partner": "L1"
+  }
+ }
+}

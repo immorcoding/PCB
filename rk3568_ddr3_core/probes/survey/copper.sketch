@@ -1,0 +1,10 @@
+# Copper sketch of the survey board: only the parameters the BGA planners read (plane clearance, minimum width) and
+# a whole-layer ground plane on L2. No power blocks (the survey has no supply plan).
+origin 100 100
+planes L2 L5
+gap 0.5
+clearance 0.2
+plane_clearance 0.127
+minwidth 0.2
+
+region L2_GND GND L2 whole

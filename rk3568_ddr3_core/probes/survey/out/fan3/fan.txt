@@ -1,0 +1,551 @@
+== U1: supply 294 (no site: []), signal 255, unallocated [], caps 0, own vias 0, uncovered ['J15', 'K15', 'L15', 'K16', 'L16', 'K17', 'L17', 'M17', 'K18', 'L18'], cuts 0
+longest chains: 25.390 L5 481 vias; 9.746 L2 34 vias; 9.654 L2 17 vias; 8.381 L2 40 vias; 7.965 L2 47 vias; 5.794 L2 20 vias
+  S A1   GND        ball (11.225, 11.225) via [11.55, 11.55]
+  S A10  GND        ball (17.075, 11.225) via [17.4, 11.55]
+  S A14  GND        ball (19.675, 11.225) via [20.0, 11.55]
+  S A18  GND        ball (22.275, 11.225) via [21.95, 11.55]
+  S A28  GND        ball (28.775, 11.225) via [29.1, 10.9]
+  S A3   GND        ball (12.525, 11.225) via [12.85, 11.55]
+  S A6   GND        ball (14.475, 11.225) via [14.8, 11.55]
+  S AA12 GND        ball (18.375, 24.225) via [18.7, 23.9]
+  S AA14 GND        ball (19.675, 24.225) via [20.0, 23.9]
+  S AA15 GND        ball (20.325, 24.225) via [20.65, 23.9]
+  S AA17 GND        ball (21.625, 24.225) via [21.3, 23.9]
+  S AA23 GND        ball (25.525, 24.225) via [25.85, 23.9]
+  S AA24 GND        ball (26.175, 24.225) via [26.5, 23.9]
+  S AA26 GND        ball (27.475, 24.225) via [27.15, 24.55]
+  S AA4  GND        ball (13.175, 24.225) via [12.85, 24.55]
+  S AA9  GND        ball (16.425, 24.225) via [16.1, 23.9]
+  S AB11 GND        ball (17.725, 24.875) via [17.4, 24.55]
+  S AB12 GND        ball (18.375, 24.875) via [18.05, 24.55]
+  S AB14 GND        ball (19.675, 24.875) via [19.35, 25.2]
+  S AB15 GND        ball (20.325, 24.875) via [20.0, 24.55]
+  S AB17 GND        ball (21.625, 24.875) via [21.3, 24.55]
+  S AB2  GND        ball (11.875, 24.875) via [12.2, 24.55]
+  S AB6  GND        ball (14.475, 24.875) via [14.15, 24.55]
+  S AC11 GND        ball (17.725, 25.525) via [17.4, 25.85]
+  S AC12 GND        ball (18.375, 25.525) via [18.05, 25.2]
+  S AC15 GND        ball (20.325, 25.525) via [20.65, 25.85]
+  S AC18 GND        ball (22.275, 25.525) via [22.6, 25.85]
+  S AC25 GND        ball (26.825, 25.525) via [27.15, 25.2]
+  S AC26 GND        ball (27.475, 25.525) via [27.8, 25.85]
+  S AC9  GND        ball (16.425, 25.525) via [16.75, 25.2]
+  S AD26 GND        ball (27.475, 26.175) via [27.15, 26.5]
+  S AD3  GND        ball (12.525, 26.175) via [12.2, 25.85]
+  S AE14 GND        ball (19.675, 26.825) via [19.35, 26.5]
+  S AE17 GND        ball (21.625, 26.825) via [21.3, 27.15]
+  S AE20 GND        ball (23.575, 26.825) via [23.9, 27.15]
+  S AE21 GND        ball (24.225, 26.825) via [24.55, 26.5]
+  S AE27 GND        ball (28.125, 26.825) via [28.45, 26.5]
+  S AE28 GND        ball (28.775, 26.825) via [29.1, 26.5]
+  S AE6  GND        ball (14.475, 26.825) via [14.8, 27.15]
+  S AF11 GND        ball (17.725, 27.475) via [18.05, 27.15]
+  S AF12 GND        ball (18.375, 27.475) via [18.7, 27.15]
+  S AF14 GND        ball (19.675, 27.475) via [19.35, 27.15]
+  S AF15 GND        ball (20.325, 27.475) via [20.0, 27.15]
+  S AF17 GND        ball (21.625, 27.475) via [21.95, 27.8]
+  S AF18 GND        ball (22.275, 27.475) via [21.95, 27.15]
+  S AF20 GND        ball (23.575, 27.475) via [23.9, 27.8]
+  S AF21 GND        ball (24.225, 27.475) via [24.55, 27.8]
+  S AF26 GND        ball (27.475, 27.475) via [27.8, 27.8]
+  S AF3  GND        ball (12.525, 27.475) via [12.85, 27.15]
+  S AF9  GND        ball (16.425, 27.475) via [16.75, 27.8]
+  S AG18 GND        ball (22.275, 28.125) via [22.6, 27.8]
+  S AG5  GND        ball (13.825, 28.125) via [14.15, 28.45]
+  S AH1  GND        ball (11.225, 28.775) via [10.9, 29.1]
+  S AH18 GND        ball (22.275, 28.775) via [21.95, 29.1]
+  S AH23 GND        ball (25.525, 28.775) via [25.2, 29.1]
+  S AH28 GND        ball (28.775, 28.775) via [29.1, 29.1]
+  S AH8  GND        ball (15.775, 28.775) via [16.1, 29.1]
+  S B12  GND        ball (18.375, 11.875) via [18.7, 11.55]
+  S B16  GND        ball (20.975, 11.875) via [21.3, 11.55]
+  S B23  GND        ball (25.525, 11.875) via [25.2, 12.2]
+  S B26  GND        ball (27.475, 11.875) via [27.15, 12.2]
+  S B5   GND        ball (13.825, 11.875) via [13.5, 12.2]
+  S B9   GND        ball (16.425, 11.875) via [16.1, 11.55]
+  S C11  GND        ball (17.725, 12.525) via [17.4, 12.2]
+  S C12  GND        ball (18.375, 12.525) via [18.7, 12.85]
+  S C14  GND        ball (19.675, 12.525) via [19.35, 12.85]
+  S C15  GND        ball (20.325, 12.525) via [20.65, 12.85]
+  S C17  GND        ball (21.625, 12.525) via [21.3, 12.85]
+  S C18  GND        ball (22.275, 12.525) via [21.95, 12.2]
+  S C25  GND        ball (26.825, 12.525) via [27.15, 12.85]
+  S C3   GND        ball (12.525, 12.525) via [12.85, 12.2]
+  S C6   GND        ball (14.475, 12.525) via [14.8, 12.85]
+  S C8   GND        ball (15.775, 12.525) via [15.45, 12.85]
+  S C9   GND        ball (16.425, 12.525) via [16.75, 12.85]
+  S D11  GND        ball (17.725, 13.175) via [18.05, 13.5]
+  S D2   GND        ball (11.875, 13.175) via [11.55, 13.5]
+  S D28  GND        ball (28.775, 13.175) via [29.1, 12.85]
+  S D3   GND        ball (12.525, 13.175) via [12.85, 12.85]
+  S E3   GND        ball (12.525, 13.825) via [12.85, 14.15]
+  S E7   GND        ball (15.125, 13.825) via [15.45, 14.15]
+  S F1   GND        ball (11.225, 14.475) via [11.55, 14.8]
+  S F12  GND        ball (18.375, 14.475) via [18.7, 14.15]
+  S F14  GND        ball (19.675, 14.475) via [19.35, 14.15]
+  S F15  GND        ball (20.325, 14.475) via [20.65, 14.15]
+  S F17  GND        ball (21.625, 14.475) via [21.3, 14.15]
+  S F3   GND        ball (12.525, 14.475) via [12.85, 14.8]
+  S F9   GND        ball (16.425, 14.475) via [16.75, 14.15]
+  S G11  GND        ball (17.725, 15.125) via [17.4, 14.8]
+  S G12  GND        ball (18.375, 15.125) via [18.7, 14.8]
+  S G14  GND        ball (19.675, 15.125) via [19.35, 14.8]
+  S G15  GND        ball (20.325, 15.125) via [20.65, 14.8]
+  S G17  GND        ball (21.625, 15.125) via [21.3, 14.8]
+  S G18  GND        ball (22.275, 15.125) via [22.6, 14.8]
+  S G24  GND        ball (26.175, 15.125) via [25.85, 15.45]
+  S G5   GND        ball (13.825, 15.125) via [13.5, 15.45]
+  S G6   GND        ball (14.475, 15.125) via [14.8, 14.8]
+  S G8   GND        ball (15.775, 15.125) via [15.45, 15.45]
+  S G9   GND        ball (16.425, 15.125) via [16.75, 14.8]
+  S H11  DDRPHY_VDDQ ball (17.725, 15.775) via [17.4, 15.45]
+  S H12  DDRPHY_VDDQ ball (18.375, 15.775) via [18.7, 15.45]
+  S H14  DDRPHY_VDDQ ball (19.675, 15.775) via [19.35, 15.45]
+  S H15  DDRPHY_VDDQ ball (20.325, 15.775) via [20.65, 15.45]
+  S H17  VCCIO1     ball (21.625, 15.775) via [21.3, 15.45]
+  S H18  VCCIO2     ball (22.275, 15.775) via [21.95, 15.45]
+  S H2   GND        ball (11.875, 15.775) via [11.55, 16.1]
+  S H20  OTP_VCC18  ball (23.575, 15.775) via [23.25, 15.45]
+  S H22  SARADC_AVDD_1V8 ball (24.875, 15.775) via [24.55, 16.1]
+  S H3   GND        ball (12.525, 15.775) via [12.85, 15.45]
+  S H6   GND        ball (14.475, 15.775) via [14.8, 16.1]
+  S H9   DDRPHY_VDDQ ball (16.425, 15.775) via [16.75, 16.1]
+  S J11  DDRPHY_VDDQL ball (17.725, 16.425) via [17.4, 16.1]
+  S J12  DDRPHY_VDDQL ball (18.375, 16.425) via [18.7, 16.1]
+  S J14  DDRPHY_VDDQL ball (19.675, 16.425) via [19.35, 16.1]
+  S J15  VDD_CPU    ball (20.325, 16.425) via [20.65, 16.1]
+  S J17  GND        ball (21.625, 16.425) via [21.3, 16.1]
+  S J18  GND        ball (22.275, 16.425) via [22.6, 16.1]
+  S J20  GND        ball (23.575, 16.425) via [23.25, 16.1]
+  S J21  VCCIO4     ball (24.225, 16.425) via [23.9, 16.1]
+  S J22  GND        ball (24.875, 16.425) via [24.55, 16.75]
+  S J26  GND        ball (27.475, 16.425) via [27.8, 16.75]
+  S J27  GND        ball (28.125, 16.425) via [28.45, 16.1]
+  S J3   GND        ball (12.525, 16.425) via [12.85, 16.75]
+  S J5   GND        ball (13.825, 16.425) via [14.15, 16.75]
+  S J8   GND        ball (15.775, 16.425) via [15.45, 16.75]
+  S J9   DDRPHY_VDDQ ball (16.425, 16.425) via [16.1, 16.75]
+  S K1   GND        ball (11.225, 17.075) via [11.55, 17.4]
+  S K10  DDRPHY_VDDQL ball (17.075, 17.075) via [16.75, 16.75]
+  S K11  GND        ball (17.725, 17.075) via [17.4, 16.75]
+  S K12  GND        ball (18.375, 17.075) via [18.05, 16.75]
+  S K13  GND        ball (19.025, 17.075) via [18.7, 16.75]
+  S K14  GND        ball (19.675, 17.075) via [20.0, 17.4]
+  S K15  VDD_CPU    ball (20.325, 17.075) via [20.65, 16.75]
+  S K16  VDD_CPU    ball (20.975, 17.075) via [21.3, 16.75]
+  S K17  VDD_CPU    ball (21.625, 17.075) via [21.95, 16.75]
+  S K18  VDD_CPU    ball (22.275, 17.075) via [21.95, 17.4]
+  S K19  GND        ball (22.925, 17.075) via [23.25, 16.75]
+  S L10  DDRPHY_VDDQL ball (17.075, 17.725) via [16.75, 17.4]
+  S L11  GND        ball (17.725, 17.725) via [18.05, 17.4]
+  S L12  VDD_LOGIC  ball (18.375, 17.725) via [18.7, 17.4]
+  S L13  GND        ball (19.025, 17.725) via [19.35, 17.4]
+  S L14  GND        ball (19.675, 17.725) via [19.35, 18.05]
+  S L15  VDD_CPU    ball (20.325, 17.725) via [20.65, 17.4]
+  S L16  VDD_CPU    ball (20.975, 17.725) via [21.3, 17.4]
+  S L17  VDD_CPU    ball (21.625, 17.725) via [21.95, 18.05]
+  S L18  VDD_CPU    ball (22.275, 17.725) via [22.6, 17.4]
+  S L19  GND        ball (22.925, 17.725) via [23.25, 18.05]
+  S L20  GND        ball (23.575, 17.725) via [23.25, 17.4]
+  S L21  GND        ball (24.225, 17.725) via [24.55, 17.4]
+  S L22  VCCIO3     ball (24.875, 17.725) via [25.2, 17.4]
+  S L24  GND        ball (26.175, 17.725) via [25.85, 17.4]
+  S L26  GND        ball (27.475, 17.725) via [27.8, 17.4]
+  S L3   GND        ball (12.525, 17.725) via [12.85, 17.4]
+  S L5   GND        ball (13.825, 17.725) via [14.15, 17.4]
+  S L8   GND        ball (15.775, 17.725) via [15.45, 17.4]
+  S L9   DDRPHY_VDDQ ball (16.425, 17.725) via [16.1, 17.4]
+  S M10  DDRPHY_VDDQL ball (17.075, 18.375) via [16.75, 18.05]
+  S M11  GND        ball (17.725, 18.375) via [18.05, 18.05]
+  S M12  VDD_LOGIC  ball (18.375, 18.375) via [18.05, 18.7]
+  S M13  GND        ball (19.025, 18.375) via [18.7, 18.05]
+  S M14  GND        ball (19.675, 18.375) via [20.0, 18.05]
+  S M15  VDD_CPU_COM ball (20.325, 18.375) via [20.65, 18.05]
+  S M16  GND        ball (20.975, 18.375) via [21.3, 18.7]
+  S M17  VDD_CPU    ball (21.625, 18.375) via [21.3, 18.05]
+  S M18  GND        ball (22.275, 18.375) via [22.6, 18.05]
+  S M19  VDD_NPU    ball (22.925, 18.375) via [23.25, 18.7]
+  S M2   GND        ball (11.875, 18.375) via [11.55, 18.05]
+  S M20  EDP_TX_AVDD_0V9 ball (23.575, 18.375) via [23.9, 18.7]
+  S M21  GND        ball (24.225, 18.375) via [23.9, 18.05]
+  S M22  EDP_TX_AVDD_1V8 ball (24.875, 18.375) via [25.2, 18.7]
+  S M23  USB3_AVDD_3V3 ball (25.525, 18.375) via [25.85, 18.7]
+  S M26  GND        ball (27.475, 18.375) via [27.8, 18.7]
+  S M3   GND        ball (12.525, 18.375) via [12.85, 18.7]
+  S M6   GND        ball (14.475, 18.375) via [14.8, 18.7]
+  S M8   GND        ball (15.775, 18.375) via [15.45, 18.7]
+  S M9   DDRPHY_VDDQ ball (16.425, 18.375) via [16.1, 18.7]
+  S N1   GND        ball (11.225, 19.025) via [11.55, 19.35]
+  S N10  SYSPLL_AVDD_1V8 ball (17.075, 19.025) via [17.4, 18.7]
+  S N11  GND        ball (17.725, 19.025) via [18.05, 19.35]
+  S N12  GND        ball (18.375, 19.025) via [18.7, 18.7]
+  S N13  VDD_LOGIC  ball (19.025, 19.025) via [19.35, 18.7]
+  S N14  GND        ball (19.675, 19.025) via [20.0, 19.35]
+  S N15  GND        ball (20.325, 19.025) via [20.0, 18.7]
+  S N16  VDD_LOGIC  ball (20.975, 19.025) via [20.65, 18.7]
+  S N17  GND        ball (21.625, 19.025) via [21.95, 18.7]
+  S N18  GND        ball (22.275, 19.025) via [21.95, 19.35]
+  S N19  VDD_NPU    ball (22.925, 19.025) via [23.25, 19.35]
+  S N28  GND        ball (28.775, 19.025) via [29.1, 19.35]
+  S P10  USB2_AVDD_3V3 ball (17.075, 19.675) via [17.4, 20.0]
+  S P11  SYSPLL_AVDD_0V9 ball (17.725, 19.675) via [17.4, 19.35]
+  S P12  GND        ball (18.375, 19.675) via [18.7, 20.0]
+  S P13  VDD_LOGIC  ball (19.025, 19.675) via [18.7, 19.35]
+  S P14  GND        ball (19.675, 19.675) via [19.35, 19.35]
+  S P15  GND        ball (20.325, 19.675) via [20.65, 19.35]
+  S P16  VDD_LOGIC  ball (20.975, 19.675) via [21.3, 19.35]
+  S P17  GND        ball (21.625, 19.675) via [21.3, 20.0]
+  S P18  VDD_NPU    ball (22.275, 19.675) via [22.6, 19.35]
+  S P19  VDD_NPU    ball (22.925, 19.675) via [23.25, 20.0]
+  S P20  VDD_NPU    ball (23.575, 19.675) via [23.9, 19.35]
+  S P21  GND        ball (24.225, 19.675) via [24.55, 19.35]
+  S P22  USB3_AVDD_0V9 ball (24.875, 19.675) via [24.55, 20.0]
+  S P23  USB3_AVDD_1V8 ball (25.525, 19.675) via [25.2, 19.35]
+  S P26  GND        ball (27.475, 19.675) via [27.8, 19.35]
+  S P3   GND        ball (12.525, 19.675) via [12.85, 19.35]
+  S P6   GND        ball (14.475, 19.675) via [14.8, 19.35]
+  S P9   USB2_AVDD_1V8 ball (16.425, 19.675) via [16.1, 19.35]
+  S R10  GND        ball (17.075, 20.325) via [16.75, 20.0]
+  S R11  GND        ball (17.725, 20.325) via [18.05, 20.0]
+  S R12  VDD_LOGIC  ball (18.375, 20.325) via [18.7, 20.65]
+  S R13  VDD_GPU    ball (19.025, 20.325) via [19.35, 20.65]
+  S R14  GND        ball (19.675, 20.325) via [19.35, 20.0]
+  S R15  GND        ball (20.325, 20.325) via [20.0, 20.0]
+  S R16  VDD_LOGIC  ball (20.975, 20.325) via [21.3, 20.65]
+  S R17  GND        ball (21.625, 20.325) via [21.95, 20.0]
+  S R18  GND        ball (22.275, 20.325) via [22.6, 20.0]
+  S R19  GND        ball (22.925, 20.325) via [23.25, 20.65]
+  S R20  MULTI_PHY_AVDD_0V9 ball (23.575, 20.325) via [23.9, 20.0]
+  S R21  MULTI_PHY_AVDD_0V9 ball (24.225, 20.325) via [24.55, 20.65]
+  S R22  MULTI_PHY_AVDD_1V8 ball (24.875, 20.325) via [25.2, 20.0]
+  S R23  GND        ball (25.525, 20.325) via [25.85, 20.65]
+  S R26  GND        ball (27.475, 20.325) via [27.8, 20.65]
+  S R3   GND        ball (12.525, 20.325) via [12.85, 20.65]
+  S R6   GND        ball (14.475, 20.325) via [14.8, 20.65]
+  S R8   USB2_AVDD_0V9 ball (15.775, 20.325) via [15.45, 20.65]
+  S R9   VCCIO6     ball (16.425, 20.325) via [16.1, 20.65]
+  S T10  GND        ball (17.075, 20.975) via [17.4, 20.65]
+  S T11  GND        ball (17.725, 20.975) via [18.05, 21.3]
+  S T12  VDD_LOGIC  ball (18.375, 20.975) via [18.05, 20.65]
+  S T13  VDD_GPU    ball (19.025, 20.975) via [19.35, 21.3]
+  S T14  GND        ball (19.675, 20.975) via [20.0, 20.65]
+  S T15  GND        ball (20.325, 20.975) via [20.65, 20.65]
+  S T16  VDD_LOGIC  ball (20.975, 20.975) via [21.3, 21.3]
+  S T17  GND        ball (21.625, 20.975) via [21.95, 20.65]
+  S T18  GND        ball (22.275, 20.975) via [22.6, 20.65]
+  S T19  GND        ball (22.925, 20.975) via [23.25, 21.3]
+  S U1   GND        ball (11.225, 21.625) via [10.9, 21.3]
+  S U10  GND        ball (17.075, 21.625) via [17.4, 21.3]
+  S U11  VDD_GPU    ball (17.725, 21.625) via [18.05, 21.95]
+  S U12  VDD_GPU    ball (18.375, 21.625) via [18.7, 21.3]
+  S U13  VDD_GPU    ball (19.025, 21.625) via [19.35, 21.95]
+  S U14  GND        ball (19.675, 21.625) via [20.0, 21.95]
+  S U15  GND        ball (20.325, 21.625) via [20.0, 21.3]
+  S U16  GND        ball (20.975, 21.625) via [20.65, 21.3]
+  S U17  GND        ball (21.625, 21.625) via [21.95, 21.95]
+  S U18  GND        ball (22.275, 21.625) via [21.95, 21.3]
+  S U20  PCIE30_AVDD_0V9 ball (23.575, 21.625) via [23.25, 21.95]
+  S U21  PCIE30_AVDD_0V9 ball (24.225, 21.625) via [24.55, 21.3]
+  S U22  PCIE30_AVDD_1V8 ball (24.875, 21.625) via [25.2, 21.3]
+  S U23  GND        ball (25.525, 21.625) via [25.2, 21.95]
+  S U26  GND        ball (27.475, 21.625) via [27.8, 21.3]
+  S U6   GND        ball (14.475, 21.625) via [14.15, 21.95]
+  S U7   GND        ball (15.125, 21.625) via [14.8, 21.3]
+  S U8   GND        ball (15.775, 21.625) via [15.45, 21.3]
+  S U9   VCCIO6     ball (16.425, 21.625) via [16.1, 21.3]
+  S V10  VCCIO5     ball (17.075, 22.275) via [17.4, 21.95]
+  S V11  VCCIO5     ball (17.725, 22.275) via [17.4, 22.6]
+  S V12  VCCIO7     ball (18.375, 22.275) via [18.7, 22.6]
+  S V13  GND        ball (19.025, 22.275) via [18.7, 21.95]
+  S V14  GND        ball (19.675, 22.275) via [19.35, 22.6]
+  S V15  GND        ball (20.325, 22.275) via [20.0, 22.6]
+  S V16  GND        ball (20.975, 22.275) via [20.65, 21.95]
+  S V17  HDMI_TX_AVDD_0V9 ball (21.625, 22.275) via [21.3, 21.95]
+  S V18  HDMI_TX_AVDD_0V9 ball (22.275, 22.275) via [22.6, 21.95]
+  S V19  PMU_VDD_LOGIC_0V9 ball (22.925, 22.275) via [22.6, 22.6]
+  S V20  GND        ball (23.575, 22.275) via [23.25, 22.6]
+  S V21  PMUPLL_AVDD_0V9 ball (24.225, 22.275) via [24.55, 21.95]
+  S V22  GND        ball (24.875, 22.275) via [24.55, 22.6]
+  S V23  GND        ball (25.525, 22.275) via [25.85, 22.6]
+  S V26  GND        ball (27.475, 22.275) via [27.15, 22.6]
+  S V3   GND        ball (12.525, 22.275) via [12.2, 21.95]
+  S V8   GND        ball (15.775, 22.275) via [16.1, 22.6]
+  S V9   GND        ball (16.425, 22.275) via [16.1, 21.95]
+  S W10  GND        ball (17.075, 22.925) via [16.75, 22.6]
+  S W11  GND        ball (17.725, 22.925) via [18.05, 23.25]
+  S W12  GND        ball (18.375, 22.925) via [18.05, 22.6]
+  S W13  GND        ball (19.025, 22.925) via [19.35, 23.25]
+  S W14  MIPI_CSI_RX_AVDD_0V9 ball (19.675, 22.925) via [20.0, 23.25]
+  S W15  MIPI_DSI_TX1_AVDD_0V9 ball (20.325, 22.925) via [20.65, 22.6]
+  S W16  MIPI_DSI_TX0/LVDS_TX0_AVDD_0V9 ball (20.975, 22.925) via [21.3, 22.6]
+  S W17  GND        ball (21.625, 22.925) via [21.95, 23.25]
+  S W18  HDMI_TX_AVDD_1V8 ball (22.275, 22.925) via [21.95, 22.6]
+  S W19  PMUIO2     ball (22.925, 22.925) via [22.6, 23.25]
+  S Y11  GND        ball (17.725, 23.575) via [17.4, 23.9]
+  S Y12  GND        ball (18.375, 23.575) via [18.7, 23.25]
+  S Y14  MIPI_CSI_RX_AVDD_1V8 ball (19.675, 23.575) via [19.35, 23.9]
+  S Y15  MIPI_DSI_TX1_AVDD_1V8 ball (20.325, 23.575) via [20.65, 23.25]
+  S Y17  MIPI_DSI_TX0/LVDS_TX0_AVDD_1V8 ball (21.625, 23.575) via [21.3, 23.25]
+  S Y18  GND        ball (22.275, 23.575) via [22.6, 23.9]
+  S Y20  PMUIO1     ball (23.575, 23.575) via [23.25, 23.9]
+  S Y21  PMUPLL_AVDD_1V8 ball (24.225, 23.575) via [24.55, 23.9]
+  S Y23  GND        ball (25.525, 23.575) via [25.85, 23.25]
+  S Y24  GND        ball (26.175, 23.575) via [26.5, 23.25]
+  S Y26  GND        ball (27.475, 23.575) via [27.8, 23.25]
+  S Y8   GND        ball (15.775, 23.575) via [15.45, 23.25]
+  S Y9   GND        ball (16.425, 23.575) via [16.1, 23.25]
+  G E27  SDMMC1_D0/GMAC0_RXD2/UART6_RX_M0/GPIO2_A3_u E L3 via (28.450, 13.500) exit (30.500, 13.175) len 2.64
+  G F26  I2S2_SDI_M0/GMAC0_RXER/UART8_TX_M0/SPI2_CS1_M0/GPIO2_C5_d E L3 via (27.800, 14.150) exit (30.500, 13.825) len 3.29
+  G G23  I2S2_MCLK_M0/ETH0_REFCLKO_25M/UART7_RTSn_M0/SPI2_CLK_M0/GPIO2_C1_d E L3 via (25.850, 14.800) exit (30.500, 14.475) len 5.24
+  G H25  I2S2_SCLK_RX_M0/GMAC0_RXD1/UART6_RTSn_M0/SPI1_MOSI_M0/GPIO2_B7_d E L3 via (27.150, 15.450) exit (30.500, 15.125) len 3.94
+  G G20  SARADC_VIN6    E L3 via (23.900, 15.450) exit (30.500, 15.775) len 7.19
+  G H26  SDMMC0_D2/ARMJTAG_TCK/UART5_CTSn_M0/GPIO1_D7_u E L3 via (27.800, 16.100) exit (30.500, 16.425) len 3.29
+  G J23  SDMMC0_D3/ARMJTAG_TMS/UART5_RTSn_M0/GPIO2_A0_u E L3 via (25.850, 16.750) exit (30.500, 17.075) len 5.24
+  G M25  EDP_TX_AUXN    E L3 via (27.150, 18.050) exit (30.500, 17.725) len 3.94
+  G P24  USB3_HOST1_DP  E L3 via (26.500, 19.350) exit (30.500, 19.025) len 4.59
+  G R24  MULTI_PHY0_REFCLKP E L3 via (26.500, 20.000) exit (30.500, 19.675) len 4.59
+  G U27  USB3_HOST1_SSRXN/SATA1_RXN/QSGMII_RXN_M0 E L3 via (28.450, 21.300) exit (30.500, 20.975) len 2.64
+  G V27  USB3_HOST1_SSTXN/SATA1_TXN/QSGMII_TXN_M0 E L3 via (28.450, 21.950) exit (30.500, 21.625) len 2.64
+  G Y22  SDMMC0_DET/SATA_CP_DET/PCIE30X1_CLKREQn_M0/GPIO0_A4_u E L3 via (25.200, 23.250) exit (30.500, 22.925) len 5.89
+  G AA22 GPIO0_A3_u     E L3 via (25.200, 23.900) exit (30.500, 23.575) len 5.89
+  G AB24 TVSS           E L3 via (26.500, 24.550) exit (30.500, 24.225) len 4.59
+  G AC22 I2C2_SCL_M0/SPI0_CLK_M0/PCIE20_WAKEn_M0/PWM1_M1/GPIO0_B5_u E L3 via (25.200, 25.200) exit (30.500, 24.875) len 5.89
+  G AD27 PCIE30_RX1N    E L3 via (28.450, 25.850) exit (30.500, 25.525) len 2.64
+  G B24  EMMC_D2/FLASH_D2/GPIO1_B6_u E L4 via (26.500, 11.550) exit (30.500, 11.225) len 4.59
+  G C23  FSPI_CS0n/FLASH_CS0n/GPIO1_D3_u E L4 via (25.850, 12.200) exit (30.500, 11.875) len 5.24
+  G D24  SARADC_VIN2    E L4 via (26.500, 12.850) exit (30.500, 12.525) len 4.59
+  G E22  EMMC_D6/FLASH_D6/GPIO1_C2_u E L4 via (25.200, 13.500) exit (30.500, 13.175) len 5.89
+  G F27  GMAC0_RXD0/UART1_CTSn_M0/SPI1_MISO_M0/GPIO2_B6_u E L4 via (28.450, 14.150) exit (30.500, 13.825) len 2.64
+  G G27  GMAC0_TXD1/UART1_TX_M0/GPIO2_B4_u E L4 via (28.450, 14.800) exit (30.500, 14.475) len 2.64
+  G H24  I2S2_LRCK_TX_M0/GMAC0_MDC/UART9_RTSn_M0/SPI2_MOSI_M0/GPIO2_C3_d E L4 via (26.500, 15.450) exit (30.500, 15.125) len 4.59
+  G J25  SDMMC0_D0/UART2_TX_M1/UART6_TX_M1/PWM8_M1/GPIO1_D5_u E L4 via (27.150, 16.100) exit (30.500, 15.775) len 3.94
+  G H23  I2S2_SDO_M0/GMAC0_MDIO/UART9_CTSn_M0/SPI2_CS0_M0/GPIO2_C4_d E L4 via (25.850, 16.100) exit (30.500, 16.425) len 5.24
+  G L27  EDP_TX_D1N     E L4 via (28.450, 17.400) exit (30.500, 17.075) len 2.64
+  G M24  USB3_OTG0_VBUSDET E L4 via (26.500, 18.050) exit (30.500, 17.725) len 4.59
+  G N27  EDP_TX_D3N     E L4 via (28.450, 18.700) exit (30.500, 18.375) len 2.64
+  G P25  USB3_HOST1_DM  E L4 via (27.150, 19.350) exit (30.500, 19.025) len 3.94
+  G R27  USB3_OTG0_SSRXN/SATA0_RXN E L4 via (28.450, 20.000) exit (30.500, 19.675) len 2.64
+  G T27  USB3_OTG0_SSTXN/SATA0_TXN E L4 via (28.450, 20.650) exit (30.500, 20.325) len 2.64
+  G U24  MULTI_PHY1_REFCLKN E L4 via (26.500, 21.300) exit (30.500, 20.975) len 4.59
+  G V25  PCIE20_REFCLKN E L4 via (27.150, 21.950) exit (30.500, 21.625) len 3.94
+  G W27  PCIE20_TXP/SATA2_TXP/QSGMII_TXP_M1 E L4 via (28.450, 22.600) exit (30.500, 22.275) len 2.64
+  G Y27  PCIE20_RXP/SATA2_RXP/QSGMII_RXP_M1 E L4 via (28.450, 23.250) exit (30.500, 22.925) len 2.64
+  G AA27 PCIE30_TX0N    E L4 via (28.450, 23.900) exit (30.500, 23.575) len 2.64
+  G AB23 GPIO0_D4_d     E L4 via (25.850, 24.550) exit (30.500, 24.225) len 5.24
+  G AC27 PCIE30_RX0N    E L4 via (28.450, 25.200) exit (30.500, 24.875) len 2.64
+  G AD25 GPIO0_D5_d     E L4 via (27.150, 25.850) exit (30.500, 25.525) len 3.94
+  G AE26 GPIO0_D3_d     E L4 via (27.800, 26.500) exit (30.500, 26.175) len 3.29
+  G AF28 XIN24M         E L4 via (29.100, 27.150) exit (30.500, 26.825) len 1.99
+  G AG28 PMIC_SLEEP/TSADC_SHUT_M1/GPIO0_A2_d E L4 via (29.100, 27.800) exit (30.500, 27.475) len 1.99
+  G C27  SDMMC1_D3/GMAC0_TXD2/UART7_TX_M0/GPIO2_A6_u E L6 via (28.450, 12.200) exit (30.500, 11.875) len 2.64
+  G D26  SDMMC1_PWREN/I2C4_SDA_M1/UART8_RTSn_M0/CAN2_RX_M1/GPIO2_B1_d E L6 via (27.800, 12.850) exit (30.500, 12.525) len 3.29
+  G E25  SDMMC1_DET/I2C4_SCL_M1/UART8_CTSn_M0/CAN2_TX_M1/GPIO2_B2_u E L6 via (27.150, 13.500) exit (30.500, 13.175) len 3.94
+  G F20  EMMC_RSTn/FSPI_D2/FLASH_WPn/GPIO1_C7_d E L6 via (23.900, 14.150) exit (30.500, 13.825) len 7.19
+  G G21  SARADC_VIN4    E L6 via (24.550, 14.800) exit (30.500, 14.475) len 6.54
+  G H27  SDMMC0_CMD/PWM10_M1/UART5_RX_M0/CAN0_TX_M1/GPIO2_A1_u E L6 via (28.450, 15.450) exit (30.500, 15.125) len 2.64
+  G J24  SDMMC0_D1/UART2_RX_M1/UART6_RX_M1/PWM9_M1/GPIO1_D6_u E L6 via (26.500, 16.100) exit (30.500, 15.775) len 4.59
+  G K27  EDP_TX_D0N     E L6 via (28.450, 16.750) exit (30.500, 16.425) len 2.64
+  G L25  EDP_TX_AUXP    E L6 via (27.150, 17.400) exit (30.500, 17.075) len 3.94
+  G M27  EDP_TX_D2N     E L6 via (28.450, 18.050) exit (30.500, 17.725) len 2.64
+  G L23  USB3_OTG0_ID   E L6 via (25.850, 18.050) exit (30.500, 18.375) len 5.24
+  G P27  USB3_OTG0_DP   E L6 via (28.450, 19.350) exit (30.500, 19.025) len 2.64
+  G R25  MULTI_PHY0_REFCLKN E L6 via (27.150, 20.000) exit (30.500, 19.675) len 3.94
+  G T28  USB3_OTG0_SSTXP/SATA0_TXP E L6 via (29.100, 20.650) exit (30.500, 20.325) len 1.99
+  G U25  MULTI_PHY1_REFCLKP E L6 via (27.150, 21.300) exit (30.500, 20.975) len 3.94
+  G V24  PCIE20_REFCLKP E L6 via (26.500, 21.950) exit (30.500, 21.625) len 4.59
+  G W28  PCIE20_TXN/SATA2_TXN/QSGMII_TXN_M1 E L6 via (29.100, 22.600) exit (30.500, 22.275) len 1.99
+  G Y25  PCIE30_REFCLKP_IN E L6 via (27.150, 23.250) exit (30.500, 22.925) len 3.94
+  G AA25 PCIE30_REFCLKN_IN E L6 via (27.150, 23.900) exit (30.500, 23.575) len 3.94
+  G AB27 PCIE30_TX1N    E L6 via (28.450, 24.550) exit (30.500, 24.225) len 2.64
+  G AC24 GPIO0_D6_d     E L6 via (26.500, 25.200) exit (30.500, 24.875) len 4.59
+  G AD23 CLK32K_IN/CLK32K_OUT0/PCIE30X2_BUTTONRSTn/GPIO0_B0_u E L6 via (25.850, 25.850) exit (30.500, 25.525) len 5.24
+  G AE24 GPU_PWREN/SATA_CP_POD/PCIE30X2_CLKREQn_M0/GPIO0_A6_d E L6 via (26.500, 26.500) exit (30.500, 26.175) len 4.59
+  G AF27 XOUT24M        E L6 via (28.450, 27.150) exit (30.500, 26.825) len 2.64
+  G AG27 REFCLK_OUT/GPIO0_A0_d E L6 via (28.450, 27.800) exit (30.500, 27.475) len 2.64
+  G AH27 nPOR_u         E L6 via (28.450, 28.450) exit (30.500, 28.125) len 2.64
+  G E28  SDMMC1_D1/GMAC0_RXD3/UART6_TX_M0/GPIO2_A4_u E L6 via (30.950, 13.825) exit (30.950, 13.825) len 2.17
+  G F28  GMAC0_TXD0/UART1_RX_M0/GPIO2_B3_u E L6 via (30.950, 14.475) exit (30.950, 14.475) len 2.17
+  G G28  GMAC0_TXEN/UART1_RTSn_M0/SPI1_CLK_M0/GPIO2_B5_u E L6 via (30.950, 15.125) exit (30.950, 15.125) len 2.17
+  G H28  SDMMC0_CLK/TEST_CLKOUT/UART5_TX_M0/CAN0_RX_M1/GPIO2_A2_d E L6 via (30.950, 15.775) exit (30.950, 15.775) len 2.17
+  G J28  EDP_TX_D0P     E L6 via (30.950, 16.425) exit (30.950, 16.425) len 2.17
+  G K28  EDP_TX_D1P     E L6 via (30.950, 17.075) exit (30.950, 17.075) len 2.17
+  G L28  EDP_TX_D2P     E L6 via (30.950, 17.725) exit (30.950, 17.725) len 2.17
+  G M28  EDP_TX_D3P     E L6 via (30.950, 18.375) exit (30.950, 18.375) len 2.17
+  G P28  USB3_OTG0_DM   E L6 via (30.950, 19.675) exit (30.950, 19.675) len 2.17
+  G R28  USB3_OTG0_SSRXP/SATA0_RXP E L6 via (30.950, 20.325) exit (30.950, 20.325) len 2.17
+  G U28  USB3_HOST1_SSRXP/SATA1_RXP/QSGMII_RXP_M0 E L6 via (30.950, 21.625) exit (30.950, 21.625) len 2.17
+  G V28  USB3_HOST1_SSTXP/SATA1_TXP/QSGMII_TXP_M0 E L6 via (30.950, 22.275) exit (30.950, 22.275) len 2.17
+  G Y28  PCIE20_RXN/SATA2_RXN/QSGMII_RXN_M1 E L6 via (30.950, 23.575) exit (30.950, 23.575) len 2.17
+  G AA28 PCIE30_TX0P    E L6 via (30.950, 24.225) exit (30.950, 24.225) len 2.17
+  G AB28 PCIE30_TX1P    E L6 via (30.950, 24.875) exit (30.950, 24.875) len 2.17
+  G AC28 PCIE30_RX0P    E L6 via (30.950, 25.525) exit (30.950, 25.525) len 2.17
+  G AD28 PCIE30_RX1P    E L6 via (30.950, 26.175) exit (30.950, 26.175) len 2.17
+  G AC1  CIF_D5/EBC_SDDO5/SDMMC2_CLK_M0/I2S1_SDI1_M1/VOP_BT656_D5_M1/GPIO3_D3_d N L3 via (10.900, 25.200) exit (10.575, 9.500) len 16.29
+  G AE2  LCDC_D20/VOP_BT1120_D11/GMAC1_TXD0_M0/I2C3_SCL_M1/PWM10_M0/GPIO3_B5_d N L3 via (11.550, 26.500) exit (11.225, 9.500) len 17.59
+  G Y3   CIF_D13/EBC_SDDO13/GMAC1_RXCLK_M1/UART7_RX_M2/PDM_SDI3_M1/GPIO4_A3_d N L3 via (12.200, 23.250) exit (11.875, 9.500) len 14.34
+  G V4   I2C4_SDA_M0/EBC_VCOM/GMAC1_RXER_M1/SPI3_MOSI_M0/I2S2_SDI_M1/GPIO4_B2_d N L3 via (12.850, 21.950) exit (12.525, 9.500) len 13.04
+  G AC5  CIF_D0/EBC_SDDO0/SDMMC2_D0_M0/I2S1_MCLK_M1/VOP_BT656_D0_M1/GPIO3_C6_d N L3 via (13.500, 25.200) exit (13.175, 9.500) len 16.29
+  G U4   CIF_VSYNC/EBC_SDOE/GMAC1_MDIO_M1/I2S2_SCLK_TX_M1/GPIO4_B7_d N L3 via (13.500, 21.300) exit (13.825, 9.500) len 12.39
+  G Y7   CIF_D4/EBC_SDDO4/SDMMC2_CMD_M0/I2S1_SDI0_M1/VOP_BT656_D4_M1/GPIO3_D2_d N L3 via (14.800, 23.250) exit (14.475, 9.500) len 14.34
+  G V6   I2C2_SDA_M1/EBC_GDSP/CAN2_RX_M0/ISP_FLASH_TRIGIN/VOP_BT656_CLK_M1/GPIO4_B4_d N L3 via (14.800, 21.950) exit (15.125, 9.500) len 13.04
+  G AA7  LCDC_VSYNC/VOP_BT1120_D14/SPI1_MISO_M1/UART5_TX_M1/I2S1_SDO3_M2/GPIO3_C2_d N L3 via (15.450, 23.900) exit (15.775, 9.500) len 14.99
+  G AD8  PWM12_M1/SPI3_MISO_M1/SATA1_ACT_LED/UART9_TX_M1/I2S3_SDO_M1/GPIO4_C5_d N L3 via (16.100, 25.850) exit (16.425, 9.500) len 16.94
+  G AD9  MIPI_CSI_RX_D3P N L3 via (16.750, 25.850) exit (17.075, 9.500) len 16.94
+  G AG12 MIPI_CSI_RX_D0P N L3 via (18.050, 27.800) exit (17.725, 9.500) len 18.89
+  G AE11 MIPI_CSI_RX_D2P N L3 via (18.050, 26.500) exit (18.375, 9.500) len 17.59
+  G AD14 MIPI_DSI_TX1_D2P N L3 via (19.350, 25.850) exit (19.025, 9.500) len 16.94
+  G AE15 MIPI_DSI_TX1_CLKN N L3 via (20.000, 26.500) exit (19.675, 9.500) len 17.59
+  G AC14 MIPI_DSI_TX1_D2N N L3 via (20.000, 25.200) exit (20.325, 9.500) len 16.29
+  G AG17 MIPI_DSI_TX0_D0N/LVDS_TX0_D0N N L3 via (21.300, 27.800) exit (20.975, 9.500) len 18.89
+  G F18  I2S1_SCLK_RX_M0/UART4_RX_M0/PDM_CLK1_M0/SPDIF_TX_M0/GPIO1_A4_d N L3 via (21.950, 14.150) exit (21.625, 9.500) len 5.24
+  G A19  I2S1_MCLK_M0/UART3_RTSn_M0/SCR_CLK/PCIE30X1_PERSTn_M2/GPIO1_A2_d N L3 via (22.600, 10.900) exit (22.275, 9.500) len 1.99
+  G A20  I2S1_LRCK_TX_M0/UART4_RTSn_M0/SCR_RST/PCIE30X1_CLKREQn_M2/ACODEC_DAC_SYNC/GPIO1_A5_d N L3 via (23.250, 10.900) exit (22.925, 9.500) len 1.99
+  G C21  EMMC_D1/FLASH_D1/GPIO1_B5_u N L3 via (23.900, 12.200) exit (23.575, 9.500) len 3.29
+  G E20  I2S1_SDO2_M0/I2S1_SDI2_M0/PDM_SDI2_M0/PCIE20_WAKEn_M2/ACODEC_ADC_SYNC/GPIO1_B1_d N L3 via (23.900, 13.500) exit (24.225, 9.500) len 4.59
+  G D21  EMMC_D3/FLASH_D3/GPIO1_B7_u N L3 via (24.550, 12.850) exit (24.875, 9.500) len 3.94
+  G F22  SARADC_VIN5    N L3 via (25.200, 14.150) exit (25.525, 9.500) len 5.24
+  G E23  SARADC_VIN3    N L3 via (25.850, 13.500) exit (26.175, 9.500) len 4.59
+  G F24  I2S2_LRCK_RX_M0/GMAC0_RXDV_CRS/UART6_CTSn_M0/SPI1_CS0_M0/GPIO2_C0_d N L3 via (26.500, 14.150) exit (26.825, 9.500) len 5.24
+  G F25  I2S2_SCLK_TX_M0/GMAC0_MCLKINOUT/UART7_CTSn_M0/SPI2_MISO_M0/GPIO2_C2_d N L3 via (27.150, 14.150) exit (27.475, 9.500) len 5.24
+  G E26  CLK32K_OUT1/UART8_RX_M0/SPI1_CS1_M0/GPIO2_C6_d N L3 via (27.800, 13.500) exit (28.125, 9.500) len 4.59
+  G D27  SDMMC1_CLK/GMAC0_TXCLK/UART9_TX_M0/GPIO2_B0_d N L3 via (28.450, 12.850) exit (28.775, 9.500) len 3.94
+  G C28  SDMMC1_CMD/GMAC0_TXD3/UART9_RX_M0/GPIO2_A7_u N L3 via (29.100, 12.200) exit (29.425, 9.500) len 3.29
+  G R1   USB2_HOST2_DM  N L4 via (10.900, 20.000) exit (10.575, 9.500) len 11.09
+  G R2   USB2_HOST2_DP  N L4 via (11.550, 20.000) exit (11.225, 9.500) len 11.09
+  G U3   CIF_CLKOUT/EBC_GDCLK/PWM11_IR_M1/GPIO4_C0_d N L4 via (12.200, 21.300) exit (11.875, 9.500) len 12.39
+  G Y4   CIF_D12/EBC_SDDO12/GMAC1_RXD3_M1/UART7_TX_M2/PDM_SDI2_M1/GPIO4_A2_d N L4 via (12.850, 23.250) exit (12.525, 9.500) len 14.34
+  G V5   I2C2_SCL_M1/EBC_SDSHR/CAN2_TX_M0/I2S1_SDO3_M1/GPIO4_B5_d N L4 via (13.500, 21.950) exit (13.175, 9.500) len 13.04
+  G Y6   CIF_D8/EBC_SDDO8/GMAC1_TXD2_M1/UART1_TX_M1/PDM_CLK0_M1/GPIO3_D6_d N L4 via (14.150, 23.250) exit (13.825, 9.500) len 14.34
+  G U5   CIF_HREF/EBC_SDLE/GMAC1_MDC_M1/UART1_RTSn_M1/I2S2_MCLK_M1/GPIO4_B6_d N L4 via (14.150, 21.300) exit (14.475, 9.500) len 12.39
+  G AA6  CIF_D1/EBC_SDDO1/SDMMC2_D1_M0/I2S1_SCLK_TX_M1/VOP_BT656_D1_M1/GPIO3_C7_d N L4 via (14.800, 23.900) exit (15.125, 9.500) len 14.99
+  G V7   CAM_CLKOUT1/EBC_SDCE2/GMAC1_RXD1_M1/SPI3_MISO_M0/I2S1_SDO1_M1/GPIO4_B0_d N L4 via (15.450, 21.950) exit (15.775, 9.500) len 13.04
+  G AB8  LCDC_D8/VOP_BT1120_D0/SPI1_CS0_M1/PCIE30X1_PERSTn_M1/SDMMC2_D0_M1/GPIO3_A1_d N L4 via (16.100, 24.550) exit (16.425, 9.500) len 15.64
+  G AE9  MIPI_CSI_RX_D3N N L4 via (16.750, 26.500) exit (17.075, 9.500) len 17.59
+  G AG10 MIPI_CSI_RX_CLK0P N L4 via (17.400, 27.800) exit (17.725, 9.500) len 18.89
+  G AA11 PWM15_IR_M1/SPI3_MOSI_M1/CAN1_TX_M1/PCIE30X2_WAKEn_M2/I2S3_SCLK_M1/GPIO4_C3_d N L4 via (18.050, 23.900) exit (18.375, 9.500) len 14.99
+  G AE12 MIPI_DSI_TX1_D3N N L4 via (18.700, 26.500) exit (19.025, 9.500) len 17.59
+  G AD15 MIPI_DSI_TX1_CLKP N L4 via (20.000, 25.850) exit (19.675, 9.500) len 16.94
+  G AG16 MIPI_DSI_TX0_D1N/LVDS_TX0_D1N N L4 via (20.650, 27.800) exit (20.325, 9.500) len 18.89
+  G AC17 MIPI_DSI_TX1_D1N N L4 via (21.300, 25.200) exit (20.975, 9.500) len 16.29
+  G D18  I2C3_SDA_M0/UART3_RX_M0/CAN1_RX_M0/AUDIOPWM_LOUT_P/ACODEC_ADC_DATA/GPIO1_A0_u N L4 via (21.950, 12.850) exit (21.625, 9.500) len 3.94
+  G U19  PCIE30_RESREF  N L4 via (22.600, 21.300) exit (22.275, 9.500) len 12.39
+  G C20  I2S1_LRCK_RX_M0/UART4_TX_M0/PDM_CLK0_M0/AUDIOPWM_ROUT_P/GPIO1_A6_d N L4 via (23.250, 12.200) exit (22.925, 9.500) len 3.29
+  G A21  I2S1_SDO3_M0/I2S1_SDI1_M0/PDM_SDI1_M0/PCIE20_PERSTn_M2/GPIO1_B2_d N L4 via (23.900, 10.900) exit (23.575, 9.500) len 1.99
+  G AA20 I2C2_SDA_M0/SPI0_MOSI_M0/PCIE20_PERSTn_M0/PWM2_M1/GPIO0_B6_u N L4 via (23.900, 23.900) exit (24.225, 9.500) len 14.99
+  G F21  SARADC_VIN7    N L4 via (24.550, 14.150) exit (24.875, 9.500) len 5.24
+  G A22  FSPI_CLK/FLASH_ALE/GPIO1_D0_d N L4 via (25.200, 10.900) exit (25.525, 9.500) len 1.99
+  G A23  EMMC_CLKOUT/FLASH_DQS/GPIO1_C5_d N L4 via (25.850, 10.900) exit (26.175, 9.500) len 1.99
+  G A24  EMMC_D0/FLASH_D0/GPIO1_B4_u N L4 via (26.500, 10.900) exit (26.825, 9.500) len 1.99
+  G A25  EMMC_D4/FLASH_D4/GPIO1_C0_u N L4 via (27.150, 10.900) exit (27.475, 9.500) len 1.99
+  G A26  EMMC_DATA_STROBE/FSPI_CS1n/FLASH_CLE/GPIO1_C6_d N L4 via (27.800, 10.900) exit (28.125, 9.500) len 1.99
+  G A27  FSPI_D3/FLASH_CS1n/GPIO1_D4_u N L4 via (28.450, 10.900) exit (28.775, 9.500) len 1.99
+  G T1   USB2_HOST3_DM  N L6 via (10.900, 20.650) exit (10.575, 9.500) len 11.74
+  G AA2  CIF_D11/EBC_SDDO11/GMAC1_RXD2_M1/PDM_SDI1_M1/GPIO4_A1_d N L6 via (11.550, 23.900) exit (11.225, 9.500) len 14.99
+  G AA3  CIF_D10/EBC_SDDO10/GMAC1_TXCLK_M1/PDM_CLK1_M1/GPIO4_A0_d N L6 via (12.200, 23.900) exit (11.875, 9.500) len 14.99
+  G AC4  LCDC_DEN/VOP_BT1120_D15/SPI1_CLK_M1/UART5_RX_M1/I2S1_SCLK_RX_M2/GPIO3_C3_d N L6 via (12.850, 25.200) exit (12.525, 9.500) len 16.29
+  G Y5   CIF_D9/EBC_SDDO9/GMAC1_TXD3_M1/UART1_RX_M1/PDM_SDI0_M1/GPIO3_D7_d N L6 via (13.500, 23.250) exit (13.175, 9.500) len 14.34
+  G AD4  LCDC_D22/PWM12_M0/GMAC1_TXEN_M0/UART3_TX_M1/PDM_SDI2_M2/GPIO3_B7_d N L6 via (13.500, 25.850) exit (13.825, 9.500) len 16.94
+  G AE5  LCDC_D9/VOP_BT1120_D1/GMAC1_TXD2_M0/I2S3_MCLK_M0/SDMMC2_D1_M1/GPIO3_A2_d N L6 via (14.150, 26.500) exit (14.475, 9.500) len 17.59
+  G AD6  LCDC_D6/VOP_BT656_D6_M0/SPI2_MOSI_M1/PCIE30X2_PERSTn_M1/I2S1_SDI3_M2/GPIO2_D6_d N L6 via (14.800, 25.850) exit (15.125, 9.500) len 16.94
+  G AC7  LCDC_D3/VOP_BT656_D3_M0/SPI0_CLK_M1/PCIE30X1_WAKEn_M1/I2S1_SDI0_M2/GPIO2_D3_d N L6 via (15.450, 25.200) exit (15.775, 9.500) len 16.29
+  G AC8  LCDC_D2/VOP_BT656_D2_M0/SPI0_CS0_M1/PCIE30X1_CLKREQn_M1/I2S1_LRCK_TX_M2/GPIO2_D2_d N L6 via (16.100, 25.200) exit (16.425, 9.500) len 16.29
+  G AB9  GPIO4_D2_d     N L6 via (16.750, 24.550) exit (17.075, 9.500) len 15.64
+  G AH10 MIPI_CSI_RX_CLK0N N L6 via (17.400, 28.450) exit (17.725, 9.500) len 19.54
+  G AD11 MIPI_CSI_RX_D2N N L6 via (18.050, 25.850) exit (18.375, 9.500) len 16.94
+  G AD12 MIPI_DSI_TX1_D3P N L6 via (18.700, 25.850) exit (19.025, 9.500) len 16.94
+  G AH15 MIPI_DSI_TX0_CLKP/LVDS_TX0_CLKP N L6 via (20.000, 28.450) exit (19.675, 9.500) len 19.54
+  G AG14 MIPI_DSI_TX0_D2N/LVDS_TX0_D2N N L6 via (20.000, 27.800) exit (20.325, 9.500) len 18.89
+  G AD17 MIPI_DSI_TX1_D1P N L6 via (21.300, 25.850) exit (20.975, 9.500) len 16.94
+  G E18  I2C3_SCL_M0/UART3_TX_M0/CAN1_TX_M0/AUDIOPWM_LOUT_N/ACODEC_ADC_CLK/GPIO1_A1_u N L6 via (21.950, 13.500) exit (21.625, 9.500) len 4.59
+  G B19  I2S1_SCLK_TX_M0/UART3_CTSn_M0/SCR_IO/PCIE30X1_WAKEn_M2/ACODEC_DAC_CLK/GPIO1_A3_d N L6 via (22.600, 11.550) exit (22.275, 9.500) len 2.64
+  G B20  I2S1_SDO0_M0/UART4_CTSn_M0/SCR_DET/AUDIOPWM_ROUT_N/ACODEC_DAC_DATAL/GPIO1_A7_d N L6 via (23.250, 11.550) exit (22.925, 9.500) len 2.64
+  G B21  I2S1_SDI0_M0/PDM_SDI0_M0/GPIO1_B3_d N L6 via (23.900, 11.550) exit (23.575, 9.500) len 2.64
+  G D20  I2S1_SDO1_M0/I2S1_SDI3_M0/PDM_SDI3_M0/PCIE20_CLKREQn_M2/ACODEC_DAC_DATAR/GPIO1_B0_d N L6 via (23.900, 12.850) exit (24.225, 9.500) len 3.94
+  G E21  EMMC_D5/FLASH_D5/GPIO1_C1_u N L6 via (24.550, 13.500) exit (24.875, 9.500) len 4.59
+  G B22  EMMC_CMD/FLASH_WRn/GPIO1_C4_u N L6 via (25.200, 11.550) exit (25.525, 9.500) len 2.64
+  G D23  FSPI_D1/FLASH_RDn/GPIO1_D2_u N L6 via (25.850, 12.850) exit (26.175, 9.500) len 3.94
+  G C24  FSPI_D0/FLASH_RDY/GPIO1_D1_u N L6 via (26.500, 12.200) exit (26.825, 9.500) len 3.29
+  G B25  EMMC_D7/FLASH_D7/GPIO1_C3_u N L6 via (27.150, 11.550) exit (27.475, 9.500) len 2.64
+  G C26  SARADC_VIN1    N L6 via (27.800, 12.200) exit (28.125, 9.500) len 3.29
+  G B27  SARADC_VIN0    N L6 via (28.450, 11.550) exit (28.775, 9.500) len 2.64
+  G B28  SDMMC1_D2/GMAC0_RXCLK/UART7_RX_M0/GPIO2_A5_u N L6 via (29.100, 11.550) exit (29.425, 9.500) len 2.64
+  G AG6  LCDC_D0/VOP_BT656_D0_M0/SPI0_MISO_M1/PCIE20_CLKREQn_M1/I2S1_MCLK_M2/GPIO2_D0_d S L3 via (14.800, 28.450) exit (15.125, 30.500) len 2.64
+  G AD7  LCDC_D1/VOP_BT656_D1_M0/SPI0_MOSI_M1/PCIE20_WAKEn_M1/I2S1_SCLK_TX_M2/GPIO2_D1_d S L3 via (15.450, 26.500) exit (15.775, 30.500) len 4.59
+  G AG8  HDMITX_SCL/I2C5_SCL_M1/GPIO4_C7_u S L3 via (16.100, 28.450) exit (16.425, 30.500) len 2.64
+  G AD18 MIPI_DSI_TX1_D0P S L3 via (21.950, 26.500) exit (21.625, 30.500) len 4.59
+  G AG19 HDMI_TX_CLKN   S L3 via (22.600, 28.450) exit (22.275, 30.500) len 2.64
+  G AH20 HDMI_TX_D0N    S L3 via (23.250, 29.100) exit (22.925, 30.500) len 1.99
+  G AH21 HDMI_TX_D1N    S L3 via (23.900, 29.100) exit (23.575, 30.500) len 1.99
+  G AC20 UART2_RX_M0/GPIO0_D0_u S L3 via (23.900, 25.850) exit (24.225, 30.500) len 5.24
+  G AC21 PWM6/SPI0_MISO_M0/PCIE30X2_WAKEn_M0/GPIO0_C5_d S L3 via (24.550, 25.850) exit (24.875, 30.500) len 5.24
+  G AF24 I2C0_SCL/GPIO0_B1_u S L3 via (25.850, 27.800) exit (25.525, 30.500) len 3.29
+  G AE23 PWM4/VOP_PWM_M0/PCIE30X1_PERSTn_M0/MCU_JTAG_TRSTn/GPIO0_C3_d S L3 via (25.850, 27.150) exit (26.175, 30.500) len 3.94
+  G AH2  LCDC_D14/VOP_BT1120_D5/GMAC1_RXCLK_M0/SDMMC2_DET_M1/GPIO3_A7_d S L4 via (12.200, 29.100) exit (12.525, 30.500) len 1.99
+  G AG3  LCDC_D13/VOP_BT1120_CLK/GMAC1_TXCLK_M0/I2S3_SDI_M0/SDMMC2_CLK_M1/GPIO3_A6_d S L4 via (12.850, 28.450) exit (13.175, 30.500) len 2.64
+  G AG4  LCDC_D10/VOP_BT1120_D2/GMAC1_TXD3_M0/I2S3_SCLK_M0/SDMMC2_D2_M1/GPIO3_A3_d S L4 via (13.500, 28.450) exit (13.825, 30.500) len 2.64
+  G AH5  LCDC_D7/VOP_BT656_D7_M0/SPI2_MISO_M1/UART8_TX_M1/I2S1_SDO0_M2/GPIO2_D7_d S L4 via (14.150, 29.100) exit (14.475, 30.500) len 1.99
+  G AH6  HDMITX_CEC_M0/SPI3_CS1_M1/GPIO4_D1_u S L4 via (14.800, 29.100) exit (15.125, 30.500) len 1.99
+  G AH7  EDP_HPDIN_M0/SPDIF_TX_M2/SATA2_ACT_LED/PCIE30X2_PERSTn_M2/I2S3_LRCK_M1/GPIO4_C4_d S L4 via (15.450, 29.100) exit (15.775, 30.500) len 1.99
+  G AF8  PWM14_M1/SPI3_CLK_M1/CAN1_RX_M1/PCIE30X2_CLKREQn_M2/I2S3_MCLK_M1/GPIO4_C2_d S L4 via (16.100, 27.800) exit (16.425, 30.500) len 3.29
+  G AG9  MIPI_CSI_RX_CLK1P S L4 via (16.750, 28.450) exit (17.075, 30.500) len 2.64
+  G AH11 MIPI_CSI_RX_D1N S L4 via (18.050, 29.100) exit (18.375, 30.500) len 1.99
+  G AH12 MIPI_CSI_RX_D0N S L4 via (18.700, 29.100) exit (19.025, 30.500) len 1.99
+  G AH13 MIPI_DSI_TX0_D3P/LVDS_TX0_D3P S L4 via (19.350, 29.100) exit (19.675, 30.500) len 1.99
+  G AH16 MIPI_DSI_TX0_D1P/LVDS_TX0_D1P S L4 via (20.650, 29.100) exit (20.325, 30.500) len 1.99
+  G AH17 MIPI_DSI_TX0_D0P/LVDS_TX0_D0P S L4 via (21.300, 29.100) exit (20.975, 30.500) len 1.99
+  G AA18 HDMI_TX_REXT   S L4 via (21.950, 24.550) exit (21.625, 30.500) len 6.54
+  G AH19 HDMI_TX_CLKP   S L4 via (22.600, 29.100) exit (22.275, 30.500) len 1.99
+  G AG20 HDMI_TX_D0P    S L4 via (23.250, 28.450) exit (22.925, 30.500) len 2.64
+  G AD21 PWM5/SPI0_CS1_M0/UART0_RTSn/GPIO0_C4_d S L4 via (23.900, 26.500) exit (23.575, 30.500) len 4.59
+  G AH22 HDMI_TX_D2N    S L4 via (24.550, 29.100) exit (24.225, 30.500) len 1.99
+  G AB21 I2C0_SDA/GPIO0_B2_u S L4 via (24.550, 25.200) exit (24.875, 30.500) len 5.89
+  G AD22 PWM1_M0/GPUAVS/UART0_RX/GPIO0_C0_d S L4 via (25.200, 26.500) exit (25.525, 30.500) len 4.59
+  G AG23 PWM3_IR/EDP_HPDIN_M1/PCIE30X1_WAKEn_M0/MCU_JTAG_TMS/GPIO0_C2_d S L4 via (25.850, 28.450) exit (26.175, 30.500) len 2.64
+  G AG24 I2C1_SCL/CAN0_TX_M0/PCIE30X1_BUTTONRSTn/MCU_JTAG_TDO/GPIO0_B3_u S L4 via (26.500, 28.450) exit (26.825, 30.500) len 2.64
+  G AG25 FLASH_VOL_SEL/GPIO0_A7_u S L4 via (27.150, 28.450) exit (27.475, 30.500) len 2.64
+  G AG26 TSADC_SHUT_M0/TSADC_SHUT_ORG/GPIO0_A1_z S L4 via (27.800, 28.450) exit (28.125, 30.500) len 2.64
+  G AF4  LCDC_D11/VOP_BT1120_D3/GMAC1_RXD2_M0/I2S3_LRCK_M0/SDMMC2_D3_M1/GPIO3_A4_d S L6 via (12.850, 27.800) exit (12.525, 30.500) len 3.29
+  G AH3  LCDC_D12/VOP_BT1120_D4/GMAC1_RXD3_M0/I2S3_SDO_M0/SDMMC2_CMD_M1/GPIO3_A5_d S L6 via (12.850, 29.100) exit (13.175, 30.500) len 1.99
+  G AH4  LCDC_CLK/VOP_BT656_CLK_M0/SPI2_CLK_M1/UART8_RX_M1/I2S1_SDO1_M2/GPIO3_A0_d S L6 via (13.500, 29.100) exit (13.825, 30.500) len 1.99
+  G AF5  LCDC_D4/VOP_BT656_D4_M0/SPI2_CS1_M1/PCIE30X2_CLKREQn_M1/I2S1_SDI1_M2/GPIO2_D4_d S L6 via (14.150, 27.800) exit (14.475, 30.500) len 3.29
+  G AF6  LCDC_D5/VOP_BT656_D5_M0/SPI2_CS0_M1/PCIE30X2_WAKEn_M1/I2S1_SDI2_M2/GPIO2_D5_d S L6 via (14.800, 27.800) exit (15.125, 30.500) len 3.29
+  G AG7  HDMITX_SDA/I2C5_SDA_M1/GPIO4_D0_u S L6 via (15.450, 28.450) exit (15.775, 30.500) len 2.64
+  G AE8  PWM13_M1/SPI3_CS0_M1/SATA0_ACT_LED/UART9_RX_M1/I2S3_SDI_M1/GPIO4_C6_d S L6 via (16.100, 27.150) exit (16.425, 30.500) len 3.94
+  G AH9  MIPI_CSI_RX_CLK1N S L6 via (16.750, 29.100) exit (17.075, 30.500) len 1.99
+  G AG11 MIPI_CSI_RX_D1P S L6 via (18.050, 28.450) exit (18.375, 30.500) len 2.64
+  G AG13 MIPI_DSI_TX0_D3N/LVDS_TX0_D3N S L6 via (19.350, 28.450) exit (19.675, 30.500) len 2.64
+  G AH14 MIPI_DSI_TX0_D2P/LVDS_TX0_D2P S L6 via (20.000, 29.100) exit (20.325, 30.500) len 1.99
+  G AG15 MIPI_DSI_TX0_CLKN/LVDS_TX0_CLKN S L6 via (20.650, 28.450) exit (20.975, 30.500) len 2.64
+  G AB18 HDMI_TX_HPDIN  S L6 via (21.950, 25.200) exit (21.625, 30.500) len 5.89
+  G AE18 MIPI_DSI_TX1_D0N S L6 via (22.600, 27.150) exit (22.275, 30.500) len 3.94
+  G AD20 PWM7_IR/SPI0_CS0_M0/PCIE30X2_PERSTn_M0/GPIO0_C6_d S L6 via (23.250, 26.500) exit (22.925, 30.500) len 4.59
+  G AG21 HDMI_TX_D1P    S L6 via (23.900, 28.450) exit (23.575, 30.500) len 2.64
+  G AB20 I2C1_SDA/CAN0_RX_M0/PCIE20_BUTTONRSTn/MCU_JTAG_TCK/GPIO0_B4_u S L6 via (23.900, 25.200) exit (24.225, 30.500) len 5.89
+  G AF23 PWM2_M0/NPUAVS/UART0_TX/MCU_JTAG_TDI/GPIO0_C1_d S L6 via (25.200, 27.800) exit (24.875, 30.500) len 3.29
+  G AG22 HDMI_TX_D2P    S L6 via (25.200, 28.450) exit (25.525, 30.500) len 2.64
+  G AF25 SDMMC0_PWREN/SATA_MP_SWITCH/PCIE20_CLKREQn_M0/GPIO0_A5_d S L6 via (26.500, 27.800) exit (26.175, 30.500) len 3.29
+  G AH24 UART2_TX_M0/GPIO0_D1_u S L6 via (26.500, 29.100) exit (26.825, 30.500) len 1.99
+  G AH25 HDMITX_CEC_M1/PWM0_M1/UART0_CTSn/GPIO0_C7_d S L6 via (27.150, 29.100) exit (27.475, 30.500) len 1.99
+  G AH26 PWM0_M0/CPUAVS/GPIO0_B7_d S L6 via (27.800, 29.100) exit (28.125, 30.500) len 1.99
+  G T2   USB2_HOST3_DP  W L4 via (11.550, 20.650) exit (9.500, 20.325) len 2.64
+  G U2   CIF_CLKIN/EBC_SDCLK/GMAC1_MCLKINOUT_M1/UART1_CTSn_M1/I2S2_SCLK_RX_M1/GPIO4_C1_d W L4 via (11.550, 21.300) exit (9.500, 20.975) len 2.64
+  G V2   ISP_PRELIGHT_TRIG/EBC_SDCE3/GMAC1_RXDV_CRS_M1/I2S1_SDO2_M1/GPIO4_B1_d W L4 via (11.550, 21.950) exit (9.500, 21.625) len 2.64
+  G W2   ISP_FLASHTRIGOUT/EBC_SDCE0/GMAC1_TXEN_M1/SPI3_CS0_M0/I2S1_SCLK_RX_M1/GPIO4_A6_d W L4 via (11.550, 22.600) exit (9.500, 22.275) len 2.64
+  G Y2   CIF_D14/EBC_SDDO14/GMAC1_TXD0_M1/UART9_TX_M2/I2S2_LRCK_TX_M1/GPIO4_A4_d W L4 via (11.550, 23.250) exit (9.500, 22.925) len 2.64
+  G AA5  CIF_D7/EBC_SDDO7/SDMMC2_PWREN_M0/I2S1_SDI3_M1/VOP_BT656_D7_M1/GPIO3_D5_d W L4 via (13.500, 23.900) exit (9.500, 23.575) len 4.59
+  G AB5  CIF_D2/EBC_SDDO2/SDMMC2_D2_M0/I2S1_LRCK_TX_M1/VOP_BT656_D2_M1/GPIO3_D0_d W L4 via (13.500, 24.550) exit (9.500, 24.225) len 4.59
+  G AC2  PWM15_IR_M0/SPDIF_TX_M1/GMAC1_MDIO_M0/UART7_RX_M1/I2S1_LRCK_RX_M2/GPIO3_C5_d W L4 via (11.550, 25.200) exit (9.500, 24.875) len 2.64
+  G AD1  LCDC_HSYNC/VOP_BT1120_D13/SPI1_MOSI_M1/PCIE20_PERSTn_M1/I2S1_SDO2_M2/GPIO3_C1_d W L4 via (10.900, 25.850) exit (9.500, 25.525) len 1.99
+  G AE3  LCDC_D21/VOP_BT1120_D12/GMAC1_TXD1_M0/I2C3_SDA_M1/PWM11_IR_M0/GPIO3_B6_d W L4 via (12.200, 26.500) exit (9.500, 26.175) len 3.29
+  G AF2  LCDC_D17/VOP_BT1120_D8/GMAC1_RXD1_M0/UART4_TX_M1/PWM9_M0/GPIO3_B2_d W L4 via (11.550, 27.150) exit (9.500, 26.825) len 2.64
+  G AG2  LCDC_D15/VOP_BT1120_D6/ETH1_REFCLKO_25M_M0/SDMMC2_PWREN_M1/GPIO3_B0_d W L4 via (11.550, 27.800) exit (9.500, 27.475) len 2.64
+  G V1   I2C4_SCL_M0/EBC_GDOE/ETH1_REFCLKO_25M_M1/SPI3_CLK_M0/I2S2_SDO_M1/GPIO4_B3_d W L6 via (10.900, 21.950) exit (9.500, 21.625) len 1.99
+  G W1   CAM_CLKOUT0/EBC_SDCE1/GMAC1_RXD0_M1/SPI3_CS1_M0/I2S1_LRCK_RX_M1/GPIO4_A7_d W L6 via (10.900, 22.600) exit (9.500, 22.275) len 1.99
+  G Y1   CIF_D15/EBC_SDDO15/GMAC1_TXD1_M1/UART9_RX_M2/I2S2_LRCK_RX_M1/GPIO4_A5_d W L6 via (10.900, 23.250) exit (9.500, 22.925) len 1.99
+  G AA1  CIF_D6/EBC_SDDO6/SDMMC2_DET_M0/I2S1_SDI2_M1/VOP_BT656_D6_M1/GPIO3_D4_d W L6 via (10.900, 23.900) exit (9.500, 23.575) len 1.99
+  G AB1  CIF_D3/EBC_SDDO3/SDMMC2_D3_M0/I2S1_SDO0_M1/VOP_BT656_D3_M1/GPIO3_D1_d W L6 via (10.900, 24.550) exit (9.500, 24.225) len 1.99
+  G AC3  PWM14_M0/VOP_PWM_M1/GMAC1_MDC_M0/UART7_TX_M1/PDM_CLK1_M2/GPIO3_C4_d W L6 via (12.200, 25.200) exit (9.500, 24.875) len 3.29
+  G AD2  LCDC_D23/PWM13_M0/GMAC1_MCLKINOUT_M0/UART3_RX_M1/PDM_SDI3_M2/GPIO3_C0_d W L6 via (11.550, 25.850) exit (9.500, 25.525) len 2.64
+  G AE1  LCDC_D19/VOP_BT1120_D10/GMAC1_RXER_M0/I2C5_SDA_M0/PDM_SDI1_M2/GPIO3_B4_d W L6 via (10.900, 26.500) exit (9.500, 26.175) len 1.99
+  G AF1  LCDC_D18/VOP_BT1120_D9/GMAC1_RXDV_CRS_M0/I2C5_SCL_M0/PDM_SDI0_M2/GPIO3_B3_d W L6 via (10.900, 27.150) exit (9.500, 26.825) len 1.99
+  G AG1  LCDC_D16/VOP_BT1120_D7/GMAC1_RXD0_M0/UART4_RX_M1/PWM8_M0/GPIO3_B1_d W L6 via (10.900, 27.800) exit (9.500, 27.475) len 1.99
