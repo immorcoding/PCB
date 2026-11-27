@@ -37,6 +37,8 @@ Next id: PROC-17
 - 2026-11-24 · cite · PROC-1 · R3：第 19 行的提议做了：驱动的 `route` 一步在各组建完之后、填充和 DRC 之前跑 `rules.len_rules`（`--upto` 时不跑），第一次布通的板不用再跑一次 `rules`；`all` 按 `board.toml [build] all` 跑，缺省是新板的全套 project、rules、sch、pcb-update、layout、copper、route、finish（H743 写明 rules、sch、route、finish，和以前一样）；`regress --board demo` 按同一顺序跑，数字和以前一样。
 - 2026-11-26 · friction · PROC-8 · [#33](https://github.com/immorcoding/PCB/issues/33)：层数先后被预设成 8 层、6 层，用户两次更正为“按扇出需求和容量算出来，再用参考板的实际出线统计核对”；规则里“按各总线占几个信号层来估”对深球阵 BGA 不够，缺按圈的需求和通道容量这一步。
 - 2026-11-26 · cite · PROC-16 · 起作用：验证板的规则值从瑞芯微的文字和两块官方板的实测出发，再拿嘉立创的下限卡（[重定规则值票](https://github.com/immorcoding/PCB/issues/48)）；瑞芯微的值做不出来的一处（孔到线 0.18、线到过孔盘 0.08）没有向板厂要偏离，改用 0.30 / 0.15 过孔，用户同意。官方板实测推翻了规格档 C 的一条结论，改的是规格档。
+- 2026-11-27 · cite · PROC-16 · [摆位原型票](https://github.com/immorcoding/PCB/issues/34)：官方 EVB1 的摆法（SoC 转 45°、两颗并排）和我们按球位推出的贴边 L 形并排摆出来，用户看了图和数字后选了后者。“事实优先”在这里的读法是把事实摆出来对比，不是照搬。[差分对原型票](https://github.com/immorcoding/PCB/issues/37)：用户先问“官方是怎么处理的”再定，出球的画法和官方板实测相同。
+- 2026-11-27 · cite · PROC-16 · [换位规则调研](https://github.com/immorcoding/PCB/issues/51)：资料互相矛盾（指南允许字节组之间整组换，审查清单写只限字节内）时，用户定只做资料明确允许的，其余要先有 FAE 的书面答复。
 
 ## review
 
@@ -90,3 +92,5 @@ Next id: PROC-17
 - 2026-11-24 · cite · PROC-6 · “一次只跑一个 KiCad 多核任务”现在由 `core.heavy.run` 对包里每一次 kicad-cli / KiCad python 启动强制（驱动、regress、手工直接跑工具、工具调工具都一样：低于正常优先级、四核、全机锁可重入、两次之间停 2 秒、查退出码）；两个并行开关 `BUSROUTE_PARALLEL`、`DRU_MATCH_JOBS` 已删。代价：两次之间的停顿让 `dru_match` 在规则基准板上 151 s → 212 s、`rules.fixture` 185 s → 256 s、一组走线构建 58 s → 70 s；H743 的 `route` 一步估计多 3–4 分钟，和 PROC-6 的“全量 ≤ 10 分钟”更远。停顿长短（`heavy.GAP`，`PCB_HEAVY_GAP`）要不要再调请主会话定。
 - 2026-11-24 · friction · PROC-4 · R3：演示板的 `copper` 一步（`all` 里新加的）能跑完、退出 0，但其中的铜皮表 `copper.copper_table` 在演示板上崩溃（`[copper.table]` 没有 `part_a`）：这张表按 H743 的写法假定有一个 `routes_power.py` 电源组（`power_sites.json`、供电过孔、环路地过孔、晶振地），没有电源组的板没有表。表的退出码只是报告，不挡这一步；要不要把表拆成“铜皮连通 + 量的数”通用部分和电源组部分（后者可选）请主会话定。
 - 2026-11-24 · cite · PROC-4 · 起作用：`analysis.compare_runs` 给有方向的项标“变差”（越少越好：未连接、DRC 和原理图一致性按类、`track_shape` 的缺陷数、几何发现和硬发现、有过孔上限的组每根的过孔数、等长组的 spread（基准组的窗口不算）、补线缺口、去耦超限和其他摆件问题、没有过孔的铺铜碎片、没匹配的规则；越多越好：布出的网络、组的结论、能出线的球；长度、坐标、槽长这类测量值没有方向），列在输出最前，有就退出 1（`--report-only` 只报）；process.md Signals 里 2026-11-24 那条“比数但不标变差”可以关掉。H743 的 `out/baseline` 对 `out/final`：356 个值不同，变差 0（local 组的硬发现 1 → 0、结论 False → True 是变好）。退出码的含义从“有差别就 1”改成“有变差才 1”，驱动的 `compare` 跟着变。
+- 2026-11-27 · cite · PROC-15 · [差分对工具票](https://github.com/immorcoding/PCB/issues/36)：新工具的夹具用真实器件的尺寸（RK3568 的 0.65 球距、0.30 焊盘、五对真实的封装内引线差）和原型算出的数作预期，加四个必须报错的反例；先写检查后写生成。还没有写。
+- 2026-11-27 · cite · PROC-4 · [差分对工具票](https://github.com/immorcoding/PCB/issues/36)：走线一步的指标表加差分对一节，每对一行，分“失败”和“只列出”两类。还没有写。
