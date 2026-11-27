@@ -272,7 +272,13 @@ def bump_C(need):
     sc.track("DQS0N", [(-P, 0), (-P / 2, P / 2), (XEND, P / 2)], W_IN, "n")
     return sc, H
 
-def round_ear(x, h, top=0.15):     # rounded rectangle: fillet up, flat top, fillet down (user's choice)
+def ear_flat(h):
+    """Flat length (top of an ear, and between two ears) that keeps facing legs 3 x track width apart, edge to edge."""
+    return max(0.15, 3 * W_DP + W_DP - 2 * min(0.10, h / 2))
+
+
+def round_ear(x, h, top=None):     # rounded rectangle: fillet up, flat top, fillet down (user's choice)
+    top = ear_flat(h) if top is None else top
     """Rounded ear starting at x on the baseline u = 0, pointing to +u. Returns (points, width)."""
     r = min(0.10, h / 2)
     q = [i * math.pi / 2 / 24 for i in range(25)]
@@ -308,7 +314,7 @@ def ears(h, need, room=1.0, n=None):
     sc.guide(0.0, "规则区边")
     sc.text(L0 + 0.05, -1.75, "← 规则区内（展开段）")
     sc.text(0.9, -1.75, "规则区外：包地的直线段 →")
-    y, between = -CC / 2, 0.15
+    y, between = -CC / 2, ear_flat(h)
     _, w, per = round_ear(0, h)
     n = n or max(1, round(need / per))
     x = -room
@@ -551,20 +557,20 @@ svg{{display:block;border-radius:4px}}
 <h2>三、对内补偿：圆角小耳朵，高度有上限、每对自己定</h2>
 <p>已定（用户 2026-11-27）：圆角、矮、可以多几个；高度不固定，上限 {EAR_MAX:.2f} mm。脚本的算法：取能补完的最少个数，再把这一对的耳朵调成同一个高度，正好补完。
 补在外圈球那根（短的）上，向外凸；从规则区内的展开段（约 1 mm）开始排，排不下的顺着伸到规则区外。图里的邻线是 DQS0 的间距，五对通用。</p>
-<div class="wide"><table><tr><th>对</th><th>要补</th><th>个数</th><th>每个高</th><th>每个宽</th><th>补完还差</th><th>占的长度</th><th>伸出规则区</th>
+<div class="wide"><table><tr><th>对</th><th>要补</th><th>个数</th><th>每个高</th><th>每个宽（腿间边到边 0.312）</th><th>补完还差</th><th>占的长度</th><th>伸出规则区</th>
 <th>对内最大间隙</th><th>耳朵顶到邻线（要求 ≥ 0.45）</th><th>伸出段那一侧的地铜（最小 0.30）</th><th>最小间距</th></tr>{''.join(rows3)}</table></div>
 <p>耳朵伸出规则区的那一小段，耳朵一侧的地铜窄于 0.30 mm，铺铜进不去，这一段单侧没有包地（另一侧有）。官方 LP4X 模板上唯一的一例也是这样：3 个高 0.152 mm 的梯形小凸起画在包地段上，包地线不跟着绕。</p>
 {sec('s3')}
 <h2>四、差分对的等长：拟定的数值（请确认）</h2>
 <p>两样东西管两件事：小耳朵补对内的差（只动短的那根）；整对一起绕补这一对相对别的线的长度（两根同进同出，对内差不变）。整对一起绕用和普通线一样的圆弧；小耳朵是圆角矩形。</p>
 <div class="wide"><table><tr><th>项</th><th>对内补偿（小耳朵）</th><th>整对一起绕</th><th>依据</th></tr>
-<tr><td>形状</td><td>圆角矩形的小耳朵：圆角上去、0.15 的平顶、圆角下来</td><td>和普通线的蛇形一样：腿垂直、半圆封顶，P、N 是同心圆弧</td><td>RTE-7；用户 2026-11-27</td></tr>
+<tr><td>形状</td><td>圆角矩形的小耳朵：圆角上去、平顶、圆角下来</td><td>和普通线的蛇形一样：腿垂直、半圆封顶，P、N 是同心圆弧</td><td>RTE-7；用户 2026-11-27</td></tr>
 <tr><td>高度（摆幅）</td><td>上限 {EAR_MAX:.2f} mm；同一对里等高，高度按要补的量反算</td><td>起点 {PAIR_PITCH}（一个完整弯的最小值），上限 {PAIR_AMP_MAX} mm；同一块等高</td><td>官方板的小凸起高 0.152；普通线起始摆幅 0.5</td></tr>
 <tr><td>半径</td><td>高度的一半（≤ 0.10 mm）</td><td>中心线 {PAIR_PITCH / 2:.3f}（腿中心距的一半）；里面那根 {PAIR_PITCH / 2 - CC / 2:.3f}</td><td>RTE-7</td></tr>
-<tr><td>间距</td><td>平顶 0.15；相邻两个耳朵之间留 0.15 直线；对内间隙最大到 0.15 + 高度（≤ 0.35）</td><td>腿中心距 {PAIR_PITCH}：相邻两条腿之间，对的外边到外边 {LEG_GAP:.2f}（3 倍线宽）</td><td>接口档：CLK、DQS 的蛇形腿距 3 倍线宽</td></tr>
+<tr><td>间距</td><td>3W：同一个耳朵的两条腿之间、相邻耳朵的腿之间，边到边 ≥ 0.312（3 × 0.104），所以平顶和耳朵之间的直线各约 0.24；对内间隙最大到 0.15 + 高度（≤ 0.35）</td><td>腿中心距 {PAIR_PITCH}：相邻两条腿之间，对的外边到外边 {LEG_GAP:.2f}（3 倍线宽）</td><td>接口档：CLK、DQS 的蛇形腿距 3 倍线宽</td></tr>
 <tr><td>到邻线</td><td colspan="2">弯顶到别的信号 ≥ 0.45 mm（3 倍线宽）</td><td>接口档</td></tr>
 <tr><td>位置</td><td>外圈球那根（短的）上，向外凸；从 SoC 规则区内的展开段排起，排不下的顺着伸到直线段</td><td>规则区外的直线段上；或颗粒下面的内层、背面</td><td>RTE-16；RTE-7</td></tr>
-<tr><td>区域的形状</td><td>不单独划区域：一串耳朵贴着线，长度 = 个数 ×（2 × 高度 + 0.30）− 0.15</td><td>矩形，贴在直线段空的一侧：长 = 个数 × 2 × 腿中心距 + 两头各 {END_STRAIGHT} 直线，深 = 摆幅 + {LEG_GAP:.2f}；里面不放别的线和过孔</td><td>RTE-2、RTE-7</td></tr>
+<tr><td>区域的形状</td><td>不单独划区域：一串耳朵贴着线，长度 ≈ 个数 × 0.83 − 0.24</td><td>矩形，贴在直线段空的一侧：长 = 个数 × 2 × 腿中心距 + 两头各 {END_STRAIGHT} 直线，深 = 摆幅 + {LEG_GAP:.2f}；里面不放别的线和过孔</td><td>RTE-2、RTE-7</td></tr>
 <tr><td>补多少</td><td>每个 1.142 × 高度（高 0.20 时 0.228 mm）</td><td>每个弯 2a − 0.858p（最小的完整弯 {2 * PAIR_PITCH - (4 - math.pi) * PAIR_PITCH:.2f} mm）；要补的不到一个完整弯时画一个矮的小弯</td><td>RTE-2 的公式</td></tr>
 <tr><td>包地</td><td colspan="2">弯的一侧地铜窄于 0.30 mm 时铺铜进不去，这一段单侧没有包地，逐处报长度；包地不跟着绕</td><td>官方板的做法</td></tr>
 </table></div>
