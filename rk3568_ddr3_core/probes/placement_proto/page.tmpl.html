@@ -1,0 +1,101 @@
+<title>RK3568 与两颗 DDR3 的摆位方案</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+/* layout: one drawing sheet at a time (tabs), then one comparison table; drafting-sheet feel, mm everywhere */
+:root{
+  --bg:#f3f5f4; --sheet:#fbfcfb; --fg:#17211f; --mute:#5a6966; --line:#c9d2cf; --accent:#0f6b5c;
+  --bad:#b3261e; --body:#e4e9e7; --ball:#9aa7a3;
+  --b0:#c2410c; --b1:#a16207; --b2:#1d4ed8; --b3:#7e22ce; --ac:#0f766e; --ck:#be123c; --vq:#64748b;
+  --sans:"Segoe UI","PingFang SC","Microsoft YaHei","Noto Sans CJK SC",system-ui,sans-serif;
+  --mono:"Cascadia Mono","Consolas","SF Mono",ui-monospace,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#111715; --sheet:#18201e; --fg:#e4ebe8; --mute:#94a39f; --line:#33403c; --accent:#5fd0b9;
+  --bad:#ff8a80; --body:#222c29; --ball:#5d6b67;
+  --b0:#fb923c; --b1:#facc15; --b2:#7aa2ff; --b3:#c79bff; --ac:#4fd1c5; --ck:#ff7b9c; --vq:#94a3b8; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#111715; --sheet:#18201e; --fg:#e4ebe8; --mute:#94a39f; --line:#33403c; --accent:#5fd0b9;
+  --bad:#ff8a80; --body:#222c29; --ball:#5d6b67;
+  --b0:#fb923c; --b1:#facc15; --b2:#7aa2ff; --b3:#c79bff; --ac:#4fd1c5; --ck:#ff7b9c; --vq:#94a3b8; color-scheme:dark}
+body{background:var(--bg);color:var(--fg);font-family:var(--sans);line-height:1.6;
+  padding-block:28px 56px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.wrap{max-width:1080px;margin-inline:auto;display:flex;flex-direction:column;gap:22px}
+h1{font-size:1.55rem;line-height:1.25;margin:0;text-wrap:balance}
+h2{font-size:1.1rem;margin:0}
+h3{font-size:1rem;margin:0}
+p{margin:0;max-width:44em}
+.lead{color:var(--mute)}
+small{display:block;font-size:.78rem;color:var(--mute);font-weight:400}
+.tabs{display:flex;flex-wrap:wrap;gap:8px}
+.tabs button{font:inherit;text-align:left;color:var(--fg);background:var(--sheet);border:1px solid var(--line);
+  padding:8px 14px;cursor:pointer;border-radius:3px;font-weight:600}
+.tabs button[aria-pressed="true"]{border-color:var(--accent);box-shadow:inset 0 -3px 0 var(--accent)}
+.tabs button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.panel{display:flex;flex-direction:column;gap:10px}
+.fig{background:var(--sheet);border:1px solid var(--line);overflow-x:auto}
+.fig svg{display:block;width:100%;height:auto;min-width:520px;max-height:82vh}
+.notes{margin:0;padding-left:1.2em;max-width:52em}
+.legend{display:flex;flex-wrap:wrap;gap:6px 18px;font-size:.85rem;color:var(--mute)}
+.legend i{display:inline-block;width:14px;height:4px;vertical-align:middle;margin-right:6px}
+.tbl{overflow-x:auto;border:1px solid var(--line);background:var(--sheet)}
+table{border-collapse:collapse;width:100%;font-size:.88rem;font-variant-numeric:tabular-nums}
+th,td{padding:7px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+thead th{border-bottom:2px solid var(--fg)}
+tbody th{font-weight:500;min-width:13em}
+td{font-family:var(--mono);font-size:.84rem;min-width:9.5em}
+td small{font-family:var(--sans)}
+.bad{color:var(--bad)}
+td.ref{color:var(--mute);border-left:2px solid var(--line)}
+.facts{display:flex;flex-direction:column;gap:8px}
+.facts ul{margin:0;padding-left:1.2em;max-width:56em}
+/* drawing */
+svg .body{fill:var(--body);stroke:var(--fg);stroke-width:1.2}
+svg .bbox{fill:none;stroke:var(--mute);stroke-width:1;stroke-dasharray:7 5}
+svg .back{fill:none;stroke:var(--vq);stroke-width:1;stroke-dasharray:3 3}
+svg .o{fill:var(--ball)}
+svg .b0{fill:var(--b0)} svg .b1{fill:var(--b1)} svg .b2{fill:var(--b2)} svg .b3{fill:var(--b3)}
+svg .ac{fill:var(--ac)} svg .ck{fill:var(--ck)} svg .vq{fill:var(--vq)}
+svg .rat{fill:none;stroke-width:.9;opacity:.75}
+svg .b0s{stroke:var(--b0)} svg .b1s{stroke:var(--b1)} svg .b2s{stroke:var(--b2)} svg .b3s{stroke:var(--b3)}
+svg .acs{stroke:var(--ac)} svg .cks{stroke:var(--ck);stroke-width:1.6;opacity:1}
+svg .br{stroke-dasharray:4 2}
+svg .over{stroke:var(--bad);opacity:1}
+svg .band{opacity:.13;stroke-linecap:butt}
+svg .split{fill:var(--sheet);stroke-width:1.2}
+svg .rc,svg .att{fill:var(--sheet);stroke:var(--fg);stroke-width:1}
+svg text{font-family:var(--sans);font-size:12px;fill:var(--fg);paint-order:stroke;stroke:var(--sheet);stroke-width:3px}
+svg .big{font-size:15px;font-weight:600}
+svg .dim{fill:var(--mute)}
+</style>
+<div class="wrap">
+  <header>
+    <h1>RK3568 与两颗 DDR3 的摆位和分叉方案</h1>
+    <p class="lead">三个候选加一个对照。图按 1:1 的比例由脚本从封装的真实球位画出；线长是球到球按 45°/90° 走的最短距离，没有绕障，真实走线只会更长。没有过 DRC。</p>
+  </header>
+  <nav class="tabs" aria-label="方案">{{TABS}}</nav>
+  {{PANELS}}
+  <div class="legend">
+    <span><i style="background:var(--b0)"></i>字节组 0</span><span><i style="background:var(--b1)"></i>字节组 1</span>
+    <span><i style="background:var(--b2)"></i>字节组 2</span><span><i style="background:var(--b3)"></i>字节组 3</span>
+    <span><i style="background:var(--ac)"></i>地址、控制（实线是主干，虚线是分支，圆圈是分叉点）</span>
+    <span><i style="background:var(--ck)"></i>CK</span>
+    <span><i style="background:var(--bad)"></i>分支超过 600 mil</span>
+    <span>浅色宽带：一个字节组包地后的线带宽度 7.51 mm</span>
+    <span>虚线框：背面去耦的位置；小方块：ZQ 电阻、VREF 电容的位置</span>
+  </div>
+  <section>
+    <h2>并排比较</h2>
+    <div class="tbl"><table><thead><tr><th scope="col">指标</th>{{HEAD}}</tr></thead><tbody>
+    {{ROWS}}
+    </tbody></table></div>
+  </section>
+  {{FACTS}}
+</div>
+<script>
+(function(){
+  var tabs=document.querySelectorAll('.tabs button'),panels=document.querySelectorAll('.panel');
+  function show(k){tabs.forEach(function(b){b.setAttribute('aria-pressed',b.dataset.k===k?'true':'false')});
+    panels.forEach(function(p){p.hidden=p.id!=='p-'+k});}
+  tabs.forEach(function(b){b.addEventListener('click',function(){show(b.dataset.k)})});
+})();
+</script>
