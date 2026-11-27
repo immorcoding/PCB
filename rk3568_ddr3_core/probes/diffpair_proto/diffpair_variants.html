@@ -1,0 +1,353 @@
+<!doctype html><html lang="zh"><meta charset="utf-8"><title>原型：差分对的样子（issue 37）</title>
+<style>body{font:15px/1.65 system-ui,"Microsoft YaHei",sans-serif;max-width:1040px;margin:24px auto;padding:0 16px;color:#1c2630;background:#fff}
+table{border-collapse:collapse;margin:10px 0}td,th{border:1px solid #b8c2cc;padding:4px 9px;text-align:right;font-size:14px}td:first-child,th:first-child{text-align:center}
+h2{margin-top:44px;border-top:2px solid #1c2630;padding-top:14px}h3{margin-top:30px}
+.k span{display:inline-block;width:26px;height:6px;margin:0 6px 2px 14px}.rec{background:#eef6ea;border-left:4px solid #5a9a48;padding:8px 12px}</style>
+<h1>原型（用完即弃）：差分对画成什么样</h1>
+<p>三件事各出三种画法，请各选一个（或说哪里要改）。全部按比例画，单位 mm，数字由脚本算。
+对象是 RK3568 的 DQS0（G1 / G2，西边），图里“出封装”的方向朝右；其余四对（DQS1–3、CLK）在球阵上的姿势相同。
+没有过 KiCad 的 DRC；“最小间距”是脚本按 0.01 mm 取样算的铜到铜距离。</p>
+<p class="k"><span style="background:#f2b134"></span>外圈球那根（短）<span style="background:#f58a3c"></span>内圈球那根（长）<span style="background:#b9534e"></span>旁边的 DQ
+<span style="background:#4f8fe0"></span>L6 上的线<span style="background:#1f5f7d;height:12px"></span>L1 地铺铜<span style="background:#3fa7d6;height:12px;width:12px;border-radius:6px"></span>地球 / 地过孔</p>
+
+<h2>先看一个事实：五对差分线都是“一前一后”出球，外圈球那根天生短</h2>
+<p>RK3568 的五对（DQS0–3、CLK）都在最外两圈，P、N 在同一行里一前一后垂直于封装边。两个焊盘之间（空隙 0.35 mm）只过得了一根线，
+所以内圈球那根必须从外圈球旁边的通道绕出去，板上多走约 0.76 mm；再加上封装内引线的差，外圈球那根要补的长度如下（对内工作目标 0.15 mm，上限 0.30 mm）：</p>
+<table><tr><th>对</th><th>外圈球</th><th>内圈球</th><th>封装内：内 − 外</th><th>板上：内 − 外（画法 1A）</th><th>外圈球那根要补</th></tr><tr><td>DQS0</td><td>G1</td><td>G2</td><td>+0.249</td><td>0.755</td><td><b>1.00</b></td></tr><tr><td>DQS1</td><td>L1</td><td>L2</td><td>-0.163</td><td>0.755</td><td><b>0.59</b></td></tr><tr><td>DQS2</td><td>A11</td><td>B11</td><td>-0.342</td><td>0.755</td><td><b>0.41</b></td></tr><tr><td>DQS3</td><td>A15</td><td>B15</td><td>+0.086</td><td>0.755</td><td><b>0.84</b></td></tr><tr><td>CLK</td><td>A4</td><td>B4</td><td>+0.219</td><td>0.755</td><td><b>0.97</b></td></tr></table>
+<p>颗粒那一头怎么进球区取决于颗粒的扇出，这里没有画。</p>
+
+<h2>一、成对出 SoC 球区（L1）</h2>
+<table><tr><th>画法</th><th>从外圈球中心起多远开始按 0.15 间隙并行</th><th>板上长度差（内 − 外）</th><th>两根线的拐点数</th><th>最小间距（规则区内下限 0.09）</th></tr><tr><td>A</td><td>0.07</td><td>0.755</td><td>2</td><td>0.124（DQ2 线 ↔ DQ1 焊盘E1）</td></tr><tr><td>B</td><td>0.50</td><td>0.814</td><td>5</td><td>0.096（DQ0 线 ↔ DQS0P 线）</td></tr><tr><td>C</td><td>1.80</td><td>0.814</td><td>3</td><td>0.124（DQS0N 线 ↔ DQS0P 焊盘G1）</td></tr></table>
+<p>地球（F1、H2 等）的过孔没有画，扇出工具要让它们避开这两条通道。旁边的 DQ 只画了直出的一段。</p>
+<p class="rec">我的推荐：1A。并行得最早、拐点最少；代价是外圈球那根在盘内偏心 0.071 mm 出盘（KiCad 算长度时按盘心到出盘点的直线折算，实测过）。</p>
+<h3>1A 以通道为轴：内圈球的线沿通道直出，外圈球的线贴着它出盘</h3><p>内圈球（G2）的线斜进 G1、H1 之间的通道后一路直线；外圈球（G1）的线在盘内偏 0.071 mm 出盘，一出盘两根就是 0.15 的对内间隙。盘外只有一个 45° 拐点。</p><svg viewBox="-304 -332 722 665" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:722px;background:#10161c">
+<line x1="137.75" y1="-332.5" x2="137.75" y2="332.5" stroke="#7d8c9a" stroke-dasharray="6 5"/>
+<text x="141.75" y="-317.5" fill="#b5c2ce" font-size="13">封装边</text>
+<line x1="327.74999999999994" y1="-332.5" x2="327.74999999999994" y2="332.5" stroke="#7d8c9a" stroke-dasharray="6 5"/>
+<text x="331.74999999999994" y="-317.5" fill="#b5c2ce" font-size="13">规则区边</text>
+<polyline points="0.0,-247.0 399.0,-247.0" fill="none" stroke="#b9534e" stroke-width="19.3" stroke-linejoin="round" stroke-linecap="round"><title>DQ1 0.1016 mm</title></polyline>
+<polyline points="0.0,247.0 399.0,247.0" fill="none" stroke="#b9534e" stroke-width="19.3" stroke-linejoin="round" stroke-linecap="round"><title>DQ4 0.1016 mm</title></polyline>
+<polyline points="0.0,123.5 399.0,123.5" fill="none" stroke="#b9534e" stroke-width="19.3" stroke-linejoin="round" stroke-linecap="round"><title>DQ6 0.1016 mm</title></polyline>
+<polyline points="-123.5,-247.0 -61.8,-185.3 399.0,-185.3" fill="none" stroke="#b9534e" stroke-width="19.3" stroke-linejoin="round" stroke-linecap="round"><title>DQ2 0.1016 mm</title></polyline>
+<polyline points="-123.5,247.0 -61.8,185.3 399.0,185.3" fill="none" stroke="#b9534e" stroke-width="19.3" stroke-linejoin="round" stroke-linecap="round"><title>DQ5 0.1016 mm</title></polyline>
+<polyline points="-123.5,-123.5 -61.8,-61.8 399.0,-61.8" fill="none" stroke="#b9534e" stroke-width="19.3" stroke-linejoin="round" stroke-linecap="round"><title>DQ0 0.1016 mm</title></polyline>
+<polyline points="0.0,0.0 13.5,13.5 399.0,13.5" fill="none" stroke="#f2b134" stroke-width="19.3" stroke-linejoin="round" stroke-linecap="round"><title>DQS0P 0.1016 mm</title></polyline>
+<polyline points="-123.5,0.0 -61.8,61.8 399.0,61.8" fill="none" stroke="#f58a3c" stroke-width="19.3" stroke-linejoin="round" stroke-linecap="round"><title>DQS0N 0.1016 mm</title></polyline>
+<circle cx="0.0" cy="-247.0" r="28.5" fill="#b9534e"><title>DQ1</title></circle>
+<text x="0.0" y="-243.0" fill="#10161c" font-size="14" text-anchor="middle" font-weight="600">E1</text>
+<circle cx="0.0" cy="-123.5" r="28.5" fill="#3fa7d6"><title>GND</title></circle>
+<text x="0.0" y="-119.5" fill="#10161c" font-size="14" text-anchor="middle" font-weight="600">F1</text>
+<circle cx="0.0" cy="0.0" r="28.5" fill="#f2b134"><title>DQS0P</title></circle>
+<text x="0.0" y="4.0" fill="#10161c" font-size="14" text-anchor="middle" font-weight="600">G1</text>
+<circle cx="0.0" cy="123.5" r="28.5" fill="#b9534e"><title>DQ6</title></circle>
+<text x="0.0" y="127.5" fill="#10161c" font-size="14" text-anchor="middle" font-weight="600">H1</text>
+<circle cx="0.0" cy="247.0" r="28.5" fill="#b9534e"><title>DQ4</title></circle>
+<text x="0.0" y="251.0" fill="#10161c" font-size="14" text-anchor="middle" font-weight="600">J1</text>
+<circle cx="-123.5" cy="-247.0" r="28.5" fill="#b9534e"><title>DQ2</title></circle>
+<text x="-123.5" y="-243.0" fill="#10161c" font-size="14" text-anchor="middle" font-weight="600">E2</text>
+<circle cx="-123.5" cy="-123.5" r="28.5" fill="#b9534e"><title>DQ0</title></circle>
+<text x="-123.5" y="-119.5" fill="#10161c" font-size="14" text-anchor="middle" font-weight="600">F2</text>
+<circle cx="-123.5" cy="0.0" r="28.5" fill="#f58a3c"><title>DQS0N</title></circle>
+<text x="-123.5" y="4.0" fill="#10161c" font-size="14" text-anchor="middle" font-weight="600">G2</text>
+<circle cx="-123.5" cy="123.5" r="28.5" fill="#3fa7d6"><title>GND</title></circle>
+<text x="-123.5" y="127.5" fill="#10161c" font-size="14" text-anchor="middle" font-weight="600">H2</text>
+<circle cx="-123.5" cy="247.0" r="28.5" fill="#b9534e"><title>DQ5</title></circle>
+<text x="-123.5" y="251.0" fill="#10161c" font-size="14" text-anchor="middle" font-weight="600">J2</text>
+<circle cx="-247.0" cy="-247.0" r="28.5" fill="#3fa7d6"><title>GND</title></circle>
+<text x="-247.0" y="-243.0" fill="#10161c" font-size="14" text-anchor="middle" font-weight="600">E3</text>
+<circle cx="-247.0" cy="-123.5" r="28.5" fill="#3fa7d6"><title>GND</title></circle>
+<text x="-247.0" y="-119.5" fill="#10161c" font-size="14" text-anchor="middle" font-weight="600">F3</text>
+<circle cx="-247.0" cy="123.5" r="28.5" fill="#3fa7d6"><title>GND</title></circle>
+<text x="-247.0" y="127.5" fill="#10161c" font-size="14" text-anchor="middle" font-weight="600">H3</text>
+<circle cx="-247.0" cy="247.0" r="28.5" fill="#3fa7d6"><title>GND</title></circle>
+<text x="-247.0" y="251.0" fill="#10161c" font-size="14" text-anchor="middle" font-weight="600">J3</text>
+<line x1="-285.0" y1="317.3" x2="-190.0" y2="317.3" stroke="#fff" stroke-width="2"/><text x="-180.5" y="321.3" fill="#fff" font-size="12">0.5 mm</text></svg><h3>1B 以球行为轴：两根在球区外对称收拢成 Y 形</h3><p>差分对的中心线落在球行上（和两边的 DQ 对称）。两根各拐一次 45°，在球区外约 0.5 mm 处合并；外圈球那根离 DQ0 的线更近。</p><svg viewBox="-304 -332 722 665" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:722px;background:#10161c">
+<line x1="137.75" y1="-332.5" x2="137.75" y2="332.5" stroke="#7d8c9a" stroke-dasharray="6 5"/>
+<text x="141.75" y="-317.5" fill="#b5c2ce" font-size="13">封装边</text>
+<line x1="327.74999999999994" y1="-332.5" x2="327.74999999999994" y2="332.5" stroke="#7d8c9a" stroke-dasharray="6 5"/>
+<text x="331.74999999999994" y="-317.5" fill="#b5c2ce" font-size="13">规则区边</text>
+<polyline points="0.0,-247.0 399.0,-247.0" fill="none" stroke="#b9534e" stroke-width="19.3" stroke-linejoin="round" stroke-linecap="round"><title>DQ1 0.1016 mm</title></polyline>
+<polyline points="0.0,247.0 399.0,247.0" fill="none" stroke="#b9534e" stroke-width="19.3" stroke-linejoin="round" stroke-linecap="round"><title>DQ4 0.1016 mm</title></polyline>
+<polyline points="0.0,123.5 399.0,123.5" fill="none" stroke="#b9534e" stroke-width="19.3" stroke-linejoin="round" stroke-linecap="round"><title>DQ6 0.1016 mm</title></polyline>
+<polyline points="-123.5,-247.0 -61.8,-185.3 399.0,-185.3" fill="none" stroke="#b9534e" stroke-width="19.3" stroke-linejoin="round" stroke-linecap="round"><title>DQ2 0.1016 mm</title></polyline>
+<polyline points="-123.5,247.0 -61.8,185.3 399.0,185.3" fill="none" stroke="#b9534e" stroke-width="19.3" stroke-linejoin="round" stroke-linecap="round"><title>DQ5 0.1016 mm</title></polyline>
+<polyline points="-123.5,-123.5 -61.8,-61.8 399.0,-61.8" fill="none" stroke="#b9534e" stroke-width="19.3" stroke-linejoin="round" stroke-linecap="round"><title>DQ0 0.1016 mm</title></polyline>
+<polyline points="0.0,0.0 51.5,0.0 75.6,-24.1 399.0,-24.1" fill="none" stroke="#f2b134" stroke-width="19.3" stroke-linejoin="round" stroke-linecap="round"><title>DQS0P 0.1016 mm</title></polyline>
+<polyline points="-123.5,0.0 -61.8,61.8 57.0,61.8 94.6,24.1 399.0,24.1" fill="none" stroke="#f58a3c" stroke-width="19.3" stroke-linejoin="round" stroke-linecap="round"><title>DQS0N 0.1016 mm</title></polyline>
+<circle cx="0.0" cy="-247.0" r="28.5" fill="#b9534e"><title>DQ1</title></circle>
+<text x="0.0" y="-243.0" fill="#10161c" font-size="14" text-anchor="middle" font-weight="600">E1</text>
+<circle cx="0.0" cy="-123.5" r="28.5" fill="#3fa7d6"><title>GND</title></circle>
+<text x="0.0" y="-119.5" fill="#10161c" font-size="14" text-anchor="middle" font-weight="600">F1</text>
+<circle cx="0.0" cy="0.0" r="28.5" fill="#f2b134"><title>DQS0P</title></circle>
+<text x="0.0" y="4.0" fill="#10161c" font-size="14" text-anchor="middle" font-weight="600">G1</text>
+<circle cx="0.0" cy="123.5" r="28.5" fill="#b9534e"><title>DQ6</title></circle>
+<text x="0.0" y="127.5" fill="#10161c" font-size="14" text-anchor="middle" font-weight="600">H1</text>
+<circle cx="0.0" cy="247.0" r="28.5" fill="#b9534e"><title>DQ4</title></circle>
+<text x="0.0" y="251.0" fill="#10161c" font-size="14" text-anchor="middle" font-weight="600">J1</text>
+<circle cx="-123.5" cy="-247.0" r="28.5" fill="#b9534e"><title>DQ2</title></circle>
+<text x="-123.5" y="-243.0" fill="#10161c" font-size="14" text-anchor="middle" font-weight="600">E2</text>
+<circle cx="-123.5" cy="-123.5" r="28.5" fill="#b9534e"><title>DQ0</title></circle>
+<text x="-123.5" y="-119.5" fill="#10161c" font-size="14" text-anchor="middle" font-weight="600">F2</text>
+<circle cx="-123.5" cy="0.0" r="28.5" fill="#f58a3c"><title>DQS0N</title></circle>
+<text x="-123.5" y="4.0" fill="#10161c" font-size="14" text-anchor="middle" font-weight="600">G2</text>
+<circle cx="-123.5" cy="123.5" r="28.5" fill="#3fa7d6"><title>GND</title></circle>
+<text x="-123.5" y="127.5" fill="#10161c" font-size="14" text-anchor="middle" font-weight="600">H2</text>
+<circle cx="-123.5" cy="247.0" r="28.5" fill="#b9534e"><title>DQ5</title></circle>
+<text x="-123.5" y="251.0" fill="#10161c" font-size="14" text-anchor="middle" font-weight="600">J2</text>
+<circle cx="-247.0" cy="-247.0" r="28.5" fill="#3fa7d6"><title>GND</title></circle>
+<text x="-247.0" y="-243.0" fill="#10161c" font-size="14" text-anchor="middle" font-weight="600">E3</text>
+<circle cx="-247.0" cy="-123.5" r="28.5" fill="#3fa7d6"><title>GND</title></circle>
+<text x="-247.0" y="-119.5" fill="#10161c" font-size="14" text-anchor="middle" font-weight="600">F3</text>
+<circle cx="-247.0" cy="123.5" r="28.5" fill="#3fa7d6"><title>GND</title></circle>
+<text x="-247.0" y="127.5" fill="#10161c" font-size="14" text-anchor="middle" font-weight="600">H3</text>
+<circle cx="-247.0" cy="247.0" r="28.5" fill="#3fa7d6"><title>GND</title></circle>
+<text x="-247.0" y="251.0" fill="#10161c" font-size="14" text-anchor="middle" font-weight="600">J3</text>
+<line x1="-285.0" y1="317.3" x2="-190.0" y2="317.3" stroke="#fff" stroke-width="2"/><text x="-180.5" y="321.3" fill="#fff" font-size="12">0.5 mm</text></svg><h3>1C 不急着合并：按半个球距并行，出规则区再收到 0.15</h3><p>两根在规则区内保持 0.325 mm 中心距（间隙 0.22），都是直线；出规则区时内圈球那根收一小步。球区附近没有任何小拐点，但规则区内这 1.7 mm 耦合较松。</p><svg viewBox="-304 -332 722 665" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:722px;background:#10161c">
+<line x1="137.75" y1="-332.5" x2="137.75" y2="332.5" stroke="#7d8c9a" stroke-dasharray="6 5"/>
+<text x="141.75" y="-317.5" fill="#b5c2ce" font-size="13">封装边</text>
+<line x1="327.74999999999994" y1="-332.5" x2="327.74999999999994" y2="332.5" stroke="#7d8c9a" stroke-dasharray="6 5"/>
+<text x="331.74999999999994" y="-317.5" fill="#b5c2ce" font-size="13">规则区边</text>
+<polyline points="0.0,-247.0 399.0,-247.0" fill="none" stroke="#b9534e" stroke-width="19.3" stroke-linejoin="round" stroke-linecap="round"><title>DQ1 0.1016 mm</title></polyline>
+<polyline points="0.0,247.0 399.0,247.0" fill="none" stroke="#b9534e" stroke-width="19.3" stroke-linejoin="round" stroke-linecap="round"><title>DQ4 0.1016 mm</title></polyline>
+<polyline points="0.0,123.5 399.0,123.5" fill="none" stroke="#b9534e" stroke-width="19.3" stroke-linejoin="round" stroke-linecap="round"><title>DQ6 0.1016 mm</title></polyline>
+<polyline points="-123.5,-247.0 -61.8,-185.3 399.0,-185.3" fill="none" stroke="#b9534e" stroke-width="19.3" stroke-linejoin="round" stroke-linecap="round"><title>DQ2 0.1016 mm</title></polyline>
+<polyline points="-123.5,247.0 -61.8,185.3 399.0,185.3" fill="none" stroke="#b9534e" stroke-width="19.3" stroke-linejoin="round" stroke-linecap="round"><title>DQ5 0.1016 mm</title></polyline>
+<polyline points="-123.5,-123.5 -61.8,-61.8 399.0,-61.8" fill="none" stroke="#b9534e" stroke-width="19.3" stroke-linejoin="round" stroke-linecap="round"><title>DQ0 0.1016 mm</title></polyline>
+<polyline points="0.0,0.0 399.0,0.0" fill="none" stroke="#f2b134" stroke-width="19.3" stroke-linejoin="round" stroke-linecap="round"><title>DQS0P 0.1016 mm</title></polyline>
+<polyline points="-123.5,0.0 -61.8,61.8 327.7,61.8 341.2,48.3 399.0,48.3" fill="none" stroke="#f58a3c" stroke-width="19.3" stroke-linejoin="round" stroke-linecap="round"><title>DQS0N 0.1016 mm</title></polyline>
+<circle cx="0.0" cy="-247.0" r="28.5" fill="#b9534e"><title>DQ1</title></circle>
+<text x="0.0" y="-243.0" fill="#10161c" font-size="14" text-anchor="middle" font-weight="600">E1</text>
+<circle cx="0.0" cy="-123.5" r="28.5" fill="#3fa7d6"><title>GND</title></circle>
+<text x="0.0" y="-119.5" fill="#10161c" font-size="14" text-anchor="middle" font-weight="600">F1</text>
+<circle cx="0.0" cy="0.0" r="28.5" fill="#f2b134"><title>DQS0P</title></circle>
+<text x="0.0" y="4.0" fill="#10161c" font-size="14" text-anchor="middle" font-weight="600">G1</text>
+<circle cx="0.0" cy="123.5" r="28.5" fill="#b9534e"><title>DQ6</title></circle>
+<text x="0.0" y="127.5" fill="#10161c" font-size="14" text-anchor="middle" font-weight="600">H1</text>
+<circle cx="0.0" cy="247.0" r="28.5" fill="#b9534e"><title>DQ4</title></circle>
+<text x="0.0" y="251.0" fill="#10161c" font-size="14" text-anchor="middle" font-weight="600">J1</text>
+<circle cx="-123.5" cy="-247.0" r="28.5" fill="#b9534e"><title>DQ2</title></circle>
+<text x="-123.5" y="-243.0" fill="#10161c" font-size="14" text-anchor="middle" font-weight="600">E2</text>
+<circle cx="-123.5" cy="-123.5" r="28.5" fill="#b9534e"><title>DQ0</title></circle>
+<text x="-123.5" y="-119.5" fill="#10161c" font-size="14" text-anchor="middle" font-weight="600">F2</text>
+<circle cx="-123.5" cy="0.0" r="28.5" fill="#f58a3c"><title>DQS0N</title></circle>
+<text x="-123.5" y="4.0" fill="#10161c" font-size="14" text-anchor="middle" font-weight="600">G2</text>
+<circle cx="-123.5" cy="123.5" r="28.5" fill="#3fa7d6"><title>GND</title></circle>
+<text x="-123.5" y="127.5" fill="#10161c" font-size="14" text-anchor="middle" font-weight="600">H2</text>
+<circle cx="-123.5" cy="247.0" r="28.5" fill="#b9534e"><title>DQ5</title></circle>
+<text x="-123.5" y="251.0" fill="#10161c" font-size="14" text-anchor="middle" font-weight="600">J2</text>
+<circle cx="-247.0" cy="-247.0" r="28.5" fill="#3fa7d6"><title>GND</title></circle>
+<text x="-247.0" y="-243.0" fill="#10161c" font-size="14" text-anchor="middle" font-weight="600">E3</text>
+<circle cx="-247.0" cy="-123.5" r="28.5" fill="#3fa7d6"><title>GND</title></circle>
+<text x="-247.0" y="-119.5" fill="#10161c" font-size="14" text-anchor="middle" font-weight="600">F3</text>
+<circle cx="-247.0" cy="123.5" r="28.5" fill="#3fa7d6"><title>GND</title></circle>
+<text x="-247.0" y="127.5" fill="#10161c" font-size="14" text-anchor="middle" font-weight="600">H3</text>
+<circle cx="-247.0" cy="247.0" r="28.5" fill="#3fa7d6"><title>GND</title></circle>
+<text x="-247.0" y="251.0" fill="#10161c" font-size="14" text-anchor="middle" font-weight="600">J3</text>
+<line x1="-285.0" y1="317.3" x2="-190.0" y2="317.3" stroke="#fff" stroke-width="2"/><text x="-180.5" y="321.3" fill="#fff" font-size="12">0.5 mm</text></svg>
+
+<h2>二、换层：过孔对和地过孔（L1 → L6，规则区外）</h2>
+<p>已定的数：过孔 0.4 / 0.2，两个信号过孔中心距 ≥ 0.8；地过孔离信号过孔中心 ≤ 0.635（这里取 0.60，盘边到盘边 0.20）；
+差分对两侧是 0.70 的包地间隙（铜条中心线离对的中心 0.529），再外面是 DQ。邻线画成直通；整个字节组一起换层时 DQ 的过孔怎么排是另一件事，这里不定。</p>
+<table><tr><th>画法</th><th>贴身的地过孔数</th><th>地过孔到信号过孔中心</th><th>过孔占的总宽</th><th>邻线每侧让出</th><th>每层张开段（非耦合）</th><th>最小间距（下限 0.15）</th></tr><tr><td>A</td><td>2</td><td>0.60</td><td>2.40</td><td>0.47</td><td>0.77</td><td>0.150（DQa- 线 ↔ GND 过孔）</td></tr><tr><td>B</td><td>2</td><td>0.60</td><td>1.46</td><td>0.00</td><td>0.77</td><td>0.150（DQS0P 线 ↔ DQS0N 线）</td></tr><tr><td>C</td><td>4</td><td>0.60</td><td>1.46</td><td>0.00</td><td>0.77</td><td>0.150（DQS0P 线 ↔ DQS0N 线）</td></tr></table>
+<p class="rec">我的推荐：2B，要更稳妥就 2C。两者都不让线带变宽；2A 每侧要鼓出约 0.5 mm，一个字节组里换层的地方会鼓成一个包。</p>
+<h3>2A 一字排开：地 – 信号 – 信号 – 地</h3><p>四个过孔排成一行，地过孔在信号过孔的正外侧。最对称；两边的线要各让出一个鼓包。</p><svg viewBox="-390 -299 780 598" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:780px;background:#10161c">
+<rect x="-390.0" y="-299.0" width="780.0" height="598.0" fill="#1f5f7d"/>
+<polyline points="-390.0,-16.5 -35.5,-16.5 0.0,-52.0" fill="none" stroke="#10161c" stroke-width="52.5" stroke-linejoin="round" stroke-linecap="round"/>
+<polyline points="-390.0,16.5 -35.5,16.5 0.0,52.0" fill="none" stroke="#10161c" stroke-width="52.5" stroke-linejoin="round" stroke-linecap="round"/>
+<polyline points="-390.0,-124.0 -119.7,-124.0 -58.5,-185.2 58.5,-185.2 119.7,-124.0 390.0,-124.0" fill="none" stroke="#10161c" stroke-width="58.5" stroke-linejoin="round" stroke-linecap="round"/>
+<polyline points="-390.0,-182.5 -119.7,-182.5 -58.5,-243.7 58.5,-243.7 119.7,-182.5 390.0,-182.5" fill="none" stroke="#10161c" stroke-width="58.5" stroke-linejoin="round" stroke-linecap="round"/>
+<polyline points="-390.0,124.0 -119.7,124.0 -58.5,185.2 58.5,185.2 119.7,124.0 390.0,124.0" fill="none" stroke="#10161c" stroke-width="58.5" stroke-linejoin="round" stroke-linecap="round"/>
+<polyline points="-390.0,182.5 -119.7,182.5 -58.5,243.7 58.5,243.7 119.7,182.5 390.0,182.5" fill="none" stroke="#10161c" stroke-width="58.5" stroke-linejoin="round" stroke-linecap="round"/>
+<circle cx="0.0" cy="-52.0" r="45.5" fill="#10161c"/>
+<circle cx="0.0" cy="52.0" r="45.5" fill="#10161c"/>
+<polyline points="0.0,-52.0 35.5,-16.5 390.0,-16.5" fill="none" stroke="#4f8fe0" stroke-width="13.5" stroke-linejoin="round" stroke-linecap="round"><title>DQS0P 0.104 mm</title></polyline>
+<polyline points="0.0,52.0 35.5,16.5 390.0,16.5" fill="none" stroke="#7fb0ee" stroke-width="13.5" stroke-linejoin="round" stroke-linecap="round"><title>DQS0N 0.104 mm</title></polyline>
+<polyline points="-390.0,-124.0 -119.7,-124.0 -58.5,-185.2 58.5,-185.2 119.7,-124.0 390.0,-124.0" fill="none" stroke="#b9534e" stroke-width="19.5" stroke-linejoin="round" stroke-linecap="round"><title>DQa- 0.15 mm</title></polyline>
+<polyline points="-390.0,-182.5 -119.7,-182.5 -58.5,-243.7 58.5,-243.7 119.7,-182.5 390.0,-182.5" fill="none" stroke="#b9534e" stroke-width="19.5" stroke-linejoin="round" stroke-linecap="round"><title>DQb- 0.15 mm</title></polyline>
+<polyline points="-390.0,124.0 -119.7,124.0 -58.5,185.2 58.5,185.2 119.7,124.0 390.0,124.0" fill="none" stroke="#b9534e" stroke-width="19.5" stroke-linejoin="round" stroke-linecap="round"><title>DQa+ 0.15 mm</title></polyline>
+<polyline points="-390.0,182.5 -119.7,182.5 -58.5,243.7 58.5,243.7 119.7,182.5 390.0,182.5" fill="none" stroke="#b9534e" stroke-width="19.5" stroke-linejoin="round" stroke-linecap="round"><title>DQb+ 0.15 mm</title></polyline>
+<polyline points="-390.0,-16.5 -35.5,-16.5 0.0,-52.0" fill="none" stroke="#f2b134" stroke-width="13.5" stroke-linejoin="round" stroke-linecap="round"><title>DQS0P 0.104 mm</title></polyline>
+<polyline points="-390.0,16.5 -35.5,16.5 0.0,52.0" fill="none" stroke="#f58a3c" stroke-width="13.5" stroke-linejoin="round" stroke-linecap="round"><title>DQS0N 0.104 mm</title></polyline>
+<circle cx="0.0" cy="-52.0" r="26.0" fill="#f2b134"><title>DQS0P</title></circle>
+<circle cx="0.0" cy="-52.0" r="13.0" fill="#10161c"/>
+<circle cx="0.0" cy="52.0" r="26.0" fill="#f58a3c"><title>DQS0N</title></circle>
+<circle cx="0.0" cy="52.0" r="13.0" fill="#10161c"/>
+<circle cx="0.0" cy="-130.0" r="26.0" fill="#3fa7d6"><title>GND</title></circle>
+<circle cx="0.0" cy="-130.0" r="13.0" fill="#10161c"/>
+<circle cx="0.0" cy="130.0" r="26.0" fill="#3fa7d6"><title>GND</title></circle>
+<circle cx="0.0" cy="130.0" r="13.0" fill="#10161c"/>
+<circle cx="-286.0" cy="-68.8" r="26.0" fill="#3fa7d6"><title>GND</title></circle>
+<circle cx="-286.0" cy="-68.8" r="13.0" fill="#10161c"/>
+<circle cx="-286.0" cy="68.8" r="26.0" fill="#3fa7d6"><title>GND</title></circle>
+<circle cx="-286.0" cy="68.8" r="13.0" fill="#10161c"/>
+<circle cx="286.0" cy="-68.8" r="26.0" fill="#3fa7d6"><title>GND</title></circle>
+<circle cx="286.0" cy="-68.8" r="13.0" fill="#10161c"/>
+<circle cx="286.0" cy="68.8" r="26.0" fill="#3fa7d6"><title>GND</title></circle>
+<circle cx="286.0" cy="68.8" r="13.0" fill="#10161c"/>
+<line x1="-377.0" y1="288.59999999999997" x2="-312.0" y2="288.59999999999997" stroke="#fff" stroke-width="2"/><text x="-305.5" y="292.59999999999997" fill="#fff" font-size="12">0.5 mm</text></svg><h3>2B 借包地铜条上的过孔：两个地过孔退到来线一侧</h3><p>地过孔就是包地铜条上本来要打的过孔，挪到信号过孔后方 0.5 mm 处。线带不变宽，邻线全程直线。</p><svg viewBox="-390 -299 780 598" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:780px;background:#10161c">
+<rect x="-390.0" y="-299.0" width="780.0" height="598.0" fill="#1f5f7d"/>
+<polyline points="-390.0,-16.5 -35.5,-16.5 0.0,-52.0" fill="none" stroke="#10161c" stroke-width="52.5" stroke-linejoin="round" stroke-linecap="round"/>
+<polyline points="-390.0,16.5 -35.5,16.5 0.0,52.0" fill="none" stroke="#10161c" stroke-width="52.5" stroke-linejoin="round" stroke-linecap="round"/>
+<polyline points="-390.0,-124.0 390.0,-124.0" fill="none" stroke="#10161c" stroke-width="58.5" stroke-linejoin="round" stroke-linecap="round"/>
+<polyline points="-390.0,-182.5 390.0,-182.5" fill="none" stroke="#10161c" stroke-width="58.5" stroke-linejoin="round" stroke-linecap="round"/>
+<polyline points="-390.0,124.0 390.0,124.0" fill="none" stroke="#10161c" stroke-width="58.5" stroke-linejoin="round" stroke-linecap="round"/>
+<polyline points="-390.0,182.5 390.0,182.5" fill="none" stroke="#10161c" stroke-width="58.5" stroke-linejoin="round" stroke-linecap="round"/>
+<circle cx="0.0" cy="-52.0" r="45.5" fill="#10161c"/>
+<circle cx="0.0" cy="52.0" r="45.5" fill="#10161c"/>
+<polyline points="0.0,-52.0 35.5,-16.5 390.0,-16.5" fill="none" stroke="#4f8fe0" stroke-width="13.5" stroke-linejoin="round" stroke-linecap="round"><title>DQS0P 0.104 mm</title></polyline>
+<polyline points="0.0,52.0 35.5,16.5 390.0,16.5" fill="none" stroke="#7fb0ee" stroke-width="13.5" stroke-linejoin="round" stroke-linecap="round"><title>DQS0N 0.104 mm</title></polyline>
+<polyline points="-390.0,-124.0 390.0,-124.0" fill="none" stroke="#b9534e" stroke-width="19.5" stroke-linejoin="round" stroke-linecap="round"><title>DQa- 0.15 mm</title></polyline>
+<polyline points="-390.0,-182.5 390.0,-182.5" fill="none" stroke="#b9534e" stroke-width="19.5" stroke-linejoin="round" stroke-linecap="round"><title>DQb- 0.15 mm</title></polyline>
+<polyline points="-390.0,124.0 390.0,124.0" fill="none" stroke="#b9534e" stroke-width="19.5" stroke-linejoin="round" stroke-linecap="round"><title>DQa+ 0.15 mm</title></polyline>
+<polyline points="-390.0,182.5 390.0,182.5" fill="none" stroke="#b9534e" stroke-width="19.5" stroke-linejoin="round" stroke-linecap="round"><title>DQb+ 0.15 mm</title></polyline>
+<polyline points="-390.0,-16.5 -35.5,-16.5 0.0,-52.0" fill="none" stroke="#f2b134" stroke-width="13.5" stroke-linejoin="round" stroke-linecap="round"><title>DQS0P 0.104 mm</title></polyline>
+<polyline points="-390.0,16.5 -35.5,16.5 0.0,52.0" fill="none" stroke="#f58a3c" stroke-width="13.5" stroke-linejoin="round" stroke-linecap="round"><title>DQS0N 0.104 mm</title></polyline>
+<circle cx="0.0" cy="-52.0" r="26.0" fill="#f2b134"><title>DQS0P</title></circle>
+<circle cx="0.0" cy="-52.0" r="13.0" fill="#10161c"/>
+<circle cx="0.0" cy="52.0" r="26.0" fill="#f58a3c"><title>DQS0N</title></circle>
+<circle cx="0.0" cy="52.0" r="13.0" fill="#10161c"/>
+<circle cx="-76.2" cy="-68.8" r="26.0" fill="#3fa7d6"><title>GND</title></circle>
+<circle cx="-76.2" cy="-68.8" r="13.0" fill="#10161c"/>
+<circle cx="-76.2" cy="68.8" r="26.0" fill="#3fa7d6"><title>GND</title></circle>
+<circle cx="-76.2" cy="68.8" r="13.0" fill="#10161c"/>
+<circle cx="286.0" cy="-68.8" r="26.0" fill="#3fa7d6"><title>GND</title></circle>
+<circle cx="286.0" cy="-68.8" r="13.0" fill="#10161c"/>
+<circle cx="286.0" cy="68.8" r="26.0" fill="#3fa7d6"><title>GND</title></circle>
+<circle cx="286.0" cy="68.8" r="13.0" fill="#10161c"/>
+<circle cx="-338.0" cy="-68.8" r="26.0" fill="#3fa7d6"><title>GND</title></circle>
+<circle cx="-338.0" cy="-68.8" r="13.0" fill="#10161c"/>
+<circle cx="-338.0" cy="68.8" r="26.0" fill="#3fa7d6"><title>GND</title></circle>
+<circle cx="-338.0" cy="68.8" r="13.0" fill="#10161c"/>
+<line x1="-377.0" y1="288.59999999999997" x2="-312.0" y2="288.59999999999997" stroke="#fff" stroke-width="2"/><text x="-305.5" y="292.59999999999997" fill="#fff" font-size="12">0.5 mm</text></svg><h3>2C 四角围住：来线一侧和去线一侧各两个</h3><p>和 2B 一样用铜条上的过孔，前后各一对，L1 和 L6 两侧的回流都有就近的地过孔。</p><svg viewBox="-390 -299 780 598" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:780px;background:#10161c">
+<rect x="-390.0" y="-299.0" width="780.0" height="598.0" fill="#1f5f7d"/>
+<polyline points="-390.0,-16.5 -35.5,-16.5 0.0,-52.0" fill="none" stroke="#10161c" stroke-width="52.5" stroke-linejoin="round" stroke-linecap="round"/>
+<polyline points="-390.0,16.5 -35.5,16.5 0.0,52.0" fill="none" stroke="#10161c" stroke-width="52.5" stroke-linejoin="round" stroke-linecap="round"/>
+<polyline points="-390.0,-124.0 390.0,-124.0" fill="none" stroke="#10161c" stroke-width="58.5" stroke-linejoin="round" stroke-linecap="round"/>
+<polyline points="-390.0,-182.5 390.0,-182.5" fill="none" stroke="#10161c" stroke-width="58.5" stroke-linejoin="round" stroke-linecap="round"/>
+<polyline points="-390.0,124.0 390.0,124.0" fill="none" stroke="#10161c" stroke-width="58.5" stroke-linejoin="round" stroke-linecap="round"/>
+<polyline points="-390.0,182.5 390.0,182.5" fill="none" stroke="#10161c" stroke-width="58.5" stroke-linejoin="round" stroke-linecap="round"/>
+<circle cx="0.0" cy="-52.0" r="45.5" fill="#10161c"/>
+<circle cx="0.0" cy="52.0" r="45.5" fill="#10161c"/>
+<polyline points="0.0,-52.0 35.5,-16.5 390.0,-16.5" fill="none" stroke="#4f8fe0" stroke-width="13.5" stroke-linejoin="round" stroke-linecap="round"><title>DQS0P 0.104 mm</title></polyline>
+<polyline points="0.0,52.0 35.5,16.5 390.0,16.5" fill="none" stroke="#7fb0ee" stroke-width="13.5" stroke-linejoin="round" stroke-linecap="round"><title>DQS0N 0.104 mm</title></polyline>
+<polyline points="-390.0,-124.0 390.0,-124.0" fill="none" stroke="#b9534e" stroke-width="19.5" stroke-linejoin="round" stroke-linecap="round"><title>DQa- 0.15 mm</title></polyline>
+<polyline points="-390.0,-182.5 390.0,-182.5" fill="none" stroke="#b9534e" stroke-width="19.5" stroke-linejoin="round" stroke-linecap="round"><title>DQb- 0.15 mm</title></polyline>
+<polyline points="-390.0,124.0 390.0,124.0" fill="none" stroke="#b9534e" stroke-width="19.5" stroke-linejoin="round" stroke-linecap="round"><title>DQa+ 0.15 mm</title></polyline>
+<polyline points="-390.0,182.5 390.0,182.5" fill="none" stroke="#b9534e" stroke-width="19.5" stroke-linejoin="round" stroke-linecap="round"><title>DQb+ 0.15 mm</title></polyline>
+<polyline points="-390.0,-16.5 -35.5,-16.5 0.0,-52.0" fill="none" stroke="#f2b134" stroke-width="13.5" stroke-linejoin="round" stroke-linecap="round"><title>DQS0P 0.104 mm</title></polyline>
+<polyline points="-390.0,16.5 -35.5,16.5 0.0,52.0" fill="none" stroke="#f58a3c" stroke-width="13.5" stroke-linejoin="round" stroke-linecap="round"><title>DQS0N 0.104 mm</title></polyline>
+<circle cx="0.0" cy="-52.0" r="26.0" fill="#f2b134"><title>DQS0P</title></circle>
+<circle cx="0.0" cy="-52.0" r="13.0" fill="#10161c"/>
+<circle cx="0.0" cy="52.0" r="26.0" fill="#f58a3c"><title>DQS0N</title></circle>
+<circle cx="0.0" cy="52.0" r="13.0" fill="#10161c"/>
+<circle cx="-76.2" cy="-68.8" r="26.0" fill="#3fa7d6"><title>GND</title></circle>
+<circle cx="-76.2" cy="-68.8" r="13.0" fill="#10161c"/>
+<circle cx="-76.2" cy="68.8" r="26.0" fill="#3fa7d6"><title>GND</title></circle>
+<circle cx="-76.2" cy="68.8" r="13.0" fill="#10161c"/>
+<circle cx="76.2" cy="-68.8" r="26.0" fill="#3fa7d6"><title>GND</title></circle>
+<circle cx="76.2" cy="-68.8" r="13.0" fill="#10161c"/>
+<circle cx="76.2" cy="68.8" r="26.0" fill="#3fa7d6"><title>GND</title></circle>
+<circle cx="76.2" cy="68.8" r="13.0" fill="#10161c"/>
+<circle cx="-338.0" cy="-68.8" r="26.0" fill="#3fa7d6"><title>GND</title></circle>
+<circle cx="-338.0" cy="-68.8" r="13.0" fill="#10161c"/>
+<circle cx="-338.0" cy="68.8" r="26.0" fill="#3fa7d6"><title>GND</title></circle>
+<circle cx="-338.0" cy="68.8" r="13.0" fill="#10161c"/>
+<line x1="-377.0" y1="288.59999999999997" x2="-312.0" y2="288.59999999999997" stroke="#fff" stroke-width="2"/><text x="-305.5" y="292.59999999999997" fill="#fff" font-size="12">0.5 mm</text></svg>
+
+<h2>三、对内补偿</h2>
+<p>补在外圈球那根（短的）上，只能向外凸。图里按最大的一对补 1.00 mm。表里“个数”括号内依次是 DQS0 / DQS1 / DQS2 / DQS3 / CLK 各要几个。</p>
+<table><tr><th>画法</th><th>位置</th><th>每个补</th><th>个数</th><th>占的长度</th><th>对内最大间隙</th><th>凸起顶到邻线（要求 ≥ 0.45）</th><th>凸起一侧剩的地铜宽（最小 0.30）</th><th>最小间距</th></tr><tr><td>A</td><td>规则区外第一段直线</td><td>0.249</td><td>4（4 / 2 / 2 / 3 / 4）</td><td>3.80</td><td>0.45</td><td>0.40</td><td>0.10，铺铜进不去</td><td>0.150（DQS0P 线 ↔ GND 过孔）</td></tr><tr><td>B</td><td>规则区外第一段直线</td><td>0.342</td><td>3（3 / 2 / 1 / 2 / 3）</td><td>2.20</td><td>0.45</td><td>0.40</td><td>0.10，铺铜进不去</td><td>0.150（DQS0N 线 ↔ GND 过孔）</td></tr><tr><td>C</td><td>规则区内，出球后的展开段</td><td>1.004</td><td>1（各 1）</td><td>0.70</td><td>0.84（规则区内）</td><td>不占包地段</td><td>不影响</td><td>0.110（DQ0 线 ↔ DQS0P 线）</td></tr></table>
+<p>3A、3B 的凸起会把那一侧 0.70 的包地间隙吃掉 0.30：凸起这一段那一侧没有地铜，到邻线也只有 0.40。要保住包地，邻线得在这一段整体外移 0.30（线带变宽）。
+规则区外能用的直线段大约只有 3.5 mm（两个球区相距 7.5 mm，减去两头的规则区）。</p>
+<p class="rec">我的推荐：3C，不够的零头再用 3B。要补的量是 0.4–1.0 mm，放在包地的直线段上代价大；放在规则区内的展开段里，一个耳朵就补完，包地段保持直线。</p>
+<h3>3A 梯形小凸起（45° 斜边，高 0.30）</h3><p>AD 里常见的画法。顶边是直线：KiCad 的间隙规则如果写了上限，每个凸起都会报间隙越界，所以间隙规则不能写上限。</p><svg viewBox="-75 -300 915 600" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:915px;background:#10161c">
+<rect x="-75.0" y="-300.0" width="915.0" height="600.0" fill="#1f5f7d"/>
+<polyline points="-75.0,-19.1 45.0,-19.1 90.0,-64.0 120.0,-64.0 165.0,-19.1 195.0,-19.1 240.0,-64.0 270.0,-64.0 315.0,-19.1 345.0,-19.1 390.0,-64.0 420.0,-64.0 465.0,-19.1 495.0,-19.1 540.0,-64.0 570.0,-64.0 615.0,-19.1 840.0,-19.1" fill="none" stroke="#10161c" stroke-width="60.6" stroke-linejoin="round" stroke-linecap="round"/>
+<polyline points="-75.0,19.1 840.0,19.1" fill="none" stroke="#10161c" stroke-width="60.6" stroke-linejoin="round" stroke-linecap="round"/>
+<polyline points="-75.0,-143.1 840.0,-143.1" fill="none" stroke="#10161c" stroke-width="67.5" stroke-linejoin="round" stroke-linecap="round"/>
+<polyline points="-75.0,-210.6 840.0,-210.6" fill="none" stroke="#10161c" stroke-width="67.5" stroke-linejoin="round" stroke-linecap="round"/>
+<polyline points="-75.0,143.1 840.0,143.1" fill="none" stroke="#10161c" stroke-width="67.5" stroke-linejoin="round" stroke-linecap="round"/>
+<polyline points="-75.0,210.6 840.0,210.6" fill="none" stroke="#10161c" stroke-width="67.5" stroke-linejoin="round" stroke-linecap="round"/>
+<line x1="0.0" y1="-300.0" x2="0.0" y2="300.0" stroke="#7d8c9a" stroke-dasharray="6 5"/>
+<text x="4.0" y="-285.0" fill="#b5c2ce" font-size="13">规则区边</text>
+<polyline points="-75.0,-143.1 840.0,-143.1" fill="none" stroke="#b9534e" stroke-width="22.5" stroke-linejoin="round" stroke-linecap="round"><title>DQa- 0.15 mm</title></polyline>
+<polyline points="-75.0,-210.6 840.0,-210.6" fill="none" stroke="#b9534e" stroke-width="22.5" stroke-linejoin="round" stroke-linecap="round"><title>DQb- 0.15 mm</title></polyline>
+<polyline points="-75.0,143.1 840.0,143.1" fill="none" stroke="#b9534e" stroke-width="22.5" stroke-linejoin="round" stroke-linecap="round"><title>DQa+ 0.15 mm</title></polyline>
+<polyline points="-75.0,210.6 840.0,210.6" fill="none" stroke="#b9534e" stroke-width="22.5" stroke-linejoin="round" stroke-linecap="round"><title>DQb+ 0.15 mm</title></polyline>
+<polyline points="-75.0,-19.1 45.0,-19.1 90.0,-64.0 120.0,-64.0 165.0,-19.1 195.0,-19.1 240.0,-64.0 270.0,-64.0 315.0,-19.1 345.0,-19.1 390.0,-64.0 420.0,-64.0 465.0,-19.1 495.0,-19.1 540.0,-64.0 570.0,-64.0 615.0,-19.1 840.0,-19.1" fill="none" stroke="#f2b134" stroke-width="15.6" stroke-linejoin="round" stroke-linecap="round"><title>DQS0P 0.104 mm</title></polyline>
+<polyline points="-75.0,19.1 840.0,19.1" fill="none" stroke="#f58a3c" stroke-width="15.6" stroke-linejoin="round" stroke-linecap="round"><title>DQS0N 0.104 mm</title></polyline>
+<circle cx="75.0" cy="79.3" r="30.0" fill="#3fa7d6"><title>GND</title></circle>
+<circle cx="75.0" cy="79.3" r="15.0" fill="#10161c"/>
+<circle cx="435.0" cy="79.3" r="30.0" fill="#3fa7d6"><title>GND</title></circle>
+<circle cx="435.0" cy="79.3" r="15.0" fill="#10161c"/>
+<circle cx="780.0" cy="79.3" r="30.0" fill="#3fa7d6"><title>GND</title></circle>
+<circle cx="780.0" cy="79.3" r="15.0" fill="#10161c"/>
+<circle cx="697.5" cy="-79.3" r="30.0" fill="#3fa7d6"><title>GND</title></circle>
+<circle cx="697.5" cy="-79.3" r="15.0" fill="#10161c"/>
+<line x1="-60.0" y1="288.0" x2="14.999999999999996" y2="288.0" stroke="#fff" stroke-width="2"/><text x="22.500000000000004" y="292.0" fill="#fff" font-size="12">0.5 mm</text></svg><h3>3B 半圆小凸起（半径 0.30）</h3><p>同样的高度，每个凸起补得更多，占的长度约一半。KiCad 不报间隙越界，整段弧算作非耦合长度。底部和直线相接处是直角，正式做时加小圆角。</p><svg viewBox="-75 -300 915 600" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:915px;background:#10161c">
+<rect x="-75.0" y="-300.0" width="915.0" height="600.0" fill="#1f5f7d"/>
+<polyline points="-75.0,-19.1 45.0,-19.1 45.4,-24.9 46.5,-30.7 48.4,-36.3 51.0,-41.5 54.3,-46.4 58.2,-50.9 62.6,-54.8 67.5,-58.0 72.8,-60.6 78.4,-62.5 84.1,-63.7 90.0,-64.0 95.9,-63.7 101.6,-62.5 107.2,-60.6 112.5,-58.0 117.4,-54.8 121.8,-50.9 125.7,-46.4 129.0,-41.5 131.6,-36.3 133.5,-30.7 134.6,-24.9 135.0,-19.1 165.0,-19.1 165.4,-24.9 166.5,-30.7 168.4,-36.3 171.0,-41.5 174.3,-46.4 178.2,-50.9 182.6,-54.8 187.5,-58.0 192.8,-60.6 198.4,-62.5 204.1,-63.7 210.0,-64.0 215.9,-63.7 221.6,-62.5 227.2,-60.6 232.5,-58.0 237.4,-54.8 241.8,-50.9 245.7,-46.4 249.0,-41.5 251.6,-36.3 253.5,-30.7 254.6,-24.9 255.0,-19.1 285.0,-19.1 285.4,-24.9 286.5,-30.7 288.4,-36.3 291.0,-41.5 294.3,-46.4 298.2,-50.9 302.6,-54.8 307.5,-58.0 312.8,-60.6 318.4,-62.5 324.1,-63.7 330.0,-64.0 335.9,-63.7 341.6,-62.5 347.2,-60.6 352.5,-58.0 357.4,-54.8 361.8,-50.9 365.7,-46.4 369.0,-41.5 371.6,-36.3 373.5,-30.7 374.6,-24.9 375.0,-19.1 840.0,-19.1" fill="none" stroke="#10161c" stroke-width="60.6" stroke-linejoin="round" stroke-linecap="round"/>
+<polyline points="-75.0,19.1 840.0,19.1" fill="none" stroke="#10161c" stroke-width="60.6" stroke-linejoin="round" stroke-linecap="round"/>
+<polyline points="-75.0,-143.1 840.0,-143.1" fill="none" stroke="#10161c" stroke-width="67.5" stroke-linejoin="round" stroke-linecap="round"/>
+<polyline points="-75.0,-210.6 840.0,-210.6" fill="none" stroke="#10161c" stroke-width="67.5" stroke-linejoin="round" stroke-linecap="round"/>
+<polyline points="-75.0,143.1 840.0,143.1" fill="none" stroke="#10161c" stroke-width="67.5" stroke-linejoin="round" stroke-linecap="round"/>
+<polyline points="-75.0,210.6 840.0,210.6" fill="none" stroke="#10161c" stroke-width="67.5" stroke-linejoin="round" stroke-linecap="round"/>
+<line x1="0.0" y1="-300.0" x2="0.0" y2="300.0" stroke="#7d8c9a" stroke-dasharray="6 5"/>
+<text x="4.0" y="-285.0" fill="#b5c2ce" font-size="13">规则区边</text>
+<polyline points="-75.0,-143.1 840.0,-143.1" fill="none" stroke="#b9534e" stroke-width="22.5" stroke-linejoin="round" stroke-linecap="round"><title>DQa- 0.15 mm</title></polyline>
+<polyline points="-75.0,-210.6 840.0,-210.6" fill="none" stroke="#b9534e" stroke-width="22.5" stroke-linejoin="round" stroke-linecap="round"><title>DQb- 0.15 mm</title></polyline>
+<polyline points="-75.0,143.1 840.0,143.1" fill="none" stroke="#b9534e" stroke-width="22.5" stroke-linejoin="round" stroke-linecap="round"><title>DQa+ 0.15 mm</title></polyline>
+<polyline points="-75.0,210.6 840.0,210.6" fill="none" stroke="#b9534e" stroke-width="22.5" stroke-linejoin="round" stroke-linecap="round"><title>DQb+ 0.15 mm</title></polyline>
+<polyline points="-75.0,-19.1 45.0,-19.1 45.4,-24.9 46.5,-30.7 48.4,-36.3 51.0,-41.5 54.3,-46.4 58.2,-50.9 62.6,-54.8 67.5,-58.0 72.8,-60.6 78.4,-62.5 84.1,-63.7 90.0,-64.0 95.9,-63.7 101.6,-62.5 107.2,-60.6 112.5,-58.0 117.4,-54.8 121.8,-50.9 125.7,-46.4 129.0,-41.5 131.6,-36.3 133.5,-30.7 134.6,-24.9 135.0,-19.1 165.0,-19.1 165.4,-24.9 166.5,-30.7 168.4,-36.3 171.0,-41.5 174.3,-46.4 178.2,-50.9 182.6,-54.8 187.5,-58.0 192.8,-60.6 198.4,-62.5 204.1,-63.7 210.0,-64.0 215.9,-63.7 221.6,-62.5 227.2,-60.6 232.5,-58.0 237.4,-54.8 241.8,-50.9 245.7,-46.4 249.0,-41.5 251.6,-36.3 253.5,-30.7 254.6,-24.9 255.0,-19.1 285.0,-19.1 285.4,-24.9 286.5,-30.7 288.4,-36.3 291.0,-41.5 294.3,-46.4 298.2,-50.9 302.6,-54.8 307.5,-58.0 312.8,-60.6 318.4,-62.5 324.1,-63.7 330.0,-64.0 335.9,-63.7 341.6,-62.5 347.2,-60.6 352.5,-58.0 357.4,-54.8 361.8,-50.9 365.7,-46.4 369.0,-41.5 371.6,-36.3 373.5,-30.7 374.6,-24.9 375.0,-19.1 840.0,-19.1" fill="none" stroke="#f2b134" stroke-width="15.6" stroke-linejoin="round" stroke-linecap="round"><title>DQS0P 0.104 mm</title></polyline>
+<polyline points="-75.0,19.1 840.0,19.1" fill="none" stroke="#f58a3c" stroke-width="15.6" stroke-linejoin="round" stroke-linecap="round"><title>DQS0N 0.104 mm</title></polyline>
+<circle cx="75.0" cy="79.3" r="30.0" fill="#3fa7d6"><title>GND</title></circle>
+<circle cx="75.0" cy="79.3" r="15.0" fill="#10161c"/>
+<circle cx="435.0" cy="79.3" r="30.0" fill="#3fa7d6"><title>GND</title></circle>
+<circle cx="435.0" cy="79.3" r="15.0" fill="#10161c"/>
+<circle cx="780.0" cy="79.3" r="30.0" fill="#3fa7d6"><title>GND</title></circle>
+<circle cx="780.0" cy="79.3" r="15.0" fill="#10161c"/>
+<circle cx="457.5" cy="-79.3" r="30.0" fill="#3fa7d6"><title>GND</title></circle>
+<circle cx="457.5" cy="-79.3" r="15.0" fill="#10161c"/>
+<line x1="-60.0" y1="288.0" x2="14.999999999999996" y2="288.0" stroke="#fff" stroke-width="2"/><text x="22.500000000000004" y="292.0" fill="#fff" font-size="12">0.5 mm</text></svg><h3>3C 一个“耳朵”，藏在规则区内的展开段里</h3><p>出球区后邻线本来就要向两边展开（给 DQS 让出 0.70 的包地间隙），外圈球那根在这块空里绕一个 U 形，一次补完。图里补 1.00 mm，耳朵高 0.62 mm；五对的高度依次是 0.62 / 0.41 / 0.32 / 0.54 / 0.60 mm。出规则区以后差分对是纯直线，包地不受影响。这和 RTE-16 现在写的“出规则区后的第一段直线”不同，选它要改那句话。</p><svg viewBox="-304 -332 722 665" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:722px;background:#10161c">
+<line x1="137.75" y1="-332.5" x2="137.75" y2="332.5" stroke="#7d8c9a" stroke-dasharray="6 5"/>
+<text x="141.75" y="-317.5" fill="#b5c2ce" font-size="13">封装边</text>
+<line x1="327.74999999999994" y1="-332.5" x2="327.74999999999994" y2="332.5" stroke="#7d8c9a" stroke-dasharray="6 5"/>
+<text x="331.74999999999994" y="-317.5" fill="#b5c2ce" font-size="13">规则区边</text>
+<polyline points="0.0,-247.0 399.0,-247.0" fill="none" stroke="#b9534e" stroke-width="19.3" stroke-linejoin="round" stroke-linecap="round"><title>DQ1 0.1016 mm</title></polyline>
+<polyline points="0.0,247.0 399.0,247.0" fill="none" stroke="#b9534e" stroke-width="19.3" stroke-linejoin="round" stroke-linecap="round"><title>DQ4 0.1016 mm</title></polyline>
+<polyline points="0.0,123.5 399.0,123.5" fill="none" stroke="#b9534e" stroke-width="19.3" stroke-linejoin="round" stroke-linecap="round"><title>DQ6 0.1016 mm</title></polyline>
+<polyline points="-123.5,-247.0 -61.8,-185.3 399.0,-185.3" fill="none" stroke="#b9534e" stroke-width="19.3" stroke-linejoin="round" stroke-linecap="round"><title>DQ2 0.1016 mm</title></polyline>
+<polyline points="-123.5,247.0 -61.8,185.3 399.0,185.3" fill="none" stroke="#b9534e" stroke-width="19.3" stroke-linejoin="round" stroke-linecap="round"><title>DQ5 0.1016 mm</title></polyline>
+<polyline points="-123.5,-123.5 -61.8,-61.8 47.5,-61.8 130.2,-144.4 399.0,-144.4" fill="none" stroke="#b9534e" stroke-width="19.3" stroke-linejoin="round" stroke-linecap="round"><title>DQ0 0.1016 mm</title></polyline>
+<polyline points="0.0,0.0 13.5,13.5 142.5,13.5 161.5,-5.5 161.5,-85.1 180.5,-104.1 237.5,-104.1 256.5,-85.1 256.5,-5.5 275.5,13.5 399.0,13.5" fill="none" stroke="#f2b134" stroke-width="19.3" stroke-linejoin="round" stroke-linecap="round"><title>DQS0P 0.1016 mm</title></polyline>
+<polyline points="-123.5,0.0 -61.8,61.8 399.0,61.8" fill="none" stroke="#f58a3c" stroke-width="19.3" stroke-linejoin="round" stroke-linecap="round"><title>DQS0N 0.1016 mm</title></polyline>
+<circle cx="0.0" cy="-247.0" r="28.5" fill="#b9534e"><title>DQ1</title></circle>
+<text x="0.0" y="-243.0" fill="#10161c" font-size="14" text-anchor="middle" font-weight="600">E1</text>
+<circle cx="0.0" cy="-123.5" r="28.5" fill="#3fa7d6"><title>GND</title></circle>
+<text x="0.0" y="-119.5" fill="#10161c" font-size="14" text-anchor="middle" font-weight="600">F1</text>
+<circle cx="0.0" cy="0.0" r="28.5" fill="#f2b134"><title>DQS0P</title></circle>
+<text x="0.0" y="4.0" fill="#10161c" font-size="14" text-anchor="middle" font-weight="600">G1</text>
+<circle cx="0.0" cy="123.5" r="28.5" fill="#b9534e"><title>DQ6</title></circle>
+<text x="0.0" y="127.5" fill="#10161c" font-size="14" text-anchor="middle" font-weight="600">H1</text>
+<circle cx="0.0" cy="247.0" r="28.5" fill="#b9534e"><title>DQ4</title></circle>
+<text x="0.0" y="251.0" fill="#10161c" font-size="14" text-anchor="middle" font-weight="600">J1</text>
+<circle cx="-123.5" cy="-247.0" r="28.5" fill="#b9534e"><title>DQ2</title></circle>
+<text x="-123.5" y="-243.0" fill="#10161c" font-size="14" text-anchor="middle" font-weight="600">E2</text>
+<circle cx="-123.5" cy="-123.5" r="28.5" fill="#b9534e"><title>DQ0</title></circle>
+<text x="-123.5" y="-119.5" fill="#10161c" font-size="14" text-anchor="middle" font-weight="600">F2</text>
+<circle cx="-123.5" cy="0.0" r="28.5" fill="#f58a3c"><title>DQS0N</title></circle>
+<text x="-123.5" y="4.0" fill="#10161c" font-size="14" text-anchor="middle" font-weight="600">G2</text>
+<circle cx="-123.5" cy="123.5" r="28.5" fill="#3fa7d6"><title>GND</title></circle>
+<text x="-123.5" y="127.5" fill="#10161c" font-size="14" text-anchor="middle" font-weight="600">H2</text>
+<circle cx="-123.5" cy="247.0" r="28.5" fill="#b9534e"><title>DQ5</title></circle>
+<text x="-123.5" y="251.0" fill="#10161c" font-size="14" text-anchor="middle" font-weight="600">J2</text>
+<circle cx="-247.0" cy="-247.0" r="28.5" fill="#3fa7d6"><title>GND</title></circle>
+<text x="-247.0" y="-243.0" fill="#10161c" font-size="14" text-anchor="middle" font-weight="600">E3</text>
+<circle cx="-247.0" cy="-123.5" r="28.5" fill="#3fa7d6"><title>GND</title></circle>
+<text x="-247.0" y="-119.5" fill="#10161c" font-size="14" text-anchor="middle" font-weight="600">F3</text>
+<circle cx="-247.0" cy="123.5" r="28.5" fill="#3fa7d6"><title>GND</title></circle>
+<text x="-247.0" y="127.5" fill="#10161c" font-size="14" text-anchor="middle" font-weight="600">H3</text>
+<circle cx="-247.0" cy="247.0" r="28.5" fill="#3fa7d6"><title>GND</title></circle>
+<text x="-247.0" y="251.0" fill="#10161c" font-size="14" text-anchor="middle" font-weight="600">J3</text>
+<line x1="-285.0" y1="317.3" x2="-190.0" y2="317.3" stroke="#fff" stroke-width="2"/><text x="-180.5" y="321.3" fill="#fff" font-size="12">0.5 mm</text></svg>
+</html>
