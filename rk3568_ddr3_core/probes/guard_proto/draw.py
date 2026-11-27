@@ -84,7 +84,7 @@ def build(pattern, guards):
     return tracks, vias, stats
 
 
-def svg(tracks, vias, width):
+def svg(tracks, vias, width, pour=False):
     s = 62
     h = max(width, 5.0) + 1.6
     out = [f'<svg viewBox="{-0.6 * s:.0f} {-h / 2 * s:.0f} {(D + 1.2) * s:.0f} {h * s:.0f}" '
@@ -92,6 +92,13 @@ def svg(tracks, vias, width):
     for x, lab in ((0, "SoC 球区边"), (RULE_SOC, "SoC 规则区边"), (D - RULE_RAM, "颗粒规则区边"), (D, "颗粒球区边")):
         out.append(f'<line x1="{x * s}" y1="{-h / 2 * s}" x2="{x * s}" y2="{h / 2 * s}" stroke="#5b6b7a" stroke-dasharray="6 5"/>')
         out.append(f'<text x="{x * s + 4}" y="{-h / 2 * s + 14}" fill="#9fb0c0" font-size="12">{lab}</text>')
+    if pour:  # GND pour on L1: everything outside the ball-field stubs, minus a 0.15 halo round each signal
+        out.append(f'<rect x="{STUB * s}" y="{-h / 2 * s + 20}" width="{(D - 2 * STUB) * s}" height="{h * s - 40}" fill="#2b7fa6"/>')
+        for kind, pts, w, name in tracks:
+            if kind == "sig":
+                p = " ".join(f"{x * s:.1f},{y * s:.1f}" for x, y in pts)
+                out.append(f'<polyline points="{p}" fill="none" stroke="#10161c" stroke-width="{(w + 2 * GS) * s:.2f}" stroke-linejoin="round"/>')
+        tracks = [t for t in tracks if t[0] == "sig"]
     for kind, pts, w, name in tracks:
         col = "#e0564f" if kind == "sig" else "#3fa7d6"
         if name == "DQS":
@@ -117,6 +124,9 @@ def main():
                     f'<td>{st["vias"]}</td><td>{st["max_gap"]:.2f}</td><td>{un}</td></tr>')
         blocks.append(f"<h2>{title}</h2><p>{note}</p>{svg(tracks, vias, st['width'])}")
         print(key, {k: round(v, 2) for k, v in st.items()})
+        if key == "A":
+            blocks.append("<h2>A 的铺铜画法（用户 2026-11-26 选定）</h2><p>不画地线：信号按 A 的位置走，L1 铺地（到信号 0.15 mm）自己流进 0.70 mm 的间隙，形成 0.40 mm 的铜条，过孔由脚本打在铜条上。"
+                          "图里没有去掉窄于 0.30 mm 的铜（两头展开处的尖角实际会被铺铜丢掉）。</p>" + svg(tracks, vias, st["width"], pour=True))
     html = f"""<!doctype html><html lang="zh"><meta charset="utf-8"><title>原型：表层数据线包地（issue 47）</title>
 <style>body{{font:15px/1.6 system-ui,"Microsoft YaHei",sans-serif;max-width:1000px;margin:24px auto;padding:0 16px;color:#1c2630}}
 table{{border-collapse:collapse}}td,th{{border:1px solid #b8c2cc;padding:4px 10px;text-align:right}}h2{{margin-top:36px}}
