@@ -7,7 +7,7 @@ Three scenes, three variants each, drawn to scale (mm) from the real DQS0 balls 
 (G1 / G2, west edge; drawn with "out of the package" pointing right). Nothing here went through
 KiCad DRC; clearances are checked numerically by this script (sampled, 0.01 mm steps).
 """
-import json, math, re
+import json, math, os, re
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
@@ -31,7 +31,7 @@ SQ2 = math.sqrt(2)
 class Scene:
     def __init__(self, x0, x1, y0, y1, scale):
         self.box, self.s = (x0, x1, y0, y1), scale
-        self.tracks, self.rounds, self.guides, self.texts, self.pour = [], [], [], [], None
+        self.tracks, self.rounds, self.guides, self.texts, self.pour, self.erase = [], [], [], [], None, []
 
     def track(self, net, pts, w, cls="sig"):
         self.tracks.append((net, pts, w, cls))
@@ -95,6 +95,8 @@ def svg(sc):
         for net, x, y, d, lab, cls, drill in sc.rounds:
             if net != "GND":
                 o.append(f'<circle cx="{x * s:.1f}" cy="{y * s:.1f}" r="{(d / 2 + POUR_CLR) * s:.1f}" fill="#10161c"/>')
+    for ex0, ey0, ex1, ey1 in sc.erase:      # copper the pour would drop (narrower than 0.30)
+        o.append(f'<rect x="{ex0 * s:.1f}" y="{ey0 * s:.1f}" width="{(ex1 - ex0) * s:.1f}" height="{(ey1 - ey0) * s:.1f}" fill="#10161c"/>')
     for x, lab in sc.guides:
         o.append(f'<line x1="{x * s}" y1="{y0 * s}" x2="{x * s}" y2="{y1 * s}" stroke="#7d8c9a" stroke-dasharray="6 5"/>')
         o.append(f'<text x="{x * s + 4}" y="{y0 * s + 15}" fill="#b5c2ce" font-size="13">{lab}</text>')
@@ -125,17 +127,17 @@ BALLS = {  # (ring, row) -> (ball, net); real map round DQS0, west edge
 XEND = 2.1
 
 
-def exit_base(dq0=None):
-    sc = Scene(-1.6, XEND + 0.1, -1.75, 1.75, 190)
+def exit_base(dq0=None, fan=0.0):
+    sc = Scene(-1.6, XEND + 0.1, -1.75 - fan, 1.75, 190)
     for (ring, row), (ball, net) in BALLS.items():
         cls = "gnd" if net == "GND" else "p" if net.endswith("P") else "n" if net.endswith("N") else "dq"
         sc.pad(net if net != "GND" else "GND", -ring * P, row * P, PAD, ball, cls)
     sc.guide(0.725, "封装边")
     sc.guide(RULE_EDGE, "规则区边")
-    sc.track("DQ1", [(0, -2 * P), (XEND, -2 * P)], W_IN, "dq")
+    sc.track("DQ1", [(0, -2 * P), (0.25, -2 * P), (0.25 + fan, -2 * P - fan), (XEND, -2 * P - fan)] if fan else [(0, -2 * P), (XEND, -2 * P)], W_IN, "dq")
     sc.track("DQ4", [(0, 2 * P), (XEND, 2 * P)], W_IN, "dq")
     sc.track("DQ6", [(0, P), (XEND, P)], W_IN, "dq")
-    sc.track("DQ2", [(-P, -2 * P), (-P / 2, -1.5 * P), (XEND, -1.5 * P)], W_IN, "dq")
+    sc.track("DQ2", [(-P, -2 * P), (-P / 2, -1.5 * P)] + ([(0.25, -1.5 * P), (0.25 + fan, -1.5 * P - fan)] if fan else []) + [(XEND, -1.5 * P - fan)], W_IN, "dq")
     sc.track("DQ5", [(-P, 2 * P), (-P / 2, 1.5 * P), (XEND, 1.5 * P)], W_IN, "dq")
     sc.track("DQ0", dq0 or [(-P, -P), (-P / 2, -P / 2), (XEND, -P / 2)], W_IN, "dq")
     return sc
@@ -208,6 +210,8 @@ def change(kind):
             else:
                 pts = [(-L, sgn * c), (L, sgn * c)]
             sc.track(name, pts, W_DQ, "dq")
+    sc.text(-L + 0.1, -2.05, "← 从这边来：差分对和邻线都在 L1（黄 / 橙 / 红），青色是 L1 的地铺铜")
+    sc.text(0.35, 2.15, "换到 L6 后往这边走（蓝，在板子背面，不碰 L1 的铺铜）→")
     near = min(math.dist((0, vy), g) for g in gnd)
     half = max(max(abs(y) for _, y in gnd) + VIA / 2, vy + VIA / 2)
     return sc, {"gnd_n": sum(1 for g in gnd if abs(g[0]) < 1), "near": near, "half": half, "bulge": max(bulge, 0.0),
@@ -241,6 +245,7 @@ def bumps(kind, need):
         span = x - between - 0.3
     pts.append((L1, y))
     sc.track("DQS0P", pts, W_DP, "p")
+    sc.erase.append((0.3 - POUR_CLR, -(NB[0] - W_DQ / 2), 0.3 + span + POUR_CLR, y))
     sc.track("DQS0N", [(L0, CC / 2), (L1, CC / 2)], W_DP, "n")
     for sgn in (-1, 1):
         for k, c in enumerate(NB):
@@ -258,7 +263,7 @@ def bumps(kind, need):
 def bump_C(need):
     off = P / 2 - CC
     dq0 = [(-P, -P), (-P / 2, -P / 2), (0.25, -P / 2), (0.25 + 0.435, -0.76), (XEND, -0.76)]
-    sc = exit_base(dq0)
+    sc = exit_base(dq0, fan=0.435)
     H, e = ear(off, need)
     sc.track("DQS0P", [(0, 0), (off, off)] + e + [(XEND, off)], W_IN, "p")
     sc.track("DQS0N", [(-P, 0), (-P / 2, P / 2), (XEND, P / 2)], W_IN, "n")
@@ -289,7 +294,7 @@ def main():
         ("A", "1A 以通道为轴：内圈球的线沿通道直出，外圈球的线贴着它出盘", exit_A,
          "内圈球（G2）的线斜进 G1、H1 之间的通道后一路直线；外圈球（G1）的线在盘内偏 0.071 mm 出盘，一出盘两根就是 0.15 的对内间隙。盘外只有一个 45° 拐点。"),
         ("B", "1B 以球行为轴：两根在球区外对称收拢成 Y 形", exit_B,
-         "差分对的中心线落在球行上（和两边的 DQ 对称）。两根各拐一次 45°，在球区外约 0.5 mm 处合并；外圈球那根离 DQ0 的线更近。"),
+         "差分对的中心线落在球行上（和两边的 DQ 对称）。两根各拐一次 45°，在球区外约 0.5 mm 处收到 0.15 间隙并行；外圈球那根离 DQ0 的线更近。"),
         ("C", "1C 不急着合并：按半个球距并行，出规则区再收到 0.15", exit_C,
          "两根在规则区内保持 0.325 mm 中心距（间隙 0.22），都是直线；出规则区时内圈球那根收一小步。球区附近没有任何小拐点，但规则区内这 1.7 mm 耦合较松。"),
     ):
@@ -346,11 +351,22 @@ def main():
     def sec(tag):
         return "".join(b for t, b in blocks if t == tag)
 
-    html = f"""<!doctype html><html lang="zh"><meta charset="utf-8"><title>原型：差分对的样子（issue 37）</title>
-<style>body{{font:15px/1.65 system-ui,"Microsoft YaHei",sans-serif;max-width:1040px;margin:24px auto;padding:0 16px;color:#1c2630;background:#fff}}
-table{{border-collapse:collapse;margin:10px 0}}td,th{{border:1px solid #b8c2cc;padding:4px 9px;text-align:right;font-size:14px}}td:first-child,th:first-child{{text-align:center}}
-h2{{margin-top:44px;border-top:2px solid #1c2630;padding-top:14px}}h3{{margin-top:30px}}
-.k span{{display:inline-block;width:26px;height:6px;margin:0 6px 2px 14px}}.rec{{background:#eef6ea;border-left:4px solid #5a9a48;padding:8px 12px}}</style>
+    head = '<!doctype html><html lang="zh"><meta charset="utf-8">'
+    html = f"""<title>差分对画法原型</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+/* layout: one reading column; figures and tables scroll inside their own boxes */
+:root{{--bg:#fbfcfd;--fg:#1c2630;--muted:#55636f;--line:#b8c2cc;--rule:#1c2630;--rec-bg:#eaf4ee;--rec-bar:#3f8f5f;--th:#eef2f5}}
+@media (prefers-color-scheme: dark){{:root:not([data-theme="light"]){{--bg:#12181e;--fg:#e3e9ee;--muted:#9fb0bd;--line:#3d4a55;--rule:#9fb0bd;--rec-bg:#17301f;--rec-bar:#5fb37f;--th:#1c252d;color-scheme:dark}}}}
+:root[data-theme="dark"]{{--bg:#12181e;--fg:#e3e9ee;--muted:#9fb0bd;--line:#3d4a55;--rule:#9fb0bd;--rec-bg:#17301f;--rec-bar:#5fb37f;--th:#1c252d;color-scheme:dark}}
+body{{font:15px/1.65 system-ui,"Microsoft YaHei","PingFang SC",sans-serif;background:var(--bg);color:var(--fg);max-width:1040px;margin:0 auto;padding-block:24px;
+padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}}
+h1{{font-size:26px;line-height:1.3;text-wrap:balance}}h2{{margin-top:44px;border-top:2px solid var(--rule);padding-top:14px;font-size:21px;text-wrap:balance}}h3{{margin-top:30px;font-size:17px}}
+.wide{{overflow-x:auto}}table{{border-collapse:collapse;margin:10px 0;font-variant-numeric:tabular-nums}}td,th{{border:1px solid var(--line);padding:4px 9px;text-align:right;font-size:14px}}
+th{{background:var(--th)}}td:first-child,th:first-child{{text-align:center}}
+.k{{color:var(--muted)}}.k span{{display:inline-block;width:26px;height:6px;margin:0 6px 2px 14px}}.rec{{background:var(--rec-bg);border-left:4px solid var(--rec-bar);padding:8px 12px}}
+svg{{display:block;border-radius:4px}}
+</style>
 <h1>原型（用完即弃）：差分对画成什么样</h1>
 <p>三件事各出三种画法，请各选一个（或说哪里要改）。全部按比例画，单位 mm，数字由脚本算。
 对象是 RK3568 的 DQS0（G1 / G2，西边），图里“出封装”的方向朝右；其余四对（DQS1–3、CLK）在球阵上的姿势相同。
@@ -361,11 +377,11 @@ h2{{margin-top:44px;border-top:2px solid #1c2630;padding-top:14px}}h3{{margin-to
 <h2>先看一个事实：五对差分线都是“一前一后”出球，外圈球那根天生短</h2>
 <p>RK3568 的五对（DQS0–3、CLK）都在最外两圈，P、N 在同一行里一前一后垂直于封装边。两个焊盘之间（空隙 0.35 mm）只过得了一根线，
 所以内圈球那根必须从外圈球旁边的通道绕出去，板上多走约 {board['A']:.2f} mm；再加上封装内引线的差，外圈球那根要补的长度如下（对内工作目标 0.15 mm，上限 0.30 mm）：</p>
-<table><tr><th>对</th><th>外圈球</th><th>内圈球</th><th>封装内：内 − 外</th><th>板上：内 − 外（画法 1A）</th><th>外圈球那根要补</th></tr>{rowsP}</table>
+<div class="wide"><table><tr><th>对</th><th>外圈球</th><th>内圈球</th><th>封装内：内 − 外</th><th>板上：内 − 外（画法 1A）</th><th>外圈球那根要补</th></tr>{rowsP}</table></div>
 <p>颗粒那一头怎么进球区取决于颗粒的扇出，这里没有画。</p>
 
 <h2>一、成对出 SoC 球区（L1）</h2>
-<table><tr><th>画法</th><th>从外圈球中心起多远开始按 0.15 间隙并行</th><th>板上长度差（内 − 外）</th><th>两根线的拐点数</th><th>最小间距（规则区内下限 0.09）</th></tr>{''.join(rows1)}</table>
+<div class="wide"><table><tr><th>画法</th><th>从外圈球中心起多远开始按 0.15 间隙并行</th><th>板上长度差（内 − 外）</th><th>两根线的拐点数（含盘内的）</th><th>最小间距（规则区内下限 0.09）</th></tr>{''.join(rows1)}</table></div>
 <p>地球（F1、H2 等）的过孔没有画，扇出工具要让它们避开这两条通道。旁边的 DQ 只画了直出的一段。</p>
 <p class="rec">我的推荐：1A。并行得最早、拐点最少；代价是外圈球那根在盘内偏心 0.071 mm 出盘（KiCad 算长度时按盘心到出盘点的直线折算，实测过）。</p>
 {sec('s1')}
@@ -373,20 +389,22 @@ h2{{margin-top:44px;border-top:2px solid #1c2630;padding-top:14px}}h3{{margin-to
 <h2>二、换层：过孔对和地过孔（L1 → L6，规则区外）</h2>
 <p>已定的数：过孔 0.4 / 0.2，两个信号过孔中心距 ≥ 0.8；地过孔离信号过孔中心 ≤ 0.635（这里取 0.60，盘边到盘边 0.20）；
 差分对两侧是 0.70 的包地间隙（铜条中心线离对的中心 {STRIP:.3f}），再外面是 DQ。邻线画成直通；整个字节组一起换层时 DQ 的过孔怎么排是另一件事，这里不定。</p>
-<table><tr><th>画法</th><th>贴身的地过孔数</th><th>地过孔到信号过孔中心</th><th>过孔占的总宽</th><th>邻线每侧让出</th><th>每层张开段（非耦合）</th><th>最小间距（下限 0.15）</th></tr>{''.join(rows2)}</table>
+<div class="wide"><table><tr><th>画法</th><th>贴身的地过孔数</th><th>地过孔到信号过孔中心</th><th>过孔占的总宽</th><th>邻线每侧让出</th><th>每层张开段（非耦合）</th><th>最小间距（下限 0.15）</th></tr>{''.join(rows2)}</table></div>
 <p class="rec">我的推荐：2B，要更稳妥就 2C。两者都不让线带变宽；2A 每侧要鼓出约 0.5 mm，一个字节组里换层的地方会鼓成一个包。</p>
 {sec('s2')}
 
 <h2>三、对内补偿</h2>
 <p>补在外圈球那根（短的）上，只能向外凸。图里按最大的一对补 {worst:.2f} mm。表里“个数”括号内依次是 DQS0 / DQS1 / DQS2 / DQS3 / CLK 各要几个。</p>
-<table><tr><th>画法</th><th>位置</th><th>每个补</th><th>个数</th><th>占的长度</th><th>对内最大间隙</th><th>凸起顶到邻线（要求 ≥ 0.45）</th><th>凸起一侧剩的地铜宽（最小 0.30）</th><th>最小间距</th></tr>{''.join(rows3)}</table>
+<div class="wide"><table><tr><th>画法</th><th>位置</th><th>每个补</th><th>个数</th><th>占的长度</th><th>对内最大间隙</th><th>凸起顶到邻线（要求 ≥ 0.45）</th><th>凸起一侧剩的地铜宽（最小 0.30）</th><th>最小间距</th></tr>{''.join(rows3)}</table></div>
 <p>3A、3B 的凸起会把那一侧 0.70 的包地间隙吃掉 0.30：凸起这一段那一侧没有地铜，到邻线也只有 0.40。要保住包地，邻线得在这一段整体外移 0.30（线带变宽）。
 规则区外能用的直线段大约只有 3.5 mm（两个球区相距 7.5 mm，减去两头的规则区）。</p>
 <p class="rec">我的推荐：3C，不够的零头再用 3B。要补的量是 0.4–1.0 mm，放在包地的直线段上代价大；放在规则区内的展开段里，一个耳朵就补完，包地段保持直线。</p>
 {sec('s3')}
-</html>"""
+"""
     out = HERE / "diffpair_variants.html"
-    out.write_text(html, encoding="utf-8")
+    out.write_text(head + html + "</html>", encoding="utf-8")
+    if os.environ.get("PAGE_OUT"):      # body-only copy for publishing as a page
+        Path(os.environ["PAGE_OUT"]).write_text(html, encoding="utf-8")
     for row in log:
         print(row)
     print("need", {k: round(v, 3) for k, v in need.items()})
