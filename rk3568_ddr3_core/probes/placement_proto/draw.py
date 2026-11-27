@@ -168,10 +168,21 @@ class Variant:
         grid = [(x * 0.25, y * 0.25) for x in range(int(min(xs) * 4) - 8, int(max(xs) * 4) + 9)
                 for y in range(int(min(ys) * 4) - 8, int(max(ys) * 4) + 9)]
         grid = [g for g in grid if not self.in_soc_field(g)]
+        def in_chip(g):   # split vias stay out of the DRAM bodies too
+            for c in "AB":
+                x, y = rot((g[0] - self.chips[c][0], g[1] - self.chips[c][1]), -self.chips[c][2])
+                if abs(x) < DDR_BODY[0] / 2 + 0.3 and abs(y) < DDR_BODY[1] / 2 + 0.3:
+                    return True
+            return False
+        grid = [g for g in grid if not in_chip(g)]
         m["t"] = []
-        for fn, cf in AC.items():
+        taken = []
+        for fn in list(TIGHT) + [k for k in AC if k not in TIGHT]:   # greedy, one via site per net, sites >= 0.8 mm apart
+            cf = AC[fn]
             s0, a, b = self.soc[SOC[fn]], self.chip("A", cf), self.chip("B", cf)
-            sp = min(grid, key=lambda g: octd(s0, g) + 2 * max(octd(g, a), octd(g, b)))
+            sp = min((g for g in grid if all(math.dist(g, q) >= 0.8 for q in taken)),
+                     key=lambda g: octd(s0, g) + 2 * max(octd(g, a), octd(g, b)))
+            taken.append(sp)
             m["t"].append({"net": fn, "soc": s0, "split": sp, "a": a, "b": b, "trunk": octd(s0, sp),
                            "ba": octd(sp, a), "bb": octd(sp, b), "pkg": PKG.get(SOC[fn], 0.0)})
         t = m["t"]
