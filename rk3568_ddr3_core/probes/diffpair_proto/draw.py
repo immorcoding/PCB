@@ -180,11 +180,10 @@ NB.append(NB[0] + W_DQ + 2 * W_DQ)                    # its S-S partner
 STRIP = CC / 2 + W_DP / 2 + GUARD_GAP / 2             # guard strip centre line
 
 
-def change(kind):
+def change(kind, vy=0.4):
     L = 3.0
     sc = Scene(-L, L, -2.3, 2.3, 130)
     sc.pour = (-L, L)
-    vy = 0.4
     fl = vy - CC / 2
     for sgn, cls, net in ((-1, "p", "DQS0P"), (1, "n", "DQS0N")):
         sc.track(net, [(-L, sgn * CC / 2), (-fl, sgn * CC / 2), (0, sgn * vy)], W_DP, cls)
@@ -353,7 +352,27 @@ def offset(pts, d):
     return out
 
 
-def pair_meander(amp=0.6, n=2):
+def fillet(pts, R, steps=10):
+    """Round every corner of a polyline with radius R."""
+    out = [pts[0]]
+    for a, b, c in zip(pts, pts[1:], pts[2:]):
+        u = ((a[0] - b[0]) / math.dist(a, b), (a[1] - b[1]) / math.dist(a, b))
+        v = ((c[0] - b[0]) / math.dist(c, b), (c[1] - b[1]) / math.dist(c, b))
+        ang = math.acos(max(-1, min(1, u[0] * v[0] + u[1] * v[1])))
+        t = R / math.tan(ang / 2)
+        p0 = (b[0] + u[0] * t, b[1] + u[1] * t)
+        p1 = (b[0] + v[0] * t, b[1] + v[1] * t)
+        bis = (u[0] + v[0], u[1] + v[1])
+        bl = math.hypot(*bis)
+        cen = (b[0] + bis[0] / bl * R / math.sin(ang / 2), b[1] + bis[1] / bl * R / math.sin(ang / 2))
+        a0 = math.atan2(p0[1] - cen[1], p0[0] - cen[0])
+        a1 = math.atan2(p1[1] - cen[1], p1[0] - cen[0])
+        d = (a1 - a0 + math.pi) % (2 * math.pi) - math.pi
+        out += [(cen[0] + R * math.cos(a0 + d * i / steps), cen[1] + R * math.sin(a0 + d * i / steps)) for i in range(steps + 1)]
+    return out + [pts[-1]]
+
+
+def pair_meander(amp=0.6, n=2, R=0.0):
     """The pair meandering as a pair (to lengthen both tracks together)."""
     L0, L1 = -0.6, 5.0
     sc = Scene(L0, L1, -2.0, 2.0, 150)
@@ -363,9 +382,12 @@ def pair_meander(amp=0.6, n=2):
         c += [(x, 0), (x + amp, -amp), (x + amp + top, -amp), (x + 2 * amp + top, 0)]
         x += 2 * amp + top + between
     c.append((L1, 0))
+    straight = plen(c)
+    if R:
+        c = fillet(c, R)
     sc.track("DQS0P", offset(c, -CC / 2), W_DP, "p")
     sc.track("DQS0N", offset(c, CC / 2), W_DP, "n")
-    added = n * 2 * amp * (SQ2 - 1)
+    added = plen(c) - (L1 - L0)
     return sc, added, plen(offset(c, -CC / 2)) - plen(offset(c, CC / 2))
 
 
@@ -425,6 +447,12 @@ def main():
         rows2.append(f"<tr><td>{key}</td><td>{st['gnd_n']}</td><td>{st['near']:.2f}</td><td>{2 * st['half']:.2f}</td><td>{st['bulge']:.2f}</td><td>{st['uncoupled']:.2f}</td><td>{clr:.3f}（{what}）</td></tr>")
         log.append(("change", key, {k: round(v, 3) for k, v in st.items()}, round(clr, 4), what))
         blocks.append(("s2", f"<h3>{title}</h3><p>{note}</p>{svg(sc)}"))
+        if key == "B":
+            sc, st = change("B", vy=0.3)
+            clr, what = min_clearance(sc)
+            rows2.append(f"<tr><td>B，过孔对 0.60</td><td>{st['gnd_n']}</td><td>{st['near']:.2f}</td><td>{2 * st['half']:.2f}</td><td>{st['bulge']:.2f}</td><td>{st['uncoupled']:.2f}</td><td>{clr:.3f}（{what}）</td></tr>")
+            log.append(("change", "B 0.60", {k: round(v, 3) for k, v in st.items()}, round(clr, 4), what))
+            blocks.append(("s2", f"<h3>2B，两个信号过孔中心距 0.60（盘边到盘边 0.20）</h3><p>官方板是 0.552。张开段从 0.77 降到 {st['uncoupled']:.2f} mm；两个过孔在地层上的避让圈连成一个长圆孔。</p>{svg(sc)}"))
     # ---- scene 3 (third round, user 2026-11-27: height capped at 0.20, set per pair)
     rows3 = []
     for nm, outer, inner, dp in pairs:
@@ -436,11 +464,11 @@ def main():
                      f"<td>{st['spill']:.2f}</td><td>{st['gap_max']:.2f}</td><td>{st['to_nb']:.2f}</td><td>{guard}</td><td>{clr:.3f}</td></tr>")
         log.append(("ear", nm, n, round(h, 4), {k: round(v, 3) for k, v in st.items()}, round(clr, 4), what))
         blocks.append(("s3", f"<h3>{nm}：补 {need[nm]:.2f} mm，{n} 个，高 {h:.3f}</h3>{svg(sc)}"))
-    sc, added, skew = pair_meander()
+    sc, added, skew = pair_meander(R=0.35)
     clr, what = min_clearance(sc)
     log.append(("pair meander", round(added, 3), round(skew, 4), round(clr, 4)))
-    blocks.append(("s4", f"<h3>差分对整体一起绕（示意）</h3><p>两根保持 0.15 间隙一起拐，图里两个幅度 0.60 的梯形，整对加长 {added:.2f} mm，"
-                         f"P、N 之间的差是 {abs(skew):.3f} mm（拐角成对出现，互相抵消）。</p>{svg(sc)}"))
+    blocks.append(("s4", f"<h3>差分对整体一起绕（示意）</h3><p>两根保持 0.15 间隙一起拐，和普通线的等长一样用圆弧（用户 2026-11-27 定）：图里两个幅度 0.60 的凸起，拐角是同心圆弧（中心线半径 0.35），整对加长 {added:.2f} mm，"
+                         f"P、N 之间的差是 {abs(skew):.3f} mm（左拐和右拐成对出现，互相抵消）。</p>{svg(sc)}"))
 
     def sec(tag):
         return "".join(b for t, b in blocks if t == tag)

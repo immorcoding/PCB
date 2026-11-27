@@ -167,7 +167,7 @@ svg{display:block;border-radius:4px}
 <h2>二、换层：过孔对和地过孔（L1 → L6，规则区外）</h2>
 <p>已定的数：过孔 0.4 / 0.2，两个信号过孔中心距 ≥ 0.8；地过孔离信号过孔中心 ≤ 0.635（这里取 0.60，盘边到盘边 0.20）；
 差分对两侧是 0.70 的包地间隙（铜条中心线离对的中心 0.529），再外面是 DQ。邻线画成直通；整个字节组一起换层时 DQ 的过孔怎么排是另一件事，这里不定。</p>
-<div class="wide"><table><tr><th>画法</th><th>贴身的地过孔数</th><th>地过孔到信号过孔中心</th><th>过孔占的总宽</th><th>邻线每侧让出</th><th>每层张开段（非耦合）</th><th>最小间距（下限 0.15）</th></tr><tr><td>A</td><td>2</td><td>0.60</td><td>2.40</td><td>0.47</td><td>0.77</td><td>0.150（DQa- 线 ↔ GND 过孔）</td></tr><tr><td>B</td><td>2</td><td>0.60</td><td>1.46</td><td>0.00</td><td>0.77</td><td>0.150（DQS0P 线 ↔ DQS0N 线）</td></tr><tr><td>C</td><td>4</td><td>0.60</td><td>1.46</td><td>0.00</td><td>0.77</td><td>0.150（DQS0P 线 ↔ DQS0N 线）</td></tr></table></div>
+<div class="wide"><table><tr><th>画法</th><th>贴身的地过孔数</th><th>地过孔到信号过孔中心</th><th>过孔占的总宽</th><th>邻线每侧让出</th><th>每层张开段（非耦合）</th><th>最小间距（下限 0.15）</th></tr><tr><td>A</td><td>2</td><td>0.60</td><td>2.40</td><td>0.47</td><td>0.77</td><td>0.150（DQa- 线 ↔ GND 过孔）</td></tr><tr><td>B</td><td>2</td><td>0.60</td><td>1.46</td><td>0.00</td><td>0.77</td><td>0.150（DQS0P 线 ↔ DQS0N 线）</td></tr><tr><td>B，过孔对 0.60</td><td>2</td><td>0.60</td><td>1.46</td><td>0.00</td><td>0.49</td><td>0.150（DQS0P 线 ↔ DQS0N 线）</td></tr><tr><td>C</td><td>4</td><td>0.60</td><td>1.46</td><td>0.00</td><td>0.77</td><td>0.150（DQS0P 线 ↔ DQS0N 线）</td></tr></table></div>
 <p class="rec">已定（用户 2026-11-27）：2B。原来的推荐：2B，要更稳妥就 2C。两者都不让线带变宽；2A 每侧要鼓出约 0.5 mm，一个字节组里换层的地方会鼓成一个包。</p>
 <h3>2A 一字排开：地 – 信号 – 信号 – 地</h3><p>四个过孔排成一行，地过孔在信号过孔的正外侧。最对称；两边的线要各让出一个鼓包。</p><svg viewBox="-390 -299 780 598" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:780px;background:#10161c">
 <rect x="-390.0" y="-299.0" width="780.0" height="598.0" fill="#1f5f7d"/>
@@ -231,6 +231,42 @@ svg{display:block;border-radius:4px}
 <circle cx="-76.2" cy="-68.8" r="13.0" fill="#10161c"/>
 <circle cx="-76.2" cy="68.8" r="26.0" fill="#3fa7d6"><title>GND</title></circle>
 <circle cx="-76.2" cy="68.8" r="13.0" fill="#10161c"/>
+<circle cx="286.0" cy="-68.8" r="26.0" fill="#3fa7d6"><title>GND</title></circle>
+<circle cx="286.0" cy="-68.8" r="13.0" fill="#10161c"/>
+<circle cx="286.0" cy="68.8" r="26.0" fill="#3fa7d6"><title>GND</title></circle>
+<circle cx="286.0" cy="68.8" r="13.0" fill="#10161c"/>
+<circle cx="-338.0" cy="-68.8" r="26.0" fill="#3fa7d6"><title>GND</title></circle>
+<circle cx="-338.0" cy="-68.8" r="13.0" fill="#10161c"/>
+<circle cx="-338.0" cy="68.8" r="26.0" fill="#3fa7d6"><title>GND</title></circle>
+<circle cx="-338.0" cy="68.8" r="13.0" fill="#10161c"/>
+<text x="-377.0" y="-266.5" fill="#dfe7ee" font-size="13">← 从这边来：差分对和邻线都在 L1（黄 / 橙 / 红），青色是 L1 的地铺铜</text>
+<text x="45.5" y="279.5" fill="#dfe7ee" font-size="13">换到 L6 后往这边走（蓝，在板子背面，不碰 L1 的铺铜）→</text>
+<line x1="-377.0" y1="288.59999999999997" x2="-312.0" y2="288.59999999999997" stroke="#fff" stroke-width="2"/><text x="-305.5" y="292.59999999999997" fill="#fff" font-size="12">0.5 mm</text></svg><h3>2B，两个信号过孔中心距 0.60（盘边到盘边 0.20）</h3><p>官方板是 0.552。张开段从 0.77 降到 0.49 mm；两个过孔在地层上的避让圈连成一个长圆孔。</p><svg viewBox="-390 -299 780 598" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:780px;background:#10161c">
+<rect x="-390.0" y="-299.0" width="780.0" height="598.0" fill="#1f5f7d"/>
+<polyline points="-390.0,-16.5 -22.5,-16.5 0.0,-39.0" fill="none" stroke="#10161c" stroke-width="52.5" stroke-linejoin="round" stroke-linecap="round"/>
+<polyline points="-390.0,16.5 -22.5,16.5 0.0,39.0" fill="none" stroke="#10161c" stroke-width="52.5" stroke-linejoin="round" stroke-linecap="round"/>
+<polyline points="-390.0,-124.0 390.0,-124.0" fill="none" stroke="#10161c" stroke-width="58.5" stroke-linejoin="round" stroke-linecap="round"/>
+<polyline points="-390.0,-182.5 390.0,-182.5" fill="none" stroke="#10161c" stroke-width="58.5" stroke-linejoin="round" stroke-linecap="round"/>
+<polyline points="-390.0,124.0 390.0,124.0" fill="none" stroke="#10161c" stroke-width="58.5" stroke-linejoin="round" stroke-linecap="round"/>
+<polyline points="-390.0,182.5 390.0,182.5" fill="none" stroke="#10161c" stroke-width="58.5" stroke-linejoin="round" stroke-linecap="round"/>
+<circle cx="0.0" cy="-39.0" r="45.5" fill="#10161c"/>
+<circle cx="0.0" cy="39.0" r="45.5" fill="#10161c"/>
+<polyline points="0.0,-39.0 22.5,-16.5 390.0,-16.5" fill="none" stroke="#4f8fe0" stroke-width="13.5" stroke-linejoin="round" stroke-linecap="round"><title>DQS0P 0.104 mm</title></polyline>
+<polyline points="0.0,39.0 22.5,16.5 390.0,16.5" fill="none" stroke="#7fb0ee" stroke-width="13.5" stroke-linejoin="round" stroke-linecap="round"><title>DQS0N 0.104 mm</title></polyline>
+<polyline points="-390.0,-124.0 390.0,-124.0" fill="none" stroke="#b9534e" stroke-width="19.5" stroke-linejoin="round" stroke-linecap="round"><title>DQa- 0.15 mm</title></polyline>
+<polyline points="-390.0,-182.5 390.0,-182.5" fill="none" stroke="#b9534e" stroke-width="19.5" stroke-linejoin="round" stroke-linecap="round"><title>DQb- 0.15 mm</title></polyline>
+<polyline points="-390.0,124.0 390.0,124.0" fill="none" stroke="#b9534e" stroke-width="19.5" stroke-linejoin="round" stroke-linecap="round"><title>DQa+ 0.15 mm</title></polyline>
+<polyline points="-390.0,182.5 390.0,182.5" fill="none" stroke="#b9534e" stroke-width="19.5" stroke-linejoin="round" stroke-linecap="round"><title>DQb+ 0.15 mm</title></polyline>
+<polyline points="-390.0,-16.5 -22.5,-16.5 0.0,-39.0" fill="none" stroke="#f2b134" stroke-width="13.5" stroke-linejoin="round" stroke-linecap="round"><title>DQS0P 0.104 mm</title></polyline>
+<polyline points="-390.0,16.5 -22.5,16.5 0.0,39.0" fill="none" stroke="#f58a3c" stroke-width="13.5" stroke-linejoin="round" stroke-linecap="round"><title>DQS0N 0.104 mm</title></polyline>
+<circle cx="0.0" cy="-39.0" r="26.0" fill="#f2b134"><title>DQS0P</title></circle>
+<circle cx="0.0" cy="-39.0" r="13.0" fill="#10161c"/>
+<circle cx="0.0" cy="39.0" r="26.0" fill="#f58a3c"><title>DQS0N</title></circle>
+<circle cx="0.0" cy="39.0" r="13.0" fill="#10161c"/>
+<circle cx="-72.1" cy="-68.8" r="26.0" fill="#3fa7d6"><title>GND</title></circle>
+<circle cx="-72.1" cy="-68.8" r="13.0" fill="#10161c"/>
+<circle cx="-72.1" cy="68.8" r="26.0" fill="#3fa7d6"><title>GND</title></circle>
+<circle cx="-72.1" cy="68.8" r="13.0" fill="#10161c"/>
 <circle cx="286.0" cy="-68.8" r="26.0" fill="#3fa7d6"><title>GND</title></circle>
 <circle cx="286.0" cy="-68.8" r="13.0" fill="#10161c"/>
 <circle cx="286.0" cy="68.8" r="26.0" fill="#3fa7d6"><title>GND</title></circle>
@@ -418,10 +454,10 @@ svg{display:block;border-radius:4px}
 <h2>四、差分对整体一起绕：管的是另一件事</h2>
 <p>一起绕改变的是这一对相对别的线的长度（DQS 对比它的 DQ 短了、CLK 比地址线短了的时候用），两根同进同出，P、N 之间的差不变。
 所以它替代不了上面的小耳朵：外圈球那根天生短的 0.4–1.0 mm 只能在那一根上补。两样都会用到，先用小耳朵把对内补平，整对不够长时再一起绕。</p>
-<h3>差分对整体一起绕（示意）</h3><p>两根保持 0.15 间隙一起拐，图里两个幅度 0.60 的梯形，整对加长 0.99 mm，P、N 之间的差是 0.000 mm（拐角成对出现，互相抵消）。</p><svg viewBox="-90 -300 840 600" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:840px;background:#10161c">
+<h3>差分对整体一起绕（示意）</h3><p>两根保持 0.15 间隙一起拐，和普通线的等长一样用圆弧（用户 2026-11-27 定）：图里两个幅度 0.60 的凸起，拐角是同心圆弧（中心线半径 0.35），整对加长 0.87 mm，P、N 之间的差是 0.000 mm（左拐和右拐成对出现，互相抵消）。</p><svg viewBox="-90 -300 840 600" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:840px;background:#10161c">
 <line x1="0.0" y1="-300.0" x2="0.0" y2="300.0" stroke="#7d8c9a" stroke-dasharray="6 5"/>
 <text x="4.0" y="-285.0" fill="#b5c2ce" font-size="13">规则区边</text>
-<polyline points="-90.0,-19.1 67.1,-19.1 157.1,-109.0 240.4,-109.0 330.4,-19.1 382.1,-19.1 472.1,-109.0 555.4,-109.0 645.4,-19.1 750.0,-19.1" fill="none" stroke="#f2b134" stroke-width="15.6" stroke-linejoin="round" stroke-linecap="round"><title>DQS0P 0.104 mm</title></polyline>
-<polyline points="-90.0,19.1 82.9,19.1 172.9,-71.0 224.6,-71.0 314.6,19.1 397.9,19.1 487.9,-71.0 539.6,-71.0 629.6,19.1 750.0,19.1" fill="none" stroke="#f58a3c" stroke-width="15.6" stroke-linejoin="round" stroke-linecap="round"><title>DQS0N 0.104 mm</title></polyline>
+<polyline points="-90.0,-19.1 52.9,-19.1 55.9,-19.2 58.5,-19.5 61.1,-20.0 63.6,-20.7 66.0,-21.6 68.4,-22.7 70.7,-24.0 72.9,-25.5 75.0,-27.1 77.2,-29.1 136.4,-88.4 140.3,-91.9 144.7,-95.4 149.4,-98.5 154.3,-101.3 159.4,-103.6 164.6,-105.6 170.0,-107.1 175.6,-108.2 181.1,-108.8 186.4,-109.0 211.1,-109.0 216.4,-108.8 221.9,-108.2 227.5,-107.1 232.9,-105.6 238.1,-103.6 243.2,-101.3 248.1,-98.5 252.8,-95.4 257.2,-91.9 261.1,-88.4 320.3,-29.1 322.5,-27.1 324.6,-25.5 326.8,-24.0 329.1,-22.7 331.5,-21.6 333.9,-20.7 336.4,-20.0 339.0,-19.5 341.6,-19.2 344.6,-19.1 367.9,-19.1 370.9,-19.2 373.5,-19.5 376.1,-20.0 378.6,-20.7 381.0,-21.6 383.4,-22.7 385.7,-24.0 387.9,-25.5 390.0,-27.1 392.2,-29.1 451.4,-88.4 455.3,-91.9 459.7,-95.4 464.4,-98.5 469.3,-101.3 474.4,-103.6 479.6,-105.6 485.0,-107.1 490.6,-108.2 496.1,-108.8 501.4,-109.0 526.1,-109.0 531.4,-108.8 536.9,-108.2 542.5,-107.1 547.9,-105.6 553.1,-103.6 558.2,-101.3 563.1,-98.5 567.8,-95.4 572.2,-91.9 576.1,-88.4 635.3,-29.1 637.5,-27.1 639.6,-25.5 641.8,-24.0 644.1,-22.7 646.5,-21.6 648.9,-20.7 651.4,-20.0 654.0,-19.5 656.6,-19.2 659.6,-19.1 750.0,-19.1" fill="none" stroke="#f2b134" stroke-width="15.6" stroke-linejoin="round" stroke-linecap="round"><title>DQS0P 0.104 mm</title></polyline>
+<polyline points="-90.0,19.1 53.6,19.1 58.9,18.8 64.4,18.2 70.0,17.1 75.4,15.6 80.6,13.6 85.7,11.3 90.6,8.5 95.3,5.4 99.7,1.9 103.6,-1.6 162.8,-60.9 165.0,-62.9 167.1,-64.5 169.3,-66.0 171.6,-67.3 174.0,-68.4 176.4,-69.3 178.9,-70.0 181.5,-70.5 184.1,-70.8 187.1,-71.0 210.4,-70.9 213.4,-70.8 216.0,-70.5 218.6,-70.0 221.1,-69.3 223.5,-68.4 225.9,-67.3 228.2,-66.0 230.4,-64.5 232.5,-62.9 234.7,-60.9 293.9,-1.6 297.8,1.9 302.2,5.4 306.9,8.5 311.8,11.3 316.9,13.6 322.1,15.6 327.5,17.1 333.1,18.2 338.6,18.8 343.9,19.0 368.6,19.1 373.9,18.8 379.4,18.2 385.0,17.1 390.4,15.6 395.6,13.6 400.7,11.3 405.6,8.5 410.3,5.4 414.7,1.9 418.6,-1.6 477.8,-60.9 480.0,-62.9 482.1,-64.5 484.3,-66.0 486.6,-67.3 489.0,-68.4 491.4,-69.3 493.9,-70.0 496.5,-70.5 499.1,-70.8 502.1,-71.0 525.4,-71.0 528.4,-70.8 531.0,-70.5 533.6,-70.0 536.1,-69.3 538.5,-68.4 540.9,-67.3 543.2,-66.0 545.4,-64.5 547.5,-62.9 549.7,-60.9 608.9,-1.6 612.8,1.9 617.2,5.4 621.9,8.5 626.8,11.3 631.9,13.6 637.1,15.6 642.5,17.1 648.1,18.2 653.6,18.8 658.9,19.1 750.0,19.1" fill="none" stroke="#f58a3c" stroke-width="15.6" stroke-linejoin="round" stroke-linecap="round"><title>DQS0N 0.104 mm</title></polyline>
 <line x1="-75.0" y1="288.0" x2="0.0" y2="288.0" stroke="#fff" stroke-width="2"/><text x="7.500000000000007" y="292.0" fill="#fff" font-size="12">0.5 mm</text></svg>
 </html>
