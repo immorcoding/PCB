@@ -87,6 +87,7 @@ def svg(sc):
     if sc.pour:                       # GND pour drawn as a fill, then cleared round every other net
         px0, px1 = sc.pour
         o.append(f'<rect x="{px0 * s}" y="{y0 * s}" width="{(px1 - px0) * s}" height="{(y1 - y0) * s}" fill="#1f5f7d"/>')
+        o.append(f'<clipPath id="c{id(sc)}"><rect x="{px0 * s}" y="{y0 * s}" width="{(px1 - px0) * s}" height="{(y1 - y0) * s}"/></clipPath><g clip-path="url(#c{id(sc)})">')
         for net, pts, w, cls in sc.tracks:
             if cls == "l6" or cls == "l6n":
                 continue
@@ -95,8 +96,11 @@ def svg(sc):
         for net, x, y, d, lab, cls, drill in sc.rounds:
             if net != "GND":
                 o.append(f'<circle cx="{x * s:.1f}" cy="{y * s:.1f}" r="{(d / 2 + POUR_CLR) * s:.1f}" fill="#10161c"/>')
+        o.append("</g>")
     for ex0, ey0, ex1, ey1 in sc.erase:      # copper the pour would drop (narrower than 0.30)
         o.append(f'<rect x="{ex0 * s:.1f}" y="{ey0 * s:.1f}" width="{(ex1 - ex0) * s:.1f}" height="{(ey1 - ey0) * s:.1f}" fill="#10161c"/>')
+    for bx0, by0, bx1, by1 in getattr(sc, 'boxes', []):
+        o.append(f'<rect x="{bx0 * s:.1f}" y="{by0 * s:.1f}" width="{(bx1 - bx0) * s:.1f}" height="{(by1 - by0) * s:.1f}" fill="none" stroke="#9be28f" stroke-dasharray="7 5" stroke-width="1.5"/>')
     for x, lab in sc.guides:
         o.append(f'<line x1="{x * s}" y1="{y0 * s}" x2="{x * s}" y2="{y1 * s}" stroke="#7d8c9a" stroke-dasharray="6 5"/>')
         o.append(f'<text x="{x * s + 4}" y="{y0 * s + 15}" fill="#b5c2ce" font-size="13">{lab}</text>')
@@ -268,10 +272,10 @@ def bump_C(need):
     sc.track("DQS0N", [(-P, 0), (-P / 2, P / 2), (XEND, P / 2)], W_IN, "n")
     return sc, H
 
-def round_ear(x, h, top=0.15):
+def round_ear(x, h, top=0.0):
     """Rounded ear starting at x on the baseline u = 0, pointing to +u. Returns (points, width)."""
     r = min(0.10, h / 2)
-    q = [i * math.pi / 2 / 8 for i in range(9)]
+    q = [i * math.pi / 2 / 24 for i in range(25)]
     pts = [(x + r * math.sin(t), r - r * math.cos(t)) for t in q]
     pts += [(x + 2 * r - r * math.cos(t), h - r + r * math.sin(t)) for t in q]
     w = 4 * r + top
@@ -352,7 +356,7 @@ def offset(pts, d):
     return out
 
 
-def fillet(pts, R, steps=10):
+def _unused_fillet(pts, R, steps=10):
     """Round every corner of a polyline with radius R."""
     out = [pts[0]]
     for a, b, c in zip(pts, pts[1:], pts[2:]):
@@ -372,24 +376,44 @@ def fillet(pts, R, steps=10):
     return out + [pts[-1]]
 
 
-def pair_meander(amp=0.6, n=2, R=0.0):
-    """The pair meandering as a pair (to lengthen both tracks together)."""
-    L0, L1 = -0.6, 5.0
-    sc = Scene(L0, L1, -2.0, 2.0, 150)
+PAIR_W = 2 * W_DP + G_DP          # 0.358, outer edge to outer edge of the pair
+LEG_GAP = 3 * W_DQ                # 0.45, pair edge to pair edge between two legs (CLK / DQS: 3 x track width)
+PAIR_PITCH = round(PAIR_W + LEG_GAP, 2)   # 0.81 leg centre distance
+PAIR_AMP_MAX = 1.5
+END_STRAIGHT = 0.7
+
+
+def hump(x0, pch, amp, q=48):
+    """One RTE-7 hump of a centre line: quarter arc, leg, half circle, leg, quarter arc. Radius = pitch / 2. Points to -y."""
+    r = pch / 2
+    arc = lambda cx, cy, a0, a1: [(cx + r * math.cos(math.radians(a0 + (a1 - a0) * i / q)), cy - r * math.sin(math.radians(a0 + (a1 - a0) * i / q))) for i in range(q + 1)]
+    pts = arc(x0, -r, 270, 360)                     # (x0, 0) -> (x0 + r, -r)
+    pts += arc(x0 + 2 * r, -(amp - r), 180, 0)      # over the top
+    pts += arc(x0 + 4 * r, -r, 180, 270)            # back to the base line
+    return pts
+
+
+def pair_meander(amp=PAIR_PITCH, n=2, pch=PAIR_PITCH):
+    """The pair meandering as a pair, drawn like the ordinary arc serpentine (RTE-7)."""
+    L0, L1 = -0.6, 5.4
+    sc = Scene(L0, L1, -2.2, 1.6, 150)
     sc.guide(0.0, "规则区边")
-    c, x, top, between = [(L0, 0)], 0.5, 0.45, 0.45
+    x = END_STRAIGHT
+    c = [(L0, 0)]
     for _ in range(n):
-        c += [(x, 0), (x + amp, -amp), (x + amp + top, -amp), (x + 2 * amp + top, 0)]
-        x += 2 * amp + top + between
+        c += hump(x, pch, amp)
+        x += 2 * pch
     c.append((L1, 0))
-    straight = plen(c)
-    if R:
-        c = fillet(c, R)
+    c = [pt for i, pt in enumerate(c) if i == 0 or math.dist(pt, c[i - 1]) > 1e-9]
     sc.track("DQS0P", offset(c, -CC / 2), W_DP, "p")
     sc.track("DQS0N", offset(c, CC / 2), W_DP, "n")
+    nb = PAIR_W / 2 + LEG_GAP + W_DQ / 2
+    sc.track("DQa+", [(L0, nb), (L1, nb)], W_DQ, "dq")
+    sc.track("DQa-", [(L0, -(amp + nb)), (L1, -(amp + nb))], W_DQ, "dq")
+    sc.boxes = [(0.0, -(amp + PAIR_W / 2 + LEG_GAP), END_STRAIGHT + n * 2 * pch + END_STRAIGHT, -(PAIR_W / 2))]
+    sc.text(0.1, 1.35, "绿色虚线 = 等长区域：矩形，贴着直线段的一侧，里面不放别的线和过孔")
     added = plen(c) - (L1 - L0)
-    return sc, added, plen(offset(c, -CC / 2)) - plen(offset(c, CC / 2))
-
+    return sc, added, plen(offset(c, -CC / 2)) - plen(offset(c, CC / 2)), n * (2 * amp - (4 - math.pi) * pch)
 
 # ---------------------------------------------------------------- numbers
 def soc_pairs():
@@ -464,11 +488,11 @@ def main():
                      f"<td>{st['spill']:.2f}</td><td>{st['gap_max']:.2f}</td><td>{st['to_nb']:.2f}</td><td>{guard}</td><td>{clr:.3f}</td></tr>")
         log.append(("ear", nm, n, round(h, 4), {k: round(v, 3) for k, v in st.items()}, round(clr, 4), what))
         blocks.append(("s3", f"<h3>{nm}：补 {need[nm]:.2f} mm，{n} 个，高 {h:.3f}</h3>{svg(sc)}"))
-    sc, added, skew = pair_meander(R=0.35)
+    sc, added, skew, formula = pair_meander()
     clr, what = min_clearance(sc)
-    log.append(("pair meander", round(added, 3), round(skew, 4), round(clr, 4)))
-    blocks.append(("s4", f"<h3>差分对整体一起绕（示意）</h3><p>两根保持 0.15 间隙一起拐，和普通线的等长一样用圆弧（用户 2026-11-27 定）：图里两个幅度 0.60 的凸起，拐角是同心圆弧（中心线半径 0.35），整对加长 {added:.2f} mm，"
-                         f"P、N 之间的差是 {abs(skew):.3f} mm（左拐和右拐成对出现，互相抵消）。</p>{svg(sc)}"))
+    log.append(("pair meander", round(added, 3), round(formula, 3), round(skew, 4), round(clr, 4), what))
+    blocks.append(("s4", f"<h3>整对一起绕：两个弯，摆幅 {PAIR_PITCH}，腿中心距 {PAIR_PITCH}</h3><p>形状和普通线的圆弧蛇形相同（腿垂直、半圆封顶，中心线半径 = 腿中心距的一半），两根是同心圆弧，间隙全程 0.15。"
+                         f"整对加长 {added:.2f} mm（公式 n·(2a − 0.858p) 给 {formula:.2f}），P、N 之间的差 {abs(skew):.3f} mm。</p>{svg(sc)}"))
 
     def sec(tag):
         return "".join(b for t, b in blocks if t == tag)
@@ -531,9 +555,20 @@ svg{{display:block;border-radius:4px}}
 <th>对内最大间隙</th><th>耳朵顶到邻线（要求 ≥ 0.45）</th><th>伸出段那一侧的地铜（最小 0.30）</th><th>最小间距</th></tr>{''.join(rows3)}</table></div>
 <p>耳朵伸出规则区的那一小段，耳朵一侧的地铜窄于 0.30 mm，铺铜进不去，这一段单侧没有包地（另一侧有）。官方 LP4X 模板上唯一的一例也是这样：3 个高 0.152 mm 的梯形小凸起画在包地段上，包地线不跟着绕。</p>
 {sec('s3')}
-<h2>四、差分对整体一起绕：管的是另一件事</h2>
-<p>一起绕改变的是这一对相对别的线的长度（DQS 对比它的 DQ 短了、CLK 比地址线短了的时候用），两根同进同出，P、N 之间的差不变。
-所以它替代不了上面的小耳朵：外圈球那根天生短的 0.4–1.0 mm 只能在那一根上补。两样都会用到，先用小耳朵把对内补平，整对不够长时再一起绕。</p>
+<h2>四、差分对的等长：拟定的数值（请确认）</h2>
+<p>两样东西管两件事：小耳朵补对内的差（只动短的那根）；整对一起绕补这一对相对别的线的长度（两根同进同出，对内差不变）。形状都用和普通线一样的圆弧。</p>
+<div class="wide"><table><tr><th>项</th><th>对内补偿（小耳朵）</th><th>整对一起绕</th><th>依据</th></tr>
+<tr><td>形状</td><td>纯圆弧的小弯：两个四分之一圆弧上去、两个下来，没有直边</td><td>和普通线的蛇形一样：腿垂直、半圆封顶，P、N 是同心圆弧</td><td>RTE-7；用户 2026-11-27</td></tr>
+<tr><td>高度（摆幅）</td><td>上限 {EAR_MAX:.2f} mm；同一对里等高，高度按要补的量反算</td><td>起点 {PAIR_PITCH}（一个完整弯的最小值），上限 {PAIR_AMP_MAX} mm；同一块等高</td><td>官方板的小凸起高 0.152；普通线起始摆幅 0.5</td></tr>
+<tr><td>半径</td><td>高度的一半（≤ 0.10 mm）</td><td>中心线 {PAIR_PITCH / 2:.3f}（腿中心距的一半）；里面那根 {PAIR_PITCH / 2 - CC / 2:.3f}</td><td>RTE-7</td></tr>
+<tr><td>间距</td><td>相邻两个耳朵之间留 0.15 直线；对内间隙最大到 0.15 + 高度（≤ 0.35）</td><td>腿中心距 {PAIR_PITCH}：相邻两条腿之间，对的外边到外边 {LEG_GAP:.2f}（3 倍线宽）</td><td>接口档：CLK、DQS 的蛇形腿距 3 倍线宽</td></tr>
+<tr><td>到邻线</td><td colspan="2">弯顶到别的信号 ≥ 0.45 mm（3 倍线宽）</td><td>接口档</td></tr>
+<tr><td>位置</td><td>外圈球那根（短的）上，向外凸；从 SoC 规则区内的展开段排起，排不下的顺着伸到直线段</td><td>规则区外的直线段上；或颗粒下面的内层、背面</td><td>RTE-16；RTE-7</td></tr>
+<tr><td>区域的形状</td><td>不单独划区域：一串耳朵贴着线，长度 = 个数 ×（2 × 高度 + 0.15）</td><td>矩形，贴在直线段空的一侧：长 = 个数 × 2 × 腿中心距 + 两头各 {END_STRAIGHT} 直线，深 = 摆幅 + {LEG_GAP:.2f}；里面不放别的线和过孔</td><td>RTE-2、RTE-7</td></tr>
+<tr><td>补多少</td><td>每个 1.142 × 高度（高 0.20 时 0.228 mm）</td><td>每个弯 2a − 0.858p（最小的完整弯 {2 * PAIR_PITCH - (4 - math.pi) * PAIR_PITCH:.2f} mm）；要补的不到一个完整弯时画一个矮的小弯</td><td>RTE-2 的公式</td></tr>
+<tr><td>包地</td><td colspan="2">弯的一侧地铜窄于 0.30 mm 时铺铜进不去，这一段单侧没有包地，逐处报长度；包地不跟着绕</td><td>官方板的做法</td></tr>
+</table></div>
+<p>内层（L4）的差分对是 0.103 / 0.20，对宽 0.406，腿中心距同样取 {PAIR_PITCH}（3 倍 L4 线宽是 0.40）。</p>
 {sec('s4')}
 """
     out = HERE / "diffpair_variants.html"
