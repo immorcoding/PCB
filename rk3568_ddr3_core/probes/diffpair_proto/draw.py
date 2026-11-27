@@ -280,7 +280,24 @@ def round_ear(x, h, top=0.15):
     return pts, w, 2 * h - (8 - 2 * math.pi) * r
 
 
-def ears(h, need, room=1.0):
+EAR_MAX = 0.20      # user 2026-11-27: height is capped, not fixed
+
+
+def ear_gain(h):
+    return 2 * h - (8 - 2 * math.pi) * min(0.10, h / 2)
+
+
+def ear_plan(need, hmax=EAR_MAX):
+    """Fewest ears that can add `need`, then one common height that adds it exactly."""
+    n = max(1, math.ceil(need / ear_gain(hmax) - 1e-9))
+    lo, hi = 0.0, hmax
+    for _ in range(50):
+        mid = (lo + hi) / 2
+        lo, hi = (mid, hi) if n * ear_gain(mid) < need else (lo, mid)
+    return n, hi
+
+
+def ears(h, need, room=1.0, n=None):
     """Rounded ears on the short track. They start inside the rule area (x < 0) and spill past it if they must."""
     L0, L1 = -1.3, 4.3
     sc = Scene(L0, L1, -2.0, 2.0, 170)
@@ -290,7 +307,7 @@ def ears(h, need, room=1.0):
     sc.text(0.9, -1.75, "规则区外：包地的直线段 →")
     y, between = -CC / 2, 0.15
     _, w, per = round_ear(0, h)
-    n = max(1, round(need / per))
+    n = n or max(1, round(need / per))
     x = -room
     pts = [(L0, y)]
     for _ in range(n):
@@ -408,21 +425,17 @@ def main():
         rows2.append(f"<tr><td>{key}</td><td>{st['gnd_n']}</td><td>{st['near']:.2f}</td><td>{2 * st['half']:.2f}</td><td>{st['bulge']:.2f}</td><td>{st['uncoupled']:.2f}</td><td>{clr:.3f}（{what}）</td></tr>")
         log.append(("change", key, {k: round(v, 3) for k, v in st.items()}, round(clr, 4), what))
         blocks.append(("s2", f"<h3>{title}</h3><p>{note}</p>{svg(sc)}"))
-    # ---- scene 3 (second round, user 2026-11-27: rounded small ears, low, a few more is fine)
+    # ---- scene 3 (third round, user 2026-11-27: height capped at 0.20, set per pair)
     rows3 = []
-    for key, h in (("D", 0.15), ("E", 0.20), ("F", 0.30)):
-        sc, st = ears(h, worst)
+    for nm, outer, inner, dp in pairs:
+        n, h = ear_plan(need[nm])
+        sc, st = ears(h, need[nm], n=n)
         clr, what = min_clearance(sc)
-        per_pair = []
-        for nm, *_ in pairs:
-            k = max(1, round(need[nm] / st["per"]))
-            per_pair.append(f"{k}（余 {need[nm] - k * st['per']:+.2f}）")
-        guard = "保住" if st["cu"] >= 0.30 else f"剩 {st['cu']:.2f}，铺不进"
-        rows3.append(f"<tr><td>3{key}</td><td>{h:.2f}</td><td>{st['per']:.3f}</td><td>{'</td><td>'.join(per_pair)}</td><td>{st['span']:.2f}</td>"
-                     f"<td>{st['fit']} / {st['n']}，伸出 {st['spill']:.2f}</td><td>{st['gap_max']:.2f}</td><td>{st['to_nb']:.2f}</td><td>{guard}</td><td>{clr:.3f}</td></tr>")
-        log.append(("ear", key, {k: round(v, 3) for k, v in st.items()}, round(clr, 4), what))
-        blocks.append(("s3", f"<h3>3{key} 圆角小耳朵，高 {h:.2f}：DQS0 要 {st['n']} 个</h3>"
-                             f"<p>每个宽 {st['w']:.2f}、补 {st['per']:.3f} mm，耳朵之间留 0.15。从规则区内的展开段开始排，排不下的伸到规则区外。</p>{svg(sc)}"))
+        guard = "保住" if st["cu"] >= 0.30 else f"{st['cu']:.2f}，铺不进"
+        rows3.append(f"<tr><td>{nm}</td><td>{need[nm]:.3f}</td><td>{n}</td><td>{h:.3f}</td><td>{st['w']:.2f}</td><td>{need[nm] - n * st['per']:+.3f}</td><td>{st['span']:.2f}</td>"
+                     f"<td>{st['spill']:.2f}</td><td>{st['gap_max']:.2f}</td><td>{st['to_nb']:.2f}</td><td>{guard}</td><td>{clr:.3f}</td></tr>")
+        log.append(("ear", nm, n, round(h, 4), {k: round(v, 3) for k, v in st.items()}, round(clr, 4), what))
+        blocks.append(("s3", f"<h3>{nm}：补 {need[nm]:.2f} mm，{n} 个，高 {h:.3f}</h3>{svg(sc)}"))
     sc, added, skew = pair_meander()
     clr, what = min_clearance(sc)
     log.append(("pair meander", round(added, 3), round(skew, 4), round(clr, 4)))
@@ -474,12 +487,12 @@ svg{{display:block;border-radius:4px}}
 <p class="rec">已定（用户 2026-11-27）：2B。原来的推荐：2B，要更稳妥就 2C。两者都不让线带变宽；2A 每侧要鼓出约 0.5 mm，一个字节组里换层的地方会鼓成一个包。</p>
 {sec('s2')}
 
-<h2>三、对内补偿：圆角小耳朵（第二轮）</h2>
-<p>按你的意见改成圆角、矮、可以多几个。补在外圈球那根（短的）上，向外凸；从规则区内的展开段（约 1 mm 长）开始排。图里按最大的一对补 {worst:.2f} mm。
-“个数”各列是这一对要几个耳朵、补完还差多少（目标 ±0.15）。</p>
-<div class="wide"><table><tr><th>画法</th><th>高</th><th>每个补</th><th>DQS0</th><th>DQS1</th><th>DQS2</th><th>DQS3</th><th>CLK</th><th>DQS0 占的长度</th><th>规则区内放得下的个数</th>
-<th>对内最大间隙</th><th>耳朵顶到邻线（要求 ≥ 0.45）</th><th>规则区外那一侧的地铜（最小 0.30）</th><th>最小间距</th></tr>{''.join(rows3)}</table></div>
-<p>官方 LP4X 模板上唯一的一例是 3 个梯形小凸起，高 0.152 mm、周期 0.86 mm，画在包地的直线段上，包地线不跟着绕。</p>
+<h2>三、对内补偿：圆角小耳朵，高度有上限、每对自己定</h2>
+<p>已定（用户 2026-11-27）：圆角、矮、可以多几个；高度不固定，上限 {EAR_MAX:.2f} mm。脚本的算法：取能补完的最少个数，再把这一对的耳朵调成同一个高度，正好补完。
+补在外圈球那根（短的）上，向外凸；从规则区内的展开段（约 1 mm）开始排，排不下的顺着伸到规则区外。图里的邻线是 DQS0 的间距，五对通用。</p>
+<div class="wide"><table><tr><th>对</th><th>要补</th><th>个数</th><th>每个高</th><th>每个宽</th><th>补完还差</th><th>占的长度</th><th>伸出规则区</th>
+<th>对内最大间隙</th><th>耳朵顶到邻线（要求 ≥ 0.45）</th><th>伸出段那一侧的地铜（最小 0.30）</th><th>最小间距</th></tr>{''.join(rows3)}</table></div>
+<p>耳朵伸出规则区的那一小段，耳朵一侧的地铜窄于 0.30 mm，铺铜进不去，这一段单侧没有包地（另一侧有）。官方 LP4X 模板上唯一的一例也是这样：3 个高 0.152 mm 的梯形小凸起画在包地段上，包地线不跟着绕。</p>
 {sec('s3')}
 <h2>四、差分对整体一起绕：管的是另一件事</h2>
 <p>一起绕改变的是这一对相对别的线的长度（DQS 对比它的 DQ 短了、CLK 比地址线短了的时候用），两根同进同出，P、N 之间的差不变。
