@@ -32,6 +32,7 @@ Next id: LAY-12
 - 2026-11-24 · friction · LAY-2 · 演示板 SPEC 2.2 只给 U2 两颗 100 nF，`place_check` 的 2.5 mm 上限对 U2 的大部分电源球做不到（U1 也有 K4、VREF+、VDDA 三个超出），记为未核对项 U5；样板 SPEC 的去耦个数应按电源球数给。
 - 2026-11-24 · cite · LAY-2 · 去耦距离上限从代码搬进数据：`board.toml [layout] decap_limit`（H743、演示板都是规格档 C 的 2.5 mm），驱动把它传给 `place_check --limit`（不再有代码默认值），铜皮表也读它；两块板的报告前后逐字节相同。演示板 SPEC 第 7.2 节这一行的“数据源”改成 `board.toml:layout.decap_limit`，`spec_check` 对得上。
 - 2026-11-24 · friction · LAY-9 · 规则对照里没有工具覆盖：驱动的 `layout` 一步不跑 kicad-happy 的 `emc`（`sch` 一步会跑 `analyze_schematic.py`）。建议 layout 一步照 sch 的做法在系统 Python 下跑它的 PCB 分析，结果计数写进 `out/layout/`，甄别仍由人做；改不改请主会话定。
+- 2026-11-27 · friction · LAY-2 · 碍事：`escape_check` 逐焊盘单独判，636 球上恒为通过（2026-11-26 摸底的同一条摩擦）。用户同意不往它里面加容量：BGA 的出线口径改由读板子的扇出检查给（线头到区外、电源地球接过孔、差分对同层同出、通道占用不超容量），`escape_check` 只管普通封装并在 BGA 上注明“容量不在此判”。检查写出来后 LAY-2 的指标一栏要跟着改。
 
 ## placement
 
