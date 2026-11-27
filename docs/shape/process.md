@@ -36,6 +36,7 @@ Next id: PROC-17
 - 2026-11-21 · PROC-3 · 起作用：整数规划的全扫描两轮没有结果后停下来报告，用户指出了模型的问题。
 - 2026-11-24 · cite · PROC-1 · R3：第 19 行的提议做了：驱动的 `route` 一步在各组建完之后、填充和 DRC 之前跑 `rules.len_rules`（`--upto` 时不跑），第一次布通的板不用再跑一次 `rules`；`all` 按 `board.toml [build] all` 跑，缺省是新板的全套 project、rules、sch、pcb-update、layout、copper、route、finish（H743 写明 rules、sch、route、finish，和以前一样）；`regress --board demo` 按同一顺序跑，数字和以前一样。
 - 2026-11-26 · friction · PROC-8 · [#33](https://github.com/immorcoding/PCB/issues/33)：层数先后被预设成 8 层、6 层，用户两次更正为“按扇出需求和容量算出来，再用参考板的实际出线统计核对”；规则里“按各总线占几个信号层来估”对深球阵 BGA 不够，缺按圈的需求和通道容量这一步。
+- 2026-11-26 · cite · PROC-16 · 起作用：验证板的规则值从瑞芯微的文字和两块官方板的实测出发，再拿嘉立创的下限卡（[重定规则值票](https://github.com/immorcoding/PCB/issues/48)）；瑞芯微的值做不出来的一处（孔到线 0.18、线到过孔盘 0.08）没有向板厂要偏离，改用 0.30 / 0.15 过孔，用户同意。官方板实测推翻了规格档 C 的一条结论，改的是规格档。
 
 ## review
 
