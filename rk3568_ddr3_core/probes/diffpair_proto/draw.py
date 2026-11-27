@@ -379,7 +379,7 @@ def _unused_fillet(pts, R, steps=10):
 PAIR_W = 2 * W_DP + G_DP          # 0.358, outer edge to outer edge of the pair
 LEG_GAP = 3 * W_DQ                # 0.45, pair edge to pair edge between two legs (CLK / DQS: 3 x track width)
 PAIR_PITCH = round(PAIR_W + LEG_GAP, 2)   # 0.81 leg centre distance
-PAIR_AMP_MAX = 1.5
+PAIR_AMP_MAX = 3.0     # user 2026-11-27: relax; the real cap is the room in the tuning area
 END_STRAIGHT = 0.7
 
 
