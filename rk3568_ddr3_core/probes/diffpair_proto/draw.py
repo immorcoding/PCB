@@ -269,6 +269,89 @@ def bump_C(need):
     sc.track("DQS0N", [(-P, 0), (-P / 2, P / 2), (XEND, P / 2)], W_IN, "n")
     return sc, H
 
+def round_ear(x, h, top=0.15):
+    """Rounded ear starting at x on the baseline u = 0, pointing to +u. Returns (points, width)."""
+    r = min(0.10, h / 2)
+    q = [i * math.pi / 2 / 8 for i in range(9)]
+    pts = [(x + r * math.sin(t), r - r * math.cos(t)) for t in q]
+    pts += [(x + 2 * r - r * math.cos(t), h - r + r * math.sin(t)) for t in q]
+    w = 4 * r + top
+    pts += [(x + w - px + x, pu) for px, pu in reversed(pts)]
+    return pts, w, 2 * h - (8 - 2 * math.pi) * r
+
+
+def ears(h, need, room=1.0):
+    """Rounded ears on the short track. They start inside the rule area (x < 0) and spill past it if they must."""
+    L0, L1 = -1.3, 4.3
+    sc = Scene(L0, L1, -2.0, 2.0, 170)
+    sc.pour = (0.0, L1)
+    sc.guide(0.0, "规则区边")
+    sc.text(L0 + 0.05, -1.75, "← 规则区内（展开段）")
+    sc.text(0.9, -1.75, "规则区外：包地的直线段 →")
+    y, between = -CC / 2, 0.15
+    _, w, per = round_ear(0, h)
+    n = max(1, round(need / per))
+    x = -room
+    pts = [(L0, y)]
+    for _ in range(n):
+        e, _, _ = round_ear(x, h)
+        pts += [(px, y - pu) for px, pu in e]
+        x += w + between
+    end = x - between
+    pts.append((L1, y))
+    sc.track("DQS0P", pts, W_DP, "p")
+    sc.track("DQS0N", [(L0, CC / 2), (L1, CC / 2)], W_DP, "n")
+    cu = GUARD_GAP - h - 2 * POUR_CLR
+    if end > 0 and cu < 0.30:
+        sc.erase.append((0.0, -(NB[0] - W_DQ / 2), end + POUR_CLR, y))
+    for sgn in (-1, 1):
+        for k, c in enumerate(NB):
+            sc.track(f"DQ{'ab'[k]}{'+' if sgn > 0 else '-'}", [(L0, sgn * c), (L1, sgn * c)], W_DQ, "dq")
+    for vx in (0.5, 2.9):
+        sc.pad("GND", vx, STRIP, VIA, "", "gnd", DRILL)
+    vx = max(end, 0) + 0.5
+    while vx < L1 - 0.2:
+        sc.pad("GND", vx, -STRIP, VIA, "", "gnd", DRILL)
+        vx += 2.4
+    fit = sum(1 for i in range(n) if -room + i * (w + between) + w <= 0.0)
+    return sc, {"n": n, "per": per, "w": w, "span": end + room, "spill": max(end, 0.0), "fit": fit, "left": need - n * per,
+                "gap_max": G_DP + h, "to_nb": GUARD_GAP - h, "cu": cu}
+
+
+def offset(pts, d):
+    """Offset an open polyline by d (mitre joins)."""
+    out = []
+    for i, pt in enumerate(pts):
+        a = pts[max(i - 1, 0)]
+        b = pts[min(i + 1, len(pts) - 1)]
+        def unit(u, v):
+            l = math.dist(u, v)
+            return ((v[0] - u[0]) / l, (v[1] - u[1]) / l)
+        t1 = unit(a, pt) if i else unit(pt, b)
+        t2 = unit(pt, b) if i < len(pts) - 1 else t1
+        n1, n2 = (-t1[1], t1[0]), (-t2[1], t2[0])
+        m = (n1[0] + n2[0], n1[1] + n2[1])
+        k = d / (1 + n1[0] * n2[0] + n1[1] * n2[1])
+        out.append((pt[0] + m[0] * k, pt[1] + m[1] * k))
+    return out
+
+
+def pair_meander(amp=0.6, n=2):
+    """The pair meandering as a pair (to lengthen both tracks together)."""
+    L0, L1 = -0.6, 5.0
+    sc = Scene(L0, L1, -2.0, 2.0, 150)
+    sc.guide(0.0, "规则区边")
+    c, x, top, between = [(L0, 0)], 0.5, 0.45, 0.45
+    for _ in range(n):
+        c += [(x, 0), (x + amp, -amp), (x + amp + top, -amp), (x + 2 * amp + top, 0)]
+        x += 2 * amp + top + between
+    c.append((L1, 0))
+    sc.track("DQS0P", offset(c, -CC / 2), W_DP, "p")
+    sc.track("DQS0N", offset(c, CC / 2), W_DP, "n")
+    added = n * 2 * amp * (SQ2 - 1)
+    return sc, added, plen(offset(c, -CC / 2)) - plen(offset(c, CC / 2))
+
+
 # ---------------------------------------------------------------- numbers
 def soc_pairs():
     fn = {}
@@ -325,28 +408,26 @@ def main():
         rows2.append(f"<tr><td>{key}</td><td>{st['gnd_n']}</td><td>{st['near']:.2f}</td><td>{2 * st['half']:.2f}</td><td>{st['bulge']:.2f}</td><td>{st['uncoupled']:.2f}</td><td>{clr:.3f}（{what}）</td></tr>")
         log.append(("change", key, {k: round(v, 3) for k, v in st.items()}, round(clr, 4), what))
         blocks.append(("s2", f"<h3>{title}</h3><p>{note}</p>{svg(sc)}"))
-    # ---- scene 3
+    # ---- scene 3 (second round, user 2026-11-27: rounded small ears, low, a few more is fine)
     rows3 = []
-    for key, title, note in (
-        ("A", "3A 梯形小凸起（45° 斜边，高 0.30）", "AD 里常见的画法。顶边是直线：KiCad 的间隙规则如果写了上限，每个凸起都会报间隙越界，所以间隙规则不能写上限。"),
-        ("B", "3B 半圆小凸起（半径 0.30）", "同样的高度，每个凸起补得更多，占的长度约一半。KiCad 不报间隙越界，整段弧算作非耦合长度。底部和直线相接处是直角，正式做时加小圆角。"),
-    ):
-        sc, st = bumps(key, worst)
+    for key, h in (("D", 0.15), ("E", 0.20), ("F", 0.30)):
+        sc, st = ears(h, worst)
         clr, what = min_clearance(sc)
-        cnt = " / ".join(str(max(1, round(need[nm] / st["per"]))) for nm, *_ in pairs)
-        rows3.append(f"<tr><td>{key}</td><td>规则区外第一段直线</td><td>{st['per']:.3f}</td><td>{st['n']}（{cnt}）</td><td>{st['span']:.2f}</td><td>{st['gap_max']:.2f}</td>"
-                     f"<td>{st['to_nb']:.2f}</td><td>{st['cu']:.2f}，铺铜进不去</td><td>{clr:.3f}（{what}）</td></tr>")
-        log.append(("bump", key, {k: round(v, 3) for k, v in st.items()}, round(clr, 4), what))
-        blocks.append(("s3", f"<h3>{title}</h3><p>{note}</p>{svg(sc)}"))
-    sc, H = bump_C(worst)
+        per_pair = []
+        for nm, *_ in pairs:
+            k = max(1, round(need[nm] / st["per"]))
+            per_pair.append(f"{k}（余 {need[nm] - k * st['per']:+.2f}）")
+        guard = "保住" if st["cu"] >= 0.30 else f"剩 {st['cu']:.2f}，铺不进"
+        rows3.append(f"<tr><td>3{key}</td><td>{h:.2f}</td><td>{st['per']:.3f}</td><td>{'</td><td>'.join(per_pair)}</td><td>{st['span']:.2f}</td>"
+                     f"<td>{st['fit']} / {st['n']}，伸出 {st['spill']:.2f}</td><td>{st['gap_max']:.2f}</td><td>{st['to_nb']:.2f}</td><td>{guard}</td><td>{clr:.3f}</td></tr>")
+        log.append(("ear", key, {k: round(v, 3) for k, v in st.items()}, round(clr, 4), what))
+        blocks.append(("s3", f"<h3>3{key} 圆角小耳朵，高 {h:.2f}：DQS0 要 {st['n']} 个</h3>"
+                             f"<p>每个宽 {st['w']:.2f}、补 {st['per']:.3f} mm，耳朵之间留 0.15。从规则区内的展开段开始排，排不下的伸到规则区外。</p>{svg(sc)}"))
+    sc, added, skew = pair_meander()
     clr, what = min_clearance(sc)
-    hs = " / ".join(f"{(need[nm] + (8 - 4 * SQ2) * 0.1) / 2:.2f}" for nm, *_ in pairs)
-    rows3.append(f"<tr><td>C</td><td>规则区内，出球后的展开段</td><td>{worst:.3f}</td><td>1（各 1）</td><td>0.70</td><td>{P / 2 - W_IN + H:.2f}（规则区内）</td>"
-                 f"<td>不占包地段</td><td>不影响</td><td>{clr:.3f}（{what}）</td></tr>")
-    log.append(("bump", "C", {"H": round(H, 3)}, round(clr, 4), what))
-    blocks.append(("s3", f"<h3>3C 一个“耳朵”，藏在规则区内的展开段里</h3><p>出球区后邻线本来就要向两边展开（给 DQS 让出 0.70 的包地间隙），外圈球那根在这块空里绕一个 U 形，一次补完。"
-                         f"图里补 {worst:.2f} mm，耳朵高 {H:.2f} mm；五对的高度依次是 {hs} mm。出规则区以后差分对是纯直线，包地不受影响。"
-                         f"这和 RTE-16 现在写的“出规则区后的第一段直线”不同，选它要改那句话。</p>{svg(sc)}"))
+    log.append(("pair meander", round(added, 3), round(skew, 4), round(clr, 4)))
+    blocks.append(("s4", f"<h3>差分对整体一起绕（示意）</h3><p>两根保持 0.15 间隙一起拐，图里两个幅度 0.60 的梯形，整对加长 {added:.2f} mm，"
+                         f"P、N 之间的差是 {abs(skew):.3f} mm（拐角成对出现，互相抵消）。</p>{svg(sc)}"))
 
     def sec(tag):
         return "".join(b for t, b in blocks if t == tag)
@@ -368,7 +449,7 @@ th{{background:var(--th)}}td:first-child,th:first-child{{text-align:center}}
 svg{{display:block;border-radius:4px}}
 </style>
 <h1>原型（用完即弃）：差分对画成什么样</h1>
-<p>三件事各出三种画法，请各选一个（或说哪里要改）。全部按比例画，单位 mm，数字由脚本算。
+<p>三件事各出几种画法。第二轮：换层已定 2B；对内补偿改成圆角小耳朵（第三节重画）；出球区等官方板的实测。全部按比例画，单位 mm，数字由脚本算。
 对象是 RK3568 的 DQS0（G1 / G2，西边），图里“出封装”的方向朝右；其余四对（DQS1–3、CLK）在球阵上的姿势相同。
 没有过 KiCad 的 DRC；“最小间距”是脚本按 0.01 mm 取样算的铜到铜距离。</p>
 <p class="k"><span style="background:{COL['p']}"></span>外圈球那根（短）<span style="background:{COL['n']}"></span>内圈球那根（长）<span style="background:{COL['dq']}"></span>旁边的 DQ
@@ -390,16 +471,20 @@ svg{{display:block;border-radius:4px}}
 <p>已定的数：过孔 0.4 / 0.2，两个信号过孔中心距 ≥ 0.8；地过孔离信号过孔中心 ≤ 0.635（这里取 0.60，盘边到盘边 0.20）；
 差分对两侧是 0.70 的包地间隙（铜条中心线离对的中心 {STRIP:.3f}），再外面是 DQ。邻线画成直通；整个字节组一起换层时 DQ 的过孔怎么排是另一件事，这里不定。</p>
 <div class="wide"><table><tr><th>画法</th><th>贴身的地过孔数</th><th>地过孔到信号过孔中心</th><th>过孔占的总宽</th><th>邻线每侧让出</th><th>每层张开段（非耦合）</th><th>最小间距（下限 0.15）</th></tr>{''.join(rows2)}</table></div>
-<p class="rec">我的推荐：2B，要更稳妥就 2C。两者都不让线带变宽；2A 每侧要鼓出约 0.5 mm，一个字节组里换层的地方会鼓成一个包。</p>
+<p class="rec">已定（用户 2026-11-27）：2B。原来的推荐：2B，要更稳妥就 2C。两者都不让线带变宽；2A 每侧要鼓出约 0.5 mm，一个字节组里换层的地方会鼓成一个包。</p>
 {sec('s2')}
 
-<h2>三、对内补偿</h2>
-<p>补在外圈球那根（短的）上，只能向外凸。图里按最大的一对补 {worst:.2f} mm。表里“个数”括号内依次是 DQS0 / DQS1 / DQS2 / DQS3 / CLK 各要几个。</p>
-<div class="wide"><table><tr><th>画法</th><th>位置</th><th>每个补</th><th>个数</th><th>占的长度</th><th>对内最大间隙</th><th>凸起顶到邻线（要求 ≥ 0.45）</th><th>凸起一侧剩的地铜宽（最小 0.30）</th><th>最小间距</th></tr>{''.join(rows3)}</table></div>
-<p>3A、3B 的凸起会把那一侧 0.70 的包地间隙吃掉 0.30：凸起这一段那一侧没有地铜，到邻线也只有 0.40。要保住包地，邻线得在这一段整体外移 0.30（线带变宽）。
-规则区外能用的直线段大约只有 3.5 mm（两个球区相距 7.5 mm，减去两头的规则区）。</p>
-<p class="rec">我的推荐：3C，不够的零头再用 3B。要补的量是 0.4–1.0 mm，放在包地的直线段上代价大；放在规则区内的展开段里，一个耳朵就补完，包地段保持直线。</p>
+<h2>三、对内补偿：圆角小耳朵（第二轮）</h2>
+<p>按你的意见改成圆角、矮、可以多几个。补在外圈球那根（短的）上，向外凸；从规则区内的展开段（约 1 mm 长）开始排。图里按最大的一对补 {worst:.2f} mm。
+“个数”各列是这一对要几个耳朵、补完还差多少（目标 ±0.15）。</p>
+<div class="wide"><table><tr><th>画法</th><th>高</th><th>每个补</th><th>DQS0</th><th>DQS1</th><th>DQS2</th><th>DQS3</th><th>CLK</th><th>DQS0 占的长度</th><th>规则区内放得下的个数</th>
+<th>对内最大间隙</th><th>耳朵顶到邻线（要求 ≥ 0.45）</th><th>规则区外那一侧的地铜（最小 0.30）</th><th>最小间距</th></tr>{''.join(rows3)}</table></div>
+<p>官方 LP4X 模板上唯一的一例是 3 个梯形小凸起，高 0.152 mm、周期 0.86 mm，画在包地的直线段上，包地线不跟着绕。</p>
 {sec('s3')}
+<h2>四、差分对整体一起绕：管的是另一件事</h2>
+<p>一起绕改变的是这一对相对别的线的长度（DQS 对比它的 DQ 短了、CLK 比地址线短了的时候用），两根同进同出，P、N 之间的差不变。
+所以它替代不了上面的小耳朵：外圈球那根天生短的 0.4–1.0 mm 只能在那一根上补。两样都会用到，先用小耳朵把对内补平，整对不够长时再一起绕。</p>
+{sec('s4')}
 """
     out = HERE / "diffpair_variants.html"
     out.write_text(head + html + "</html>", encoding="utf-8")
