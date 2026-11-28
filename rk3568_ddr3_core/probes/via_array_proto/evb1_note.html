@@ -11,3 +11,12 @@
 <tr><th>线宽</th><td class="l">DQ、DM 0.102 mm，DQS 0.097 mm，TOP 和 BOTTOM 相同</td><td class="l">我们按嘉立创叠层算是 0.15 和 0.104</td></tr>
 </table></div>
 <p>平面层上的避让圈大小从这份板文件读不出来。</p>
+<p>两块官方板每个字节组的走法（EVB1 是 2 × 16 位 DDR4，LP4X 是瑞芯微的 LPDDR4X 模板）：</p>
+<div class="scroll"><table>
+<tr><th>板</th><th>字节组</th><th>主要走的层</th><th>0 个过孔的线 / 2 个过孔的线</th><th>在球区里下孔的</th><th>在球区外换层的（离球区 mm）</th></tr>
+<tr><th>EVB1</th><td>低字节 A、B</td><td>顶层</td><td>9 / 2</td><td class="l">2 根，第 4、5 圈；在球区外 1.8 到 6.6 mm 处回到顶层</td><td class="l">没有</td></tr>
+<tr><th>EVB1</th><td>高字节 A、B</td><td>底层</td><td>0 / 11</td><td class="l">6 根，第 4 到 7 圈；一直走底层到颗粒</td><td class="l">5 根，第 1、2 圈（2.3 到 5.7）</td></tr>
+<tr><th>LP4X</th><td>B0A、B1B</td><td>顶层</td><td>7 / 4</td><td class="l">2 根；到颗粒球区边才回顶层</td><td class="l">DQS 对（4.5 到 6.6）</td></tr>
+<tr><th>LP4X</th><td>B0B、B1A</td><td>两层各半</td><td>3 / 8</td><td class="l">6 根</td><td class="l">DQS 对（8.1 到 14.0）</td></tr>
+</table></div>
+<p>两块板上，第 1、2 圈的球没有一个在球区里下孔，第 3 圈以内的球没有一个不打孔就出来；所有带过孔的数据线都是顶层、底层、顶层两个过孔。瑞芯微的文字要求里和过孔阵有关的是：最外两圈从顶层出线（指南第 152 页）；避免连续过孔阻断回流（审查清单第 63 项）；3200 Mbps 下必须换层时 DQ 并排的换层过孔不超过 2 个、每个信号不超过 2 个（指南第 178 页，清单第 67 项）；换层过孔 25 mil 内有地过孔（清单第 67 项）。</p>

@@ -47,8 +47,9 @@ CASES = [
 VARIANTS = [("A", "A · 两排交错，过孔在线自己的位置上"),
             ("B", "B · 过孔挪到地铜条的位置上"),
             ("C", "C · 人字形，过孔在线自己的位置上"),
+            ("D", "D · 同 A，但每排最多 2 个过孔"),
             ("S", "一条斜线")]
-DRAWN = ("A", "B", "C")
+DRAWN = ("A", "B", "C", "D")
 
 
 def lane():
@@ -118,6 +119,15 @@ def place(case, var):
             vias = all_ok(xs)
             if vias:
                 break
+    elif var == "D":   # like A, but no row holds more than two vias (Rockchip: at most 2 DQ vias side by side)
+        step, rows = 0.70, {}
+        for u in sorted(units, key=lambda u: (u[2] != "D", u[1])):
+            for row in range(12):
+                sp = spots(u, X0 + row * step)
+                if rows.get(row, 0) + len(sp) <= 2 and not any(clash(v, vias) for v in sp):
+                    vias += sp
+                    rows[row] = rows.get(row, 0) + len(sp)
+                    break
     else:   # B: each single line steps sideways onto a neighbouring guard strip; rows 0.80 apart, lowest row that fits
         step = 0.80
         for u in sorted(units, key=lambda u: (u[2] != "D", u[1])):

@@ -54,7 +54,7 @@ td.l{text-align:left;min-width:9em}
 </ul>
 <p>每种排法画两张图：左边是 L1，右边是 L6，过孔的位置相同。地铺铜离信号 0.15 mm；每 2.54 mm 一个的包地过孔没有画，只画了换层用的回流地过孔。</p>
 
-<section><h2>情形 1 · 字节组 1 走 L6：外圈的 3 根 DQ 和 DQS 对在球区外换层</h2><p>内圈 6 根（DM1、DQ10、11、13、14、15）在球区里已经下到 L6，从过孔阵中间穿过。字节组 2 的数目相同。</p><div class="scroll"><table><tr><th>排法</th><th>信号过孔 / 新加的地过孔</th><th>排数</th><th>过孔阵占长 mm</th><th>阵后到颗粒规则区还剩的直线 mm</th><th>信号过孔最小中心距（≥ 0.8）</th><th>最远的回流地过孔（≤ 0.635）</th><th>过孔盘到别的线（≥ 0.15）</th><th>地铜条被切断：处数 / 总长 mm</th><th>铜条没断处的最窄宽度</th><th>线横移 mm</th><th>脚本检查</th></tr><tr><th>A</th><td>5 / 5</td><td>2</td><td>1.10</td><td>2.25</td><td>0.958</td><td>0.60</td><td>0.175</td><td>2 处 / 1.22</td><td>0.267</td><td>0.000</td><td class="l"><span class="ok">过</span></td></tr><tr><th>B</th><td>5 / 5</td><td>2</td><td>1.20</td><td>2.15</td><td>0.832</td><td>0.60</td><td>0.150</td><td>5 处 / 3.34</td><td>0.267</td><td>0.425</td><td class="l"><span class="ok">过</span></td></tr><tr><th>C</th><td>5 / 5</td><td>4</td><td>3.10</td><td>0.25</td><td>1.157</td><td>0.60</td><td>0.175</td><td>2 处 / 1.22</td><td>0.267</td><td>0.000</td><td class="l"><span class="ok">过</span></td></tr><tr><th>一条斜线（不画）</th><td>5 / 5</td><td>4</td><td>4.06</td><td>-0.71</td><td>1.157</td><td>0.60</td><td>0.175</td><td>2 处 / 1.20</td><td>0.256</td><td>0.000</td><td class="l"><span class="bad">不过</span>：伸进颗粒规则区</td></tr></table></div><h3>A · 两排交错，过孔在线自己的位置上</h3><div class="two"><svg viewBox="59 -281 396 562" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="L1 层" style="width:100%;background:#10161c">
+<section><h2>情形 1 · 字节组 1 走 L6：外圈的 3 根 DQ 和 DQS 对在球区外换层</h2><p>内圈 6 根（DM1、DQ10、11、13、14、15）在球区里已经下到 L6，从过孔阵中间穿过。字节组 2 的数目相同。</p><div class="scroll"><table><tr><th>排法</th><th>信号过孔 / 新加的地过孔</th><th>排数</th><th>过孔阵占长 mm</th><th>阵后到颗粒规则区还剩的直线 mm</th><th>信号过孔最小中心距（≥ 0.8）</th><th>最远的回流地过孔（≤ 0.635）</th><th>过孔盘到别的线（≥ 0.15）</th><th>地铜条被切断：处数 / 总长 mm</th><th>铜条没断处的最窄宽度</th><th>线横移 mm</th><th>脚本检查</th></tr><tr><th>A</th><td>5 / 5</td><td>2</td><td>1.10</td><td>2.25</td><td>0.958</td><td>0.60</td><td>0.175</td><td>2 处 / 1.22</td><td>0.267</td><td>0.000</td><td class="l"><span class="ok">过</span></td></tr><tr><th>B</th><td>5 / 5</td><td>2</td><td>1.20</td><td>2.15</td><td>0.832</td><td>0.60</td><td>0.150</td><td>5 处 / 3.34</td><td>0.267</td><td>0.425</td><td class="l"><span class="ok">过</span></td></tr><tr><th>C</th><td>5 / 5</td><td>4</td><td>3.10</td><td>0.25</td><td>1.157</td><td>0.60</td><td>0.175</td><td>2 处 / 1.22</td><td>0.267</td><td>0.000</td><td class="l"><span class="ok">过</span></td></tr><tr><th>D</th><td>5 / 5</td><td>3</td><td>1.80</td><td>1.55</td><td>1.3</td><td>0.60</td><td>0.175</td><td>2 处 / 1.22</td><td>0.267</td><td>0.000</td><td class="l"><span class="ok">过</span></td></tr><tr><th>一条斜线（不画）</th><td>5 / 5</td><td>4</td><td>4.06</td><td>-0.71</td><td>1.157</td><td>0.60</td><td>0.175</td><td>2 处 / 1.20</td><td>0.256</td><td>0.000</td><td class="l"><span class="bad">不过</span>：伸进颗粒规则区</td></tr></table></div><h3>A · 两排交错，过孔在线自己的位置上</h3><div class="two"><svg viewBox="59 -281 396 562" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="L1 层" style="width:100%;background:#10161c">
 <rect x="59.4" y="-264.3" width="396.0" height="528.5" fill="#1d5a53"/>
 <polyline points="59.4,-206.5 135.3,-206.5 135.3,-206.5" fill="none" stroke="#10161c" stroke-width="29.70" stroke-linejoin="round"/>
 <polyline points="59.4,-120.7 181.5,-120.7 181.5,-120.7" fill="none" stroke="#10161c" stroke-width="29.70" stroke-linejoin="round"/>
@@ -306,8 +306,92 @@ td.l{text-align:left;min-width:9em}
 <circle cx="135.3" cy="-47.9" r="19.80" fill="none" stroke="#c5d2de" stroke-width="1" stroke-dasharray="3 3"/><circle cx="135.3" cy="-47.9" r="13.20" fill="#f4f1e8"><title>DQS1_P 换层过孔</title></circle><circle cx="135.3" cy="-47.9" r="6.60" fill="#10161c"/>
 <circle cx="135.3" cy="-8.3" r="19.80" fill="none" stroke="#c5d2de" stroke-width="1" stroke-dasharray="3 3"/><circle cx="135.3" cy="-8.3" r="13.20" fill="#f4f1e8"><title>DQS1_N 换层过孔</title></circle><circle cx="135.3" cy="-8.3" r="6.60" fill="#10161c"/>
 <circle cx="198.3" cy="34.9" r="19.80" fill="none" stroke="#c5d2de" stroke-width="1" stroke-dasharray="3 3"/><circle cx="198.3" cy="34.9" r="13.20" fill="#f4f1e8"><title>DQ12 换层过孔</title></circle><circle cx="198.3" cy="34.9" r="6.60" fill="#10161c"/>
+<line x1="376.2" y1="270.76400000000007" x2="442.2" y2="270.76400000000007" stroke="#fff" stroke-width="2"/><text x="376.2" y="265.76400000000007" fill="#fff" font-size="12">1 mm</text><text x="65.4" y="270.76400000000007" fill="#fff" font-size="15" font-weight="600">L6</text></svg></div><h3>D · 同 A，但每排最多 2 个过孔</h3><div class="two"><svg viewBox="59 -281 396 562" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="L1 层" style="width:100%;background:#10161c">
+<rect x="59.4" y="-264.3" width="396.0" height="528.5" fill="#1d5a53"/>
+<polyline points="59.4,-206.5 181.5,-206.5 181.5,-206.5" fill="none" stroke="#10161c" stroke-width="29.70" stroke-linejoin="round"/>
+<polyline points="59.4,-120.7 181.5,-120.7 181.5,-120.7" fill="none" stroke="#10161c" stroke-width="29.70" stroke-linejoin="round"/>
+<polyline points="59.4,-36.4 117.3,-36.4 128.7,-47.9 135.3,-47.9" fill="none" stroke="#10161c" stroke-width="26.66" stroke-linejoin="round"/>
+<polyline points="59.4,-19.7 117.3,-19.7 128.7,-8.3 135.3,-8.3" fill="none" stroke="#10161c" stroke-width="26.66" stroke-linejoin="round"/>
+<polyline points="59.4,34.9 227.7,34.9 227.7,34.9" fill="none" stroke="#10161c" stroke-width="29.70" stroke-linejoin="round"/>
+<circle cx="135.3" cy="-47.9" r="23.10" fill="#10161c"/>
+<circle cx="135.3" cy="-8.3" r="23.10" fill="#10161c"/>
+<circle cx="181.5" cy="-206.5" r="23.10" fill="#10161c"/>
+<circle cx="181.5" cy="-120.7" r="23.10" fill="#10161c"/>
+<circle cx="227.7" cy="34.9" r="23.10" fill="#10161c"/>
+<line x1="112.2" y1="-280.76400000000007" x2="112.2" y2="280.76400000000007" stroke="#9fb0c0" stroke-dasharray="6 5"/><text x="116.2" y="-267.76400000000007" fill="#c5d2de" font-size="12" text-anchor="start">SoC 规则区边</text>
+<line x1="343.2" y1="-280.76400000000007" x2="343.2" y2="280.76400000000007" stroke="#9fb0c0" stroke-dasharray="6 5"/><text x="339.2" y="-267.76400000000007" fill="#c5d2de" font-size="12" text-anchor="end">颗粒规则区边</text>
+<polyline points="59.4,-206.5 181.5,-206.5 181.5,-206.5" fill="none" stroke="#e0564f" stroke-width="9.90" stroke-linejoin="round"><title>DQ8，0.15 mm，L1</title></polyline>
+<text x="62.4" y="-212.5" fill="#c5d2de" font-size="10">DQ8</text>
+<polyline points="59.4,-120.7 181.5,-120.7 181.5,-120.7" fill="none" stroke="#e0564f" stroke-width="9.90" stroke-linejoin="round"><title>DQ9，0.15 mm，L1</title></polyline>
+<text x="62.4" y="-126.7" fill="#c5d2de" font-size="10">DQ9</text>
+<polyline points="59.4,-36.4 117.3,-36.4 128.7,-47.9 135.3,-47.9" fill="none" stroke="#f2b134" stroke-width="6.86" stroke-linejoin="round"><title>DQS1_P，0.104 mm，L1</title></polyline>
+<text x="62.4" y="-42.4" fill="#c5d2de" font-size="10">DQS1</text>
+<polyline points="59.4,-19.7 117.3,-19.7 128.7,-8.3 135.3,-8.3" fill="none" stroke="#f2b134" stroke-width="6.86" stroke-linejoin="round"><title>DQS1_N，0.104 mm，L1</title></polyline>
+<polyline points="59.4,34.9 227.7,34.9 227.7,34.9" fill="none" stroke="#e0564f" stroke-width="9.90" stroke-linejoin="round"><title>DQ12，0.15 mm，L1</title></polyline>
+<text x="62.4" y="28.9" fill="#c5d2de" font-size="10">DQ12</text>
+<circle cx="98.6" cy="-63.0" r="13.20" fill="#7fd6c8"><title>回流地过孔</title></circle><circle cx="98.6" cy="-63.0" r="6.60" fill="#10161c"/>
+<circle cx="98.6" cy="6.9" r="13.20" fill="#7fd6c8"><title>回流地过孔</title></circle><circle cx="98.6" cy="6.9" r="6.60" fill="#10161c"/>
+<circle cx="153.4" cy="-234.6" r="13.20" fill="#7fd6c8"><title>回流地过孔</title></circle><circle cx="153.4" cy="-234.6" r="6.60" fill="#10161c"/>
+<circle cx="153.4" cy="-148.8" r="13.20" fill="#7fd6c8"><title>回流地过孔</title></circle><circle cx="153.4" cy="-148.8" r="6.60" fill="#10161c"/>
+<circle cx="199.6" cy="6.9" r="13.20" fill="#7fd6c8"><title>回流地过孔</title></circle><circle cx="199.6" cy="6.9" r="6.60" fill="#10161c"/>
+<circle cx="135.3" cy="-47.9" r="19.80" fill="none" stroke="#c5d2de" stroke-width="1" stroke-dasharray="3 3"/><circle cx="135.3" cy="-47.9" r="13.20" fill="#f4f1e8"><title>DQS1_P 换层过孔</title></circle><circle cx="135.3" cy="-47.9" r="6.60" fill="#10161c"/>
+<circle cx="135.3" cy="-8.3" r="19.80" fill="none" stroke="#c5d2de" stroke-width="1" stroke-dasharray="3 3"/><circle cx="135.3" cy="-8.3" r="13.20" fill="#f4f1e8"><title>DQS1_N 换层过孔</title></circle><circle cx="135.3" cy="-8.3" r="6.60" fill="#10161c"/>
+<circle cx="181.5" cy="-206.5" r="19.80" fill="none" stroke="#c5d2de" stroke-width="1" stroke-dasharray="3 3"/><circle cx="181.5" cy="-206.5" r="13.20" fill="#f4f1e8"><title>DQ8 换层过孔</title></circle><circle cx="181.5" cy="-206.5" r="6.60" fill="#10161c"/>
+<circle cx="181.5" cy="-120.7" r="19.80" fill="none" stroke="#c5d2de" stroke-width="1" stroke-dasharray="3 3"/><circle cx="181.5" cy="-120.7" r="13.20" fill="#f4f1e8"><title>DQ9 换层过孔</title></circle><circle cx="181.5" cy="-120.7" r="6.60" fill="#10161c"/>
+<circle cx="227.7" cy="34.9" r="19.80" fill="none" stroke="#c5d2de" stroke-width="1" stroke-dasharray="3 3"/><circle cx="227.7" cy="34.9" r="13.20" fill="#f4f1e8"><title>DQ12 换层过孔</title></circle><circle cx="227.7" cy="34.9" r="6.60" fill="#10161c"/>
+<line x1="376.2" y1="270.76400000000007" x2="442.2" y2="270.76400000000007" stroke="#fff" stroke-width="2"/><text x="376.2" y="265.76400000000007" fill="#fff" font-size="12">1 mm</text><text x="65.4" y="270.76400000000007" fill="#fff" font-size="15" font-weight="600">L1</text></svg><svg viewBox="59 -281 396 562" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="L6 层" style="width:100%;background:#10161c">
+<rect x="59.4" y="-264.3" width="396.0" height="528.5" fill="#1d5a53"/>
+<polyline points="181.5,-206.5 181.5,-206.5 455.4,-206.5" fill="none" stroke="#10161c" stroke-width="29.70" stroke-linejoin="round"/>
+<polyline points="59.4,-176.8 455.4,-176.8" fill="none" stroke="#10161c" stroke-width="29.70" stroke-linejoin="round"/>
+<polyline points="181.5,-120.7 181.5,-120.7 455.4,-120.7" fill="none" stroke="#10161c" stroke-width="29.70" stroke-linejoin="round"/>
+<polyline points="59.4,-91.0 455.4,-91.0" fill="none" stroke="#10161c" stroke-width="29.70" stroke-linejoin="round"/>
+<polyline points="135.3,-47.9 141.9,-47.9 153.3,-36.4 455.4,-36.4" fill="none" stroke="#10161c" stroke-width="26.66" stroke-linejoin="round"/>
+<polyline points="135.3,-8.3 141.9,-8.3 153.3,-19.7 455.4,-19.7" fill="none" stroke="#10161c" stroke-width="26.66" stroke-linejoin="round"/>
+<polyline points="227.7,34.9 227.7,34.9 455.4,34.9" fill="none" stroke="#10161c" stroke-width="29.70" stroke-linejoin="round"/>
+<polyline points="59.4,64.6 455.4,64.6" fill="none" stroke="#10161c" stroke-width="29.70" stroke-linejoin="round"/>
+<polyline points="59.4,120.7 455.4,120.7" fill="none" stroke="#10161c" stroke-width="29.70" stroke-linejoin="round"/>
+<polyline points="59.4,150.4 455.4,150.4" fill="none" stroke="#10161c" stroke-width="29.70" stroke-linejoin="round"/>
+<polyline points="59.4,206.5 455.4,206.5" fill="none" stroke="#10161c" stroke-width="29.70" stroke-linejoin="round"/>
+<circle cx="135.3" cy="-47.9" r="23.10" fill="#10161c"/>
+<circle cx="135.3" cy="-8.3" r="23.10" fill="#10161c"/>
+<circle cx="181.5" cy="-206.5" r="23.10" fill="#10161c"/>
+<circle cx="181.5" cy="-120.7" r="23.10" fill="#10161c"/>
+<circle cx="227.7" cy="34.9" r="23.10" fill="#10161c"/>
+<line x1="112.2" y1="-280.76400000000007" x2="112.2" y2="280.76400000000007" stroke="#9fb0c0" stroke-dasharray="6 5"/><text x="116.2" y="-267.76400000000007" fill="#c5d2de" font-size="12" text-anchor="start">SoC 规则区边</text>
+<line x1="343.2" y1="-280.76400000000007" x2="343.2" y2="280.76400000000007" stroke="#9fb0c0" stroke-dasharray="6 5"/><text x="339.2" y="-267.76400000000007" fill="#c5d2de" font-size="12" text-anchor="end">颗粒规则区边</text>
+<polyline points="181.5,-206.5 181.5,-206.5 455.4,-206.5" fill="none" stroke="#5b93e6" stroke-width="9.90" stroke-linejoin="round"><title>DQ8，0.15 mm，L6</title></polyline>
+<text x="423.40000000000003" y="-212.5" fill="#c5d2de" font-size="10">DQ8</text>
+<polyline points="59.4,-176.8 455.4,-176.8" fill="none" stroke="#5b93e6" stroke-width="9.90" stroke-linejoin="round"><title>DQ15，0.15 mm，L6</title></polyline>
+<text x="62.4" y="-182.8" fill="#c5d2de" font-size="10">DQ15</text>
+<polyline points="181.5,-120.7 181.5,-120.7 455.4,-120.7" fill="none" stroke="#5b93e6" stroke-width="9.90" stroke-linejoin="round"><title>DQ9，0.15 mm，L6</title></polyline>
+<text x="423.40000000000003" y="-126.7" fill="#c5d2de" font-size="10">DQ9</text>
+<polyline points="59.4,-91.0 455.4,-91.0" fill="none" stroke="#5b93e6" stroke-width="9.90" stroke-linejoin="round"><title>DQ11，0.15 mm，L6</title></polyline>
+<text x="62.4" y="-97.0" fill="#c5d2de" font-size="10">DQ11</text>
+<polyline points="135.3,-47.9 141.9,-47.9 153.3,-36.4 455.4,-36.4" fill="none" stroke="#f2b134" stroke-width="6.86" stroke-linejoin="round"><title>DQS1_P，0.104 mm，L6</title></polyline>
+<text x="423.40000000000003" y="-42.4" fill="#c5d2de" font-size="10">DQS1</text>
+<polyline points="135.3,-8.3 141.9,-8.3 153.3,-19.7 455.4,-19.7" fill="none" stroke="#f2b134" stroke-width="6.86" stroke-linejoin="round"><title>DQS1_N，0.104 mm，L6</title></polyline>
+<polyline points="227.7,34.9 227.7,34.9 455.4,34.9" fill="none" stroke="#5b93e6" stroke-width="9.90" stroke-linejoin="round"><title>DQ12，0.15 mm，L6</title></polyline>
+<text x="423.40000000000003" y="28.9" fill="#c5d2de" font-size="10">DQ12</text>
+<polyline points="59.4,64.6 455.4,64.6" fill="none" stroke="#5b93e6" stroke-width="9.90" stroke-linejoin="round"><title>DQ13，0.15 mm，L6</title></polyline>
+<text x="62.4" y="58.6" fill="#c5d2de" font-size="10">DQ13</text>
+<polyline points="59.4,120.7 455.4,120.7" fill="none" stroke="#5b93e6" stroke-width="9.90" stroke-linejoin="round"><title>DQ10，0.15 mm，L6</title></polyline>
+<text x="62.4" y="114.7" fill="#c5d2de" font-size="10">DQ10</text>
+<polyline points="59.4,150.4 455.4,150.4" fill="none" stroke="#5b93e6" stroke-width="9.90" stroke-linejoin="round"><title>DQ14，0.15 mm，L6</title></polyline>
+<text x="62.4" y="144.4" fill="#c5d2de" font-size="10">DQ14</text>
+<polyline points="59.4,206.5 455.4,206.5" fill="none" stroke="#5b93e6" stroke-width="9.90" stroke-linejoin="round"><title>DM1，0.15 mm，L6</title></polyline>
+<text x="62.4" y="200.5" fill="#c5d2de" font-size="10">DM1</text>
+<circle cx="98.6" cy="-63.0" r="13.20" fill="#7fd6c8"><title>回流地过孔</title></circle><circle cx="98.6" cy="-63.0" r="6.60" fill="#10161c"/>
+<circle cx="98.6" cy="6.9" r="13.20" fill="#7fd6c8"><title>回流地过孔</title></circle><circle cx="98.6" cy="6.9" r="6.60" fill="#10161c"/>
+<circle cx="153.4" cy="-234.6" r="13.20" fill="#7fd6c8"><title>回流地过孔</title></circle><circle cx="153.4" cy="-234.6" r="6.60" fill="#10161c"/>
+<circle cx="153.4" cy="-148.8" r="13.20" fill="#7fd6c8"><title>回流地过孔</title></circle><circle cx="153.4" cy="-148.8" r="6.60" fill="#10161c"/>
+<circle cx="199.6" cy="6.9" r="13.20" fill="#7fd6c8"><title>回流地过孔</title></circle><circle cx="199.6" cy="6.9" r="6.60" fill="#10161c"/>
+<circle cx="135.3" cy="-47.9" r="19.80" fill="none" stroke="#c5d2de" stroke-width="1" stroke-dasharray="3 3"/><circle cx="135.3" cy="-47.9" r="13.20" fill="#f4f1e8"><title>DQS1_P 换层过孔</title></circle><circle cx="135.3" cy="-47.9" r="6.60" fill="#10161c"/>
+<circle cx="135.3" cy="-8.3" r="19.80" fill="none" stroke="#c5d2de" stroke-width="1" stroke-dasharray="3 3"/><circle cx="135.3" cy="-8.3" r="13.20" fill="#f4f1e8"><title>DQS1_N 换层过孔</title></circle><circle cx="135.3" cy="-8.3" r="6.60" fill="#10161c"/>
+<circle cx="181.5" cy="-206.5" r="19.80" fill="none" stroke="#c5d2de" stroke-width="1" stroke-dasharray="3 3"/><circle cx="181.5" cy="-206.5" r="13.20" fill="#f4f1e8"><title>DQ8 换层过孔</title></circle><circle cx="181.5" cy="-206.5" r="6.60" fill="#10161c"/>
+<circle cx="181.5" cy="-120.7" r="19.80" fill="none" stroke="#c5d2de" stroke-width="1" stroke-dasharray="3 3"/><circle cx="181.5" cy="-120.7" r="13.20" fill="#f4f1e8"><title>DQ9 换层过孔</title></circle><circle cx="181.5" cy="-120.7" r="6.60" fill="#10161c"/>
+<circle cx="227.7" cy="34.9" r="19.80" fill="none" stroke="#c5d2de" stroke-width="1" stroke-dasharray="3 3"/><circle cx="227.7" cy="34.9" r="13.20" fill="#f4f1e8"><title>DQ12 换层过孔</title></circle><circle cx="227.7" cy="34.9" r="6.60" fill="#10161c"/>
 <line x1="376.2" y1="270.76400000000007" x2="442.2" y2="270.76400000000007" stroke="#fff" stroke-width="2"/><text x="376.2" y="265.76400000000007" fill="#fff" font-size="12">1 mm</text><text x="65.4" y="270.76400000000007" fill="#fff" font-size="15" font-weight="600">L6</text></svg></div></section>
-<section><h2>情形 2 · 字节组 0 走 L6（最坏情形）：外圈的 7 根 DQ 和 DQS 对在球区外换层</h2><p>内圈只有 DQ7、DM0 两根已在 L6。字节组 3 的数目相同。这是过孔最多的情形，用来看排法撑不撑得住。</p><div class="scroll"><table><tr><th>排法</th><th>信号过孔 / 新加的地过孔</th><th>排数</th><th>过孔阵占长 mm</th><th>阵后到颗粒规则区还剩的直线 mm</th><th>信号过孔最小中心距（≥ 0.8）</th><th>最远的回流地过孔（≤ 0.635）</th><th>过孔盘到别的线（≥ 0.15）</th><th>地铜条被切断：处数 / 总长 mm</th><th>铜条没断处的最窄宽度</th><th>线横移 mm</th><th>脚本检查</th></tr><tr><th>A</th><td>9 / 9</td><td>2</td><td>1.10</td><td>2.25</td><td>0.832</td><td>0.60</td><td>0.175</td><td>2 处 / 1.22</td><td>0.267</td><td>0.000</td><td class="l"><span class="ok">过</span></td></tr><tr><th>B</th><td>9 / 9</td><td>2</td><td>1.20</td><td>2.15</td><td>0.8</td><td>0.60</td><td>0.150</td><td>9 处 / 6.15</td><td>0.267</td><td>0.425</td><td class="l"><span class="ok">过</span></td></tr><tr><th>C</th><td>9 / 9</td><td>5</td><td>4.61</td><td>-1.26</td><td>0.832</td><td>0.60</td><td>0.175</td><td>2 处 / 1.22</td><td>0.267</td><td>0.000</td><td class="l"><span class="bad">不过</span>：伸进颗粒规则区</td></tr><tr><th>一条斜线（不画）</th><td>9 / 9</td><td>8</td><td>8.11</td><td>-4.76</td><td>0.832</td><td>0.60</td><td>0.175</td><td>2 处 / 1.20</td><td>0.255</td><td>0.000</td><td class="l"><span class="bad">不过</span>：伸进颗粒规则区</td></tr></table></div><h3>A · 两排交错，过孔在线自己的位置上</h3><div class="two"><svg viewBox="59 -281 396 562" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="L1 层" style="width:100%;background:#10161c">
+<section><h2>情形 2 · 字节组 0 走 L6（最坏情形）：外圈的 7 根 DQ 和 DQS 对在球区外换层</h2><p>内圈只有 DQ7、DM0 两根已在 L6。字节组 3 的数目相同。这是过孔最多的情形，用来看排法撑不撑得住。</p><div class="scroll"><table><tr><th>排法</th><th>信号过孔 / 新加的地过孔</th><th>排数</th><th>过孔阵占长 mm</th><th>阵后到颗粒规则区还剩的直线 mm</th><th>信号过孔最小中心距（≥ 0.8）</th><th>最远的回流地过孔（≤ 0.635）</th><th>过孔盘到别的线（≥ 0.15）</th><th>地铜条被切断：处数 / 总长 mm</th><th>铜条没断处的最窄宽度</th><th>线横移 mm</th><th>脚本检查</th></tr><tr><th>A</th><td>9 / 9</td><td>2</td><td>1.10</td><td>2.25</td><td>0.832</td><td>0.60</td><td>0.175</td><td>2 处 / 1.22</td><td>0.267</td><td>0.000</td><td class="l"><span class="ok">过</span></td></tr><tr><th>B</th><td>9 / 9</td><td>2</td><td>1.20</td><td>2.15</td><td>0.8</td><td>0.60</td><td>0.150</td><td>9 处 / 6.15</td><td>0.267</td><td>0.425</td><td class="l"><span class="ok">过</span></td></tr><tr><th>C</th><td>9 / 9</td><td>5</td><td>4.61</td><td>-1.26</td><td>0.832</td><td>0.60</td><td>0.175</td><td>2 处 / 1.22</td><td>0.267</td><td>0.000</td><td class="l"><span class="bad">不过</span>：伸进颗粒规则区</td></tr><tr><th>D</th><td>9 / 9</td><td>5</td><td>3.20</td><td>0.15</td><td>0.832</td><td>0.60</td><td>0.175</td><td>2 处 / 1.22</td><td>0.267</td><td>0.000</td><td class="l"><span class="ok">过</span></td></tr><tr><th>一条斜线（不画）</th><td>9 / 9</td><td>8</td><td>8.11</td><td>-4.76</td><td>0.832</td><td>0.60</td><td>0.175</td><td>2 处 / 1.20</td><td>0.255</td><td>0.000</td><td class="l"><span class="bad">不过</span>：伸进颗粒规则区</td></tr></table></div><h3>A · 两排交错，过孔在线自己的位置上</h3><div class="two"><svg viewBox="59 -281 396 562" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="L1 层" style="width:100%;background:#10161c">
 <rect x="59.4" y="-264.3" width="396.0" height="528.5" fill="#1d5a53"/>
 <polyline points="59.4,-206.5 135.3,-206.5 135.3,-206.5" fill="none" stroke="#10161c" stroke-width="29.70" stroke-linejoin="round"/>
 <polyline points="59.4,-176.8 181.5,-176.8 181.5,-176.8" fill="none" stroke="#10161c" stroke-width="29.70" stroke-linejoin="round"/>
@@ -667,8 +751,128 @@ td.l{text-align:left;min-width:9em}
 <circle cx="233.2" cy="34.9" r="19.80" fill="none" stroke="#c5d2de" stroke-width="1" stroke-dasharray="3 3"/><circle cx="233.2" cy="34.9" r="13.20" fill="#f4f1e8"><title>DQ0 换层过孔</title></circle><circle cx="233.2" cy="34.9" r="6.60" fill="#10161c"/>
 <circle cx="279.4" cy="64.6" r="19.80" fill="none" stroke="#c5d2de" stroke-width="1" stroke-dasharray="3 3"/><circle cx="279.4" cy="64.6" r="13.20" fill="#f4f1e8"><title>DQ2 换层过孔</title></circle><circle cx="279.4" cy="64.6" r="6.60" fill="#10161c"/>
 <circle cx="366.7" cy="120.7" r="19.80" fill="none" stroke="#c5d2de" stroke-width="1" stroke-dasharray="3 3"/><circle cx="366.7" cy="120.7" r="13.20" fill="#f4f1e8"><title>DQ5 换层过孔</title></circle><circle cx="366.7" cy="120.7" r="6.60" fill="#10161c"/>
+<line x1="376.2" y1="270.76400000000007" x2="442.2" y2="270.76400000000007" stroke="#fff" stroke-width="2"/><text x="376.2" y="265.76400000000007" fill="#fff" font-size="12">1 mm</text><text x="65.4" y="270.76400000000007" fill="#fff" font-size="15" font-weight="600">L6</text></svg></div><h3>D · 同 A，但每排最多 2 个过孔</h3><div class="two"><svg viewBox="59 -281 396 562" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="L1 层" style="width:100%;background:#10161c">
+<rect x="59.4" y="-264.3" width="396.0" height="528.5" fill="#1d5a53"/>
+<polyline points="59.4,-206.5 181.5,-206.5 181.5,-206.5" fill="none" stroke="#10161c" stroke-width="29.70" stroke-linejoin="round"/>
+<polyline points="59.4,-176.8 227.7,-176.8 227.7,-176.8" fill="none" stroke="#10161c" stroke-width="29.70" stroke-linejoin="round"/>
+<polyline points="59.4,-120.7 181.5,-120.7 181.5,-120.7" fill="none" stroke="#10161c" stroke-width="29.70" stroke-linejoin="round"/>
+<polyline points="59.4,-91.0 227.7,-91.0 227.7,-91.0" fill="none" stroke="#10161c" stroke-width="29.70" stroke-linejoin="round"/>
+<polyline points="59.4,-36.4 117.3,-36.4 128.7,-47.9 135.3,-47.9" fill="none" stroke="#10161c" stroke-width="26.66" stroke-linejoin="round"/>
+<polyline points="59.4,-19.7 117.3,-19.7 128.7,-8.3 135.3,-8.3" fill="none" stroke="#10161c" stroke-width="26.66" stroke-linejoin="round"/>
+<polyline points="59.4,34.9 273.9,34.9 273.9,34.9" fill="none" stroke="#10161c" stroke-width="29.70" stroke-linejoin="round"/>
+<polyline points="59.4,64.6 320.1,64.6 320.1,64.6" fill="none" stroke="#10161c" stroke-width="29.70" stroke-linejoin="round"/>
+<polyline points="59.4,120.7 273.9,120.7 273.9,120.7" fill="none" stroke="#10161c" stroke-width="29.70" stroke-linejoin="round"/>
+<circle cx="135.3" cy="-47.9" r="23.10" fill="#10161c"/>
+<circle cx="135.3" cy="-8.3" r="23.10" fill="#10161c"/>
+<circle cx="181.5" cy="-206.5" r="23.10" fill="#10161c"/>
+<circle cx="227.7" cy="-176.8" r="23.10" fill="#10161c"/>
+<circle cx="181.5" cy="-120.7" r="23.10" fill="#10161c"/>
+<circle cx="227.7" cy="-91.0" r="23.10" fill="#10161c"/>
+<circle cx="273.9" cy="34.9" r="23.10" fill="#10161c"/>
+<circle cx="320.1" cy="64.6" r="23.10" fill="#10161c"/>
+<circle cx="273.9" cy="120.7" r="23.10" fill="#10161c"/>
+<line x1="112.2" y1="-280.76400000000007" x2="112.2" y2="280.76400000000007" stroke="#9fb0c0" stroke-dasharray="6 5"/><text x="116.2" y="-267.76400000000007" fill="#c5d2de" font-size="12" text-anchor="start">SoC 规则区边</text>
+<line x1="343.2" y1="-280.76400000000007" x2="343.2" y2="280.76400000000007" stroke="#9fb0c0" stroke-dasharray="6 5"/><text x="339.2" y="-267.76400000000007" fill="#c5d2de" font-size="12" text-anchor="end">颗粒规则区边</text>
+<polyline points="59.4,-206.5 181.5,-206.5 181.5,-206.5" fill="none" stroke="#e0564f" stroke-width="9.90" stroke-linejoin="round"><title>DQ1，0.15 mm，L1</title></polyline>
+<text x="62.4" y="-212.5" fill="#c5d2de" font-size="10">DQ1</text>
+<polyline points="59.4,-176.8 227.7,-176.8 227.7,-176.8" fill="none" stroke="#e0564f" stroke-width="9.90" stroke-linejoin="round"><title>DQ3，0.15 mm，L1</title></polyline>
+<text x="62.4" y="-182.8" fill="#c5d2de" font-size="10">DQ3</text>
+<polyline points="59.4,-120.7 181.5,-120.7 181.5,-120.7" fill="none" stroke="#e0564f" stroke-width="9.90" stroke-linejoin="round"><title>DQ4，0.15 mm，L1</title></polyline>
+<text x="62.4" y="-126.7" fill="#c5d2de" font-size="10">DQ4</text>
+<polyline points="59.4,-91.0 227.7,-91.0 227.7,-91.0" fill="none" stroke="#e0564f" stroke-width="9.90" stroke-linejoin="round"><title>DQ6，0.15 mm，L1</title></polyline>
+<text x="62.4" y="-97.0" fill="#c5d2de" font-size="10">DQ6</text>
+<polyline points="59.4,-36.4 117.3,-36.4 128.7,-47.9 135.3,-47.9" fill="none" stroke="#f2b134" stroke-width="6.86" stroke-linejoin="round"><title>DQS0_P，0.104 mm，L1</title></polyline>
+<text x="62.4" y="-42.4" fill="#c5d2de" font-size="10">DQS0</text>
+<polyline points="59.4,-19.7 117.3,-19.7 128.7,-8.3 135.3,-8.3" fill="none" stroke="#f2b134" stroke-width="6.86" stroke-linejoin="round"><title>DQS0_N，0.104 mm，L1</title></polyline>
+<polyline points="59.4,34.9 273.9,34.9 273.9,34.9" fill="none" stroke="#e0564f" stroke-width="9.90" stroke-linejoin="round"><title>DQ0，0.15 mm，L1</title></polyline>
+<text x="62.4" y="28.9" fill="#c5d2de" font-size="10">DQ0</text>
+<polyline points="59.4,64.6 320.1,64.6 320.1,64.6" fill="none" stroke="#e0564f" stroke-width="9.90" stroke-linejoin="round"><title>DQ2，0.15 mm，L1</title></polyline>
+<text x="62.4" y="58.6" fill="#c5d2de" font-size="10">DQ2</text>
+<polyline points="59.4,120.7 273.9,120.7 273.9,120.7" fill="none" stroke="#e0564f" stroke-width="9.90" stroke-linejoin="round"><title>DQ5，0.15 mm，L1</title></polyline>
+<text x="62.4" y="114.7" fill="#c5d2de" font-size="10">DQ5</text>
+<circle cx="98.6" cy="-63.0" r="13.20" fill="#7fd6c8"><title>回流地过孔</title></circle><circle cx="98.6" cy="-63.0" r="6.60" fill="#10161c"/>
+<circle cx="98.6" cy="6.9" r="13.20" fill="#7fd6c8"><title>回流地过孔</title></circle><circle cx="98.6" cy="6.9" r="6.60" fill="#10161c"/>
+<circle cx="153.4" cy="-234.6" r="13.20" fill="#7fd6c8"><title>回流地过孔</title></circle><circle cx="153.4" cy="-234.6" r="6.60" fill="#10161c"/>
+<circle cx="153.4" cy="-148.8" r="13.20" fill="#7fd6c8"><title>回流地过孔</title></circle><circle cx="153.4" cy="-148.8" r="6.60" fill="#10161c"/>
+<circle cx="255.8" cy="-148.8" r="13.20" fill="#7fd6c8"><title>回流地过孔</title></circle><circle cx="255.8" cy="-148.8" r="6.60" fill="#10161c"/>
+<circle cx="199.6" cy="-63.0" r="13.20" fill="#7fd6c8"><title>回流地过孔</title></circle><circle cx="199.6" cy="-63.0" r="6.60" fill="#10161c"/>
+<circle cx="245.8" cy="6.9" r="13.20" fill="#7fd6c8"><title>回流地过孔</title></circle><circle cx="245.8" cy="6.9" r="6.60" fill="#10161c"/>
+<circle cx="245.8" cy="92.7" r="13.20" fill="#7fd6c8"><title>回流地过孔</title></circle><circle cx="245.8" cy="92.7" r="6.60" fill="#10161c"/>
+<circle cx="348.2" cy="92.7" r="13.20" fill="#7fd6c8"><title>回流地过孔</title></circle><circle cx="348.2" cy="92.7" r="6.60" fill="#10161c"/>
+<circle cx="135.3" cy="-47.9" r="19.80" fill="none" stroke="#c5d2de" stroke-width="1" stroke-dasharray="3 3"/><circle cx="135.3" cy="-47.9" r="13.20" fill="#f4f1e8"><title>DQS0_P 换层过孔</title></circle><circle cx="135.3" cy="-47.9" r="6.60" fill="#10161c"/>
+<circle cx="135.3" cy="-8.3" r="19.80" fill="none" stroke="#c5d2de" stroke-width="1" stroke-dasharray="3 3"/><circle cx="135.3" cy="-8.3" r="13.20" fill="#f4f1e8"><title>DQS0_N 换层过孔</title></circle><circle cx="135.3" cy="-8.3" r="6.60" fill="#10161c"/>
+<circle cx="181.5" cy="-206.5" r="19.80" fill="none" stroke="#c5d2de" stroke-width="1" stroke-dasharray="3 3"/><circle cx="181.5" cy="-206.5" r="13.20" fill="#f4f1e8"><title>DQ1 换层过孔</title></circle><circle cx="181.5" cy="-206.5" r="6.60" fill="#10161c"/>
+<circle cx="227.7" cy="-176.8" r="19.80" fill="none" stroke="#c5d2de" stroke-width="1" stroke-dasharray="3 3"/><circle cx="227.7" cy="-176.8" r="13.20" fill="#f4f1e8"><title>DQ3 换层过孔</title></circle><circle cx="227.7" cy="-176.8" r="6.60" fill="#10161c"/>
+<circle cx="181.5" cy="-120.7" r="19.80" fill="none" stroke="#c5d2de" stroke-width="1" stroke-dasharray="3 3"/><circle cx="181.5" cy="-120.7" r="13.20" fill="#f4f1e8"><title>DQ4 换层过孔</title></circle><circle cx="181.5" cy="-120.7" r="6.60" fill="#10161c"/>
+<circle cx="227.7" cy="-91.0" r="19.80" fill="none" stroke="#c5d2de" stroke-width="1" stroke-dasharray="3 3"/><circle cx="227.7" cy="-91.0" r="13.20" fill="#f4f1e8"><title>DQ6 换层过孔</title></circle><circle cx="227.7" cy="-91.0" r="6.60" fill="#10161c"/>
+<circle cx="273.9" cy="34.9" r="19.80" fill="none" stroke="#c5d2de" stroke-width="1" stroke-dasharray="3 3"/><circle cx="273.9" cy="34.9" r="13.20" fill="#f4f1e8"><title>DQ0 换层过孔</title></circle><circle cx="273.9" cy="34.9" r="6.60" fill="#10161c"/>
+<circle cx="320.1" cy="64.6" r="19.80" fill="none" stroke="#c5d2de" stroke-width="1" stroke-dasharray="3 3"/><circle cx="320.1" cy="64.6" r="13.20" fill="#f4f1e8"><title>DQ2 换层过孔</title></circle><circle cx="320.1" cy="64.6" r="6.60" fill="#10161c"/>
+<circle cx="273.9" cy="120.7" r="19.80" fill="none" stroke="#c5d2de" stroke-width="1" stroke-dasharray="3 3"/><circle cx="273.9" cy="120.7" r="13.20" fill="#f4f1e8"><title>DQ5 换层过孔</title></circle><circle cx="273.9" cy="120.7" r="6.60" fill="#10161c"/>
+<line x1="376.2" y1="270.76400000000007" x2="442.2" y2="270.76400000000007" stroke="#fff" stroke-width="2"/><text x="376.2" y="265.76400000000007" fill="#fff" font-size="12">1 mm</text><text x="65.4" y="270.76400000000007" fill="#fff" font-size="15" font-weight="600">L1</text></svg><svg viewBox="59 -281 396 562" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="L6 层" style="width:100%;background:#10161c">
+<rect x="59.4" y="-264.3" width="396.0" height="528.5" fill="#1d5a53"/>
+<polyline points="181.5,-206.5 181.5,-206.5 455.4,-206.5" fill="none" stroke="#10161c" stroke-width="29.70" stroke-linejoin="round"/>
+<polyline points="227.7,-176.8 227.7,-176.8 455.4,-176.8" fill="none" stroke="#10161c" stroke-width="29.70" stroke-linejoin="round"/>
+<polyline points="181.5,-120.7 181.5,-120.7 455.4,-120.7" fill="none" stroke="#10161c" stroke-width="29.70" stroke-linejoin="round"/>
+<polyline points="227.7,-91.0 227.7,-91.0 455.4,-91.0" fill="none" stroke="#10161c" stroke-width="29.70" stroke-linejoin="round"/>
+<polyline points="135.3,-47.9 141.9,-47.9 153.3,-36.4 455.4,-36.4" fill="none" stroke="#10161c" stroke-width="26.66" stroke-linejoin="round"/>
+<polyline points="135.3,-8.3 141.9,-8.3 153.3,-19.7 455.4,-19.7" fill="none" stroke="#10161c" stroke-width="26.66" stroke-linejoin="round"/>
+<polyline points="273.9,34.9 273.9,34.9 455.4,34.9" fill="none" stroke="#10161c" stroke-width="29.70" stroke-linejoin="round"/>
+<polyline points="320.1,64.6 320.1,64.6 455.4,64.6" fill="none" stroke="#10161c" stroke-width="29.70" stroke-linejoin="round"/>
+<polyline points="273.9,120.7 273.9,120.7 455.4,120.7" fill="none" stroke="#10161c" stroke-width="29.70" stroke-linejoin="round"/>
+<polyline points="59.4,150.4 455.4,150.4" fill="none" stroke="#10161c" stroke-width="29.70" stroke-linejoin="round"/>
+<polyline points="59.4,206.5 455.4,206.5" fill="none" stroke="#10161c" stroke-width="29.70" stroke-linejoin="round"/>
+<circle cx="135.3" cy="-47.9" r="23.10" fill="#10161c"/>
+<circle cx="135.3" cy="-8.3" r="23.10" fill="#10161c"/>
+<circle cx="181.5" cy="-206.5" r="23.10" fill="#10161c"/>
+<circle cx="227.7" cy="-176.8" r="23.10" fill="#10161c"/>
+<circle cx="181.5" cy="-120.7" r="23.10" fill="#10161c"/>
+<circle cx="227.7" cy="-91.0" r="23.10" fill="#10161c"/>
+<circle cx="273.9" cy="34.9" r="23.10" fill="#10161c"/>
+<circle cx="320.1" cy="64.6" r="23.10" fill="#10161c"/>
+<circle cx="273.9" cy="120.7" r="23.10" fill="#10161c"/>
+<line x1="112.2" y1="-280.76400000000007" x2="112.2" y2="280.76400000000007" stroke="#9fb0c0" stroke-dasharray="6 5"/><text x="116.2" y="-267.76400000000007" fill="#c5d2de" font-size="12" text-anchor="start">SoC 规则区边</text>
+<line x1="343.2" y1="-280.76400000000007" x2="343.2" y2="280.76400000000007" stroke="#9fb0c0" stroke-dasharray="6 5"/><text x="339.2" y="-267.76400000000007" fill="#c5d2de" font-size="12" text-anchor="end">颗粒规则区边</text>
+<polyline points="181.5,-206.5 181.5,-206.5 455.4,-206.5" fill="none" stroke="#5b93e6" stroke-width="9.90" stroke-linejoin="round"><title>DQ1，0.15 mm，L6</title></polyline>
+<text x="423.40000000000003" y="-212.5" fill="#c5d2de" font-size="10">DQ1</text>
+<polyline points="227.7,-176.8 227.7,-176.8 455.4,-176.8" fill="none" stroke="#5b93e6" stroke-width="9.90" stroke-linejoin="round"><title>DQ3，0.15 mm，L6</title></polyline>
+<text x="423.40000000000003" y="-182.8" fill="#c5d2de" font-size="10">DQ3</text>
+<polyline points="181.5,-120.7 181.5,-120.7 455.4,-120.7" fill="none" stroke="#5b93e6" stroke-width="9.90" stroke-linejoin="round"><title>DQ4，0.15 mm，L6</title></polyline>
+<text x="423.40000000000003" y="-126.7" fill="#c5d2de" font-size="10">DQ4</text>
+<polyline points="227.7,-91.0 227.7,-91.0 455.4,-91.0" fill="none" stroke="#5b93e6" stroke-width="9.90" stroke-linejoin="round"><title>DQ6，0.15 mm，L6</title></polyline>
+<text x="423.40000000000003" y="-97.0" fill="#c5d2de" font-size="10">DQ6</text>
+<polyline points="135.3,-47.9 141.9,-47.9 153.3,-36.4 455.4,-36.4" fill="none" stroke="#f2b134" stroke-width="6.86" stroke-linejoin="round"><title>DQS0_P，0.104 mm，L6</title></polyline>
+<text x="423.40000000000003" y="-42.4" fill="#c5d2de" font-size="10">DQS0</text>
+<polyline points="135.3,-8.3 141.9,-8.3 153.3,-19.7 455.4,-19.7" fill="none" stroke="#f2b134" stroke-width="6.86" stroke-linejoin="round"><title>DQS0_N，0.104 mm，L6</title></polyline>
+<polyline points="273.9,34.9 273.9,34.9 455.4,34.9" fill="none" stroke="#5b93e6" stroke-width="9.90" stroke-linejoin="round"><title>DQ0，0.15 mm，L6</title></polyline>
+<text x="423.40000000000003" y="28.9" fill="#c5d2de" font-size="10">DQ0</text>
+<polyline points="320.1,64.6 320.1,64.6 455.4,64.6" fill="none" stroke="#5b93e6" stroke-width="9.90" stroke-linejoin="round"><title>DQ2，0.15 mm，L6</title></polyline>
+<text x="423.40000000000003" y="58.6" fill="#c5d2de" font-size="10">DQ2</text>
+<polyline points="273.9,120.7 273.9,120.7 455.4,120.7" fill="none" stroke="#5b93e6" stroke-width="9.90" stroke-linejoin="round"><title>DQ5，0.15 mm，L6</title></polyline>
+<text x="423.40000000000003" y="114.7" fill="#c5d2de" font-size="10">DQ5</text>
+<polyline points="59.4,150.4 455.4,150.4" fill="none" stroke="#5b93e6" stroke-width="9.90" stroke-linejoin="round"><title>DQ7，0.15 mm，L6</title></polyline>
+<text x="62.4" y="144.4" fill="#c5d2de" font-size="10">DQ7</text>
+<polyline points="59.4,206.5 455.4,206.5" fill="none" stroke="#5b93e6" stroke-width="9.90" stroke-linejoin="round"><title>DM0，0.15 mm，L6</title></polyline>
+<text x="62.4" y="200.5" fill="#c5d2de" font-size="10">DM0</text>
+<circle cx="98.6" cy="-63.0" r="13.20" fill="#7fd6c8"><title>回流地过孔</title></circle><circle cx="98.6" cy="-63.0" r="6.60" fill="#10161c"/>
+<circle cx="98.6" cy="6.9" r="13.20" fill="#7fd6c8"><title>回流地过孔</title></circle><circle cx="98.6" cy="6.9" r="6.60" fill="#10161c"/>
+<circle cx="153.4" cy="-234.6" r="13.20" fill="#7fd6c8"><title>回流地过孔</title></circle><circle cx="153.4" cy="-234.6" r="6.60" fill="#10161c"/>
+<circle cx="153.4" cy="-148.8" r="13.20" fill="#7fd6c8"><title>回流地过孔</title></circle><circle cx="153.4" cy="-148.8" r="6.60" fill="#10161c"/>
+<circle cx="255.8" cy="-148.8" r="13.20" fill="#7fd6c8"><title>回流地过孔</title></circle><circle cx="255.8" cy="-148.8" r="6.60" fill="#10161c"/>
+<circle cx="199.6" cy="-63.0" r="13.20" fill="#7fd6c8"><title>回流地过孔</title></circle><circle cx="199.6" cy="-63.0" r="6.60" fill="#10161c"/>
+<circle cx="245.8" cy="6.9" r="13.20" fill="#7fd6c8"><title>回流地过孔</title></circle><circle cx="245.8" cy="6.9" r="6.60" fill="#10161c"/>
+<circle cx="245.8" cy="92.7" r="13.20" fill="#7fd6c8"><title>回流地过孔</title></circle><circle cx="245.8" cy="92.7" r="6.60" fill="#10161c"/>
+<circle cx="348.2" cy="92.7" r="13.20" fill="#7fd6c8"><title>回流地过孔</title></circle><circle cx="348.2" cy="92.7" r="6.60" fill="#10161c"/>
+<circle cx="135.3" cy="-47.9" r="19.80" fill="none" stroke="#c5d2de" stroke-width="1" stroke-dasharray="3 3"/><circle cx="135.3" cy="-47.9" r="13.20" fill="#f4f1e8"><title>DQS0_P 换层过孔</title></circle><circle cx="135.3" cy="-47.9" r="6.60" fill="#10161c"/>
+<circle cx="135.3" cy="-8.3" r="19.80" fill="none" stroke="#c5d2de" stroke-width="1" stroke-dasharray="3 3"/><circle cx="135.3" cy="-8.3" r="13.20" fill="#f4f1e8"><title>DQS0_N 换层过孔</title></circle><circle cx="135.3" cy="-8.3" r="6.60" fill="#10161c"/>
+<circle cx="181.5" cy="-206.5" r="19.80" fill="none" stroke="#c5d2de" stroke-width="1" stroke-dasharray="3 3"/><circle cx="181.5" cy="-206.5" r="13.20" fill="#f4f1e8"><title>DQ1 换层过孔</title></circle><circle cx="181.5" cy="-206.5" r="6.60" fill="#10161c"/>
+<circle cx="227.7" cy="-176.8" r="19.80" fill="none" stroke="#c5d2de" stroke-width="1" stroke-dasharray="3 3"/><circle cx="227.7" cy="-176.8" r="13.20" fill="#f4f1e8"><title>DQ3 换层过孔</title></circle><circle cx="227.7" cy="-176.8" r="6.60" fill="#10161c"/>
+<circle cx="181.5" cy="-120.7" r="19.80" fill="none" stroke="#c5d2de" stroke-width="1" stroke-dasharray="3 3"/><circle cx="181.5" cy="-120.7" r="13.20" fill="#f4f1e8"><title>DQ4 换层过孔</title></circle><circle cx="181.5" cy="-120.7" r="6.60" fill="#10161c"/>
+<circle cx="227.7" cy="-91.0" r="19.80" fill="none" stroke="#c5d2de" stroke-width="1" stroke-dasharray="3 3"/><circle cx="227.7" cy="-91.0" r="13.20" fill="#f4f1e8"><title>DQ6 换层过孔</title></circle><circle cx="227.7" cy="-91.0" r="6.60" fill="#10161c"/>
+<circle cx="273.9" cy="34.9" r="19.80" fill="none" stroke="#c5d2de" stroke-width="1" stroke-dasharray="3 3"/><circle cx="273.9" cy="34.9" r="13.20" fill="#f4f1e8"><title>DQ0 换层过孔</title></circle><circle cx="273.9" cy="34.9" r="6.60" fill="#10161c"/>
+<circle cx="320.1" cy="64.6" r="19.80" fill="none" stroke="#c5d2de" stroke-width="1" stroke-dasharray="3 3"/><circle cx="320.1" cy="64.6" r="13.20" fill="#f4f1e8"><title>DQ2 换层过孔</title></circle><circle cx="320.1" cy="64.6" r="6.60" fill="#10161c"/>
+<circle cx="273.9" cy="120.7" r="19.80" fill="none" stroke="#c5d2de" stroke-width="1" stroke-dasharray="3 3"/><circle cx="273.9" cy="120.7" r="13.20" fill="#f4f1e8"><title>DQ5 换层过孔</title></circle><circle cx="273.9" cy="120.7" r="6.60" fill="#10161c"/>
 <line x1="376.2" y1="270.76400000000007" x2="442.2" y2="270.76400000000007" stroke="#fff" stroke-width="2"/><text x="376.2" y="265.76400000000007" fill="#fff" font-size="12">1 mm</text><text x="65.4" y="270.76400000000007" fill="#fff" font-size="15" font-weight="600">L6</text></svg></div></section>
-<section><h2>情形 3 · 字节组 0 走 L1：内圈的 DQ7、DM0 从 L6 回到 L1</h2><p>其余 9 根从球区出来就一直在 L1。这两根各有两个过孔，同组别的线没有过孔。</p><div class="scroll"><table><tr><th>排法</th><th>信号过孔 / 新加的地过孔</th><th>排数</th><th>过孔阵占长 mm</th><th>阵后到颗粒规则区还剩的直线 mm</th><th>信号过孔最小中心距（≥ 0.8）</th><th>最远的回流地过孔（≤ 0.635）</th><th>过孔盘到别的线（≥ 0.15）</th><th>地铜条被切断：处数 / 总长 mm</th><th>铜条没断处的最窄宽度</th><th>线横移 mm</th><th>脚本检查</th></tr><tr><th>A</th><td>2 / 2</td><td>2</td><td>1.10</td><td>2.25</td><td>1.101</td><td>0.60</td><td>0.175</td><td>0 处 / 0.00</td><td>0.275</td><td>0.000</td><td class="l"><span class="ok">过</span></td></tr><tr><th>B</th><td>2 / 2</td><td>1</td><td>0.40</td><td>2.95</td><td>0.85</td><td>0.60</td><td>0.326</td><td>2 处 / 1.42</td><td>0.400</td><td>0.425</td><td class="l"><span class="ok">过</span></td></tr><tr><th>C</th><td>2 / 2</td><td>2</td><td>1.25</td><td>2.10</td><td>1.202</td><td>0.60</td><td>0.175</td><td>0 处 / 0.00</td><td>0.275</td><td>0.000</td><td class="l"><span class="ok">过</span></td></tr><tr><th>一条斜线（不画）</th><td>2 / 2</td><td>2</td><td>1.25</td><td>2.10</td><td>1.202</td><td>0.60</td><td>0.175</td><td>0 处 / 0.00</td><td>0.275</td><td>0.000</td><td class="l"><span class="ok">过</span></td></tr></table></div><h3>A · 两排交错，过孔在线自己的位置上</h3><div class="two"><svg viewBox="59 -281 396 562" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="L1 层" style="width:100%;background:#10161c">
+<section><h2>情形 3 · 字节组 0 走 L1：内圈的 DQ7、DM0 从 L6 回到 L1</h2><p>其余 9 根从球区出来就一直在 L1。这两根各有两个过孔，同组别的线没有过孔。</p><div class="scroll"><table><tr><th>排法</th><th>信号过孔 / 新加的地过孔</th><th>排数</th><th>过孔阵占长 mm</th><th>阵后到颗粒规则区还剩的直线 mm</th><th>信号过孔最小中心距（≥ 0.8）</th><th>最远的回流地过孔（≤ 0.635）</th><th>过孔盘到别的线（≥ 0.15）</th><th>地铜条被切断：处数 / 总长 mm</th><th>铜条没断处的最窄宽度</th><th>线横移 mm</th><th>脚本检查</th></tr><tr><th>A</th><td>2 / 2</td><td>2</td><td>1.10</td><td>2.25</td><td>1.101</td><td>0.60</td><td>0.175</td><td>0 处 / 0.00</td><td>0.275</td><td>0.000</td><td class="l"><span class="ok">过</span></td></tr><tr><th>B</th><td>2 / 2</td><td>1</td><td>0.40</td><td>2.95</td><td>0.85</td><td>0.60</td><td>0.326</td><td>2 处 / 1.42</td><td>0.400</td><td>0.425</td><td class="l"><span class="ok">过</span></td></tr><tr><th>C</th><td>2 / 2</td><td>2</td><td>1.25</td><td>2.10</td><td>1.202</td><td>0.60</td><td>0.175</td><td>0 处 / 0.00</td><td>0.275</td><td>0.000</td><td class="l"><span class="ok">过</span></td></tr><tr><th>D</th><td>2 / 1</td><td>1</td><td>0.40</td><td>2.95</td><td>0.85</td><td>0.60</td><td>0.175</td><td>1 处 / 0.37</td><td>0.262</td><td>0.000</td><td class="l"><span class="ok">过</span></td></tr><tr><th>一条斜线（不画）</th><td>2 / 2</td><td>2</td><td>1.25</td><td>2.10</td><td>1.202</td><td>0.60</td><td>0.175</td><td>0 处 / 0.00</td><td>0.275</td><td>0.000</td><td class="l"><span class="ok">过</span></td></tr></table></div><h3>A · 两排交错，过孔在线自己的位置上</h3><div class="two"><svg viewBox="59 -281 396 562" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="L1 层" style="width:100%;background:#10161c">
 <rect x="59.4" y="-264.3" width="396.0" height="528.5" fill="#1d5a53"/>
 <polyline points="59.4,-206.5 455.4,-206.5" fill="none" stroke="#10161c" stroke-width="29.70" stroke-linejoin="round"/>
 <polyline points="59.4,-176.8 455.4,-176.8" fill="none" stroke="#10161c" stroke-width="29.70" stroke-linejoin="round"/>
@@ -842,12 +1046,69 @@ td.l{text-align:left;min-width:9em}
 <circle cx="163.3" cy="178.5" r="13.20" fill="#7fd6c8"><title>回流地过孔</title></circle><circle cx="163.3" cy="178.5" r="6.60" fill="#10161c"/>
 <circle cx="135.3" cy="150.4" r="19.80" fill="none" stroke="#c5d2de" stroke-width="1" stroke-dasharray="3 3"/><circle cx="135.3" cy="150.4" r="13.20" fill="#f4f1e8"><title>DQ7 换层过孔</title></circle><circle cx="135.3" cy="150.4" r="6.60" fill="#10161c"/>
 <circle cx="191.4" cy="206.5" r="19.80" fill="none" stroke="#c5d2de" stroke-width="1" stroke-dasharray="3 3"/><circle cx="191.4" cy="206.5" r="13.20" fill="#f4f1e8"><title>DM0 换层过孔</title></circle><circle cx="191.4" cy="206.5" r="6.60" fill="#10161c"/>
+<line x1="376.2" y1="270.76400000000007" x2="442.2" y2="270.76400000000007" stroke="#fff" stroke-width="2"/><text x="376.2" y="265.76400000000007" fill="#fff" font-size="12">1 mm</text><text x="65.4" y="270.76400000000007" fill="#fff" font-size="15" font-weight="600">L6</text></svg></div><h3>D · 同 A，但每排最多 2 个过孔</h3><div class="two"><svg viewBox="59 -281 396 562" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="L1 层" style="width:100%;background:#10161c">
+<rect x="59.4" y="-264.3" width="396.0" height="528.5" fill="#1d5a53"/>
+<polyline points="59.4,-206.5 455.4,-206.5" fill="none" stroke="#10161c" stroke-width="29.70" stroke-linejoin="round"/>
+<polyline points="59.4,-176.8 455.4,-176.8" fill="none" stroke="#10161c" stroke-width="29.70" stroke-linejoin="round"/>
+<polyline points="59.4,-120.7 455.4,-120.7" fill="none" stroke="#10161c" stroke-width="29.70" stroke-linejoin="round"/>
+<polyline points="59.4,-91.0 455.4,-91.0" fill="none" stroke="#10161c" stroke-width="29.70" stroke-linejoin="round"/>
+<polyline points="59.4,-36.4 455.4,-36.4" fill="none" stroke="#10161c" stroke-width="26.66" stroke-linejoin="round"/>
+<polyline points="59.4,-19.7 455.4,-19.7" fill="none" stroke="#10161c" stroke-width="26.66" stroke-linejoin="round"/>
+<polyline points="59.4,34.9 455.4,34.9" fill="none" stroke="#10161c" stroke-width="29.70" stroke-linejoin="round"/>
+<polyline points="59.4,64.6 455.4,64.6" fill="none" stroke="#10161c" stroke-width="29.70" stroke-linejoin="round"/>
+<polyline points="59.4,120.7 455.4,120.7" fill="none" stroke="#10161c" stroke-width="29.70" stroke-linejoin="round"/>
+<polyline points="135.3,150.4 135.3,150.4 455.4,150.4" fill="none" stroke="#10161c" stroke-width="29.70" stroke-linejoin="round"/>
+<polyline points="135.3,206.5 135.3,206.5 455.4,206.5" fill="none" stroke="#10161c" stroke-width="29.70" stroke-linejoin="round"/>
+<circle cx="135.3" cy="150.4" r="23.10" fill="#10161c"/>
+<circle cx="135.3" cy="206.5" r="23.10" fill="#10161c"/>
+<line x1="112.2" y1="-280.76400000000007" x2="112.2" y2="280.76400000000007" stroke="#9fb0c0" stroke-dasharray="6 5"/><text x="116.2" y="-267.76400000000007" fill="#c5d2de" font-size="12" text-anchor="start">SoC 规则区边</text>
+<line x1="343.2" y1="-280.76400000000007" x2="343.2" y2="280.76400000000007" stroke="#9fb0c0" stroke-dasharray="6 5"/><text x="339.2" y="-267.76400000000007" fill="#c5d2de" font-size="12" text-anchor="end">颗粒规则区边</text>
+<polyline points="59.4,-206.5 455.4,-206.5" fill="none" stroke="#e0564f" stroke-width="9.90" stroke-linejoin="round"><title>DQ1，0.15 mm，L1</title></polyline>
+<text x="62.4" y="-212.5" fill="#c5d2de" font-size="10">DQ1</text>
+<polyline points="59.4,-176.8 455.4,-176.8" fill="none" stroke="#e0564f" stroke-width="9.90" stroke-linejoin="round"><title>DQ3，0.15 mm，L1</title></polyline>
+<text x="62.4" y="-182.8" fill="#c5d2de" font-size="10">DQ3</text>
+<polyline points="59.4,-120.7 455.4,-120.7" fill="none" stroke="#e0564f" stroke-width="9.90" stroke-linejoin="round"><title>DQ4，0.15 mm，L1</title></polyline>
+<text x="62.4" y="-126.7" fill="#c5d2de" font-size="10">DQ4</text>
+<polyline points="59.4,-91.0 455.4,-91.0" fill="none" stroke="#e0564f" stroke-width="9.90" stroke-linejoin="round"><title>DQ6，0.15 mm，L1</title></polyline>
+<text x="62.4" y="-97.0" fill="#c5d2de" font-size="10">DQ6</text>
+<polyline points="59.4,-36.4 455.4,-36.4" fill="none" stroke="#f2b134" stroke-width="6.86" stroke-linejoin="round"><title>DQS0_P，0.104 mm，L1</title></polyline>
+<text x="62.4" y="-42.4" fill="#c5d2de" font-size="10">DQS0</text>
+<polyline points="59.4,-19.7 455.4,-19.7" fill="none" stroke="#f2b134" stroke-width="6.86" stroke-linejoin="round"><title>DQS0_N，0.104 mm，L1</title></polyline>
+<polyline points="59.4,34.9 455.4,34.9" fill="none" stroke="#e0564f" stroke-width="9.90" stroke-linejoin="round"><title>DQ0，0.15 mm，L1</title></polyline>
+<text x="62.4" y="28.9" fill="#c5d2de" font-size="10">DQ0</text>
+<polyline points="59.4,64.6 455.4,64.6" fill="none" stroke="#e0564f" stroke-width="9.90" stroke-linejoin="round"><title>DQ2，0.15 mm，L1</title></polyline>
+<text x="62.4" y="58.6" fill="#c5d2de" font-size="10">DQ2</text>
+<polyline points="59.4,120.7 455.4,120.7" fill="none" stroke="#e0564f" stroke-width="9.90" stroke-linejoin="round"><title>DQ5，0.15 mm，L1</title></polyline>
+<text x="62.4" y="114.7" fill="#c5d2de" font-size="10">DQ5</text>
+<polyline points="135.3,150.4 135.3,150.4 455.4,150.4" fill="none" stroke="#e0564f" stroke-width="9.90" stroke-linejoin="round"><title>DQ7，0.15 mm，L1</title></polyline>
+<text x="423.40000000000003" y="144.4" fill="#c5d2de" font-size="10">DQ7</text>
+<polyline points="135.3,206.5 135.3,206.5 455.4,206.5" fill="none" stroke="#e0564f" stroke-width="9.90" stroke-linejoin="round"><title>DM0，0.15 mm，L1</title></polyline>
+<text x="423.40000000000003" y="200.5" fill="#c5d2de" font-size="10">DM0</text>
+<circle cx="107.2" cy="178.5" r="13.20" fill="#7fd6c8"><title>回流地过孔</title></circle><circle cx="107.2" cy="178.5" r="6.60" fill="#10161c"/>
+<circle cx="135.3" cy="150.4" r="19.80" fill="none" stroke="#c5d2de" stroke-width="1" stroke-dasharray="3 3"/><circle cx="135.3" cy="150.4" r="13.20" fill="#f4f1e8"><title>DQ7 换层过孔</title></circle><circle cx="135.3" cy="150.4" r="6.60" fill="#10161c"/>
+<circle cx="135.3" cy="206.5" r="19.80" fill="none" stroke="#c5d2de" stroke-width="1" stroke-dasharray="3 3"/><circle cx="135.3" cy="206.5" r="13.20" fill="#f4f1e8"><title>DM0 换层过孔</title></circle><circle cx="135.3" cy="206.5" r="6.60" fill="#10161c"/>
+<line x1="376.2" y1="270.76400000000007" x2="442.2" y2="270.76400000000007" stroke="#fff" stroke-width="2"/><text x="376.2" y="265.76400000000007" fill="#fff" font-size="12">1 mm</text><text x="65.4" y="270.76400000000007" fill="#fff" font-size="15" font-weight="600">L1</text></svg><svg viewBox="59 -281 396 562" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="L6 层" style="width:100%;background:#10161c">
+<rect x="59.4" y="-264.3" width="396.0" height="528.5" fill="#1d5a53"/>
+<polyline points="59.4,150.4 135.3,150.4 135.3,150.4" fill="none" stroke="#10161c" stroke-width="29.70" stroke-linejoin="round"/>
+<polyline points="59.4,206.5 135.3,206.5 135.3,206.5" fill="none" stroke="#10161c" stroke-width="29.70" stroke-linejoin="round"/>
+<circle cx="135.3" cy="150.4" r="23.10" fill="#10161c"/>
+<circle cx="135.3" cy="206.5" r="23.10" fill="#10161c"/>
+<line x1="112.2" y1="-280.76400000000007" x2="112.2" y2="280.76400000000007" stroke="#9fb0c0" stroke-dasharray="6 5"/><text x="116.2" y="-267.76400000000007" fill="#c5d2de" font-size="12" text-anchor="start">SoC 规则区边</text>
+<line x1="343.2" y1="-280.76400000000007" x2="343.2" y2="280.76400000000007" stroke="#9fb0c0" stroke-dasharray="6 5"/><text x="339.2" y="-267.76400000000007" fill="#c5d2de" font-size="12" text-anchor="end">颗粒规则区边</text>
+<polyline points="59.4,150.4 135.3,150.4 135.3,150.4" fill="none" stroke="#5b93e6" stroke-width="9.90" stroke-linejoin="round"><title>DQ7，0.15 mm，L6</title></polyline>
+<text x="62.4" y="144.4" fill="#c5d2de" font-size="10">DQ7</text>
+<polyline points="59.4,206.5 135.3,206.5 135.3,206.5" fill="none" stroke="#5b93e6" stroke-width="9.90" stroke-linejoin="round"><title>DM0，0.15 mm，L6</title></polyline>
+<text x="62.4" y="200.5" fill="#c5d2de" font-size="10">DM0</text>
+<circle cx="107.2" cy="178.5" r="13.20" fill="#7fd6c8"><title>回流地过孔</title></circle><circle cx="107.2" cy="178.5" r="6.60" fill="#10161c"/>
+<circle cx="135.3" cy="150.4" r="19.80" fill="none" stroke="#c5d2de" stroke-width="1" stroke-dasharray="3 3"/><circle cx="135.3" cy="150.4" r="13.20" fill="#f4f1e8"><title>DQ7 换层过孔</title></circle><circle cx="135.3" cy="150.4" r="6.60" fill="#10161c"/>
+<circle cx="135.3" cy="206.5" r="19.80" fill="none" stroke="#c5d2de" stroke-width="1" stroke-dasharray="3 3"/><circle cx="135.3" cy="206.5" r="13.20" fill="#f4f1e8"><title>DM0 换层过孔</title></circle><circle cx="135.3" cy="206.5" r="6.60" fill="#10161c"/>
 <line x1="376.2" y1="270.76400000000007" x2="442.2" y2="270.76400000000007" stroke="#fff" stroke-width="2"/><text x="376.2" y="265.76400000000007" fill="#fff" font-size="12">1 mm</text><text x="65.4" y="270.76400000000007" fill="#fff" font-size="15" font-weight="600">L6</text></svg></div></section>
 
 <h2>三种排法怎么比</h2>
 <div class="scroll"><table>
 <tr><th>排法</th><th>样子</th><th>好处</th><th>代价</th></tr>
 <tr><th>A 两排交错</th><td class="l">每个过孔打在线自己的位置上，线不拐弯；相邻的过孔前后错开 0.70 mm</td><td class="l">占长 1.10 mm，三种情形都一样；阵后还剩 2.25 mm 直线放蛇形；地铜条只在 DQS 对的两侧断开</td><td class="l">过孔旁的地铜条收窄到 0.275 mm（原宽 0.40）；同一格里另一根线离过孔盘 0.175 mm</td></tr>
+<tr><th>D 每排最多 2 个</th><td class="l">和 A 一样打在线自己的位置上，但一排里不超过 2 个过孔（DQS 对自己占一排），排距 0.70 mm</td><td class="l">照瑞芯微“DQ 并排的换层过孔不超过 2 个”的字面；情形 1 里过孔最小中心距 1.30 mm，接近官方板的 1.10 到 1.27</td><td class="l">情形 1 是 3 排、占长 1.80 mm、阵后剩 1.55 mm；情形 2 要 5 排、占长 3.20 mm、只剩 0.15 mm</td></tr>
 <tr><th>B 挪到地铜条上</th><td class="l">线斜着横移 0.425 mm，过孔坐在地铜条的位置；排距 0.80 mm</td><td class="l">占长 1.20 mm；过孔离同格另一根线更远，避让圈不贴着它</td><td class="l">每个过孔切断一条地铜条（情形 2 是 9 处，共 6.15 mm）；每根线多两个 45° 拐弯；过孔盘到两侧邻线正好 0.15 mm，没有余量</td></tr>
 <tr><th>C 人字形</th><td class="l">DQS 对在最前，两边的过孔依次后退，排成 V 形</td><td class="l">对称；避让圈不连成横排</td><td class="l">占长 3.10 mm（情形 1，阵后只剩 0.25 mm）到 4.61 mm（情形 2，伸进颗粒规则区，不过）</td></tr>
 <tr><th>一条斜线</th><td class="l">所有过孔排成一条斜线</td><td class="l">和 45° 拐弯的线带能嵌套</td><td class="l">占长 4.06 到 8.11 mm，这里是直线带，放不下</td></tr>
@@ -867,6 +1128,15 @@ td.l{text-align:left;min-width:9em}
 <tr><th>线宽</th><td class="l">DQ、DM 0.102 mm，DQS 0.097 mm，TOP 和 BOTTOM 相同</td><td class="l">我们按嘉立创叠层算是 0.15 和 0.104</td></tr>
 </table></div>
 <p>平面层上的避让圈大小从这份板文件读不出来。</p>
+<p>两块官方板每个字节组的走法（EVB1 是 2 × 16 位 DDR4，LP4X 是瑞芯微的 LPDDR4X 模板）：</p>
+<div class="scroll"><table>
+<tr><th>板</th><th>字节组</th><th>主要走的层</th><th>0 个过孔的线 / 2 个过孔的线</th><th>在球区里下孔的</th><th>在球区外换层的（离球区 mm）</th></tr>
+<tr><th>EVB1</th><td>低字节 A、B</td><td>顶层</td><td>9 / 2</td><td class="l">2 根，第 4、5 圈；在球区外 1.8 到 6.6 mm 处回到顶层</td><td class="l">没有</td></tr>
+<tr><th>EVB1</th><td>高字节 A、B</td><td>底层</td><td>0 / 11</td><td class="l">6 根，第 4 到 7 圈；一直走底层到颗粒</td><td class="l">5 根，第 1、2 圈（2.3 到 5.7）</td></tr>
+<tr><th>LP4X</th><td>B0A、B1B</td><td>顶层</td><td>7 / 4</td><td class="l">2 根；到颗粒球区边才回顶层</td><td class="l">DQS 对（4.5 到 6.6）</td></tr>
+<tr><th>LP4X</th><td>B0B、B1A</td><td>两层各半</td><td>3 / 8</td><td class="l">6 根</td><td class="l">DQS 对（8.1 到 14.0）</td></tr>
+</table></div>
+<p>两块板上，第 1、2 圈的球没有一个在球区里下孔，第 3 圈以内的球没有一个不打孔就出来；所有带过孔的数据线都是顶层、底层、顶层两个过孔。瑞芯微的文字要求里和过孔阵有关的是：最外两圈从顶层出线（指南第 152 页）；避免连续过孔阻断回流（审查清单第 63 项）；3200 Mbps 下必须换层时 DQ 并排的换层过孔不超过 2 个、每个信号不超过 2 个（指南第 178 页，清单第 67 项）；换层过孔 25 mil 内有地过孔（清单第 67 项）。</p>
 <div class="two"><svg viewBox="-130 -157 314 337" role="img" aria-label="EVB1 TOP" xmlns="http://www.w3.org/2000/svg" style="width:100%;background:#10161c">
 <circle cx="-77.8" cy="290.6" r="9.9" fill="#6b5a2e"/>
 <circle cx="-108.2" cy="260.3" r="9.9" fill="#6b5a2e"/>
@@ -1050,12 +1320,12 @@ td.l{text-align:left;min-width:9em}
 <div class="ask">
 <strong>要你定的事</strong>（每条后面是我的建议）
 <ol>
-<li><b>哪两个字节组走 L6。</b>建议字节组 1 和 2：球区外各 5 个信号过孔，换成 0 和 3 是各 9 个；走 L1 的字节组 0 和 3 各只有 2 根线带过孔，反过来是各 6 根。</li>
-<li><b>排法。</b>建议 A。你说过多数时候交错更好；它最短，三种情形都过检查。</li>
-<li><b>位置和排距。</b>建议第一排紧贴 SoC 规则区外（过孔盘边离规则区边 0.15 mm），排距 0.70 mm，阵后的直线全部留给蛇形。</li>
-<li><b>过孔旁地铜条收窄到 0.275 mm。</b>建议接受，并把这一段铺铜的最小宽度设成 0.25 mm，否则铜条在每个过孔旁断开约 0.6 mm。</li>
-<li><b>走 L1 的字节组里内圈那 2 根。</b>建议照 EVB1：出球区后用同样的排法回到 L1，和同组的线一起走。这 2 根有两个过孔，同组其余的线没有，和“同组过孔数相同”不一致，要记成例外。另一个做法是一直走 L6 到颗粒球下的过孔。</li>
-<li><b>外圈的球要不要也在球区里下孔，球区外不设过孔阵。</b>建议不这样做，照 EVB1 让外圈在 L1 出线后再换层；球区里的过孔位留给电源、地和内圈的球。</li>
+<li><b>哪两个字节组走 L6。</b>建议字节组 1 和 2。官方 EVB1 正是这样分的：内圈球多的字节组（6 根）走底层，11 根线都是 2 个过孔；内圈球少的（2 根）走顶层。这样球区外各 5 个信号过孔，反过来是各 9 个。</li>
+<li><b>排法。</b>建议 D（查完官方资料后从 A 改过来）。瑞芯微写了“DQ 并排的换层过孔不超过 2 个”和“避免连续过孔阻断回流”，官方板的过孔也都前后错开、没有成排的。D 比 A 多占 0.70 mm。扇出后如果蛇形的地方不够，再退回 A。</li>
+<li><b>位置和排距。</b>建议第一排紧贴 SoC 规则区外（过孔盘边离规则区边 0.15 mm），排距 0.70 mm。信号过孔中心距保持 ≥ 0.8 mm；官方板实际更密（中位 0.65 到 0.80，最小 0.51），模板说明写 ≥ 0.7，我们的数最严，不放松。</li>
+<li><b>过孔旁地铜条收窄到 0.275 mm。</b>建议接受。官方板的包地线在过孔前 0.35 到 0.50 mm 就断了，没有任何资料给包地的最小宽度；收窄比断开轻。铺铜最小宽度设 0.25 mm 让它保持连通。</li>
+<li><b>走 L1 的字节组里内圈那 2 根。</b>建议在 SoC 规则区外回到 L1，记成“同组过孔数相同”的例外。官方四个走顶层的字节组全都是这样混着的（EVB1 是 9 根 0 个过孔加 2 根 2 个过孔），EVB1 在离球区 1.8 到 3.0 mm 处回到顶层。</li>
+<li><b>外圈的球要不要也在球区里下孔，球区外不设过孔阵。</b>建议不要。瑞芯微写明最外两圈从顶层出线，两块官方板上没有一个外圈球在球区里下孔。</li>
 </ol>
 </div>
 
@@ -1064,7 +1334,9 @@ td.l{text-align:left;min-width:9em}
 <li>线是画在位置上的直线，不是真实扇出；外圈和内圈的线在线带里怎么排位（图里是每格一根外圈一根内圈）要等扇出工具给出线头顺序。</li>
 <li>避让圈直径 0.6 mm 是按“中心距 0.8 留 0.2 铜”倒推的，板厂实际做出来的大小没有查。</li>
 <li>没有过 KiCad DRC；间距由脚本按名义尺寸算。</li>
-<li>EVB1 的数由子任务从板文件读出，我只复算了 DQS 对的过孔中心距一处。</li>
+<li>EVB1 和 LP4X 模板的数由子任务从板文件读出，我只复算了 DQS 对的过孔中心距一处。</li>
+<li>“并排不超过 2 个”写在指南讲 3200 Mbps（LPDDR4X）的一段里，原文没有说隔多远才不算并排；D 按最严的读法做。</li>
+<li>官方两块板是 DDR4 和 LPDDR4X，速率比我们的 DDR3L-1600 高；它们的数据线上没有蛇形，只有 DQS 有（底层，过孔后约 2 mm 起）。</li>
 <li>过孔阵在 SoC 北边（字节组 2、3）和西边画法相同，没有另画。</li>
 </ul>
 </main>
