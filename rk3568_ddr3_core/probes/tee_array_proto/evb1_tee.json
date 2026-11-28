@@ -1,0 +1,6470 @@
+{
+ "board": "RK_EVB1_RK3568_DDR4P216SD6_V10_20200908GXL.brd (integration-rk3568)",
+ "units": "mm",
+ "layers": [
+  "TOP",
+  "L2-GND1",
+  "L3-POWER",
+  "L4-S1",
+  "L5-GND2",
+  "BOTTOM"
+ ],
+ "frame": {
+  "board": "KiCad import coordinates, mm, y grows downward (on screen)",
+  "soc": {
+   "origin_board": [
+    110.088,
+    -79.92
+   ],
+   "u_dir_board": [
+    -0.707,
+    0.707
+   ],
+   "v_dir_board": [
+    -0.707,
+    -0.707
+   ],
+   "note": "u along ball row A column 1->28, v row A->AH; origin = package centre"
+  },
+  "rule": "all coordinates in this file are 'board' unless the key says soc/uv"
+ },
+ "soc": {
+  "ref": "U1000",
+  "pos_board": [
+   110.088,
+   -79.92
+  ],
+  "rot": -135.0
+ },
+ "drams": {
+  "U3300": {
+   "pos_board": [
+    131.898,
+    -87.308
+   ],
+   "rot": 90.0,
+   "side": "TOP"
+  },
+  "U3301": {
+   "pos_board": [
+    131.898,
+    -69.02
+   ],
+   "rot": 90.0,
+   "side": "TOP"
+  }
+ },
+ "nets": {
+  "DDR4_A0": {
+   "family": [
+    "DDR4_A0"
+   ],
+   "track_length_total": 42.213,
+   "n_vias_family": 3,
+   "soc_ball": {
+    "num": "B6",
+    "net": "DDR4_A0",
+    "pos_board": [
+     119.74,
+     -78.082
+    ]
+   },
+   "targets": {},
+   "dangling_track_ends": 0,
+   "branch": {
+    "kind": "via",
+    "info": {
+     "pad": 0.4,
+     "drill": 0.2,
+     "net": "DDR4_A0",
+     "layers": [
+      "TOP",
+      "BOTTOM"
+     ]
+    },
+    "pos_board": [
+     137.964,
+     -77.047
+    ],
+    "node_layer": "L4-S1",
+    "pos_soc": [
+     -17.68,
+     -21.743
+    ],
+    "dist_to_target_balls_straight": {
+     "U3300.P3": 8.82,
+     "U3301.P3": 9.77
+    }
+   },
+   "trunk": {
+    "length": 20.462,
+    "vias": 1,
+    "via_list": [
+     {
+      "xy": [
+       137.964,
+       -77.047
+      ],
+      "from": "TOP",
+      "to": "L4-S1"
+     }
+    ],
+    "parts": [],
+    "layers_track": [
+     "TOP"
+    ],
+    "first_layer": "TOP",
+    "last_layer": "TOP"
+   },
+   "branches": {
+    "U3300.P3": {
+     "length": 10.865,
+     "vias": 1,
+     "via_list": [
+      {
+       "xy": [
+        137.445,
+        -86.22
+       ],
+       "from": "L4-S1",
+       "to": "TOP"
+      }
+     ],
+     "parts": [],
+     "layers_track": [
+      "TOP",
+      "L4-S1"
+     ],
+     "first_layer": "L4-S1",
+     "last_layer": "TOP"
+    },
+    "U3301.P3": {
+     "length": 10.885,
+     "vias": 1,
+     "via_list": [
+      {
+       "xy": [
+        137.393,
+        -68.515
+       ],
+       "from": "L4-S1",
+       "to": "TOP"
+      }
+     ],
+     "parts": [],
+     "layers_track": [
+      "TOP",
+      "L4-S1"
+     ],
+     "first_layer": "L4-S1",
+     "last_layer": "TOP"
+    }
+   },
+   "branch_length_diff": 0.02,
+   "total_path": {
+    "U3300.P3": 31.327,
+    "U3301.P3": 31.347
+   },
+   "coverage_check": "paths total 42.212 vs track sum 42.213 (difference = stubs/unused copper)",
+   "parts": []
+  },
+  "DDR4_A1": {
+   "family": [
+    "DDR4_A1"
+   ],
+   "track_length_total": 44.489,
+   "n_vias_family": 4,
+   "soc_ball": {
+    "num": "F5",
+    "net": "DDR4_A1",
+    "pos_board": [
+     118.361,
+     -80.38
+    ]
+   },
+   "targets": {},
+   "dangling_track_ends": 0,
+   "branch": {
+    "kind": "via",
+    "info": {
+     "pad": 0.4,
+     "drill": 0.2,
+     "net": "DDR4_A1",
+     "layers": [
+      "TOP",
+      "BOTTOM"
+     ]
+    },
+    "pos_board": [
+     137.612,
+     -78.72
+    ],
+    "node_layer": "L4-S1",
+    "pos_soc": [
+     -18.614,
+     -20.311
+    ],
+    "dist_to_target_balls_straight": {
+     "U3300.P7": 10.272,
+     "U3301.P7": 8.206
+    }
+   },
+   "trunk": {
+    "length": 22.754,
+    "vias": 2,
+    "via_list": [
+     {
+      "xy": [
+       118.821,
+       -80.38
+      ],
+      "from": "TOP",
+      "to": "BOTTOM"
+     },
+     {
+      "xy": [
+       137.612,
+       -78.72
+      ],
+      "from": "BOTTOM",
+      "to": "L4-S1"
+     }
+    ],
+    "parts": [],
+    "layers_track": [
+     "TOP",
+     "BOTTOM"
+    ],
+    "first_layer": "TOP",
+    "last_layer": "BOTTOM"
+   },
+   "branches": {
+    "U3300.P7": {
+     "length": 10.889,
+     "vias": 1,
+     "via_list": [
+      {
+       "xy": [
+        136.688,
+        -87.971
+       ],
+       "from": "L4-S1",
+       "to": "TOP"
+      }
+     ],
+     "parts": [],
+     "layers_track": [
+      "TOP",
+      "L4-S1"
+     ],
+     "first_layer": "L4-S1",
+     "last_layer": "TOP"
+    },
+    "U3301.P7": {
+     "length": 10.579,
+     "vias": 1,
+     "via_list": [
+      {
+       "xy": [
+        137.193,
+        -69.92
+       ],
+       "from": "L4-S1",
+       "to": "TOP"
+      }
+     ],
+     "parts": [],
+     "layers_track": [
+      "TOP",
+      "L4-S1"
+     ],
+     "first_layer": "L4-S1",
+     "last_layer": "TOP"
+    }
+   },
+   "branch_length_diff": 0.31,
+   "total_path": {
+    "U3300.P7": 33.643,
+    "U3301.P7": 33.333
+   },
+   "coverage_check": "paths total 44.222 vs track sum 44.489 (difference = stubs/unused copper)",
+   "parts": []
+  },
+  "DDR4_A10": {
+   "family": [
+    "DDR4_A10"
+   ],
+   "track_length_total": 39.686,
+   "n_vias_family": 4,
+   "soc_ball": {
+    "num": "D6",
+    "net": "DDR4_A10",
+    "pos_board": [
+     118.821,
+     -79.001
+    ]
+   },
+   "targets": {},
+   "dangling_track_ends": 0,
+   "branch": {
+    "kind": "via",
+    "info": {
+     "pad": 0.4,
+     "drill": 0.2,
+     "net": "DDR4_A10",
+     "layers": [
+      "TOP",
+      "BOTTOM"
+     ]
+    },
+    "pos_board": [
+     134.386,
+     -76.853
+    ],
+    "node_layer": "L4-S1",
+    "pos_soc": [
+     -15.012,
+     -19.35
+    ],
+    "dist_to_target_balls_straight": {
+     "U3300.M3": 8.86,
+     "U3301.M3": 9.438
+    }
+   },
+   "trunk": {
+    "length": 18.64,
+    "vias": 2,
+    "via_list": [
+     {
+      "xy": [
+       118.821,
+       -77.622
+      ],
+      "from": "TOP",
+      "to": "BOTTOM"
+     },
+     {
+      "xy": [
+       134.386,
+       -76.853
+      ],
+      "from": "BOTTOM",
+      "to": "L4-S1"
+     }
+    ],
+    "parts": [],
+    "layers_track": [
+     "TOP",
+     "BOTTOM"
+    ],
+    "first_layer": "TOP",
+    "last_layer": "BOTTOM"
+   },
+   "branches": {
+    "U3300.M3": {
+     "length": 10.502,
+     "vias": 1,
+     "via_list": [
+      {
+       "xy": [
+        135.049,
+        -86.059
+       ],
+       "from": "L4-S1",
+       "to": "TOP"
+      }
+     ],
+     "parts": [],
+     "layers_track": [
+      "TOP",
+      "L4-S1"
+     ],
+     "first_layer": "L4-S1",
+     "last_layer": "TOP"
+    },
+    "U3301.M3": {
+     "length": 10.425,
+     "vias": 1,
+     "via_list": [
+      {
+       "xy": [
+        135.049,
+        -67.771
+       ],
+       "from": "L4-S1",
+       "to": "TOP"
+      }
+     ],
+     "parts": [],
+     "layers_track": [
+      "TOP",
+      "L4-S1"
+     ],
+     "first_layer": "L4-S1",
+     "last_layer": "TOP"
+    }
+   },
+   "branch_length_diff": 0.077,
+   "total_path": {
+    "U3300.M3": 29.143,
+    "U3301.M3": 29.066
+   },
+   "coverage_check": "paths total 39.567 vs track sum 39.686 (difference = stubs/unused copper)",
+   "parts": []
+  },
+  "DDR4_A11": {
+   "family": [
+    "DDR4_A11"
+   ],
+   "track_length_total": 45.708,
+   "n_vias_family": 3,
+   "soc_ball": {
+    "num": "C2",
+    "net": "DDR4_A11",
+    "pos_board": [
+     121.119,
+     -80.38
+    ]
+   },
+   "targets": {},
+   "dangling_track_ends": 0,
+   "branch": {
+    "kind": "via",
+    "info": {
+     "pad": 0.4,
+     "drill": 0.2,
+     "net": "DDR4_A11",
+     "layers": [
+      "TOP",
+      "BOTTOM"
+     ]
+    },
+    "pos_board": [
+     140.488,
+     -76.22
+    ],
+    "node_layer": "L4-S1",
+    "pos_soc": [
+     -18.88,
+     -24.112
+    ],
+    "dist_to_target_balls_straight": {
+     "U3300.T2": 9.066,
+     "U3301.T2": 9.943
+    }
+   },
+   "trunk": {
+    "length": 24.364,
+    "vias": 1,
+    "via_list": [
+     {
+      "xy": [
+       140.488,
+       -76.22
+      ],
+      "from": "TOP",
+      "to": "L4-S1"
+     }
+    ],
+    "parts": [],
+    "layers_track": [
+     "TOP"
+    ],
+    "first_layer": "TOP",
+    "last_layer": "TOP"
+   },
+   "branches": {
+    "U3300.T2": {
+     "length": 10.671,
+     "vias": 1,
+     "via_list": [
+      {
+       "xy": [
+        139.451,
+        -84.908
+       ],
+       "from": "L4-S1",
+       "to": "TOP"
+      }
+     ],
+     "parts": [],
+     "layers_track": [
+      "TOP",
+      "L4-S1"
+     ],
+     "first_layer": "L4-S1",
+     "last_layer": "TOP"
+    },
+    "U3301.T2": {
+     "length": 10.494,
+     "vias": 1,
+     "via_list": [
+      {
+       "xy": [
+        138.593,
+        -67.315
+       ],
+       "from": "L4-S1",
+       "to": "TOP"
+      }
+     ],
+     "parts": [],
+     "layers_track": [
+      "TOP",
+      "L4-S1"
+     ],
+     "first_layer": "L4-S1",
+     "last_layer": "TOP"
+    }
+   },
+   "branch_length_diff": 0.177,
+   "total_path": {
+    "U3300.T2": 35.035,
+    "U3301.T2": 34.858
+   },
+   "coverage_check": "paths total 45.529 vs track sum 45.708 (difference = stubs/unused copper)",
+   "parts": []
+  },
+  "DDR4_A12": {
+   "family": [
+    "DDR4_A12"
+   ],
+   "track_length_total": 37.067,
+   "n_vias_family": 4,
+   "soc_ball": {
+    "num": "C4",
+    "net": "DDR4_A12",
+    "pos_board": [
+     120.2,
+     -79.461
+    ]
+   },
+   "targets": {},
+   "dangling_track_ends": 0,
+   "branch": {
+    "kind": "via",
+    "info": {
+     "pad": 0.4,
+     "drill": 0.2,
+     "net": "DDR4_A12",
+     "layers": [
+      "TOP",
+      "BOTTOM"
+     ]
+    },
+    "pos_board": [
+     134.009,
+     -79.52
+    ],
+    "node_layer": "L4-S1",
+    "pos_soc": [
+     -16.632,
+     -17.198
+    ],
+    "dist_to_target_balls_straight": {
+     "U3300.M7": 9.413,
+     "U3301.M7": 8.927
+    }
+   },
+   "trunk": {
+    "length": 16.347,
+    "vias": 2,
+    "via_list": [
+     {
+      "xy": [
+       120.2,
+       -79.92
+      ],
+      "from": "TOP",
+      "to": "BOTTOM"
+     },
+     {
+      "xy": [
+       134.009,
+       -79.52
+      ],
+      "from": "BOTTOM",
+      "to": "L4-S1"
+     }
+    ],
+    "parts": [],
+    "layers_track": [
+     "TOP",
+     "BOTTOM"
+    ],
+    "first_layer": "TOP",
+    "last_layer": "BOTTOM"
+   },
+   "branches": {
+    "U3300.M7": {
+     "length": 10.3,
+     "vias": 1,
+     "via_list": [
+      {
+       "xy": [
+        134.297,
+        -88.508
+       ],
+       "from": "L4-S1",
+       "to": "TOP"
+      }
+     ],
+     "parts": [],
+     "layers_track": [
+      "TOP",
+      "L4-S1"
+     ],
+     "first_layer": "L4-S1",
+     "last_layer": "TOP"
+    },
+    "U3301.M7": {
+     "length": 10.25,
+     "vias": 1,
+     "via_list": [
+      {
+       "xy": [
+        134.797,
+        -70.14
+       ],
+       "from": "L4-S1",
+       "to": "TOP"
+      }
+     ],
+     "parts": [],
+     "layers_track": [
+      "TOP",
+      "L4-S1"
+     ],
+     "first_layer": "L4-S1",
+     "last_layer": "TOP"
+    }
+   },
+   "branch_length_diff": 0.05,
+   "total_path": {
+    "U3300.M7": 26.647,
+    "U3301.M7": 26.597
+   },
+   "coverage_check": "paths total 36.897 vs track sum 37.067 (difference = stubs/unused copper)",
+   "parts": []
+  },
+  "DDR4_A13": {
+   "family": [
+    "DDR4_A13"
+   ],
+   "track_length_total": 48.253,
+   "n_vias_family": 3,
+   "soc_ball": {
+    "num": "B8",
+    "net": "DDR4_A13",
+    "pos_board": [
+     118.821,
+     -77.162
+    ]
+   },
+   "targets": {},
+   "dangling_track_ends": 0,
+   "branch": {
+    "kind": "via",
+    "info": {
+     "pad": 0.4,
+     "drill": 0.2,
+     "net": "DDR4_A13",
+     "layers": [
+      "TOP",
+      "BOTTOM"
+     ]
+    },
+    "pos_board": [
+     140.031,
+     -80.063
+    ],
+    "node_layer": "L4-S1",
+    "pos_soc": [
+     -21.274,
+     -21.072
+    ],
+    "dist_to_target_balls_straight": {
+     "U3300.T8": 9.878,
+     "U3301.T8": 8.902
+    }
+   },
+   "trunk": {
+    "length": 27.19,
+    "vias": 1,
+    "via_list": [
+     {
+      "xy": [
+       140.031,
+       -80.063
+      ],
+      "from": "TOP",
+      "to": "L4-S1"
+     }
+    ],
+    "parts": [],
+    "layers_track": [
+     "TOP"
+    ],
+    "first_layer": "TOP",
+    "last_layer": "TOP"
+   },
+   "branches": {
+    "U3300.T8": {
+     "length": 10.528,
+     "vias": 1,
+     "via_list": [
+      {
+       "xy": [
+        138.288,
+        -89.32
+       ],
+       "from": "L4-S1",
+       "to": "TOP"
+      }
+     ],
+     "parts": [],
+     "layers_track": [
+      "TOP",
+      "L4-S1"
+     ],
+     "first_layer": "L4-S1",
+     "last_layer": "TOP"
+    },
+    "U3301.T8": {
+     "length": 10.465,
+     "vias": 1,
+     "via_list": [
+      {
+       "xy": [
+        139.923,
+        -72.62
+       ],
+       "from": "L4-S1",
+       "to": "TOP"
+      }
+     ],
+     "parts": [],
+     "layers_track": [
+      "TOP",
+      "L4-S1"
+     ],
+     "first_layer": "L4-S1",
+     "last_layer": "TOP"
+    }
+   },
+   "branch_length_diff": 0.063,
+   "total_path": {
+    "U3300.T8": 37.718,
+    "U3301.T8": 37.655
+   },
+   "coverage_check": "paths total 48.183 vs track sum 48.253 (difference = stubs/unused copper)",
+   "parts": []
+  },
+  "DDR4_A14_WEN": {
+   "family": [
+    "DDR4_A14_WEN"
+   ],
+   "track_length_total": 39.059,
+   "n_vias_family": 4,
+   "soc_ball": {
+    "num": "C5",
+    "net": "DDR4_A14_WEN",
+    "pos_board": [
+     119.74,
+     -79.001
+    ]
+   },
+   "targets": {},
+   "dangling_track_ends": 0,
+   "branch": {
+    "kind": "via",
+    "info": {
+     "pad": 0.4,
+     "drill": 0.2,
+     "net": "DDR4_A14_WEN",
+     "layers": [
+      "TOP",
+      "BOTTOM"
+     ]
+    },
+    "pos_board": [
+     132.599,
+     -76.32
+    ],
+    "node_layer": "L4-S1",
+    "pos_soc": [
+     -13.373,
+     -18.464
+    ],
+    "dist_to_target_balls_straight": {
+     "U3300.L2": 8.686,
+     "U3301.L2": 9.786
+    }
+   },
+   "trunk": {
+    "length": 17.633,
+    "vias": 2,
+    "via_list": [
+     {
+      "xy": [
+       120.2,
+       -79.001
+      ],
+      "from": "TOP",
+      "to": "BOTTOM"
+     },
+     {
+      "xy": [
+       132.599,
+       -76.32
+      ],
+      "from": "BOTTOM",
+      "to": "L4-S1"
+     }
+    ],
+    "parts": [],
+    "layers_track": [
+     "TOP",
+     "BOTTOM"
+    ],
+    "first_layer": "TOP",
+    "last_layer": "BOTTOM"
+   },
+   "branches": {
+    "U3300.L2": {
+     "length": 10.774,
+     "vias": 1,
+     "via_list": [
+      {
+       "xy": [
+        133.497,
+        -85.308
+       ],
+       "from": "L4-S1",
+       "to": "TOP"
+      }
+     ],
+     "parts": [],
+     "layers_track": [
+      "TOP",
+      "L4-S1"
+     ],
+     "first_layer": "L4-S1",
+     "last_layer": "TOP"
+    },
+    "U3301.L2": {
+     "length": 10.651,
+     "vias": 1,
+     "via_list": [
+      {
+       "xy": [
+        133.497,
+        -67.02
+       ],
+       "from": "L4-S1",
+       "to": "TOP"
+      }
+     ],
+     "parts": [],
+     "layers_track": [
+      "TOP",
+      "L4-S1"
+     ],
+     "first_layer": "L4-S1",
+     "last_layer": "TOP"
+    }
+   },
+   "branch_length_diff": 0.123,
+   "total_path": {
+    "U3300.L2": 28.407,
+    "U3301.L2": 28.285
+   },
+   "coverage_check": "paths total 39.058 vs track sum 39.059 (difference = stubs/unused copper)",
+   "parts": []
+  },
+  "DDR4_A15_CASN": {
+   "family": [
+    "DDR4_A15_CASN"
+   ],
+   "track_length_total": 37.08,
+   "n_vias_family": 4,
+   "soc_ball": {
+    "num": "E4",
+    "net": "DDR4_A15_CASN",
+    "pos_board": [
+     119.28,
+     -80.38
+    ]
+   },
+   "targets": {},
+   "dangling_track_ends": 0,
+   "branch": {
+    "kind": "via",
+    "info": {
+     "pad": 0.4,
+     "drill": 0.2,
+     "net": "DDR4_A15_CASN",
+     "layers": [
+      "TOP",
+      "BOTTOM"
+     ]
+    },
+    "pos_board": [
+     134.814,
+     -80.546
+    ],
+    "node_layer": "L4-S1",
+    "pos_soc": [
+     -17.927,
+     -17.041
+    ],
+    "dist_to_target_balls_straight": {
+     "U3300.M8": 9.163,
+     "U3301.M8": 9.127
+    }
+   },
+   "trunk": {
+    "length": 16.365,
+    "vias": 2,
+    "via_list": [
+     {
+      "xy": [
+       119.74,
+       -80.38
+      ],
+      "from": "TOP",
+      "to": "BOTTOM"
+     },
+     {
+      "xy": [
+       134.814,
+       -80.546
+      ],
+      "from": "BOTTOM",
+      "to": "L4-S1"
+     }
+    ],
+    "parts": [],
+    "layers_track": [
+     "TOP",
+     "BOTTOM"
+    ],
+    "first_layer": "TOP",
+    "last_layer": "BOTTOM"
+   },
+   "branches": {
+    "U3300.M8": {
+     "length": 10.258,
+     "vias": 1,
+     "via_list": [
+      {
+       "xy": [
+        135.098,
+        -89.308
+       ],
+       "from": "L4-S1",
+       "to": "TOP"
+      }
+     ],
+     "parts": [],
+     "layers_track": [
+      "TOP",
+      "L4-S1"
+     ],
+     "first_layer": "L4-S1",
+     "last_layer": "TOP"
+    },
+    "U3301.M8": {
+     "length": 10.266,
+     "vias": 1,
+     "via_list": [
+      {
+       "xy": [
+        135.497,
+        -73.271
+       ],
+       "from": "L4-S1",
+       "to": "TOP"
+      }
+     ],
+     "parts": [],
+     "layers_track": [
+      "TOP",
+      "L4-S1"
+     ],
+     "first_layer": "L4-S1",
+     "last_layer": "TOP"
+    }
+   },
+   "branch_length_diff": 0.008,
+   "total_path": {
+    "U3300.M8": 26.622,
+    "U3301.M8": 26.63
+   },
+   "coverage_check": "paths total 36.889 vs track sum 37.080 (difference = stubs/unused copper)",
+   "parts": []
+  },
+  "DDR4_A16_RASN": {
+   "family": [
+    "DDR4_A16_RASN"
+   ],
+   "track_length_total": 35.695,
+   "n_vias_family": 4,
+   "soc_ball": {
+    "num": "D5",
+    "net": "DDR4_A16_RASN",
+    "pos_board": [
+     119.28,
+     -79.461
+    ]
+   },
+   "targets": {},
+   "dangling_track_ends": 0,
+   "branch": {
+    "kind": "via",
+    "info": {
+     "pad": 0.4,
+     "drill": 0.2,
+     "net": "DDR4_A16_RASN",
+     "layers": [
+      "TOP",
+      "BOTTOM"
+     ]
+    },
+    "pos_board": [
+     131.845,
+     -79.925
+    ],
+    "node_layer": "L4-S1",
+    "pos_soc": [
+     -15.388,
+     -15.381
+    ],
+    "dist_to_target_balls_straight": {
+     "U3300.L8": 9.996,
+     "U3301.L8": 8.749
+    }
+   },
+   "trunk": {
+    "length": 14.077,
+    "vias": 2,
+    "via_list": [
+     {
+      "xy": [
+       118.822,
+       -79.461
+      ],
+      "from": "TOP",
+      "to": "BOTTOM"
+     },
+     {
+      "xy": [
+       131.845,
+       -79.925
+      ],
+      "from": "BOTTOM",
+      "to": "L4-S1"
+     }
+    ],
+    "parts": [],
+    "layers_track": [
+     "TOP",
+     "BOTTOM"
+    ],
+    "first_layer": "TOP",
+    "last_layer": "BOTTOM"
+   },
+   "branches": {
+    "U3300.L8": {
+     "length": 10.633,
+     "vias": 1,
+     "via_list": [
+      {
+       "xy": [
+        133.497,
+        -89.308
+       ],
+       "from": "L4-S1",
+       "to": "TOP"
+      }
+     ],
+     "parts": [],
+     "layers_track": [
+      "TOP",
+      "L4-S1"
+     ],
+     "first_layer": "L4-S1",
+     "last_layer": "TOP"
+    },
+    "U3301.L8": {
+     "length": 10.449,
+     "vias": 1,
+     "via_list": [
+      {
+       "xy": [
+        133.497,
+        -71.02
+       ],
+       "from": "L4-S1",
+       "to": "TOP"
+      }
+     ],
+     "parts": [],
+     "layers_track": [
+      "TOP",
+      "L4-S1"
+     ],
+     "first_layer": "L4-S1",
+     "last_layer": "TOP"
+    }
+   },
+   "branch_length_diff": 0.184,
+   "total_path": {
+    "U3300.L8": 24.711,
+    "U3301.L8": 24.526
+   },
+   "coverage_check": "paths total 35.159 vs track sum 35.695 (difference = stubs/unused copper)",
+   "parts": []
+  },
+  "DDR4_A2": {
+   "family": [
+    "DDR4_A2"
+   ],
+   "track_length_total": 44.065,
+   "n_vias_family": 3,
+   "soc_ball": {
+    "num": "B1",
+    "net": "DDR4_A2",
+    "pos_board": [
+     122.038,
+     -80.38
+    ]
+   },
+   "targets": {},
+   "dangling_track_ends": 0,
+   "branch": {
+    "kind": "via",
+    "info": {
+     "pad": 0.4,
+     "drill": 0.2,
+     "net": "DDR4_A2",
+     "layers": [
+      "TOP",
+      "BOTTOM"
+     ]
+    },
+    "pos_board": [
+     138.669,
+     -76.463
+    ],
+    "node_layer": "L4-S1",
+    "pos_soc": [
+     -17.765,
+     -22.654
+    ],
+    "dist_to_target_balls_straight": {
+     "U3300.R3": 9.378,
+     "U3301.R3": 9.178
+    }
+   },
+   "trunk": {
+    "length": 22.033,
+    "vias": 1,
+    "via_list": [
+     {
+      "xy": [
+       138.669,
+       -76.463
+      ],
+      "from": "TOP",
+      "to": "L4-S1"
+     }
+    ],
+    "parts": [],
+    "layers_track": [
+     "TOP"
+    ],
+    "first_layer": "TOP",
+    "last_layer": "TOP"
+   },
+   "branches": {
+    "U3300.R3": {
+     "length": 10.884,
+     "vias": 1,
+     "via_list": [
+      {
+       "xy": [
+        138.25,
+        -85.307
+       ],
+       "from": "L4-S1",
+       "to": "TOP"
+      }
+     ],
+     "parts": [],
+     "layers_track": [
+      "TOP",
+      "L4-S1"
+     ],
+     "first_layer": "L4-S1",
+     "last_layer": "TOP"
+    },
+    "U3301.R3": {
+     "length": 10.985,
+     "vias": 1,
+     "via_list": [
+      {
+       "xy": [
+        137.498,
+        -67.019
+       ],
+       "from": "L4-S1",
+       "to": "TOP"
+      }
+     ],
+     "parts": [],
+     "layers_track": [
+      "TOP",
+      "L4-S1"
+     ],
+     "first_layer": "L4-S1",
+     "last_layer": "TOP"
+    }
+   },
+   "branch_length_diff": 0.101,
+   "total_path": {
+    "U3300.R3": 32.917,
+    "U3301.R3": 33.018
+   },
+   "coverage_check": "paths total 43.902 vs track sum 44.065 (difference = stubs/unused copper)",
+   "parts": []
+  },
+  "DDR4_A3": {
+   "family": [
+    "DDR4_A3"
+   ],
+   "track_length_total": 39.921,
+   "n_vias_family": 4,
+   "soc_ball": {
+    "num": "F4",
+    "net": "DDR4_A3",
+    "pos_board": [
+     118.821,
+     -80.839
+    ]
+   },
+   "targets": {},
+   "dangling_track_ends": 0,
+   "branch": {
+    "kind": "via",
+    "info": {
+     "pad": 0.4,
+     "drill": 0.2,
+     "net": "DDR4_A3",
+     "layers": [
+      "TOP",
+      "BOTTOM"
+     ]
+    },
+    "pos_board": [
+     135.888,
+     -79.32
+    ],
+    "node_layer": "L4-S1",
+    "pos_soc": [
+     -17.819,
+     -18.668
+    ],
+    "dist_to_target_balls_straight": {
+     "U3300.N7": 9.596,
+     "U3301.N7": 8.709
+    }
+   },
+   "trunk": {
+    "length": 19.229,
+    "vias": 2,
+    "via_list": [
+     {
+      "xy": [
+       119.28,
+       -80.839
+      ],
+      "from": "TOP",
+      "to": "BOTTOM"
+     },
+     {
+      "xy": [
+       135.888,
+       -79.32
+      ],
+      "from": "BOTTOM",
+      "to": "L4-S1"
+     }
+    ],
+    "parts": [],
+    "layers_track": [
+     "TOP",
+     "BOTTOM"
+    ],
+    "first_layer": "TOP",
+    "last_layer": "BOTTOM"
+   },
+   "branches": {
+    "U3300.N7": {
+     "length": 9.874,
+     "vias": 1,
+     "via_list": [
+      {
+       "xy": [
+        135.897,
+        -88.508
+       ],
+       "from": "L4-S1",
+       "to": "TOP"
+      }
+     ],
+     "parts": [],
+     "layers_track": [
+      "TOP",
+      "L4-S1"
+     ],
+     "first_layer": "L4-S1",
+     "last_layer": "TOP"
+    },
+    "U3301.N7": {
+     "length": 10.21,
+     "vias": 1,
+     "via_list": [
+      {
+       "xy": [
+        135.897,
+        -70.22
+       ],
+       "from": "L4-S1",
+       "to": "TOP"
+      }
+     ],
+     "parts": [],
+     "layers_track": [
+      "TOP",
+      "L4-S1"
+     ],
+     "first_layer": "L4-S1",
+     "last_layer": "TOP"
+    }
+   },
+   "branch_length_diff": 0.336,
+   "total_path": {
+    "U3300.N7": 29.103,
+    "U3301.N7": 29.439
+   },
+   "coverage_check": "paths total 39.313 vs track sum 39.921 (difference = stubs/unused copper)",
+   "parts": []
+  },
+  "DDR4_A4": {
+   "family": [
+    "DDR4_A4"
+   ],
+   "track_length_total": 46.421,
+   "n_vias_family": 4,
+   "soc_ball": {
+    "num": "D9",
+    "net": "DDR4_A4",
+    "pos_board": [
+     117.442,
+     -77.622
+    ]
+   },
+   "targets": {},
+   "dangling_track_ends": 0,
+   "branch": {
+    "kind": "via",
+    "info": {
+     "pad": 0.4,
+     "drill": 0.2,
+     "net": "DDR4_A4",
+     "layers": [
+      "TOP",
+      "BOTTOM"
+     ]
+    },
+    "pos_board": [
+     136.188,
+     -77.32
+    ],
+    "node_layer": "L4-S1",
+    "pos_soc": [
+     -16.617,
+     -20.294
+    ],
+    "dist_to_target_balls_straight": {
+     "U3300.N3": 8.416,
+     "U3301.N3": 9.924
+    }
+   },
+   "trunk": {
+    "length": 25.308,
+    "vias": 2,
+    "via_list": [
+     {
+      "xy": [
+       116.063,
+       -77.622
+      ],
+      "from": "TOP",
+      "to": "BOTTOM"
+     },
+     {
+      "xy": [
+       136.188,
+       -77.32
+      ],
+      "from": "BOTTOM",
+      "to": "L4-S1"
+     }
+    ],
+    "parts": [],
+    "layers_track": [
+     "TOP",
+     "BOTTOM"
+    ],
+    "first_layer": "TOP",
+    "last_layer": "BOTTOM"
+   },
+   "branches": {
+    "U3300.N3": {
+     "length": 10.407,
+     "vias": 1,
+     "via_list": [
+      {
+       "xy": [
+        136.108,
+        -86.319
+       ],
+       "from": "L4-S1",
+       "to": "TOP"
+      }
+     ],
+     "parts": [],
+     "layers_track": [
+      "TOP",
+      "L4-S1"
+     ],
+     "first_layer": "L4-S1",
+     "last_layer": "TOP"
+    },
+    "U3301.N3": {
+     "length": 10.408,
+     "vias": 1,
+     "via_list": [
+      {
+       "xy": [
+        136.108,
+        -68.031
+       ],
+       "from": "L4-S1",
+       "to": "TOP"
+      }
+     ],
+     "parts": [],
+     "layers_track": [
+      "TOP",
+      "L4-S1"
+     ],
+     "first_layer": "L4-S1",
+     "last_layer": "TOP"
+    }
+   },
+   "branch_length_diff": 0.001,
+   "total_path": {
+    "U3300.N3": 35.715,
+    "U3301.N3": 35.716
+   },
+   "coverage_check": "paths total 46.123 vs track sum 46.421 (difference = stubs/unused copper)",
+   "parts": []
+  },
+  "DDR4_A5": {
+   "family": [
+    "DDR4_A5"
+   ],
+   "track_length_total": 46.547,
+   "n_vias_family": 3,
+   "soc_ball": {
+    "num": "B7",
+    "net": "DDR4_A5",
+    "pos_board": [
+     119.28,
+     -77.622
+    ]
+   },
+   "targets": {},
+   "dangling_track_ends": 0,
+   "branch": {
+    "kind": "via",
+    "info": {
+     "pad": 0.4,
+     "drill": 0.2,
+     "net": "DDR4_A5",
+     "layers": [
+      "TOP",
+      "BOTTOM"
+     ]
+    },
+    "pos_board": [
+     139.021,
+     -80.22
+    ],
+    "node_layer": "L4-S1",
+    "pos_soc": [
+     -20.671,
+     -20.247
+    ],
+    "dist_to_target_balls_straight": {
+     "U3300.P8": 9.871,
+     "U3301.P8": 9.212
+    }
+   },
+   "trunk": {
+    "length": 24.705,
+    "vias": 1,
+    "via_list": [
+     {
+      "xy": [
+       139.021,
+       -80.22
+      ],
+      "from": "TOP",
+      "to": "L4-S1"
+     }
+    ],
+    "parts": [],
+    "layers_track": [
+     "TOP"
+    ],
+    "first_layer": "TOP",
+    "last_layer": "TOP"
+   },
+   "branches": {
+    "U3300.P8": {
+     "length": 10.908,
+     "vias": 1,
+     "via_list": [
+      {
+       "xy": [
+        136.697,
+        -89.308
+       ],
+       "from": "L4-S1",
+       "to": "TOP"
+      }
+     ],
+     "parts": [],
+     "layers_track": [
+      "TOP",
+      "L4-S1"
+     ],
+     "first_layer": "L4-S1",
+     "last_layer": "TOP"
+    },
+    "U3301.P8": {
+     "length": 10.433,
+     "vias": 1,
+     "via_list": [
+      {
+       "xy": [
+        139.192,
+        -74.224
+       ],
+       "from": "L4-S1",
+       "to": "TOP"
+      }
+     ],
+     "parts": [],
+     "layers_track": [
+      "TOP",
+      "L4-S1"
+     ],
+     "first_layer": "L4-S1",
+     "last_layer": "TOP"
+    }
+   },
+   "branch_length_diff": 0.475,
+   "total_path": {
+    "U3300.P8": 35.612,
+    "U3301.P8": 35.137
+   },
+   "coverage_check": "paths total 46.046 vs track sum 46.547 (difference = stubs/unused copper)",
+   "parts": []
+  },
+  "DDR4_A6": {
+   "family": [
+    "DDR4_A6"
+   ],
+   "track_length_total": 45.316,
+   "n_vias_family": 3,
+   "soc_ball": {
+    "num": "A7",
+    "net": "DDR4_A6",
+    "pos_board": [
+     119.74,
+     -77.162
+    ]
+   },
+   "targets": {},
+   "dangling_track_ends": 0,
+   "branch": {
+    "kind": "via",
+    "info": {
+     "pad": 0.4,
+     "drill": 0.2,
+     "net": "DDR4_A6",
+     "layers": [
+      "TOP",
+      "BOTTOM"
+     ]
+    },
+    "pos_board": [
+     139.388,
+     -76.02
+    ],
+    "node_layer": "L4-S1",
+    "pos_soc": [
+     -17.96,
+     -23.476
+    ],
+    "dist_to_target_balls_straight": {
+     "U3300.P2": 9.41,
+     "U3301.P2": 9.895
+    }
+   },
+   "trunk": {
+    "length": 21.373,
+    "vias": 1,
+    "via_list": [
+     {
+      "xy": [
+       139.388,
+       -76.02
+      ],
+      "from": "TOP",
+      "to": "L4-S1"
+     }
+    ],
+    "parts": [],
+    "layers_track": [
+     "TOP"
+    ],
+    "first_layer": "TOP",
+    "last_layer": "TOP"
+   },
+   "branches": {
+    "U3300.P2": {
+     "length": 11.659,
+     "vias": 1,
+     "via_list": [
+      {
+       "xy": [
+        139.391,
+        -82.924
+       ],
+       "from": "L4-S1",
+       "to": "TOP"
+      }
+     ],
+     "parts": [],
+     "layers_track": [
+      "TOP",
+      "L4-S1"
+     ],
+     "first_layer": "L4-S1",
+     "last_layer": "TOP"
+    },
+    "U3301.P2": {
+     "length": 11.889,
+     "vias": 1,
+     "via_list": [
+      {
+       "xy": [
+        136.693,
+        -66.215
+       ],
+       "from": "L4-S1",
+       "to": "TOP"
+      }
+     ],
+     "parts": [],
+     "layers_track": [
+      "TOP",
+      "L4-S1"
+     ],
+     "first_layer": "L4-S1",
+     "last_layer": "TOP"
+    }
+   },
+   "branch_length_diff": 0.23,
+   "total_path": {
+    "U3300.P2": 33.032,
+    "U3301.P2": 33.262
+   },
+   "coverage_check": "paths total 44.921 vs track sum 45.316 (difference = stubs/unused copper)",
+   "parts": []
+  },
+  "DDR4_A7": {
+   "family": [
+    "DDR4_A7"
+   ],
+   "track_length_total": 52.896,
+   "n_vias_family": 3,
+   "soc_ball": {
+    "num": "A8",
+    "net": "DDR4_A7",
+    "pos_board": [
+     119.28,
+     -76.703
+    ]
+   },
+   "targets": {},
+   "dangling_track_ends": 0,
+   "branch": {
+    "kind": "via",
+    "info": {
+     "pad": 0.4,
+     "drill": 0.2,
+     "net": "DDR4_A7",
+     "layers": [
+      "TOP",
+      "BOTTOM"
+     ]
+    },
+    "pos_board": [
+     140.906,
+     -80.92
+    ],
+    "node_layer": "L4-S1",
+    "pos_soc": [
+     -22.499,
+     -21.085
+    ],
+    "dist_to_target_balls_straight": {
+     "U3300.R8": 9.578,
+     "U3301.R8": 10.235
+    }
+   },
+   "trunk": {
+    "length": 29.896,
+    "vias": 1,
+    "via_list": [
+     {
+      "xy": [
+       140.906,
+       -80.92
+      ],
+      "from": "TOP",
+      "to": "L4-S1"
+     }
+    ],
+    "parts": [],
+    "layers_track": [
+     "TOP"
+    ],
+    "first_layer": "TOP",
+    "last_layer": "TOP"
+   },
+   "branches": {
+    "U3300.R8": {
+     "length": 11.459,
+     "vias": 1,
+     "via_list": [
+      {
+       "xy": [
+        137.497,
+        -90.108
+       ],
+       "from": "L4-S1",
+       "to": "TOP"
+      }
+     ],
+     "parts": [],
+     "layers_track": [
+      "TOP",
+      "L4-S1"
+     ],
+     "first_layer": "L4-S1",
+     "last_layer": "TOP"
+    },
+    "U3301.R8": {
+     "length": 11.515,
+     "vias": 1,
+     "via_list": [
+      {
+       "xy": [
+        140.888,
+        -74.42
+       ],
+       "from": "L4-S1",
+       "to": "TOP"
+      }
+     ],
+     "parts": [],
+     "layers_track": [
+      "TOP",
+      "L4-S1"
+     ],
+     "first_layer": "L4-S1",
+     "last_layer": "TOP"
+    }
+   },
+   "branch_length_diff": 0.056,
+   "total_path": {
+    "U3300.R8": 41.355,
+    "U3301.R8": 41.411
+   },
+   "coverage_check": "paths total 52.870 vs track sum 52.896 (difference = stubs/unused copper)",
+   "parts": []
+  },
+  "DDR4_A8": {
+   "family": [
+    "DDR4_A8"
+   ],
+   "track_length_total": 49.675,
+   "n_vias_family": 3,
+   "soc_ball": {
+    "num": "C1",
+    "net": "DDR4_A8",
+    "pos_board": [
+     121.578,
+     -80.839
+    ]
+   },
+   "targets": {},
+   "dangling_track_ends": 0,
+   "branch": {
+    "kind": "via",
+    "info": {
+     "pad": 0.4,
+     "drill": 0.2,
+     "net": "DDR4_A8",
+     "layers": [
+      "TOP",
+      "BOTTOM"
+     ]
+    },
+    "pos_board": [
+     141.258,
+     -75.82
+    ],
+    "node_layer": "L4-S1",
+    "pos_soc": [
+     -19.142,
+     -24.94
+    ],
+    "dist_to_target_balls_straight": {
+     "U3300.R2": 9.995,
+     "U3301.R2": 10.097
+    }
+   },
+   "trunk": {
+    "length": 24.938,
+    "vias": 1,
+    "via_list": [
+     {
+      "xy": [
+       141.258,
+       -75.82
+      ],
+      "from": "TOP",
+      "to": "L4-S1"
+     }
+    ],
+    "parts": [],
+    "layers_track": [
+     "TOP"
+    ],
+    "first_layer": "TOP",
+    "last_layer": "TOP"
+   },
+   "branches": {
+    "U3300.R2": {
+     "length": 12.374,
+     "vias": 1,
+     "via_list": [
+      {
+       "xy": [
+        140.288,
+        -84.52
+       ],
+       "from": "L4-S1",
+       "to": "TOP"
+      }
+     ],
+     "parts": [],
+     "layers_track": [
+      "TOP",
+      "L4-S1"
+     ],
+     "first_layer": "L4-S1",
+     "last_layer": "TOP"
+    },
+    "U3301.R2": {
+     "length": 12.352,
+     "vias": 1,
+     "via_list": [
+      {
+       "xy": [
+        139.788,
+        -67.92
+       ],
+       "from": "L4-S1",
+       "to": "TOP"
+      }
+     ],
+     "parts": [],
+     "layers_track": [
+      "TOP",
+      "L4-S1"
+     ],
+     "first_layer": "L4-S1",
+     "last_layer": "TOP"
+    }
+   },
+   "branch_length_diff": 0.022,
+   "total_path": {
+    "U3300.R2": 37.312,
+    "U3301.R2": 37.29
+   },
+   "coverage_check": "paths total 49.664 vs track sum 49.675 (difference = stubs/unused copper)",
+   "parts": []
+  },
+  "DDR4_A9": {
+   "family": [
+    "DDR4_A9"
+   ],
+   "track_length_total": 41.903,
+   "n_vias_family": 3,
+   "soc_ball": {
+    "num": "A5",
+    "net": "DDR4_A9",
+    "pos_board": [
+     120.659,
+     -78.082
+    ]
+   },
+   "targets": {},
+   "dangling_track_ends": 0,
+   "branch": {
+    "kind": "via",
+    "info": {
+     "pad": 0.4,
+     "drill": 0.2,
+     "net": "DDR4_A9",
+     "layers": [
+      "TOP",
+      "BOTTOM"
+     ]
+    },
+    "pos_board": [
+     138.316,
+     -78.92
+    ],
+    "node_layer": "L4-S1",
+    "pos_soc": [
+     -19.253,
+     -20.668
+    ],
+    "dist_to_target_balls_straight": {
+     "U3300.R7": 10.062,
+     "U3301.R7": 8.389
+    }
+   },
+   "trunk": {
+    "length": 20.651,
+    "vias": 1,
+    "via_list": [
+     {
+      "xy": [
+       138.316,
+       -78.92
+      ],
+      "from": "TOP",
+      "to": "L4-S1"
+     }
+    ],
+    "parts": [],
+    "layers_track": [
+     "TOP"
+    ],
+    "first_layer": "TOP",
+    "last_layer": "TOP"
+   },
+   "branches": {
+    "U3300.R7": {
+     "length": 10.543,
+     "vias": 1,
+     "via_list": [
+      {
+       "xy": [
+        137.497,
+        -88.508
+       ],
+       "from": "L4-S1",
+       "to": "TOP"
+      }
+     ],
+     "parts": [],
+     "layers_track": [
+      "TOP",
+      "L4-S1"
+     ],
+     "first_layer": "L4-S1",
+     "last_layer": "TOP"
+    },
+    "U3301.R7": {
+     "length": 10.575,
+     "vias": 1,
+     "via_list": [
+      {
+       "xy": [
+        138.297,
+        -70.22
+       ],
+       "from": "L4-S1",
+       "to": "TOP"
+      }
+     ],
+     "parts": [],
+     "layers_track": [
+      "TOP",
+      "L4-S1"
+     ],
+     "first_layer": "L4-S1",
+     "last_layer": "TOP"
+    }
+   },
+   "branch_length_diff": 0.032,
+   "total_path": {
+    "U3300.R7": 31.194,
+    "U3301.R7": 31.226
+   },
+   "coverage_check": "paths total 41.769 vs track sum 41.903 (difference = stubs/unused copper)",
+   "parts": []
+  },
+  "DDR4_ACTN": {
+   "family": [
+    "DDR4_ACTN"
+   ],
+   "track_length_total": 39.075,
+   "n_vias_family": 4,
+   "soc_ball": {
+    "num": "E6",
+    "net": "DDR4_ACTN",
+    "pos_board": [
+     118.361,
+     -79.461
+    ]
+   },
+   "targets": {},
+   "dangling_track_ends": 0,
+   "branch": {
+    "kind": "via",
+    "info": {
+     "pad": 0.4,
+     "drill": 0.2,
+     "net": "DDR4_ACTN",
+     "layers": [
+      "TOP",
+      "BOTTOM"
+     ]
+    },
+    "pos_board": [
+     133.657,
+     -76.911
+    ],
+    "node_layer": "L4-S1",
+    "pos_soc": [
+     -14.538,
+     -18.794
+    ],
+    "dist_to_target_balls_straight": {
+     "U3300.L3": 8.801,
+     "U3301.L3": 9.494
+    }
+   },
+   "trunk": {
+    "length": 18.33,
+    "vias": 2,
+    "via_list": [
+     {
+      "xy": [
+       118.361,
+       -78.082
+      ],
+      "from": "TOP",
+      "to": "BOTTOM"
+     },
+     {
+      "xy": [
+       133.657,
+       -76.911
+      ],
+      "from": "BOTTOM",
+      "to": "L4-S1"
+     }
+    ],
+    "parts": [],
+    "layers_track": [
+     "TOP",
+     "BOTTOM"
+    ],
+    "first_layer": "TOP",
+    "last_layer": "BOTTOM"
+   },
+   "branches": {
+    "U3300.L3": {
+     "length": 10.176,
+     "vias": 1,
+     "via_list": [
+      {
+       "xy": [
+        134.244,
+        -86.055
+       ],
+       "from": "L4-S1",
+       "to": "TOP"
+      }
+     ],
+     "parts": [],
+     "layers_track": [
+      "TOP",
+      "L4-S1"
+     ],
+     "first_layer": "L4-S1",
+     "last_layer": "TOP"
+    },
+    "U3301.L3": {
+     "length": 10.042,
+     "vias": 1,
+     "via_list": [
+      {
+       "xy": [
+        134.244,
+        -68.567
+       ],
+       "from": "L4-S1",
+       "to": "TOP"
+      }
+     ],
+     "parts": [],
+     "layers_track": [
+      "TOP",
+      "L4-S1"
+     ],
+     "first_layer": "L4-S1",
+     "last_layer": "TOP"
+    }
+   },
+   "branch_length_diff": 0.134,
+   "total_path": {
+    "U3300.L3": 28.506,
+    "U3301.L3": 28.372
+   },
+   "coverage_check": "paths total 38.548 vs track sum 39.075 (difference = stubs/unused copper)",
+   "parts": []
+  },
+  "DDR4_BA0": {
+   "family": [
+    "DDR4_BA0"
+   ],
+   "track_length_total": 44.194,
+   "n_vias_family": 4,
+   "soc_ball": {
+    "num": "E11",
+    "net": "DDR4_BA0",
+    "pos_board": [
+     116.063,
+     -77.162
+    ]
+   },
+   "targets": {},
+   "dangling_track_ends": 0,
+   "branch": {
+    "kind": "via",
+    "info": {
+     "pad": 0.4,
+     "drill": 0.2,
+     "net": "DDR4_BA0",
+     "layers": [
+      "TOP",
+      "BOTTOM"
+     ]
+    },
+    "pos_board": [
+     137.203,
+     -75.795
+    ],
+    "node_layer": "L4-S1",
+    "pos_soc": [
+     -16.256,
+     -22.091
+    ],
+    "dist_to_target_balls_straight": {
+     "U3300.N2": 9.272,
+     "U3301.N2": 9.332
+    }
+   },
+   "trunk": {
+    "length": 23.047,
+    "vias": 2,
+    "via_list": [
+     {
+      "xy": [
+       116.651,
+       -77.302
+      ],
+      "from": "TOP",
+      "to": "BOTTOM"
+     },
+     {
+      "xy": [
+       137.203,
+       -75.795
+      ],
+      "from": "BOTTOM",
+      "to": "L4-S1"
+     }
+    ],
+    "parts": [],
+    "layers_track": [
+     "TOP",
+     "BOTTOM"
+    ],
+    "first_layer": "TOP",
+    "last_layer": "BOTTOM"
+   },
+   "branches": {
+    "U3300.N2": {
+     "length": 10.2,
+     "vias": 1,
+     "via_list": [
+      {
+       "xy": [
+        137.449,
+        -81.72
+       ],
+       "from": "L4-S1",
+       "to": "TOP"
+      }
+     ],
+     "parts": [],
+     "layers_track": [
+      "TOP",
+      "L4-S1"
+     ],
+     "first_layer": "L4-S1",
+     "last_layer": "TOP"
+    },
+    "U3301.N2": {
+     "length": 10.345,
+     "vias": 1,
+     "via_list": [
+      {
+       "xy": [
+        135.888,
+        -67.03
+       ],
+       "from": "L4-S1",
+       "to": "TOP"
+      }
+     ],
+     "parts": [],
+     "layers_track": [
+      "TOP",
+      "L4-S1"
+     ],
+     "first_layer": "L4-S1",
+     "last_layer": "TOP"
+    }
+   },
+   "branch_length_diff": 0.145,
+   "total_path": {
+    "U3300.N2": 33.247,
+    "U3301.N2": 33.392
+   },
+   "coverage_check": "paths total 43.592 vs track sum 44.194 (difference = stubs/unused copper)",
+   "parts": []
+  },
+  "DDR4_BA1": {
+   "family": [
+    "DDR4_BA1"
+   ],
+   "track_length_total": 50.573,
+   "n_vias_family": 4,
+   "soc_ball": {
+    "num": "E9",
+    "net": "DDR4_BA1",
+    "pos_board": [
+     116.982,
+     -78.082
+    ]
+   },
+   "targets": {},
+   "dangling_track_ends": 0,
+   "branch": {
+    "kind": "via",
+    "info": {
+     "pad": 0.4,
+     "drill": 0.2,
+     "net": "DDR4_BA1",
+     "layers": [
+      "TOP",
+      "BOTTOM"
+     ]
+    },
+    "pos_board": [
+     136.535,
+     -80.501
+    ],
+    "node_layer": "L4-S1",
+    "pos_soc": [
+     -19.112,
+     -18.29
+    ],
+    "dist_to_target_balls_straight": {
+     "U3300.N8": 9.265,
+     "U3301.N8": 9.14
+    }
+   },
+   "trunk": {
+    "length": 28.951,
+    "vias": 2,
+    "via_list": [
+     {
+      "xy": [
+       115.603,
+       -78.082
+      ],
+      "from": "TOP",
+      "to": "BOTTOM"
+     },
+     {
+      "xy": [
+       136.535,
+       -80.501
+      ],
+      "from": "BOTTOM",
+      "to": "L4-S1"
+     }
+    ],
+    "parts": [],
+    "layers_track": [
+     "TOP",
+     "BOTTOM"
+    ],
+    "first_layer": "TOP",
+    "last_layer": "BOTTOM"
+   },
+   "branches": {
+    "U3300.N8": {
+     "length": 10.819,
+     "vias": 1,
+     "via_list": [
+      {
+       "xy": [
+        135.897,
+        -90.108
+       ],
+       "from": "L4-S1",
+       "to": "TOP"
+      }
+     ],
+     "parts": [],
+     "layers_track": [
+      "TOP",
+      "L4-S1"
+     ],
+     "first_layer": "L4-S1",
+     "last_layer": "TOP"
+    },
+    "U3301.N8": {
+     "length": 10.624,
+     "vias": 1,
+     "via_list": [
+      {
+       "xy": [
+        136.812,
+        -73.544
+       ],
+       "from": "L4-S1",
+       "to": "TOP"
+      }
+     ],
+     "parts": [],
+     "layers_track": [
+      "TOP",
+      "L4-S1"
+     ],
+     "first_layer": "L4-S1",
+     "last_layer": "TOP"
+    }
+   },
+   "branch_length_diff": 0.195,
+   "total_path": {
+    "U3300.N8": 39.77,
+    "U3301.N8": 39.575
+   },
+   "coverage_check": "paths total 50.394 vs track sum 50.573 (difference = stubs/unused copper)",
+   "parts": []
+  },
+  "DDR4_BG0": {
+   "family": [
+    "DDR4_BG0"
+   ],
+   "track_length_total": 43.077,
+   "n_vias_family": 4,
+   "soc_ball": {
+    "num": "F8",
+    "net": "DDR4_BG0",
+    "pos_board": [
+     116.982,
+     -79.001
+    ]
+   },
+   "targets": {},
+   "dangling_track_ends": 0,
+   "branch": {
+    "kind": "via",
+    "info": {
+     "pad": 0.4,
+     "drill": 0.2,
+     "net": "DDR4_BG0",
+     "layers": [
+      "TOP",
+      "BOTTOM"
+     ]
+    },
+    "pos_board": [
+     135.116,
+     -75.42
+    ],
+    "node_layer": "L4-S1",
+    "pos_soc": [
+     -14.516,
+     -20.88
+    ],
+    "dist_to_target_balls_straight": {
+     "U3300.M2": 9.497,
+     "U3301.M2": 8.81
+    }
+   },
+   "trunk": {
+    "length": 21.816,
+    "vias": 2,
+    "via_list": [
+     {
+      "xy": [
+       116.982,
+       -79.461
+      ],
+      "from": "TOP",
+      "to": "BOTTOM"
+     },
+     {
+      "xy": [
+       135.116,
+       -75.42
+      ],
+      "from": "BOTTOM",
+      "to": "L4-S1"
+     }
+    ],
+    "parts": [],
+    "layers_track": [
+     "TOP",
+     "BOTTOM"
+    ],
+    "first_layer": "TOP",
+    "last_layer": "BOTTOM"
+   },
+   "branches": {
+    "U3300.M2": {
+     "length": 10.571,
+     "vias": 1,
+     "via_list": [
+      {
+       "xy": [
+        136.035,
+        -82.42
+       ],
+       "from": "L4-S1",
+       "to": "TOP"
+      }
+     ],
+     "parts": [],
+     "layers_track": [
+      "TOP",
+      "L4-S1"
+     ],
+     "first_layer": "L4-S1",
+     "last_layer": "TOP"
+    },
+    "U3301.M2": {
+     "length": 10.495,
+     "vias": 1,
+     "via_list": [
+      {
+       "xy": [
+        135.088,
+        -66.23
+       ],
+       "from": "L4-S1",
+       "to": "TOP"
+      }
+     ],
+     "parts": [],
+     "layers_track": [
+      "TOP",
+      "L4-S1"
+     ],
+     "first_layer": "L4-S1",
+     "last_layer": "TOP"
+    }
+   },
+   "branch_length_diff": 0.076,
+   "total_path": {
+    "U3300.M2": 32.387,
+    "U3301.M2": 32.311
+   },
+   "coverage_check": "paths total 42.882 vs track sum 43.077 (difference = stubs/unused copper)",
+   "parts": []
+  },
+  "DDR4_BG1": {
+   "family": [
+    "DDR4_BG1"
+   ],
+   "track_length_total": 15.474,
+   "n_vias_family": 1,
+   "soc_ball": null,
+   "targets": {},
+   "error": "no soc ball or no dram ball"
+  },
+  "DDR4_CKE": {
+   "family": [
+    "DDR4_CKE",
+    "DDR4_CKE_A",
+    "DDR4_CKE_B"
+   ],
+   "track_length_total": 35.926,
+   "n_vias_family": 4,
+   "soc_ball": {
+    "num": "B3",
+    "net": "DDR4_CKE",
+    "pos_board": [
+     121.119,
+     -79.461
+    ]
+   },
+   "targets": {},
+   "dangling_track_ends": 0,
+   "branch": {
+    "kind": "pad",
+    "info": {
+     "ref": "R3307",
+     "num": "1",
+     "net": "DDR4_CKE",
+     "size": [
+      0.25,
+      0.3
+     ]
+    },
+    "pos_board": [
+     131.991,
+     -76.649
+    ],
+    "node_layer": "TOP",
+    "pos_soc": [
+     -13.175,
+     -17.801
+    ],
+    "dist_to_target_balls_straight": {
+     "U3300.K2": 8.333,
+     "U3301.K2": 10.09
+    }
+   },
+   "trunk": {
+    "length": 13.581,
+    "vias": 0,
+    "via_list": [],
+    "parts": [],
+    "layers_track": [
+     "TOP"
+    ],
+    "first_layer": "TOP",
+    "last_layer": "TOP"
+   },
+   "branches": {
+    "U3300.K2": {
+     "length": 11.116,
+     "vias": 2,
+     "via_list": [
+      {
+       "xy": [
+        131.895,
+        -78.32
+       ],
+       "from": "TOP",
+       "to": "L4-S1"
+      },
+      {
+       "xy": [
+        132.697,
+        -84.508
+       ],
+       "from": "L4-S1",
+       "to": "TOP"
+      }
+     ],
+     "parts": [
+      "R3306"
+     ],
+     "layers_track": [
+      "TOP",
+      "L4-S1"
+     ],
+     "first_layer": "TOP",
+     "last_layer": "TOP"
+    },
+    "U3301.K2": {
+     "length": 10.966,
+     "vias": 2,
+     "via_list": [
+      {
+       "xy": [
+        131.894,
+        -75.888
+       ],
+       "from": "TOP",
+       "to": "L4-S1"
+      },
+      {
+       "xy": [
+        132.697,
+        -66.22
+       ],
+       "from": "L4-S1",
+       "to": "TOP"
+      }
+     ],
+     "parts": [
+      "R3307"
+     ],
+     "layers_track": [
+      "TOP",
+      "L4-S1"
+     ],
+     "first_layer": "TOP",
+     "last_layer": "TOP"
+    }
+   },
+   "branch_length_diff": 0.15,
+   "total_path": {
+    "U3300.K2": 24.697,
+    "U3301.K2": 24.548
+   },
+   "coverage_check": "paths total 35.663 vs track sum 35.926 (difference = stubs/unused copper)",
+   "parts": [
+    "R3306",
+    "R3307"
+   ]
+  },
+  "DDR4_CLKN": {
+   "family": [
+    "DDR4_CLKN",
+    "DDR4_CLKN_A",
+    "DDR4_CLKN_B"
+   ],
+   "track_length_total": 40.247,
+   "n_vias_family": 5,
+   "soc_ball": {
+    "num": "A4",
+    "net": "DDR4_CLKN",
+    "pos_board": [
+     121.119,
+     -78.541
+    ]
+   },
+   "targets": {},
+   "dangling_track_ends": 0,
+   "branch": {
+    "kind": "via",
+    "info": {
+     "pad": 0.4,
+     "drill": 0.2,
+     "net": "DDR4_CLKN",
+     "layers": [
+      "TOP",
+      "BOTTOM"
+     ]
+    },
+    "pos_board": [
+     128.599,
+     -77.915
+    ],
+    "node_layer": "TOP",
+    "pos_soc": [
+     -11.672,
+     -14.507
+    ],
+    "dist_to_target_balls_straight": {
+     "U3300.K8": 12.621,
+     "U3301.K8": 7.901
+    }
+   },
+   "trunk": {
+    "length": 8.305,
+    "vias": 0,
+    "via_list": [],
+    "parts": [],
+    "layers_track": [
+     "TOP"
+    ],
+    "first_layer": "TOP",
+    "last_layer": "TOP"
+   },
+   "branches": {
+    "U3300.K8": {
+     "length": 15.334,
+     "vias": 3,
+     "via_list": [
+      {
+       "xy": [
+        128.599,
+        -77.915
+       ],
+       "from": "TOP",
+       "to": "BOTTOM"
+      },
+      {
+       "xy": [
+        130.565,
+        -78.761
+       ],
+       "from": "BOTTOM",
+       "to": "L4-S1"
+      },
+      {
+       "xy": [
+        131.636,
+        -87.667
+       ],
+       "from": "L4-S1",
+       "to": "TOP"
+      }
+     ],
+     "parts": [
+      "R3304"
+     ],
+     "layers_track": [
+      "TOP",
+      "L4-S1",
+      "BOTTOM"
+     ],
+     "first_layer": "BOTTOM",
+     "last_layer": "TOP"
+    },
+    "U3301.K8": {
+     "length": 15.576,
+     "vias": 2,
+     "via_list": [
+      {
+       "xy": [
+        130.012,
+        -77.727
+       ],
+       "from": "TOP",
+       "to": "L4-S1"
+      },
+      {
+       "xy": [
+        131.636,
+        -69.379
+       ],
+       "from": "L4-S1",
+       "to": "TOP"
+      }
+     ],
+     "parts": [
+      "R3305"
+     ],
+     "layers_track": [
+      "TOP",
+      "L4-S1"
+     ],
+     "first_layer": "TOP",
+     "last_layer": "TOP"
+    }
+   },
+   "branch_length_diff": 0.242,
+   "total_path": {
+    "U3300.K8": 23.639,
+    "U3301.K8": 23.881
+   },
+   "coverage_check": "paths total 39.215 vs track sum 40.247 (difference = stubs/unused copper)",
+   "parts": [
+    "R3301",
+    "R3304",
+    "R3305"
+   ]
+  },
+  "DDR4_CLKP": {
+   "family": [
+    "DDR4_CLKP",
+    "DDR4_CLKP_A",
+    "DDR4_CLKP_B"
+   ],
+   "track_length_total": 39.636,
+   "n_vias_family": 5,
+   "soc_ball": {
+    "num": "B4",
+    "net": "DDR4_CLKP",
+    "pos_board": [
+     120.659,
+     -79.001
+    ]
+   },
+   "targets": {},
+   "dangling_track_ends": 0,
+   "branch": {
+    "kind": "via",
+    "info": {
+     "pad": 0.4,
+     "drill": 0.2,
+     "net": "DDR4_CLKP",
+     "layers": [
+      "TOP",
+      "BOTTOM"
+     ]
+    },
+    "pos_board": [
+     128.599,
+     -78.468
+    ],
+    "node_layer": "TOP",
+    "pos_soc": [
+     -12.063,
+     -14.117
+    ],
+    "dist_to_target_balls_straight": {
+     "U3300.K7": 11.368,
+     "U3301.K7": 9.045
+    }
+   },
+   "trunk": {
+    "length": 8.613,
+    "vias": 0,
+    "via_list": [],
+    "parts": [],
+    "layers_track": [
+     "TOP"
+    ],
+    "first_layer": "TOP",
+    "last_layer": "TOP"
+   },
+   "branches": {
+    "U3300.K7": {
+     "length": 14.897,
+     "vias": 3,
+     "via_list": [
+      {
+       "xy": [
+        128.599,
+        -78.468
+       ],
+       "from": "TOP",
+       "to": "BOTTOM"
+      },
+      {
+       "xy": [
+        130.012,
+        -78.761
+       ],
+       "from": "BOTTOM",
+       "to": "L4-S1"
+      },
+      {
+       "xy": [
+        132.189,
+        -87.667
+       ],
+       "from": "L4-S1",
+       "to": "TOP"
+      }
+     ],
+     "parts": [
+      "R3302"
+     ],
+     "layers_track": [
+      "TOP",
+      "L4-S1",
+      "BOTTOM"
+     ],
+     "first_layer": "BOTTOM",
+     "last_layer": "TOP"
+    },
+    "U3301.K7": {
+     "length": 15.327,
+     "vias": 2,
+     "via_list": [
+      {
+       "xy": [
+        130.565,
+        -77.727
+       ],
+       "from": "TOP",
+       "to": "L4-S1"
+      },
+      {
+       "xy": [
+        132.189,
+        -69.379
+       ],
+       "from": "L4-S1",
+       "to": "TOP"
+      }
+     ],
+     "parts": [
+      "R3303"
+     ],
+     "layers_track": [
+      "TOP",
+      "L4-S1"
+     ],
+     "first_layer": "TOP",
+     "last_layer": "TOP"
+    }
+   },
+   "branch_length_diff": 0.43,
+   "total_path": {
+    "U3300.K7": 23.51,
+    "U3301.K7": 23.94
+   },
+   "coverage_check": "paths total 38.837 vs track sum 39.636 (difference = stubs/unused copper)",
+   "parts": [
+    "R3300",
+    "R3302",
+    "R3303"
+   ]
+  },
+  "DDR4_CS0N": {
+   "family": [
+    "DDR4_CS0N",
+    "DDR4_CS0N_A",
+    "DDR4_CS0N_B"
+   ],
+   "track_length_total": 31.403,
+   "n_vias_family": 4,
+   "soc_ball": {
+    "num": "A2",
+    "net": "DDR4_CS0N",
+    "pos_board": [
+     122.038,
+     -79.461
+    ]
+   },
+   "targets": {},
+   "dangling_track_ends": 0,
+   "branch": {
+    "kind": "pad",
+    "info": {
+     "ref": "R3308",
+     "num": "2",
+     "net": "DDR4_CS0N",
+     "size": [
+      0.25,
+      0.3
+     ]
+    },
+    "pos_board": [
+     132.852,
+     -79.226
+    ],
+    "node_layer": "TOP",
+    "pos_soc": [
+     -15.606,
+     -16.588
+    ],
+    "dist_to_target_balls_straight": {
+     "U3300.L7": 9.739,
+     "U3301.L7": 8.669
+    }
+   },
+   "trunk": {
+    "length": 11.3,
+    "vias": 0,
+    "via_list": [],
+    "parts": [],
+    "layers_track": [
+     "TOP"
+    ],
+    "first_layer": "TOP",
+    "last_layer": "TOP"
+   },
+   "branches": {
+    "U3300.L7": {
+     "length": 10.11,
+     "vias": 2,
+     "via_list": [
+      {
+       "xy": [
+        132.852,
+        -80.12
+       ],
+       "from": "TOP",
+       "to": "L4-S1"
+      },
+      {
+       "xy": [
+        133.497,
+        -87.857
+       ],
+       "from": "L4-S1",
+       "to": "TOP"
+      }
+     ],
+     "parts": [
+      "R3308"
+     ],
+     "layers_track": [
+      "TOP",
+      "L4-S1"
+     ],
+     "first_layer": "TOP",
+     "last_layer": "TOP"
+    },
+    "U3301.L7": {
+     "length": 9.641,
+     "vias": 2,
+     "via_list": [
+      {
+       "xy": [
+        132.788,
+        -77.62
+       ],
+       "from": "TOP",
+       "to": "L4-S1"
+      },
+      {
+       "xy": [
+        134.035,
+        -70.02
+       ],
+       "from": "L4-S1",
+       "to": "TOP"
+      }
+     ],
+     "parts": [
+      "R3309"
+     ],
+     "layers_track": [
+      "TOP",
+      "L4-S1"
+     ],
+     "first_layer": "TOP",
+     "last_layer": "TOP"
+    }
+   },
+   "branch_length_diff": 0.469,
+   "total_path": {
+    "U3300.L7": 21.409,
+    "U3301.L7": 20.941
+   },
+   "coverage_check": "paths total 31.051 vs track sum 31.403 (difference = stubs/unused copper)",
+   "parts": [
+    "R3308",
+    "R3309"
+   ]
+  },
+  "DDR4_ODT0": {
+   "family": [
+    "DDR4_ODT0",
+    "DDR4_ODT0_A",
+    "DDR4_ODT0_B"
+   ],
+   "track_length_total": 35.734,
+   "n_vias_family": 5,
+   "soc_ball": {
+    "num": "E8",
+    "net": "DDR4_ODT0",
+    "pos_board": [
+     117.442,
+     -78.541
+    ]
+   },
+   "targets": {},
+   "dangling_track_ends": 0,
+   "branch": {
+    "kind": "junction",
+    "info": null,
+    "pos_board": [
+     131.285,
+     -76.72
+    ],
+    "node_layer": "BOTTOM",
+    "pos_soc": [
+     -12.726,
+     -17.251
+    ],
+    "dist_to_target_balls_straight": {
+     "U3300.K3": 9.169,
+     "U3301.K3": 9.475
+    }
+   },
+   "trunk": {
+    "length": 15.212,
+    "vias": 1,
+    "via_list": [
+     {
+      "xy": [
+       117.442,
+       -78.976
+      ],
+      "from": "TOP",
+      "to": "BOTTOM"
+     }
+    ],
+    "parts": [],
+    "layers_track": [
+     "TOP",
+     "BOTTOM"
+    ],
+    "first_layer": "TOP",
+    "last_layer": "BOTTOM"
+   },
+   "branches": {
+    "U3300.K3": {
+     "length": 10.277,
+     "vias": 2,
+     "via_list": [
+      {
+       "xy": [
+        131.286,
+        -77.796
+       ],
+       "from": "BOTTOM",
+       "to": "L4-S1"
+      },
+      {
+       "xy": [
+        132.697,
+        -86.108
+       ],
+       "from": "L4-S1",
+       "to": "TOP"
+      }
+     ],
+     "parts": [
+      "R3310"
+     ],
+     "layers_track": [
+      "TOP",
+      "L4-S1",
+      "BOTTOM"
+     ],
+     "first_layer": "BOTTOM",
+     "last_layer": "TOP"
+    },
+    "U3301.K3": {
+     "length": 10.049,
+     "vias": 2,
+     "via_list": [
+      {
+       "xy": [
+        130.835,
+        -75.847
+       ],
+       "from": "BOTTOM",
+       "to": "L4-S1"
+      },
+      {
+       "xy": [
+        132.697,
+        -67.82
+       ],
+       "from": "L4-S1",
+       "to": "TOP"
+      }
+     ],
+     "parts": [
+      "R3311"
+     ],
+     "layers_track": [
+      "TOP",
+      "L4-S1",
+      "BOTTOM"
+     ],
+     "first_layer": "BOTTOM",
+     "last_layer": "TOP"
+    }
+   },
+   "branch_length_diff": 0.228,
+   "total_path": {
+    "U3300.K3": 25.489,
+    "U3301.K3": 25.26
+   },
+   "coverage_check": "paths total 35.538 vs track sum 35.734 (difference = stubs/unused copper)",
+   "parts": [
+    "R3310",
+    "R3311"
+   ]
+  },
+  "DDR4_RESETN": {
+   "family": [
+    "DDR4_RESETN"
+   ],
+   "track_length_total": 56.521,
+   "n_vias_family": 2,
+   "soc_ball": {
+    "num": "F11",
+    "net": "DDR4_RESETN",
+    "pos_board": [
+     115.603,
+     -77.622
+    ]
+   },
+   "targets": {},
+   "dangling_track_ends": 0,
+   "branch": {
+    "kind": "via",
+    "info": {
+     "pad": 0.4,
+     "drill": 0.2,
+     "net": "DDR4_RESETN",
+     "layers": [
+      "TOP",
+      "BOTTOM"
+     ]
+    },
+    "pos_board": [
+     141.688,
+     -74.62
+    ],
+    "node_layer": "TOP",
+    "pos_soc": [
+     -18.597,
+     -26.092
+    ],
+    "dist_to_target_balls_straight": {
+     "U3300.P1": 10.912,
+     "U3301.P1": 10.32
+    }
+   },
+   "trunk": {
+    "length": 28.539,
+    "vias": 2,
+    "via_list": [
+     {
+      "xy": [
+       115.603,
+       -77.162
+      ],
+      "from": "TOP",
+      "to": "BOTTOM"
+     },
+     {
+      "xy": [
+       141.688,
+       -74.62
+      ],
+      "from": "BOTTOM",
+      "to": "TOP"
+     }
+    ],
+    "parts": [],
+    "layers_track": [
+     "TOP",
+     "BOTTOM"
+    ],
+    "first_layer": "TOP",
+    "last_layer": "BOTTOM"
+   },
+   "branches": {
+    "U3300.P1": {
+     "length": 13.764,
+     "vias": 0,
+     "via_list": [],
+     "parts": [],
+     "layers_track": [
+      "TOP"
+     ],
+     "first_layer": "TOP",
+     "last_layer": "TOP"
+    },
+    "U3301.P1": {
+     "length": 13.916,
+     "vias": 0,
+     "via_list": [],
+     "parts": [],
+     "layers_track": [
+      "TOP"
+     ],
+     "first_layer": "TOP",
+     "last_layer": "TOP"
+    }
+   },
+   "branch_length_diff": 0.152,
+   "total_path": {
+    "U3300.P1": 42.303,
+    "U3301.P1": 42.455
+   },
+   "coverage_check": "paths total 56.219 vs track sum 56.521 (difference = stubs/unused copper)",
+   "parts": [
+    "C3301",
+    "C3302"
+   ]
+  }
+ },
+ "array": {
+  "all_branch_points": {
+   "n": 27,
+   "nn_min": 0.553,
+   "nn_median": 0.915,
+   "nn_max": 1.797
+  },
+  "bbox_all": [
+   128.599,
+   -80.92,
+   141.688,
+   -74.62
+  ],
+  "via_branch_points": {
+   "n": 24,
+   "nn_min": 0.553,
+   "nn_median": 1.022,
+   "nn_max": 2.202
+  },
+  "bbox_via": [
+   128.599,
+   -80.92,
+   141.688,
+   -74.62
+  ],
+  "kinds": {
+   "via": 24,
+   "pad": 2,
+   "junction": 1
+  },
+  "window_grown_0p7": [
+   127.899,
+   -81.62,
+   142.388,
+   -73.92
+  ],
+  "dram_geometry": {
+   "U3300": {
+    "ball_field_box_board": [
+     125.898,
+     -90.508,
+     137.897,
+     -84.108
+    ],
+    "centre": [
+     131.898,
+     -87.308
+    ]
+   },
+   "U3301": {
+    "ball_field_box_board": [
+     125.898,
+     -72.22,
+     137.897,
+     -65.82
+    ],
+    "centre": [
+     131.898,
+     -69.02
+    ]
+   }
+  },
+  "dram_axis_y_board": -78.164,
+  "soc_field_half_uv": [
+   8.775,
+   8.775
+  ],
+  "per_point": {
+   "DDR4_A0": {
+    "soc_field_edge_dist": 15.731,
+    "axis_offset_y": 1.117,
+    "dist_to_U3300_ball_box": 7.061,
+    "dist_to_U3301_ball_box": 4.827
+   },
+   "DDR4_A1": {
+    "soc_field_edge_dist": 15.162,
+    "axis_offset_y": -0.556,
+    "dist_to_U3300_ball_box": 5.388,
+    "dist_to_U3301_ball_box": 6.5
+   },
+   "DDR4_A10": {
+    "soc_field_edge_dist": 12.278,
+    "axis_offset_y": 1.311,
+    "dist_to_U3300_ball_box": 7.255,
+    "dist_to_U3301_ball_box": 4.633
+   },
+   "DDR4_A11": {
+    "soc_field_edge_dist": 18.367,
+    "axis_offset_y": 1.944,
+    "dist_to_U3300_ball_box": 8.303,
+    "dist_to_U3301_ball_box": 4.766
+   },
+   "DDR4_A12": {
+    "soc_field_edge_dist": 11.518,
+    "axis_offset_y": -1.356,
+    "dist_to_U3300_ball_box": 4.588,
+    "dist_to_U3301_ball_box": 7.3
+   },
+   "DDR4_A13": {
+    "soc_field_edge_dist": 17.534,
+    "axis_offset_y": -1.899,
+    "dist_to_U3300_ball_box": 4.573,
+    "dist_to_U3301_ball_box": 8.128
+   },
+   "DDR4_A14_WEN": {
+    "soc_field_edge_dist": 10.724,
+    "axis_offset_y": 1.844,
+    "dist_to_U3300_ball_box": 7.788,
+    "dist_to_U3301_ball_box": 4.1
+   },
+   "DDR4_A15_CASN": {
+    "soc_field_edge_dist": 12.332,
+    "axis_offset_y": -2.382,
+    "dist_to_U3300_ball_box": 3.562,
+    "dist_to_U3301_ball_box": 8.326
+   },
+   "DDR4_A16_RASN": {
+    "soc_field_edge_dist": 9.347,
+    "axis_offset_y": -1.761,
+    "dist_to_U3300_ball_box": 4.183,
+    "dist_to_U3301_ball_box": 7.705
+   },
+   "DDR4_A2": {
+    "soc_field_edge_dist": 16.537,
+    "axis_offset_y": 1.701,
+    "dist_to_U3300_ball_box": 7.684,
+    "dist_to_U3301_ball_box": 4.313
+   },
+   "DDR4_A3": {
+    "soc_field_edge_dist": 13.404,
+    "axis_offset_y": -1.156,
+    "dist_to_U3300_ball_box": 4.788,
+    "dist_to_U3301_ball_box": 7.1
+   },
+   "DDR4_A4": {
+    "soc_field_edge_dist": 13.935,
+    "axis_offset_y": 0.844,
+    "dist_to_U3300_ball_box": 6.788,
+    "dist_to_U3301_ball_box": 5.1
+   },
+   "DDR4_A5": {
+    "soc_field_edge_dist": 16.526,
+    "axis_offset_y": -2.056,
+    "dist_to_U3300_ball_box": 4.047,
+    "dist_to_U3301_ball_box": 8.079
+   },
+   "DDR4_A6": {
+    "soc_field_edge_dist": 17.335,
+    "axis_offset_y": 2.144,
+    "dist_to_U3300_ball_box": 8.224,
+    "dist_to_U3301_ball_box": 4.082
+   },
+   "DDR4_A7": {
+    "soc_field_edge_dist": 18.436,
+    "axis_offset_y": -2.756,
+    "dist_to_U3300_ball_box": 4.384,
+    "dist_to_U3301_ball_box": 9.206
+   },
+   "DDR4_A8": {
+    "soc_field_edge_dist": 19.203,
+    "axis_offset_y": 2.344,
+    "dist_to_U3300_ball_box": 8.944,
+    "dist_to_U3301_ball_box": 4.925
+   },
+   "DDR4_A9": {
+    "soc_field_edge_dist": 15.85,
+    "axis_offset_y": -0.756,
+    "dist_to_U3300_ball_box": 5.205,
+    "dist_to_U3301_ball_box": 6.713
+   },
+   "DDR4_ACTN": {
+    "soc_field_edge_dist": 11.558,
+    "axis_offset_y": 1.253,
+    "dist_to_U3300_ball_box": 7.197,
+    "dist_to_U3301_ball_box": 4.691
+   },
+   "DDR4_BA0": {
+    "soc_field_edge_dist": 15.273,
+    "axis_offset_y": 2.369,
+    "dist_to_U3300_ball_box": 8.313,
+    "dist_to_U3301_ball_box": 3.575
+   },
+   "DDR4_BA1": {
+    "soc_field_edge_dist": 14.049,
+    "axis_offset_y": -2.337,
+    "dist_to_U3300_ball_box": 3.607,
+    "dist_to_U3301_ball_box": 8.281
+   },
+   "DDR4_BG0": {
+    "soc_field_edge_dist": 13.397,
+    "axis_offset_y": 2.744,
+    "dist_to_U3300_ball_box": 8.688,
+    "dist_to_U3301_ball_box": 3.2
+   },
+   "DDR4_CKE": {
+    "soc_field_edge_dist": 10.041,
+    "axis_offset_y": 1.515,
+    "dist_to_U3300_ball_box": 7.459,
+    "dist_to_U3301_ball_box": 4.429
+   },
+   "DDR4_CLKN": {
+    "soc_field_edge_dist": 6.422,
+    "axis_offset_y": 0.249,
+    "dist_to_U3300_ball_box": 6.193,
+    "dist_to_U3301_ball_box": 5.695
+   },
+   "DDR4_CLKP": {
+    "soc_field_edge_dist": 6.272,
+    "axis_offset_y": -0.304,
+    "dist_to_U3300_ball_box": 5.64,
+    "dist_to_U3301_ball_box": 6.248
+   },
+   "DDR4_CS0N": {
+    "soc_field_edge_dist": 10.378,
+    "axis_offset_y": -1.062,
+    "dist_to_U3300_ball_box": 4.882,
+    "dist_to_U3301_ball_box": 7.006
+   },
+   "DDR4_ODT0": {
+    "soc_field_edge_dist": 9.352,
+    "axis_offset_y": 1.444,
+    "dist_to_U3300_ball_box": 7.388,
+    "dist_to_U3301_ball_box": 4.5
+   },
+   "DDR4_RESETN": {
+    "soc_field_edge_dist": 19.909,
+    "axis_offset_y": 3.544,
+    "dist_to_U3300_ball_box": 10.217,
+    "dist_to_U3301_ball_box": 4.487
+   }
+  },
+  "x_clusters_tol0.15": [
+   [
+    128.599,
+    2
+   ],
+   [
+    131.285,
+    1
+   ],
+   [
+    131.918,
+    2
+   ],
+   [
+    132.599,
+    1
+   ],
+   [
+    132.852,
+    1
+   ],
+   [
+    133.657,
+    1
+   ],
+   [
+    134.009,
+    1
+   ],
+   [
+    134.386,
+    1
+   ],
+   [
+    134.814,
+    1
+   ],
+   [
+    135.116,
+    1
+   ],
+   [
+    135.888,
+    1
+   ],
+   [
+    136.188,
+    1
+   ],
+   [
+    136.535,
+    1
+   ],
+   [
+    137.203,
+    1
+   ],
+   [
+    137.612,
+    1
+   ],
+   [
+    137.964,
+    1
+   ],
+   [
+    138.316,
+    1
+   ],
+   [
+    138.669,
+    1
+   ],
+   [
+    139.021,
+    1
+   ],
+   [
+    139.388,
+    1
+   ],
+   [
+    140.031,
+    1
+   ],
+   [
+    140.488,
+    1
+   ],
+   [
+    140.906,
+    1
+   ],
+   [
+    141.258,
+    1
+   ],
+   [
+    141.688,
+    1
+   ]
+  ],
+  "y_clusters_tol0.15": [
+   [
+    -80.92,
+    1
+   ],
+   [
+    -80.524,
+    2
+   ],
+   [
+    -80.22,
+    1
+   ],
+   [
+    -79.994,
+    2
+   ],
+   [
+    -79.52,
+    1
+   ],
+   [
+    -79.273,
+    2
+   ],
+   [
+    -78.92,
+    1
+   ],
+   [
+    -78.72,
+    1
+   ],
+   [
+    -78.468,
+    1
+   ],
+   [
+    -77.915,
+    1
+   ],
+   [
+    -77.32,
+    1
+   ],
+   [
+    -76.836,
+    5
+   ],
+   [
+    -76.334,
+    3
+   ],
+   [
+    -76.02,
+    1
+   ],
+   [
+    -75.808,
+    2
+   ],
+   [
+    -75.42,
+    1
+   ],
+   [
+    -74.62,
+    1
+   ]
+  ],
+  "window_vias": [
+   {
+    "net": "DDR4_CKE_B",
+    "x": 131.894,
+    "y": -75.888,
+    "pad": 0.4,
+    "drill": 0.2,
+    "layers": [
+     "TOP",
+     "BOTTOM"
+    ],
+    "in_window_0p7": true,
+    "family": "DDR4_CKE",
+    "gnd": false
+   },
+   {
+    "net": "VCC3V3_SYS",
+    "x": 143.688,
+    "y": -80.22,
+    "pad": 0.4,
+    "drill": 0.2,
+    "layers": [
+     "TOP",
+     "BOTTOM"
+    ],
+    "in_window_0p7": false,
+    "family": null,
+    "gnd": false
+   },
+   {
+    "net": "VCC3V3_SYS",
+    "x": 143.188,
+    "y": -80.22,
+    "pad": 0.4,
+    "drill": 0.2,
+    "layers": [
+     "TOP",
+     "BOTTOM"
+    ],
+    "in_window_0p7": false,
+    "family": null,
+    "gnd": false
+   },
+   {
+    "net": "VCC3V3_SYS",
+    "x": 143.188,
+    "y": -80.72,
+    "pad": 0.4,
+    "drill": 0.2,
+    "layers": [
+     "TOP",
+     "BOTTOM"
+    ],
+    "in_window_0p7": false,
+    "family": null,
+    "gnd": false
+   },
+   {
+    "net": "VCC3V3_SYS",
+    "x": 143.688,
+    "y": -80.72,
+    "pad": 0.4,
+    "drill": 0.2,
+    "layers": [
+     "TOP",
+     "BOTTOM"
+    ],
+    "in_window_0p7": false,
+    "family": null,
+    "gnd": false
+   },
+   {
+    "net": "DDR4_CLKN_A",
+    "x": 130.565,
+    "y": -78.761,
+    "pad": 0.4,
+    "drill": 0.2,
+    "layers": [
+     "TOP",
+     "BOTTOM"
+    ],
+    "in_window_0p7": true,
+    "family": "DDR4_CLKN",
+    "gnd": false
+   },
+   {
+    "net": "DDR4_CLKN_B",
+    "x": 130.012,
+    "y": -77.727,
+    "pad": 0.4,
+    "drill": 0.2,
+    "layers": [
+     "TOP",
+     "BOTTOM"
+    ],
+    "in_window_0p7": true,
+    "family": "DDR4_CLKN",
+    "gnd": false
+   },
+   {
+    "net": "DDR4_CKE_A",
+    "x": 131.895,
+    "y": -78.32,
+    "pad": 0.4,
+    "drill": 0.2,
+    "layers": [
+     "TOP",
+     "BOTTOM"
+    ],
+    "in_window_0p7": true,
+    "family": "DDR4_CKE",
+    "gnd": false
+   },
+   {
+    "net": "DDR4_CLKP_B",
+    "x": 130.565,
+    "y": -77.727,
+    "pad": 0.4,
+    "drill": 0.2,
+    "layers": [
+     "TOP",
+     "BOTTOM"
+    ],
+    "in_window_0p7": true,
+    "family": "DDR4_CLKP",
+    "gnd": false
+   },
+   {
+    "net": "DDR4_ODT0_A",
+    "x": 131.286,
+    "y": -77.796,
+    "pad": 0.4,
+    "drill": 0.2,
+    "layers": [
+     "TOP",
+     "BOTTOM"
+    ],
+    "in_window_0p7": true,
+    "family": "DDR4_ODT0",
+    "gnd": false
+   },
+   {
+    "net": "DDR4_CS0N_B",
+    "x": 132.788,
+    "y": -77.62,
+    "pad": 0.4,
+    "drill": 0.2,
+    "layers": [
+     "TOP",
+     "BOTTOM"
+    ],
+    "in_window_0p7": true,
+    "family": "DDR4_CS0N",
+    "gnd": false
+   },
+   {
+    "net": "DDR4_CS0N_A",
+    "x": 132.852,
+    "y": -80.12,
+    "pad": 0.4,
+    "drill": 0.2,
+    "layers": [
+     "TOP",
+     "BOTTOM"
+    ],
+    "in_window_0p7": true,
+    "family": "DDR4_CS0N",
+    "gnd": false
+   },
+   {
+    "net": "DDR4_CLKP_A",
+    "x": 130.012,
+    "y": -78.761,
+    "pad": 0.4,
+    "drill": 0.2,
+    "layers": [
+     "TOP",
+     "BOTTOM"
+    ],
+    "in_window_0p7": true,
+    "family": "DDR4_CLKP",
+    "gnd": false
+   },
+   {
+    "net": "DDR4_ODT0_B",
+    "x": 130.835,
+    "y": -75.847,
+    "pad": 0.4,
+    "drill": 0.2,
+    "layers": [
+     "TOP",
+     "BOTTOM"
+    ],
+    "in_window_0p7": true,
+    "family": "DDR4_ODT0",
+    "gnd": false
+   },
+   {
+    "net": "DDR4_BG1/VSS",
+    "x": 133.304,
+    "y": -80.963,
+    "pad": 0.4,
+    "drill": 0.2,
+    "layers": [
+     "TOP",
+     "BOTTOM"
+    ],
+    "in_window_0p7": true,
+    "family": null,
+    "gnd": false
+   },
+   {
+    "net": "GND",
+    "x": 127.194,
+    "y": -73.52,
+    "pad": 0.4,
+    "drill": 0.2,
+    "layers": [
+     "TOP",
+     "BOTTOM"
+    ],
+    "in_window_0p7": false,
+    "family": null,
+    "gnd": true
+   },
+   {
+    "net": "GND",
+    "x": 129.138,
+    "y": -72.97,
+    "pad": 0.4,
+    "drill": 0.2,
+    "layers": [
+     "TOP",
+     "BOTTOM"
+    ],
+    "in_window_0p7": false,
+    "family": null,
+    "gnd": true
+   },
+   {
+    "net": "GND",
+    "x": 129.388,
+    "y": -77.401,
+    "pad": 0.4,
+    "drill": 0.2,
+    "layers": [
+     "TOP",
+     "BOTTOM"
+    ],
+    "in_window_0p7": true,
+    "family": null,
+    "gnd": true
+   },
+   {
+    "net": "GND",
+    "x": 128.188,
+    "y": -77.401,
+    "pad": 0.4,
+    "drill": 0.2,
+    "layers": [
+     "TOP",
+     "BOTTOM"
+    ],
+    "in_window_0p7": true,
+    "family": null,
+    "gnd": true
+   },
+   {
+    "net": "GND",
+    "x": 127.364,
+    "y": -78.701,
+    "pad": 0.4,
+    "drill": 0.2,
+    "layers": [
+     "TOP",
+     "BOTTOM"
+    ],
+    "in_window_0p7": false,
+    "family": null,
+    "gnd": true
+   },
+   {
+    "net": "GND",
+    "x": 130.788,
+    "y": -77.12,
+    "pad": 0.4,
+    "drill": 0.2,
+    "layers": [
+     "TOP",
+     "BOTTOM"
+    ],
+    "in_window_0p7": true,
+    "family": null,
+    "gnd": true
+   },
+   {
+    "net": "GND",
+    "x": 129.043,
+    "y": -74.775,
+    "pad": 0.4,
+    "drill": 0.2,
+    "layers": [
+     "TOP",
+     "BOTTOM"
+    ],
+    "in_window_0p7": true,
+    "family": null,
+    "gnd": true
+   },
+   {
+    "net": "GND",
+    "x": 132.734,
+    "y": -82.66,
+    "pad": 0.4,
+    "drill": 0.2,
+    "layers": [
+     "TOP",
+     "BOTTOM"
+    ],
+    "in_window_0p7": false,
+    "family": null,
+    "gnd": true
+   },
+   {
+    "net": "GND",
+    "x": 128.188,
+    "y": -78.971,
+    "pad": 0.4,
+    "drill": 0.2,
+    "layers": [
+     "TOP",
+     "BOTTOM"
+    ],
+    "in_window_0p7": true,
+    "family": null,
+    "gnd": true
+   },
+   {
+    "net": "GND",
+    "x": 129.362,
+    "y": -79.02,
+    "pad": 0.4,
+    "drill": 0.2,
+    "layers": [
+     "TOP",
+     "BOTTOM"
+    ],
+    "in_window_0p7": true,
+    "family": null,
+    "gnd": true
+   },
+   {
+    "net": "GND",
+    "x": 130.488,
+    "y": -73.064,
+    "pad": 0.4,
+    "drill": 0.2,
+    "layers": [
+     "TOP",
+     "BOTTOM"
+    ],
+    "in_window_0p7": false,
+    "family": null,
+    "gnd": true
+   },
+   {
+    "net": "GND",
+    "x": 131.185,
+    "y": -78.426,
+    "pad": 0.4,
+    "drill": 0.2,
+    "layers": [
+     "TOP",
+     "BOTTOM"
+    ],
+    "in_window_0p7": true,
+    "family": null,
+    "gnd": true
+   },
+   {
+    "net": "GND",
+    "x": 127.188,
+    "y": -77.62,
+    "pad": 0.4,
+    "drill": 0.2,
+    "layers": [
+     "TOP",
+     "BOTTOM"
+    ],
+    "in_window_0p7": false,
+    "family": null,
+    "gnd": true
+   },
+   {
+    "net": "GND",
+    "x": 126.788,
+    "y": -81.52,
+    "pad": 0.4,
+    "drill": 0.2,
+    "layers": [
+     "TOP",
+     "BOTTOM"
+    ],
+    "in_window_0p7": false,
+    "family": null,
+    "gnd": true
+   },
+   {
+    "net": "GND",
+    "x": 143.888,
+    "y": -76.22,
+    "pad": 0.4,
+    "drill": 0.2,
+    "layers": [
+     "TOP",
+     "BOTTOM"
+    ],
+    "in_window_0p7": false,
+    "family": null,
+    "gnd": true
+   },
+   {
+    "net": "GND",
+    "x": 130.288,
+    "y": -76.146,
+    "pad": 0.4,
+    "drill": 0.2,
+    "layers": [
+     "TOP",
+     "BOTTOM"
+    ],
+    "in_window_0p7": true,
+    "family": null,
+    "gnd": true
+   },
+   {
+    "net": "GND",
+    "x": 132.445,
+    "y": -77.007,
+    "pad": 0.4,
+    "drill": 0.2,
+    "layers": [
+     "TOP",
+     "BOTTOM"
+    ],
+    "in_window_0p7": true,
+    "family": null,
+    "gnd": true
+   },
+   {
+    "net": "GND",
+    "x": 131.845,
+    "y": -79.22,
+    "pad": 0.4,
+    "drill": 0.2,
+    "layers": [
+     "TOP",
+     "BOTTOM"
+    ],
+    "in_window_0p7": true,
+    "family": null,
+    "gnd": true
+   },
+   {
+    "net": "GND",
+    "x": 133.303,
+    "y": -78.42,
+    "pad": 0.4,
+    "drill": 0.2,
+    "layers": [
+     "TOP",
+     "BOTTOM"
+    ],
+    "in_window_0p7": true,
+    "family": null,
+    "gnd": true
+   },
+   {
+    "net": "GND",
+    "x": 133.303,
+    "y": -79.446,
+    "pad": 0.4,
+    "drill": 0.2,
+    "layers": [
+     "TOP",
+     "BOTTOM"
+    ],
+    "in_window_0p7": true,
+    "family": null,
+    "gnd": true
+   },
+   {
+    "net": "GND",
+    "x": 131.498,
+    "y": -72.62,
+    "pad": 0.4,
+    "drill": 0.2,
+    "layers": [
+     "TOP",
+     "BOTTOM"
+    ],
+    "in_window_0p7": false,
+    "family": null,
+    "gnd": true
+   },
+   {
+    "net": "GND",
+    "x": 127.193,
+    "y": -72.525,
+    "pad": 0.4,
+    "drill": 0.2,
+    "layers": [
+     "TOP",
+     "BOTTOM"
+    ],
+    "in_window_0p7": false,
+    "family": null,
+    "gnd": true
+   },
+   {
+    "net": "GND",
+    "x": 141.788,
+    "y": -79.32,
+    "pad": 0.4,
+    "drill": 0.2,
+    "layers": [
+     "TOP",
+     "BOTTOM"
+    ],
+    "in_window_0p7": true,
+    "family": null,
+    "gnd": true
+   },
+   {
+    "net": "GND",
+    "x": 141.788,
+    "y": -77.42,
+    "pad": 0.4,
+    "drill": 0.2,
+    "layers": [
+     "TOP",
+     "BOTTOM"
+    ],
+    "in_window_0p7": true,
+    "family": null,
+    "gnd": true
+   },
+   {
+    "net": "GND",
+    "x": 141.735,
+    "y": -75.288,
+    "pad": 0.4,
+    "drill": 0.2,
+    "layers": [
+     "TOP",
+     "BOTTOM"
+    ],
+    "in_window_0p7": true,
+    "family": null,
+    "gnd": true
+   },
+   {
+    "net": "GND",
+    "x": 138.621,
+    "y": -78.346,
+    "pad": 0.4,
+    "drill": 0.2,
+    "layers": [
+     "TOP",
+     "BOTTOM"
+    ],
+    "in_window_0p7": true,
+    "family": null,
+    "gnd": true
+   },
+   {
+    "net": "GND",
+    "x": 139.988,
+    "y": -75.522,
+    "pad": 0.4,
+    "drill": 0.2,
+    "layers": [
+     "TOP",
+     "BOTTOM"
+    ],
+    "in_window_0p7": true,
+    "family": null,
+    "gnd": true
+   },
+   {
+    "net": "GND",
+    "x": 139.374,
+    "y": -76.701,
+    "pad": 0.4,
+    "drill": 0.2,
+    "layers": [
+     "TOP",
+     "BOTTOM"
+    ],
+    "in_window_0p7": true,
+    "family": null,
+    "gnd": true
+   },
+   {
+    "net": "GND",
+    "x": 138.621,
+    "y": -79.498,
+    "pad": 0.4,
+    "drill": 0.2,
+    "layers": [
+     "TOP",
+     "BOTTOM"
+    ],
+    "in_window_0p7": true,
+    "family": null,
+    "gnd": true
+   },
+   {
+    "net": "GND",
+    "x": 137.588,
+    "y": -76.525,
+    "pad": 0.4,
+    "drill": 0.2,
+    "layers": [
+     "TOP",
+     "BOTTOM"
+    ],
+    "in_window_0p7": true,
+    "family": null,
+    "gnd": true
+   },
+   {
+    "net": "GND",
+    "x": 137.204,
+    "y": -75.081,
+    "pad": 0.4,
+    "drill": 0.2,
+    "layers": [
+     "TOP",
+     "BOTTOM"
+    ],
+    "in_window_0p7": true,
+    "family": null,
+    "gnd": true
+   },
+   {
+    "net": "GND",
+    "x": 136.588,
+    "y": -77.82,
+    "pad": 0.4,
+    "drill": 0.2,
+    "layers": [
+     "TOP",
+     "BOTTOM"
+    ],
+    "in_window_0p7": true,
+    "family": null,
+    "gnd": true
+   },
+   {
+    "net": "GND",
+    "x": 135.888,
+    "y": -78.42,
+    "pad": 0.4,
+    "drill": 0.2,
+    "layers": [
+     "TOP",
+     "BOTTOM"
+    ],
+    "in_window_0p7": true,
+    "family": null,
+    "gnd": true
+   },
+   {
+    "net": "GND",
+    "x": 134.388,
+    "y": -77.52,
+    "pad": 0.4,
+    "drill": 0.2,
+    "layers": [
+     "TOP",
+     "BOTTOM"
+    ],
+    "in_window_0p7": true,
+    "family": null,
+    "gnd": true
+   },
+   {
+    "net": "GND",
+    "x": 135.016,
+    "y": -76.056,
+    "pad": 0.4,
+    "drill": 0.2,
+    "layers": [
+     "TOP",
+     "BOTTOM"
+    ],
+    "in_window_0p7": true,
+    "family": null,
+    "gnd": true
+   },
+   {
+    "net": "GND",
+    "x": 135.145,
+    "y": -79.32,
+    "pad": 0.4,
+    "drill": 0.2,
+    "layers": [
+     "TOP",
+     "BOTTOM"
+    ],
+    "in_window_0p7": true,
+    "family": null,
+    "gnd": true
+   },
+   {
+    "net": "GND",
+    "x": 141.088,
+    "y": -73.02,
+    "pad": 0.4,
+    "drill": 0.2,
+    "layers": [
+     "TOP",
+     "BOTTOM"
+    ],
+    "in_window_0p7": false,
+    "family": null,
+    "gnd": true
+   },
+   {
+    "net": "GND",
+    "x": 141.688,
+    "y": -73.62,
+    "pad": 0.4,
+    "drill": 0.2,
+    "layers": [
+     "TOP",
+     "BOTTOM"
+    ],
+    "in_window_0p7": false,
+    "family": null,
+    "gnd": true
+   },
+   {
+    "net": "GND",
+    "x": 140.688,
+    "y": -73.72,
+    "pad": 0.4,
+    "drill": 0.2,
+    "layers": [
+     "TOP",
+     "BOTTOM"
+    ],
+    "in_window_0p7": false,
+    "family": null,
+    "gnd": true
+   },
+   {
+    "net": "GND",
+    "x": 139.213,
+    "y": -73.671,
+    "pad": 0.4,
+    "drill": 0.2,
+    "layers": [
+     "TOP",
+     "BOTTOM"
+    ],
+    "in_window_0p7": false,
+    "family": null,
+    "gnd": true
+   },
+   {
+    "net": "GND",
+    "x": 136.813,
+    "y": -73.02,
+    "pad": 0.4,
+    "drill": 0.2,
+    "layers": [
+     "TOP",
+     "BOTTOM"
+    ],
+    "in_window_0p7": false,
+    "family": null,
+    "gnd": true
+   },
+   {
+    "net": "GND",
+    "x": 135.497,
+    "y": -72.62,
+    "pad": 0.4,
+    "drill": 0.2,
+    "layers": [
+     "TOP",
+     "BOTTOM"
+    ],
+    "in_window_0p7": false,
+    "family": null,
+    "gnd": true
+   },
+   {
+    "net": "GND",
+    "x": 143.388,
+    "y": -78.22,
+    "pad": 0.4,
+    "drill": 0.2,
+    "layers": [
+     "TOP",
+     "BOTTOM"
+    ],
+    "in_window_0p7": false,
+    "family": null,
+    "gnd": true
+   },
+   {
+    "net": "GND",
+    "x": 143.888,
+    "y": -78.22,
+    "pad": 0.4,
+    "drill": 0.2,
+    "layers": [
+     "TOP",
+     "BOTTOM"
+    ],
+    "in_window_0p7": false,
+    "family": null,
+    "gnd": true
+   },
+   {
+    "net": "GND",
+    "x": 143.088,
+    "y": -72.42,
+    "pad": 0.4,
+    "drill": 0.2,
+    "layers": [
+     "TOP",
+     "BOTTOM"
+    ],
+    "in_window_0p7": false,
+    "family": null,
+    "gnd": true
+   },
+   {
+    "net": "GND",
+    "x": 130.693,
+    "y": -83.119,
+    "pad": 0.4,
+    "drill": 0.2,
+    "layers": [
+     "TOP",
+     "BOTTOM"
+    ],
+    "in_window_0p7": false,
+    "family": null,
+    "gnd": true
+   },
+   {
+    "net": "GND",
+    "x": 141.188,
+    "y": -83.02,
+    "pad": 0.4,
+    "drill": 0.2,
+    "layers": [
+     "TOP",
+     "BOTTOM"
+    ],
+    "in_window_0p7": false,
+    "family": null,
+    "gnd": true
+   },
+   {
+    "net": "GND",
+    "x": 141.788,
+    "y": -81.62,
+    "pad": 0.4,
+    "drill": 0.2,
+    "layers": [
+     "TOP",
+     "BOTTOM"
+    ],
+    "in_window_0p7": false,
+    "family": null,
+    "gnd": true
+   },
+   {
+    "net": "GND",
+    "x": 140.788,
+    "y": -81.62,
+    "pad": 0.4,
+    "drill": 0.2,
+    "layers": [
+     "TOP",
+     "BOTTOM"
+    ],
+    "in_window_0p7": false,
+    "family": null,
+    "gnd": true
+   },
+   {
+    "net": "GND",
+    "x": 139.678,
+    "y": -80.639,
+    "pad": 0.4,
+    "drill": 0.2,
+    "layers": [
+     "TOP",
+     "BOTTOM"
+    ],
+    "in_window_0p7": true,
+    "family": null,
+    "gnd": true
+   },
+   {
+    "net": "GND",
+    "x": 136.888,
+    "y": -79.976,
+    "pad": 0.4,
+    "drill": 0.2,
+    "layers": [
+     "TOP",
+     "BOTTOM"
+    ],
+    "in_window_0p7": true,
+    "family": null,
+    "gnd": true
+   },
+   {
+    "net": "GND",
+    "x": 134.688,
+    "y": -79.92,
+    "pad": 0.4,
+    "drill": 0.2,
+    "layers": [
+     "TOP",
+     "BOTTOM"
+    ],
+    "in_window_0p7": true,
+    "family": null,
+    "gnd": true
+   },
+   {
+    "net": "GND",
+    "x": 137.353,
+    "y": -82.265,
+    "pad": 0.4,
+    "drill": 0.2,
+    "layers": [
+     "TOP",
+     "BOTTOM"
+    ],
+    "in_window_0p7": false,
+    "family": null,
+    "gnd": true
+   },
+   {
+    "net": "DDR4_A12",
+    "x": 134.009,
+    "y": -79.52,
+    "pad": 0.4,
+    "drill": 0.2,
+    "layers": [
+     "TOP",
+     "BOTTOM"
+    ],
+    "in_window_0p7": true,
+    "family": "DDR4_A12",
+    "gnd": false
+   },
+   {
+    "net": "VCC_DDR",
+    "x": 128.088,
+    "y": -72.971,
+    "pad": 0.4,
+    "drill": 0.2,
+    "layers": [
+     "TOP",
+     "BOTTOM"
+    ],
+    "in_window_0p7": false,
+    "family": null,
+    "gnd": false
+   },
+   {
+    "net": "VCC_DDR",
+    "x": 130.774,
+    "y": -72.62,
+    "pad": 0.4,
+    "drill": 0.2,
+    "layers": [
+     "TOP",
+     "BOTTOM"
+    ],
+    "in_window_0p7": false,
+    "family": null,
+    "gnd": false
+   },
+   {
+    "net": "VCC_DDR",
+    "x": 133.978,
+    "y": -72.768,
+    "pad": 0.4,
+    "drill": 0.2,
+    "layers": [
+     "TOP",
+     "BOTTOM"
+    ],
+    "in_window_0p7": false,
+    "family": null,
+    "gnd": false
+   },
+   {
+    "net": "VCC_DDR",
+    "x": 132.297,
+    "y": -72.646,
+    "pad": 0.4,
+    "drill": 0.2,
+    "layers": [
+     "TOP",
+     "BOTTOM"
+    ],
+    "in_window_0p7": false,
+    "family": null,
+    "gnd": false
+   },
+   {
+    "net": "VCC_DDR",
+    "x": 138.297,
+    "y": -72.62,
+    "pad": 0.4,
+    "drill": 0.2,
+    "layers": [
+     "TOP",
+     "BOTTOM"
+    ],
+    "in_window_0p7": false,
+    "family": null,
+    "gnd": false
+   },
+   {
+    "net": "DDR4_A14_WEN",
+    "x": 132.599,
+    "y": -76.32,
+    "pad": 0.4,
+    "drill": 0.2,
+    "layers": [
+     "TOP",
+     "BOTTOM"
+    ],
+    "in_window_0p7": true,
+    "family": "DDR4_A14_WEN",
+    "gnd": false
+   },
+   {
+    "net": "DDR4_A15_CASN",
+    "x": 134.814,
+    "y": -80.546,
+    "pad": 0.4,
+    "drill": 0.2,
+    "layers": [
+     "TOP",
+     "BOTTOM"
+    ],
+    "in_window_0p7": true,
+    "family": "DDR4_A15_CASN",
+    "gnd": false
+   },
+   {
+    "net": "DDR4_A15_CASN",
+    "x": 135.497,
+    "y": -73.271,
+    "pad": 0.4,
+    "drill": 0.2,
+    "layers": [
+     "TOP",
+     "BOTTOM"
+    ],
+    "in_window_0p7": false,
+    "family": "DDR4_A15_CASN",
+    "gnd": false
+   },
+   {
+    "net": "N16851922",
+    "x": 128.697,
+    "y": -72.62,
+    "pad": 0.4,
+    "drill": 0.2,
+    "layers": [
+     "TOP",
+     "BOTTOM"
+    ],
+    "in_window_0p7": false,
+    "family": null,
+    "gnd": false
+   },
+   {
+    "net": "N09471",
+    "x": 129.498,
+    "y": -72.62,
+    "pad": 0.4,
+    "drill": 0.2,
+    "layers": [
+     "TOP",
+     "BOTTOM"
+    ],
+    "in_window_0p7": false,
+    "family": null,
+    "gnd": false
+   },
+   {
+    "net": "DDR4_CLKP",
+    "x": 128.599,
+    "y": -78.468,
+    "pad": 0.4,
+    "drill": 0.2,
+    "layers": [
+     "TOP",
+     "BOTTOM"
+    ],
+    "in_window_0p7": true,
+    "family": "DDR4_CLKP",
+    "gnd": false
+   },
+   {
+    "net": "DDR4_CLKN",
+    "x": 128.599,
+    "y": -77.915,
+    "pad": 0.4,
+    "drill": 0.2,
+    "layers": [
+     "TOP",
+     "BOTTOM"
+    ],
+    "in_window_0p7": true,
+    "family": "DDR4_CLKN",
+    "gnd": false
+   },
+   {
+    "net": "DDR4_ACTN",
+    "x": 133.657,
+    "y": -76.911,
+    "pad": 0.4,
+    "drill": 0.2,
+    "layers": [
+     "TOP",
+     "BOTTOM"
+    ],
+    "in_window_0p7": true,
+    "family": "DDR4_ACTN",
+    "gnd": false
+   },
+   {
+    "net": "DDR4_A16_RASN",
+    "x": 131.845,
+    "y": -79.925,
+    "pad": 0.4,
+    "drill": 0.2,
+    "layers": [
+     "TOP",
+     "BOTTOM"
+    ],
+    "in_window_0p7": true,
+    "family": "DDR4_A16_RASN",
+    "gnd": false
+   },
+   {
+    "net": "DDR4_BG0",
+    "x": 136.035,
+    "y": -82.42,
+    "pad": 0.4,
+    "drill": 0.2,
+    "layers": [
+     "TOP",
+     "BOTTOM"
+    ],
+    "in_window_0p7": false,
+    "family": "DDR4_BG0",
+    "gnd": false
+   },
+   {
+    "net": "DDR4_BG0",
+    "x": 135.116,
+    "y": -75.42,
+    "pad": 0.4,
+    "drill": 0.2,
+    "layers": [
+     "TOP",
+     "BOTTOM"
+    ],
+    "in_window_0p7": true,
+    "family": "DDR4_BG0",
+    "gnd": false
+   },
+   {
+    "net": "DDR4_A10",
+    "x": 134.386,
+    "y": -76.853,
+    "pad": 0.4,
+    "drill": 0.2,
+    "layers": [
+     "TOP",
+     "BOTTOM"
+    ],
+    "in_window_0p7": true,
+    "family": "DDR4_A10",
+    "gnd": false
+   },
+   {
+    "net": "DDR4_BA0",
+    "x": 137.449,
+    "y": -81.72,
+    "pad": 0.4,
+    "drill": 0.2,
+    "layers": [
+     "TOP",
+     "BOTTOM"
+    ],
+    "in_window_0p7": false,
+    "family": "DDR4_BA0",
+    "gnd": false
+   },
+   {
+    "net": "DDR4_BA0",
+    "x": 137.203,
+    "y": -75.795,
+    "pad": 0.4,
+    "drill": 0.2,
+    "layers": [
+     "TOP",
+     "BOTTOM"
+    ],
+    "in_window_0p7": true,
+    "family": "DDR4_BA0",
+    "gnd": false
+   },
+   {
+    "net": "DDR4_A4",
+    "x": 136.188,
+    "y": -77.32,
+    "pad": 0.4,
+    "drill": 0.2,
+    "layers": [
+     "TOP",
+     "BOTTOM"
+    ],
+    "in_window_0p7": true,
+    "family": "DDR4_A4",
+    "gnd": false
+   },
+   {
+    "net": "DDR4_A3",
+    "x": 135.888,
+    "y": -79.32,
+    "pad": 0.4,
+    "drill": 0.2,
+    "layers": [
+     "TOP",
+     "BOTTOM"
+    ],
+    "in_window_0p7": true,
+    "family": "DDR4_A3",
+    "gnd": false
+   },
+   {
+    "net": "DDR4_BA1",
+    "x": 136.535,
+    "y": -80.501,
+    "pad": 0.4,
+    "drill": 0.2,
+    "layers": [
+     "TOP",
+     "BOTTOM"
+    ],
+    "in_window_0p7": true,
+    "family": "DDR4_BA1",
+    "gnd": false
+   },
+   {
+    "net": "DDR4_BA1",
+    "x": 136.812,
+    "y": -73.544,
+    "pad": 0.4,
+    "drill": 0.2,
+    "layers": [
+     "TOP",
+     "BOTTOM"
+    ],
+    "in_window_0p7": false,
+    "family": "DDR4_BA1",
+    "gnd": false
+   },
+   {
+    "net": "DDR4_A6",
+    "x": 139.391,
+    "y": -82.924,
+    "pad": 0.4,
+    "drill": 0.2,
+    "layers": [
+     "TOP",
+     "BOTTOM"
+    ],
+    "in_window_0p7": false,
+    "family": "DDR4_A6",
+    "gnd": false
+   },
+   {
+    "net": "DDR4_A6",
+    "x": 139.388,
+    "y": -76.02,
+    "pad": 0.4,
+    "drill": 0.2,
+    "layers": [
+     "TOP",
+     "BOTTOM"
+    ],
+    "in_window_0p7": true,
+    "family": "DDR4_A6",
+    "gnd": false
+   },
+   {
+    "net": "DDR4_A0",
+    "x": 137.964,
+    "y": -77.047,
+    "pad": 0.4,
+    "drill": 0.2,
+    "layers": [
+     "TOP",
+     "BOTTOM"
+    ],
+    "in_window_0p7": true,
+    "family": "DDR4_A0",
+    "gnd": false
+   },
+   {
+    "net": "DDR4_A1",
+    "x": 137.612,
+    "y": -78.72,
+    "pad": 0.4,
+    "drill": 0.2,
+    "layers": [
+     "TOP",
+     "BOTTOM"
+    ],
+    "in_window_0p7": true,
+    "family": "DDR4_A1",
+    "gnd": false
+   },
+   {
+    "net": "DDR4_A5",
+    "x": 139.021,
+    "y": -80.22,
+    "pad": 0.4,
+    "drill": 0.2,
+    "layers": [
+     "TOP",
+     "BOTTOM"
+    ],
+    "in_window_0p7": true,
+    "family": "DDR4_A5",
+    "gnd": false
+   },
+   {
+    "net": "DDR4_A5",
+    "x": 139.192,
+    "y": -74.224,
+    "pad": 0.4,
+    "drill": 0.2,
+    "layers": [
+     "TOP",
+     "BOTTOM"
+    ],
+    "in_window_0p7": true,
+    "family": "DDR4_A5",
+    "gnd": false
+   },
+   {
+    "net": "DDR4_A8",
+    "x": 141.258,
+    "y": -75.82,
+    "pad": 0.4,
+    "drill": 0.2,
+    "layers": [
+     "TOP",
+     "BOTTOM"
+    ],
+    "in_window_0p7": true,
+    "family": "DDR4_A8",
+    "gnd": false
+   },
+   {
+    "net": "DDR4_A2",
+    "x": 138.669,
+    "y": -76.463,
+    "pad": 0.4,
+    "drill": 0.2,
+    "layers": [
+     "TOP",
+     "BOTTOM"
+    ],
+    "in_window_0p7": true,
+    "family": "DDR4_A2",
+    "gnd": false
+   },
+   {
+    "net": "DDR4_A9",
+    "x": 138.316,
+    "y": -78.92,
+    "pad": 0.4,
+    "drill": 0.2,
+    "layers": [
+     "TOP",
+     "BOTTOM"
+    ],
+    "in_window_0p7": true,
+    "family": "DDR4_A9",
+    "gnd": false
+   },
+   {
+    "net": "DDR4_A7",
+    "x": 140.906,
+    "y": -80.92,
+    "pad": 0.4,
+    "drill": 0.2,
+    "layers": [
+     "TOP",
+     "BOTTOM"
+    ],
+    "in_window_0p7": true,
+    "family": "DDR4_A7",
+    "gnd": false
+   },
+   {
+    "net": "DDR4_A7",
+    "x": 140.888,
+    "y": -74.42,
+    "pad": 0.4,
+    "drill": 0.2,
+    "layers": [
+     "TOP",
+     "BOTTOM"
+    ],
+    "in_window_0p7": true,
+    "family": "DDR4_A7",
+    "gnd": false
+   },
+   {
+    "net": "DDR4_A11",
+    "x": 140.488,
+    "y": -76.22,
+    "pad": 0.4,
+    "drill": 0.2,
+    "layers": [
+     "TOP",
+     "BOTTOM"
+    ],
+    "in_window_0p7": true,
+    "family": "DDR4_A11",
+    "gnd": false
+   },
+   {
+    "net": "DDR4_A13",
+    "x": 140.031,
+    "y": -80.063,
+    "pad": 0.4,
+    "drill": 0.2,
+    "layers": [
+     "TOP",
+     "BOTTOM"
+    ],
+    "in_window_0p7": true,
+    "family": "DDR4_A13",
+    "gnd": false
+   },
+   {
+    "net": "DDR4_A13",
+    "x": 139.923,
+    "y": -72.62,
+    "pad": 0.4,
+    "drill": 0.2,
+    "layers": [
+     "TOP",
+     "BOTTOM"
+    ],
+    "in_window_0p7": false,
+    "family": "DDR4_A13",
+    "gnd": false
+   },
+   {
+    "net": "VREF_DDR4_CA",
+    "x": 133.497,
+    "y": -82.9,
+    "pad": 0.4,
+    "drill": 0.2,
+    "layers": [
+     "TOP",
+     "BOTTOM"
+    ],
+    "in_window_0p7": false,
+    "family": null,
+    "gnd": false
+   },
+   {
+    "net": "DDR4_RESETN",
+    "x": 141.688,
+    "y": -74.62,
+    "pad": 0.4,
+    "drill": 0.2,
+    "layers": [
+     "TOP",
+     "BOTTOM"
+    ],
+    "in_window_0p7": true,
+    "family": "DDR4_RESETN",
+    "gnd": false
+   },
+   {
+    "net": "VCC25_DDR",
+    "x": 137.497,
+    "y": -72.62,
+    "pad": 0.4,
+    "drill": 0.2,
+    "layers": [
+     "TOP",
+     "BOTTOM"
+    ],
+    "in_window_0p7": false,
+    "family": null,
+    "gnd": false
+   }
+  ],
+  "gnd_nearest_to_branch_point": {
+   "DDR4_A0": 0.643,
+   "DDR4_A1": 1.076,
+   "DDR4_A10": 0.667,
+   "DDR4_A11": 0.859,
+   "DDR4_A12": 0.71,
+   "DDR4_A13": 0.675,
+   "DDR4_A14_WEN": 0.704,
+   "DDR4_A15_CASN": 0.638,
+   "DDR4_A16_RASN": 0.705,
+   "DDR4_A2": 0.744,
+   "DDR4_A3": 0.743,
+   "DDR4_A4": 0.64,
+   "DDR4_A5": 0.779,
+   "DDR4_A6": 0.681,
+   "DDR4_A7": 0.71,
+   "DDR4_A8": 0.715,
+   "DDR4_A9": 0.65,
+   "DDR4_ACTN": 0.951,
+   "DDR4_BA0": 0.714,
+   "DDR4_BA1": 0.632,
+   "DDR4_BG0": 0.644,
+   "DDR4_CKE": 0.578,
+   "DDR4_CLKN": 0.658,
+   "DDR4_CLKP": 0.65,
+   "DDR4_CS0N": 0.502,
+   "DDR4_ODT0": 0.638,
+   "DDR4_RESETN": 0.67
+  },
+  "counts_in_window": {
+   "gnd_vias": 29,
+   "family_vias": 36,
+   "branch_point_vias": 24,
+   "other_net_vias": 1,
+   "other_nets": [
+    "DDR4_BG1/VSS"
+   ],
+   "ratio_gnd_to_branch_vias": 1.208
+  },
+  "other_net_tracks_in_window_mm": {
+   "DDR4_BG1/VSS": {
+    "BOTTOM": 0.495,
+    "L4-S1": 8.163
+   },
+   "GND": {
+    "TOP": 15.85,
+    "BOTTOM": 5.741,
+    "L4-S1": 5.714
+   },
+   "DDR4_DQL5_B": {
+    "TOP": 1.265
+   },
+   "DDR4_DQL7_B": {
+    "TOP": 2.401
+   },
+   "DDR4_DQL3_B": {
+    "TOP": 0.496
+   },
+   "VCC25_DDR": {
+    "TOP": 3.249
+   }
+  },
+  "other_net_tracks_in_bbox_mm": {
+   "DDR4_BG1/VSS": {
+    "BOTTOM": 0.43,
+    "L4-S1": 6.644
+   },
+   "GND": {
+    "TOP": 7.905,
+    "BOTTOM": 3.63
+   },
+   "DDR4_DQL7_B": {
+    "TOP": 0.145
+   }
+  },
+  "part_pad_to_via": {
+   "C3302.1": {
+    "net": "DDR4_RESETN",
+    "nearest_family_vias": [
+     [
+      8.058,
+      "DDR4_RESETN",
+      141.688,
+      -74.62
+     ],
+     [
+      25.076,
+      "DDR4_RESETN",
+      115.603,
+      -77.162
+     ]
+    ]
+   },
+   "C3301.1": {
+    "net": "DDR4_RESETN",
+    "nearest_family_vias": [
+     [
+      9.401,
+      "DDR4_RESETN",
+      141.688,
+      -74.62
+     ],
+     [
+      26.8,
+      "DDR4_RESETN",
+      115.603,
+      -77.162
+     ]
+    ]
+   },
+   "R3311.1": {
+    "net": "DDR4_ODT0",
+    "nearest_family_vias": [
+     [
+      0.694,
+      "DDR4_ODT0_B",
+      130.835,
+      -75.847
+     ],
+     [
+      1.421,
+      "DDR4_ODT0_A",
+      131.286,
+      -77.796
+     ]
+    ]
+   },
+   "R3311.2": {
+    "net": "DDR4_ODT0_B",
+    "nearest_family_vias": [
+     [
+      0.451,
+      "DDR4_ODT0_B",
+      130.835,
+      -75.847
+     ],
+     [
+      1.971,
+      "DDR4_ODT0_A",
+      131.286,
+      -77.796
+     ]
+    ]
+   },
+   "R3310.1": {
+    "net": "DDR4_ODT0_A",
+    "nearest_family_vias": [
+     [
+      0.318,
+      "DDR4_ODT0_A",
+      131.286,
+      -77.796
+     ],
+     [
+      1.692,
+      "DDR4_ODT0_B",
+      130.835,
+      -75.847
+     ]
+    ]
+   },
+   "R3310.2": {
+    "net": "DDR4_ODT0",
+    "nearest_family_vias": [
+     [
+      0.868,
+      "DDR4_ODT0_A",
+      131.286,
+      -77.796
+     ],
+     [
+      1.171,
+      "DDR4_ODT0_B",
+      130.835,
+      -75.847
+     ]
+    ]
+   },
+   "R3309.1": {
+    "net": "DDR4_CS0N",
+    "nearest_family_vias": [
+     [
+      1.055,
+      "DDR4_CS0N_B",
+      132.788,
+      -77.62
+     ],
+     [
+      1.447,
+      "DDR4_CS0N_A",
+      132.852,
+      -80.12
+     ]
+    ]
+   },
+   "R3309.2": {
+    "net": "DDR4_CS0N_B",
+    "nearest_family_vias": [
+     [
+      0.507,
+      "DDR4_CS0N_B",
+      132.788,
+      -77.62
+     ],
+     [
+      1.997,
+      "DDR4_CS0N_A",
+      132.852,
+      -80.12
+     ]
+    ]
+   },
+   "R3308.1": {
+    "net": "DDR4_CS0N_A",
+    "nearest_family_vias": [
+     [
+      0.344,
+      "DDR4_CS0N_A",
+      132.852,
+      -80.12
+     ],
+     [
+      2.157,
+      "DDR4_CS0N_B",
+      132.788,
+      -77.62
+     ]
+    ]
+   },
+   "R3308.2": {
+    "net": "DDR4_CS0N",
+    "nearest_family_vias": [
+     [
+      0.894,
+      "DDR4_CS0N_A",
+      132.852,
+      -80.12
+     ],
+     [
+      1.607,
+      "DDR4_CS0N_B",
+      132.788,
+      -77.62
+     ]
+    ]
+   },
+   "R3307.1": {
+    "net": "DDR4_CKE",
+    "nearest_family_vias": [
+     [
+      0.767,
+      "DDR4_CKE_B",
+      131.894,
+      -75.888
+     ],
+     [
+      1.674,
+      "DDR4_CKE_A",
+      131.895,
+      -78.32
+     ]
+    ]
+   },
+   "R3307.2": {
+    "net": "DDR4_CKE_B",
+    "nearest_family_vias": [
+     [
+      0.232,
+      "DDR4_CKE_B",
+      131.894,
+      -75.888
+     ],
+     [
+      2.223,
+      "DDR4_CKE_A",
+      131.895,
+      -78.32
+     ]
+    ]
+   },
+   "R3306.1": {
+    "net": "DDR4_CKE_A",
+    "nearest_family_vias": [
+     [
+      0.576,
+      "DDR4_CKE_A",
+      131.895,
+      -78.32
+     ],
+     [
+      1.866,
+      "DDR4_CKE_B",
+      131.894,
+      -75.888
+     ]
+    ]
+   },
+   "R3306.2": {
+    "net": "DDR4_CKE",
+    "nearest_family_vias": [
+     [
+      1.123,
+      "DDR4_CKE_A",
+      131.895,
+      -78.32
+     ],
+     [
+      1.317,
+      "DDR4_CKE_B",
+      131.894,
+      -75.888
+     ]
+    ]
+   },
+   "R3305.1": {
+    "net": "DDR4_CLKN",
+    "nearest_family_vias": [
+     [
+      0.33,
+      "DDR4_CLKN",
+      128.599,
+      -77.915
+     ],
+     [
+      1.095,
+      "DDR4_CLKN_B",
+      130.012,
+      -77.727
+     ]
+    ]
+   },
+   "R3305.2": {
+    "net": "DDR4_CLKN_B",
+    "nearest_family_vias": [
+     [
+      0.556,
+      "DDR4_CLKN_B",
+      130.012,
+      -77.727
+     ],
+     [
+      0.879,
+      "DDR4_CLKN",
+      128.599,
+      -77.915
+     ]
+    ]
+   },
+   "R3304.1": {
+    "net": "DDR4_CLKN_A",
+    "nearest_family_vias": [
+     [
+      0.556,
+      "DDR4_CLKN_B",
+      130.012,
+      -77.727
+     ],
+     [
+      0.879,
+      "DDR4_CLKN",
+      128.599,
+      -77.915
+     ]
+    ]
+   },
+   "R3304.2": {
+    "net": "DDR4_CLKN",
+    "nearest_family_vias": [
+     [
+      0.33,
+      "DDR4_CLKN",
+      128.599,
+      -77.915
+     ],
+     [
+      1.095,
+      "DDR4_CLKN_B",
+      130.012,
+      -77.727
+     ]
+    ]
+   },
+   "R3301.1": {
+    "net": "DDR4_CLKN",
+    "nearest_family_vias": [
+     [
+      0.261,
+      "DDR4_CLKN",
+      128.599,
+      -77.915
+     ],
+     [
+      1.679,
+      "DDR4_CLKN_B",
+      130.012,
+      -77.727
+     ]
+    ]
+   },
+   "R3303.1": {
+    "net": "DDR4_CLKP",
+    "nearest_family_vias": [
+     [
+      0.33,
+      "DDR4_CLKP",
+      128.599,
+      -78.468
+     ],
+     [
+      1.115,
+      "DDR4_CLKP_A",
+      130.012,
+      -78.761
+     ]
+    ]
+   },
+   "R3303.2": {
+    "net": "DDR4_CLKP_B",
+    "nearest_family_vias": [
+     [
+      0.593,
+      "DDR4_CLKP_A",
+      130.012,
+      -78.761
+     ],
+     [
+      0.879,
+      "DDR4_CLKP",
+      128.599,
+      -78.468
+     ]
+    ]
+   },
+   "R3302.1": {
+    "net": "DDR4_CLKP_A",
+    "nearest_family_vias": [
+     [
+      0.593,
+      "DDR4_CLKP_A",
+      130.012,
+      -78.761
+     ],
+     [
+      0.879,
+      "DDR4_CLKP",
+      128.599,
+      -78.468
+     ]
+    ]
+   },
+   "R3302.2": {
+    "net": "DDR4_CLKP",
+    "nearest_family_vias": [
+     [
+      0.33,
+      "DDR4_CLKP",
+      128.599,
+      -78.468
+     ],
+     [
+      1.115,
+      "DDR4_CLKP_A",
+      130.012,
+      -78.761
+     ]
+    ]
+   },
+   "R3300.1": {
+    "net": "DDR4_CLKP",
+    "nearest_family_vias": [
+     [
+      0.261,
+      "DDR4_CLKP",
+      128.599,
+      -78.468
+     ],
+     [
+      1.691,
+      "DDR4_CLKP_A",
+      130.012,
+      -78.761
+     ]
+    ]
+   },
+   "R3320.2": {
+    "net": "DDR4_BG1",
+    "nearest_family_vias": [
+     [
+      12.695,
+      "DDR4_BG1",
+      119.28,
+      -79.92
+     ]
+    ]
+   }
+  }
+ },
+ "parts": {
+  "C3302": {
+   "value": "1nF",
+   "package": "",
+   "side": "TOP",
+   "pos_board": [
+    140.1,
+    -82.97
+   ],
+   "rot": 90.0,
+   "pads": [
+    {
+     "num": "1",
+     "net": "DDR4_RESETN",
+     "pos_board": [
+      140.1,
+      -82.52
+     ],
+     "size": [
+      0.55,
+      0.55
+     ]
+    },
+    {
+     "num": "2",
+     "net": "GND",
+     "pos_board": [
+      140.1,
+      -83.42
+     ],
+     "size": [
+      0.55,
+      0.55
+     ]
+    }
+   ],
+   "families": [
+    "DDR4_RESETN"
+   ]
+  },
+  "C3301": {
+   "value": "1nF",
+   "package": "",
+   "side": "TOP",
+   "pos_board": [
+    139.7,
+    -65.882
+   ],
+   "rot": 90.0,
+   "pads": [
+    {
+     "num": "1",
+     "net": "DDR4_RESETN",
+     "pos_board": [
+      139.7,
+      -65.432
+     ],
+     "size": [
+      0.55,
+      0.55
+     ]
+    },
+    {
+     "num": "2",
+     "net": "GND",
+     "pos_board": [
+      139.7,
+      -66.332
+     ],
+     "size": [
+      0.55,
+      0.55
+     ]
+    }
+   ],
+   "families": [
+    "DDR4_RESETN"
+   ]
+  },
+  "R3311": {
+   "value": "0R",
+   "package": "",
+   "side": "BOTTOM",
+   "pos_board": [
+    131.285,
+    -76.1
+   ],
+   "rot": -90.0,
+   "pads": [
+    {
+     "num": "1",
+     "net": "DDR4_ODT0",
+     "pos_board": [
+      131.285,
+      -76.375
+     ],
+     "size": [
+      0.25,
+      0.3
+     ]
+    },
+    {
+     "num": "2",
+     "net": "DDR4_ODT0_B",
+     "pos_board": [
+      131.285,
+      -75.825
+     ],
+     "size": [
+      0.25,
+      0.3
+     ]
+    }
+   ],
+   "families": [
+    "DDR4_ODT0"
+   ]
+  },
+  "R3310": {
+   "value": "0R",
+   "package": "",
+   "side": "BOTTOM",
+   "pos_board": [
+    131.285,
+    -77.203
+   ],
+   "rot": -90.0,
+   "pads": [
+    {
+     "num": "1",
+     "net": "DDR4_ODT0_A",
+     "pos_board": [
+      131.285,
+      -77.478
+     ],
+     "size": [
+      0.25,
+      0.3
+     ]
+    },
+    {
+     "num": "2",
+     "net": "DDR4_ODT0",
+     "pos_board": [
+      131.285,
+      -76.928
+     ],
+     "size": [
+      0.25,
+      0.3
+     ]
+    }
+   ],
+   "families": [
+    "DDR4_ODT0"
+   ]
+  },
+  "R3309": {
+   "value": "0R",
+   "package": "",
+   "side": "TOP",
+   "pos_board": [
+    132.852,
+    -78.398
+   ],
+   "rot": -90.0,
+   "pads": [
+    {
+     "num": "1",
+     "net": "DDR4_CS0N",
+     "pos_board": [
+      132.852,
+      -78.673
+     ],
+     "size": [
+      0.25,
+      0.3
+     ]
+    },
+    {
+     "num": "2",
+     "net": "DDR4_CS0N_B",
+     "pos_board": [
+      132.852,
+      -78.123
+     ],
+     "size": [
+      0.25,
+      0.3
+     ]
+    }
+   ],
+   "families": [
+    "DDR4_CS0N"
+   ]
+  },
+  "R3308": {
+   "value": "0R",
+   "package": "",
+   "side": "TOP",
+   "pos_board": [
+    132.852,
+    -79.501
+   ],
+   "rot": -90.0,
+   "pads": [
+    {
+     "num": "1",
+     "net": "DDR4_CS0N_A",
+     "pos_board": [
+      132.852,
+      -79.776
+     ],
+     "size": [
+      0.25,
+      0.3
+     ]
+    },
+    {
+     "num": "2",
+     "net": "DDR4_CS0N",
+     "pos_board": [
+      132.852,
+      -79.226
+     ],
+     "size": [
+      0.25,
+      0.3
+     ]
+    }
+   ],
+   "families": [
+    "DDR4_CS0N"
+   ]
+  },
+  "R3307": {
+   "value": "0R",
+   "package": "",
+   "side": "TOP",
+   "pos_board": [
+    131.991,
+    -76.374
+   ],
+   "rot": -90.0,
+   "pads": [
+    {
+     "num": "1",
+     "net": "DDR4_CKE",
+     "pos_board": [
+      131.991,
+      -76.649
+     ],
+     "size": [
+      0.25,
+      0.3
+     ]
+    },
+    {
+     "num": "2",
+     "net": "DDR4_CKE_B",
+     "pos_board": [
+      131.991,
+      -76.099
+     ],
+     "size": [
+      0.25,
+      0.3
+     ]
+    }
+   ],
+   "families": [
+    "DDR4_CKE"
+   ]
+  },
+  "R3306": {
+   "value": "0R",
+   "package": "",
+   "side": "TOP",
+   "pos_board": [
+    131.991,
+    -77.477
+   ],
+   "rot": -90.0,
+   "pads": [
+    {
+     "num": "1",
+     "net": "DDR4_CKE_A",
+     "pos_board": [
+      131.991,
+      -77.752
+     ],
+     "size": [
+      0.25,
+      0.3
+     ]
+    },
+    {
+     "num": "2",
+     "net": "DDR4_CKE",
+     "pos_board": [
+      131.991,
+      -77.202
+     ],
+     "size": [
+      0.25,
+      0.3
+     ]
+    }
+   ],
+   "families": [
+    "DDR4_CKE"
+   ]
+  },
+  "R3305": {
+   "value": "0R",
+   "package": "",
+   "side": "TOP",
+   "pos_board": [
+    129.203,
+    -77.879
+   ],
+   "rot": 0.0,
+   "pads": [
+    {
+     "num": "1",
+     "net": "DDR4_CLKN",
+     "pos_board": [
+      128.928,
+      -77.879
+     ],
+     "size": [
+      0.25,
+      0.3
+     ]
+    },
+    {
+     "num": "2",
+     "net": "DDR4_CLKN_B",
+     "pos_board": [
+      129.478,
+      -77.879
+     ],
+     "size": [
+      0.25,
+      0.3
+     ]
+    }
+   ],
+   "families": [
+    "DDR4_CLKN"
+   ]
+  },
+  "R3304": {
+   "value": "0R",
+   "package": "",
+   "side": "BOTTOM",
+   "pos_board": [
+    129.203,
+    -77.879
+   ],
+   "rot": 180.0,
+   "pads": [
+    {
+     "num": "1",
+     "net": "DDR4_CLKN_A",
+     "pos_board": [
+      129.478,
+      -77.879
+     ],
+     "size": [
+      0.25,
+      0.3
+     ]
+    },
+    {
+     "num": "2",
+     "net": "DDR4_CLKN",
+     "pos_board": [
+      128.928,
+      -77.879
+     ],
+     "size": [
+      0.25,
+      0.3
+     ]
+    }
+   ],
+   "families": [
+    "DDR4_CLKN"
+   ]
+  },
+  "R3301": {
+   "value": "49.9R",
+   "package": "",
+   "side": "BOTTOM",
+   "pos_board": [
+    128.066,
+    -77.879
+   ],
+   "rot": 180.0,
+   "pads": [
+    {
+     "num": "1",
+     "net": "DDR4_CLKN",
+     "pos_board": [
+      128.341,
+      -77.879
+     ],
+     "size": [
+      0.25,
+      0.3
+     ]
+    },
+    {
+     "num": "2",
+     "net": "N16788127",
+     "pos_board": [
+      127.79,
+      -77.879
+     ],
+     "size": [
+      0.25,
+      0.3
+     ]
+    }
+   ],
+   "families": [
+    "DDR4_CLKN"
+   ],
+   "other_net_peers": {
+    "N16788127": [
+     "C3300:100pF",
+     "R3300:49.9R",
+     "R3301:49.9R"
+    ]
+   }
+  },
+  "R3303": {
+   "value": "0R",
+   "package": "",
+   "side": "TOP",
+   "pos_board": [
+    129.203,
+    -78.504
+   ],
+   "rot": 0.0,
+   "pads": [
+    {
+     "num": "1",
+     "net": "DDR4_CLKP",
+     "pos_board": [
+      128.928,
+      -78.504
+     ],
+     "size": [
+      0.25,
+      0.3
+     ]
+    },
+    {
+     "num": "2",
+     "net": "DDR4_CLKP_B",
+     "pos_board": [
+      129.478,
+      -78.504
+     ],
+     "size": [
+      0.25,
+      0.3
+     ]
+    }
+   ],
+   "families": [
+    "DDR4_CLKP"
+   ]
+  },
+  "R3302": {
+   "value": "0R",
+   "package": "",
+   "side": "BOTTOM",
+   "pos_board": [
+    129.203,
+    -78.504
+   ],
+   "rot": 180.0,
+   "pads": [
+    {
+     "num": "1",
+     "net": "DDR4_CLKP_A",
+     "pos_board": [
+      129.478,
+      -78.504
+     ],
+     "size": [
+      0.25,
+      0.3
+     ]
+    },
+    {
+     "num": "2",
+     "net": "DDR4_CLKP",
+     "pos_board": [
+      128.928,
+      -78.504
+     ],
+     "size": [
+      0.25,
+      0.3
+     ]
+    }
+   ],
+   "families": [
+    "DDR4_CLKP"
+   ]
+  },
+  "R3300": {
+   "value": "49.9R",
+   "package": "",
+   "side": "BOTTOM",
+   "pos_board": [
+    128.066,
+    -78.504
+   ],
+   "rot": 180.0,
+   "pads": [
+    {
+     "num": "1",
+     "net": "DDR4_CLKP",
+     "pos_board": [
+      128.341,
+      -78.504
+     ],
+     "size": [
+      0.25,
+      0.3
+     ]
+    },
+    {
+     "num": "2",
+     "net": "N16788127",
+     "pos_board": [
+      127.79,
+      -78.504
+     ],
+     "size": [
+      0.25,
+      0.3
+     ]
+    }
+   ],
+   "families": [
+    "DDR4_CLKP"
+   ],
+   "other_net_peers": {
+    "N16788127": [
+     "C3300:100pF",
+     "R3300:49.9R",
+     "R3301:49.9R"
+    ]
+   }
+  },
+  "R3320": {
+   "value": "0R",
+   "package": "",
+   "side": "BOTTOM",
+   "pos_board": [
+    132.388,
+    -80.895
+   ],
+   "rot": 180.0,
+   "pads": [
+    {
+     "num": "1",
+     "net": "DDR4_BG1/VSS",
+     "pos_board": [
+      132.838,
+      -80.895
+     ],
+     "size": [
+      0.55,
+      0.55
+     ]
+    },
+    {
+     "num": "2",
+     "net": "DDR4_BG1",
+     "pos_board": [
+      131.938,
+      -80.895
+     ],
+     "size": [
+      0.55,
+      0.55
+     ]
+    }
+   ],
+   "families": [
+    "DDR4_BG1"
+   ],
+   "other_net_peers": {
+    "DDR4_BG1/VSS": [
+     "R3318:0R",
+     "R3319:0R",
+     "R3320:0R",
+     "U3300:DDR4_16bit_SDP",
+     "U3301:DDR4_16bit_SDP"
+    ]
+   }
+  },
+  "C3300": {
+   "value": "100pF",
+   "side": "BOTTOM",
+   "role": "peer on net N16788127",
+   "pos_board": [
+    126.915,
+    -78.201
+   ],
+   "rot": 180.0,
+   "pads": [
+    {
+     "num": "1",
+     "net": "N16788127",
+     "pos_board": [
+      127.19,
+      -78.201
+     ],
+     "size": [
+      0.25,
+      0.3
+     ]
+    },
+    {
+     "num": "2",
+     "net": "GND",
+     "pos_board": [
+      126.64,
+      -78.201
+     ],
+     "size": [
+      0.25,
+      0.3
+     ]
+    }
+   ]
+  },
+  "R3318": {
+   "value": "0R",
+   "side": "BOTTOM",
+   "role": "peer on net DDR4_BG1/VSS",
+   "pos_board": [
+    135.088,
+    -71.52
+   ],
+   "rot": 0.0,
+   "pads": [
+    {
+     "num": "1",
+     "net": "DDR4_BG1/VSS",
+     "pos_board": [
+      134.638,
+      -71.52
+     ],
+     "size": [
+      0.55,
+      0.55
+     ]
+    },
+    {
+     "num": "2",
+     "net": "GND",
+     "pos_board": [
+      135.538,
+      -71.52
+     ],
+     "size": [
+      0.55,
+      0.55
+     ]
+    }
+   ]
+  },
+  "R3319": {
+   "value": "0R",
+   "side": "BOTTOM",
+   "role": "peer on net DDR4_BG1/VSS",
+   "pos_board": [
+    133.927,
+    -90.466
+   ],
+   "rot": 180.0,
+   "pads": [
+    {
+     "num": "1",
+     "net": "DDR4_BG1/VSS",
+     "pos_board": [
+      134.377,
+      -90.466
+     ],
+     "size": [
+      0.55,
+      0.55
+     ]
+    },
+    {
+     "num": "2",
+     "net": "GND",
+     "pos_board": [
+      133.477,
+      -90.466
+     ],
+     "size": [
+      0.55,
+      0.55
+     ]
+    }
+   ]
+  }
+ }
+}
