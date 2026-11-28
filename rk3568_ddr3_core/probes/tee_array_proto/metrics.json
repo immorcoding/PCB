@@ -1105,7 +1105,7 @@
  },
  {
   "key": "four",
-  "title": "C　四排（官方 EVB1 的排法）",
+  "title": "C　左右交替、里外交替（官方 EVB1 的排法）",
   "feasible": true,
   "k6": 6,
   "dropped": 3,

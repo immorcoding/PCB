@@ -291,18 +291,20 @@ def svg(m):
             if WIN[0] < p[0] < WIN[2] and WIN[1] < p[1] < WIN[3]:
                 o.append(f'<circle cx="{X(p[0]):.1f}" cy="{Y(p[1]):.1f}" r="{0.19 * SC:.1f}" fill="none" stroke="{COL["ball"]}" stroke-width="0.6"/>')
     o.append(f'<path d="M{X(ROT_C[0]) - 7:.1f},{Y(ROT_C[1]):.1f}h14M{X(ROT_C[0]):.1f},{Y(ROT_C[1]) - 7:.1f}v14" stroke="{COL["txt"]}" stroke-width="1.2"/>')
-    o.append(f'<text x="{X(ROT_C[0]) - 10:.1f}" y="{Y(ROT_C[1]) + 4:.1f}" fill="{COL["txt"]}" font-size="11" text-anchor="end">等长中心</text>')
+    o.append(f'<line x1="{X(ROT_C[0]):.1f}" y1="{Y(ROT_C[1]):.1f}" x2="{X(ROT_C[0] - 4.3):.1f}" y2="{Y(ROT_C[1] + 2.6):.1f}" stroke="{COL["txt"]}" stroke-width="0.8" stroke-dasharray="3 3"/>')
+    o.append(f'<text x="{X(ROT_C[0] - 4.4):.1f}" y="{Y(ROT_C[1] + 2.6) + 14:.1f}" fill="{COL["txt"]}" font-size="12" text-anchor="middle">等长中心</text>')
     for r in m["rows"]:
         n, s = r["net"], r["via"]
         col = COL["ck"] if n in CK else COL["L4"]
         for t in (A[n], B[n]):
-            o.append(f'<line x1="{X(s[0]):.1f}" y1="{Y(s[1]):.1f}" x2="{X(t[0]):.1f}" y2="{Y(t[1]):.1f}" stroke="{col}" stroke-width="0.9" opacity="0.5"/>')
+            o.append(f'<line x1="{X(s[0]):.1f}" y1="{Y(s[1]):.1f}" x2="{X(t[0]):.1f}" y2="{Y(t[1]):.1f}" stroke="{col}" stroke-width="0.7" opacity="0.32"/>')
             o.append(f'<circle cx="{X(t[0]):.1f}" cy="{Y(t[1]):.1f}" r="{0.19 * SC:.1f}" fill="{col}" opacity="0.5"/>')
         o.append(f'<circle cx="{X(S[n][0]):.1f}" cy="{Y(S[n][1]):.1f}" r="{0.15 * SC:.1f}" fill="{COL[r["trunk_layer"]]}" opacity="0.85"/>')
     if m["rc"]:
         o.append(f'<polygon points="{" ".join(f"{X(p[0]):.1f},{Y(p[1]):.1f}" for p in m["rc"])}" fill="{COL["L6"]}" fill-opacity="0.25" stroke="{COL["L6"]}" stroke-dasharray="4 3"/>')
         c = (sum(p[0] for p in m["rc"]) / 4, sum(p[1] for p in m["rc"]) / 4)
         o.append(f'<text x="{X(c[0]):.1f}" y="{Y(c[1]) + 4:.1f}" fill="{COL["txt"]}" font-size="10" text-anchor="middle">RC</text>')
+    labels = []
     for p in m["unused"]:
         o.append(f'<circle cx="{X(p[0]):.1f}" cy="{Y(p[1]):.1f}" r="{VIA_R * SC:.1f}" fill="none" stroke="{COL["via"]}" stroke-width="0.8" stroke-dasharray="2 2"/>')
     for g in m["gnds"]:
@@ -310,15 +312,16 @@ def svg(m):
     for r in m["rows"]:
         n, s = r["net"], r["via"]
         fill = COL["ck"] if n in CK else COL["via"]
-        o.append(f'<circle cx="{X(s[0]):.1f}" cy="{Y(s[1]):.1f}" r="{VIA_R * SC:.1f}" fill="{fill}" stroke="{COL[r["trunk_layer"]]}" stroke-width="1.6"/>')
+        o.append(f'<circle cx="{X(s[0]):.1f}" cy="{Y(s[1]):.1f}" r="{VIA_R * SC:.1f}" fill="{fill}" stroke="{COL[r["trunk_layer"]]}" stroke-width="2.4"/>')
         dx = -1 if r["side"] == "W" else 1
         if n in CK or r["s"] > SEG0:
-            lx, ly, anc = X(s[0]), Y(s[1]) + (11 if dx > 0 else -6), "middle"
+            lx, ly, anc = X(s[0]) + dx * 6, Y(s[1]) + (-dx) * 9 + 3, ("end" if dx < 0 else "start")
             if n in CK:
-                lx, ly, anc = X(s[0]) + dx * 9, Y(s[1]) + 3, ("end" if dx < 0 else "start")
+                lx, ly, anc = X(s[0]), Y(s[1]) + 16, "middle"
         else:
             lx, ly, anc = X(s[0]) + dx * 9, Y(s[1]) + 3, ("end" if dx < 0 else "start")
-        o.append(f'<text x="{lx:.1f}" y="{ly:.1f}" fill="{COL["ck"] if n in CK or n in TIGHT else COL["txt"]}" font-size="8" text-anchor="{anc}">{SHORT.get(n, n)}</text>')
+        labels.append(f'<text x="{lx:.1f}" y="{ly:.1f}" fill="{COL["ck"] if n in CK or n in TIGHT else COL["txt"]}" font-size="9.5" stroke="#0f1a18" stroke-width="3" paint-order="stroke" text-anchor="{anc}">{SHORT.get(n, n)}</text>')
+    o += labels
     for txt, p in (("RK3568", (-6.5, -6.0)), ("颗粒 A 地址端", (-19.5, -5.2)), ("颗粒 B 地址端", (-6.5, -24.6)), ("A1 角", (-9.0, -9.0))):
         o.append(f'<text x="{X(p[0]):.1f}" y="{Y(p[1]):.1f}" fill="{COL["txt"]}" font-size="13" text-anchor="middle">{txt}</text>')
     o.append(f'<line x1="{X(-27):.1f}" y1="{Y(-5):.1f}" x2="{X(-26):.1f}" y2="{Y(-5):.1f}" stroke="{COL["txt"]}" stroke-width="2"/>'
@@ -450,8 +453,8 @@ def CANDS():
               ["满足 0.635。带子最长，最远的过孔越过等长中心 5 mm，那几根的分支估算到 15.0 mm，贴着 15.24 的上限。",
                "轴线上每 1.0 mm 过两根线加一个地过孔，线到过孔盘按 0.10 mm 算刚好放下（要 0.97）。"], per, fix)
     g, fix, per = PATTERNS["4r"]
-    c = build("four", "C　四排（官方 EVB1 的排法）",
-              "照官方 EVB1：沿轴线每 0.4 mm 一个过孔，左右交替、里外两排交替，共四排；地过孔在轴线上和最外侧，每个信号过孔 0.60 到 0.61 mm 处有一个。",
+    c = build("four", "C　左右交替、里外交替（官方 EVB1 的排法）",
+              "照官方 EVB1：沿轴线每 0.4 mm 一个过孔，先左后右，再换到外面一圈，所以看上去是锯齿形，不是整齐的四排（里圈离轴线 0.57 mm，外圈 1.32 mm）。地过孔在轴线上和带子最外侧，每个信号过孔 0.60 到 0.61 mm 处有一个。",
               0.0, g(), 3.2,
               ["带子最短，最远的过孔离等长中心最近：分支最短，两分支天然差的中位最小。",
                "带宽 3.0 mm（连外侧地过孔 4.3 mm）。在两颗颗粒之间的口子里外侧两排放不下，那一段只有里面两排。",
