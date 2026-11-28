@@ -17,8 +17,11 @@ import numpy as np
 from scipy.optimize import linear_sum_assignment
 
 HERE = Path(__file__).resolve().parent
-sys.path.insert(0, str(HERE.parent / "placement_proto"))
-import draw as P  # noqa: E402
+import importlib.util  # noqa: E402
+
+_spec = importlib.util.spec_from_file_location("placement_draw", HERE.parent / "placement_proto" / "draw.py")
+P = importlib.util.module_from_spec(_spec)
+_spec.loader.exec_module(P)
 
 NETS = list(P.AC)
 TIGHT = ("CKE", "CS0n", "ODT0")
@@ -93,6 +96,16 @@ def pt(s, lat):
     return (round(base[0] - lat * d[1], 4), round(base[1] + lat * d[0], 4))
 
 
+NO_RATS = False
+SL = {}       # via centre -> (s, lat), for the straightened drawing
+
+
+def vpt(s, lat):
+    p = pt(s, lat)
+    SL[p] = (round(s, 4), round(lat, 4))
+    return p
+
+
 def axis_s(p):
     """s of the axis point nearest p (for the equal-length centre)."""
     return min((math.dist(p, pt(k * 0.05, 0)), k * 0.05) for k in range(0, 400))[1]
@@ -117,25 +130,25 @@ def four_row(h1, h2, step, go):
 
 def make_band(gen, step, s_start):
     sig, gnd, k = [], [], 0
-    ck = [pt(s_start - 0.8, -PAIR / 2), pt(s_start - 0.8, PAIR / 2)]
+    ck = [vpt(s_start - 0.8, -PAIR / 2), vpt(s_start - 0.8, PAIR / 2)]
     rc = [pt(s_start - 0.8 - 0.3, -0.65), pt(s_start - 0.8 - 0.3, 0.65), pt(s_start - 0.8 - 2.05, 0.65), pt(s_start - 0.8 - 2.05, -0.65)]
     dropped = 0
     while len(sig) < N_REG + SPARE and k < 400:
         s = s_start + k * step
         (ss, lat), gs = gen(k, s)
-        p = pt(ss, lat)
+        p = vpt(ss, lat)
         if free(p) and all(math.dist(p, q["p"]) >= SIG_SIG - 1e-6 for q in sig) and all(math.dist(p, q) >= SIG_SIG - 1e-6 for q in ck) \
                 and all(math.dist(p, g) >= GND_MIN - 1e-6 for g in gnd):
             sig.append({"p": p, "s": ss, "lat": lat, "side": "W" if lat < 0 else "E"})
             for gs_, gl in gs:
-                g = pt(gs_, gl)
+                g = vpt(gs_, gl)
                 if free(g) and all(math.dist(g, q["p"]) >= GND_MIN - 1e-6 for q in sig) and all(math.dist(g, q) >= GND_MIN - 1e-6 for q in gnd + ck):
                     gnd.append(g)
         else:
             dropped += 1
         k += 1
     for lat in (-PAIR / 2 - 0.61, PAIR / 2 + 0.61):       # one ground via outside each CK via
-        gck = pt(s_start - 0.8, lat)
+        gck = vpt(s_start - 0.8, lat)
         if free(gck) and all(math.dist(gck, q["p"]) >= GND_MIN - 1e-6 for q in sig) and all(math.dist(gck, q) >= GND_MIN - 1e-6 for q in gnd):
             gnd.append(gck)
     return sig, gnd, ck, rc, dropped
@@ -214,7 +227,10 @@ def build(key, title, blurb, slide, gen_step, s_start, notes, per_period, fix=Tr
     setup(slide)
     if s_start is None:                      # centre the band on the equal-length centre
         s_start = max(3.2, round(axis_s(ROT_C) - (N_REG * gen_step[1]) / 2, 1))
-    sig, gnd, ck, rc, dropped = make_band(*gen_step, s_start)
+    if gen_step[0] == "cells":
+        sig, gnd, ck, rc, dropped = cells(gen_step[1], gen_step[2], gen_step[3], s_start - 0.8)
+    else:
+        sig, gnd, ck, rc, dropped = make_band(*gen_step, s_start)
     if fix:                                  # every signal via gets a ground via within GND_MAX where one fits
         allsig = [q["p"] for q in sig] + ck
         for q in sorted(sig, key=lambda q: q["s"]):
@@ -222,7 +238,7 @@ def build(key, title, blurb, slide, gen_step, s_start, notes, per_period, fix=Tr
                 continue
             opts = []
             for k in range(72):
-                g = (round(q["p"][0] + 0.61 * math.cos(k * math.pi / 36), 4), round(q["p"][1] + 0.61 * math.sin(k * math.pi / 36), 4))
+                g = vpt(q["s"] + 0.61 * math.cos(k * math.pi / 36), q["lat"] + 0.61 * math.sin(k * math.pi / 36))
                 if free(g) and all(math.dist(g, p) >= GND_MIN - 1e-6 for p in allsig) and all(math.dist(g, h) >= GND_MIN - 1e-6 for h in gnd):
                     opts.append((-sum(1 for p in allsig if math.dist(g, p) <= GND_MAX + 1e-6), round(math.dist(g, pt(q["s"], 0)), 3), g))
             if opts:
@@ -255,7 +271,7 @@ def build(key, title, blurb, slide, gen_step, s_start, notes, per_period, fix=Tr
             "mis_med": st.median(r["mis"] for r in rows), "mis_max": max(r["mis"] for r in rows),
             "mis_plain_med": st.median(pm), "mis_plain_max": max(pm),
             "past_neck": past, "neck_need": {L: past[L] * TRUNK_PITCH + width_at_neck for L in past}, "passage": GATE,
-            "slide": SLIDE, "rot_c": ROT_C, "centre_s": axis_s(ROT_C), "data": DATA,
+            "slide": SLIDE, "rot_c": ROT_C, "gate_s": gate_s, "seg0": SEG0, "s_ck": s_start - 0.8, "centre_s": axis_s(ROT_C), "data": DATA,
             "per_period": per_period, "rows": rows, "gnds": gnd, "rc": rc, "unused": [q["p"] for q in sig if q["p"] not in used]}
 
 
@@ -296,7 +312,7 @@ def svg(m):
     for r in m["rows"]:
         n, s = r["net"], r["via"]
         col = COL["ck"] if n in CK else COL["L4"]
-        for t in (A[n], B[n]):
+        for t in (() if NO_RATS else (A[n], B[n])):
             o.append(f'<line x1="{X(s[0]):.1f}" y1="{Y(s[1]):.1f}" x2="{X(t[0]):.1f}" y2="{Y(t[1]):.1f}" stroke="{col}" stroke-width="0.7" opacity="0.32"/>')
             o.append(f'<circle cx="{X(t[0]):.1f}" cy="{Y(t[1]):.1f}" r="{0.19 * SC:.1f}" fill="{col}" opacity="0.5"/>')
         o.append(f'<circle cx="{X(S[n][0]):.1f}" cy="{Y(S[n][1]):.1f}" r="{0.15 * SC:.1f}" fill="{COL[r["trunk_layer"]]}" opacity="0.85"/>')
@@ -460,6 +476,58 @@ def CANDS():
                "带宽 3.0 mm（连外侧地过孔 4.3 mm）。在两颗颗粒之间的口子里外侧两排放不下，那一段只有里面两排。",
                "同一侧里外两排的过孔相距 1.10 mm，和官方板的中位 1.02 接近。"], per, fix)
     return [a, b, c]
+
+
+TPL = {}      # via centre -> (branch toward chip A, branch toward chip B), polylines in (s, lat); the last lat is +-END
+END = 99.0
+
+
+def cells(p, h, with_gnd, s_ck):
+    """Two rows either side of the axis, one cell per pitch: W via, E via half a pitch on, optionally a ground via on
+    the axis between them. Every branch has a fixed way out (straight, or one 0.13 mm 45-degree step past the ground via)."""
+    sig, gnd = [], []
+    ck = [vpt(s_ck, -PAIR / 2), vpt(s_ck, PAIR / 2)]
+    TPL[ck[0]] = ([(s_ck, -PAIR / 2), (s_ck, -END)], [(s_ck, -PAIR / 2), (s_ck + 0.37, 0.02), (s_ck + 0.37, END)])
+    TPL[ck[1]] = ([(s_ck, PAIR / 2), (s_ck - 0.37, -0.02), (s_ck - 0.37, -END)], [(s_ck, PAIR / 2), (s_ck, END)])
+    gnd += [vpt(s_ck + 0.43, -0.78), vpt(s_ck - 0.40, 0.81)]
+    rc = [pt(s_ck - 0.3, -0.6), pt(s_ck - 0.3, 0.6), pt(s_ck - 2.05, 0.6), pt(s_ck - 2.05, -0.6)]
+    s, dropped = s_ck + 1.0, 0
+    j = 0.13 if with_gnd else 0.0
+    while len(sig) < N_REG + SPARE and s < 45:
+        for side, ss, lat in (("W", s, -h), ("E", s + p / 2, h)):
+            q = vpt(ss, lat)
+            if free(q) and all(math.dist(q, x["p"]) >= SIG_SIG - 1e-6 for x in sig) and all(math.dist(q, x) >= GND_MIN - 1e-6 for x in gnd):
+                sig.append({"p": q, "s": ss, "lat": lat, "side": side})
+                if side == "W":
+                    TPL[q] = ([(ss, lat), (ss, -END)], [(ss, lat), (ss - j, lat + j), (ss - j, END)])
+                else:
+                    TPL[q] = ([(ss, lat), (ss + j, lat - j), (ss + j, -END)], [(ss, lat), (ss, END)])
+            else:
+                dropped += 1
+        if with_gnd:
+            g = vpt(s + p / 4, 0.0)
+            if free(g) and all(math.dist(g, x["p"]) >= GND_MIN - 1e-6 for x in sig):
+                gnd.append(g)
+        s += p
+    return sig, gnd, ck, rc, dropped
+
+
+def CANDS():      # noqa: F811  (replaces the first set: those did not survive drawing the tracks at real width)
+    a = build("tight", "A　两排，排内 0.80 mm，带子里不放地过孔",
+              "两排过孔夹着轴线交错排，排内中心距 0.80 mm，两排相距 1.20 mm。每条分支都是直着出去，从对面一排的两个过孔正中间穿过（线到两边的过孔盘各 0.133 mm）。"
+              "带子里放不下地过孔，只有 CK 对旁边有两个。",
+              0.0, ("cells", 0.8, 0.6, False), 3.2,
+              ["最短。代价是 25 个地址、控制过孔旁边都没有地过孔，不满足“换层过孔 0.635 mm 内有地过孔”。",
+               "想在轴线上加地过孔行不通：加了以后对面过来的分支要先绕开它，再拐回去对准对面一排的空当，两排之间只有 0.6 mm，来不及。"],
+              "每 0.8 mm：2 根线，都走直线", fix=False)
+    b = build("ruled", "B　两排，排内 1.00 mm，每格一个地过孔",
+              "排内中心距放到 1.00 mm，两排相距 1.12 mm，每 1.0 mm 在轴线上放一个地过孔，离左右两个信号过孔各 0.61 mm。"
+              "向自己这一侧出去的分支走直线；向对面出去的分支先斜走 0.13 mm 让开地过孔，再直着穿过轴线和对面一排。",
+              0.0, ("cells", 1.0, 0.56, True), 3.2,
+              ["每个信号过孔 0.61 mm 处都有地过孔。带子比 A 长四分之一。",
+               "排得下，但没有余量：穿过轴线的两根线之间 0.106 mm，线到过孔盘 0.103 到 0.113 mm，按 0.10 mm 算刚好够。"],
+              "每 1.0 mm：2 根线 + 1 个地过孔", fix=False)
+    return [a, b]
 
 
 if __name__ == "__main__":
