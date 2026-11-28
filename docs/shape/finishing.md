@@ -34,3 +34,4 @@ Next id: FIN-5
 
 ### Signals
 - 2026-11-24 · cite · FIN-4 · 规格档 C 的“布局和走线的取值”加了一行“铺地里不带焊盘的小片，面积阈值”（H743 2.0 mm²，`board.toml [finish.pour] island_min`；新板起点建议 5 mm²，带地焊盘且有过孔的小片保留）。`spec_check` 的项目是从这张表读的（没有写死），所以演示板 SPEC 第 7.2 节补了对应一行（2.0 mm²，数据源 `board.toml:finish.pour.island_min`，值没改），`templates/C-bga-065/README.md` 的“为准的一份”表也补了一行；`spec_check templates/demo_board` 13 项齐全、一致，退出 0。H743 的 SPEC 没有这张表（`spec_table = false`），只多一条警告。
+- 2026-11-28 · friction · new · 安装孔、定位点、测试点、工艺边没有 shape 规则，只有 H743 的先例（四个 M3 孔，定位点在收尾步骤加）。RK3568 验证板不送厂所以都不放；下一块完整的板要送厂，到时要定。[决定票](https://github.com/immorcoding/PCB/issues/60)
