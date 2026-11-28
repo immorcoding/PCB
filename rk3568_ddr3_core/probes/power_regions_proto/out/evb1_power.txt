@@ -1,0 +1,69 @@
+U1000 641 pads; layers ['TOP', 'L2-GND1', 'L3-POWER', 'L4-S1', 'L5-GND2', 'BOTTOM'] ; SoC turned -135.0
+GND net GND : balls 212 , vias within the outline + 1 mm 216
+via (drill, pad) all nets: [((0.2, 0.4), 458)]
+  within +-2.0 mm: ground balls 21, EVB1 ground vias 24; supply balls 14, all other vias 19
+  within +-3.3 mm: ground balls 53, EVB1 ground vias 46; supply balls 45, all other vias 50
+  within +-4.6 mm: ground balls 77, EVB1 ground vias 70; supply balls 77, all other vias 88
+  within +-6.0 mm: ground balls 115, EVB1 ground vias 108; supply balls 85, all other vias 140
+VCC_DDR         EVB1 net VCC_DDR                  balls 14 vias 15 [((0.2, 0.4), 15)] tracks mm {'L3-POWER': 6.72, 'TOP': 26.63}
+      zone ['L3-POWER'] area 2169.9 own balls inside 11 box [-51.4, -32.7, 6.1, 52.7] minw 0.25
+      zone ['BOTTOM'] area 8.3 own balls inside 0 box [-23.8, -9.5, -19.7, -4.8] minw 0.25
+      zone ['BOTTOM'] area 6.0 own balls inside 6 box [-4.2, -4.2, 0.8, -1.7] minw 0.25
+      zone ['BOTTOM'] area 3.2 own balls inside 0 box [-12.1, -22.5, -9.5, -20.6] minw 0.25
+      zone ['BOTTOM'] area 2.8 own balls inside 0 box [-19.0, -12.2, -17.0, -10.1] minw 0.25
+      zone ['BOTTOM'] area 2.6 own balls inside 0 box [-20.3, -14.6, -17.2, -12.9] minw 0.25
+VDD_CPU         EVB1 net VDD_CPU                  balls 10 vias 10 [((0.2, 0.4), 10)] tracks mm {'TOP': 13.73, 'BOTTOM': 0.71}
+      zone ['L3-POWER'] area 1056.2 own balls inside 6 box [0.4, -29.6, 55.8, 6.8] minw 0.25
+      zone ['BOTTOM'] area 4.0 own balls inside 6 box [0.4, -3.6, 2.8, -1.7] minw 0.25
+VDD_LOGIC       EVB1 net VDD_LOGIC                balls 10 vias 10 [((0.2, 0.4), 10)] tracks mm {'L3-POWER': 15.61, 'TOP': 8.73, 'BOTTOM': 0.27}
+      zone ['L3-POWER'] area 597.3 own balls inside 9 box [-24.7, -3.1, 12.9, 49.6] minw 0.25
+      zone ['BOTTOM'] area 6.0 own balls inside 0 box [-22.0, 3.4, -18.7, 5.4] minw 0.25
+      zone ['BOTTOM'] area 2.6 own balls inside 2 box [-2.1, -2.2, -1.0, 1.0] minw 0.25
+      zone ['BOTTOM'] area 2.1 own balls inside 3 box [-0.2, -1.1, 1.0, 1.5] minw 0.25
+VDD_NPU         EVB1 net VDD_NPU                  balls  5 vias  5 [((0.2, 0.4), 5)] tracks mm {'L3-POWER': 13.06, 'TOP': 7.31}
+      zone ['L3-POWER'] area 860.3 own balls inside 4 box [1.5, -1.5, 41.4, 67.7] minw 0.25
+      zone ['BOTTOM'] area 2.0 own balls inside 2 box [2.3, -1.6, 4.1, -0.2] minw 0.25
+VCC_3V3         EVB1 net USB3_AVDD_3V3            balls  1 vias  1 [((0.2, 0.4), 1)] tracks mm {'TOP': 0.46, 'BOTTOM': 0.42, 'L4-S1': 5.44}
+VCC_3V3         EVB1 net USB2_AVDD_3V3            balls  1 vias  1 [((0.2, 0.4), 1)] tracks mm {'L4-S1': 9.06, 'BOTTOM': 0.32, 'TOP': 1.38}
+VCC_3V3         EVB1 net VCCIO5                   balls  2 vias  2 [((0.2, 0.4), 2)] tracks mm {'BOTTOM': 2.13, 'TOP': 1.38, 'L4-S1': 5.13}
+VCC_3V3         EVB1 net VCCIO7                   balls  1 vias  1 [((0.2, 0.4), 1)] tracks mm {'BOTTOM': 0.41, 'TOP': 0.46, 'L4-S1': 10.78}
+VDDA_0V9        EVB1 net SYSPLL_AVDD_0V9          balls  1 vias  1 [((0.2, 0.4), 1)] tracks mm {'BOTTOM': 0.36, 'TOP': 0.46, 'L4-S1': 8.28}
+VDDA_0V9        EVB1 net MULTI_PHY_AVDD_0V9       balls  2 vias  2 [((0.2, 0.4), 2)] tracks mm {'L4-S1': 4.89, 'TOP': 1.38, 'BOTTOM': 1.41}
+VDDA_0V9        EVB1 net PCIE30_AVDD_0V9          balls  2 vias  2 [((0.2, 0.4), 2)] tracks mm {'L3-POWER': 11.31, 'BOTTOM': 1.77, 'TOP': 1.38}
+      zone ['L3-POWER'] area 15.8 own balls inside 0 box [3.8, 1.9, 13.8, 13.3] minw 0.25
+VDD_GPU         EVB1 net VDD_GPU                  balls  5 vias  5 [((0.2, 0.4), 5)] tracks mm {'L3-POWER': 9.54, 'TOP': 5.95}
+      zone ['L3-POWER'] area 568.7 own balls inside 3 box [-15.2, 0.4, 22.4, 53.9] minw 0.25
+      zone ['TOP'] area 4.4 own balls inside 0 box [-10.0, 16.7, -7.5, 18.7] minw 0.25
+      zone ['BOTTOM'] area 2.7 own balls inside 3 box [-2.3, 0.4, -0.3, 2.3] minw 0.25
+VCCA_1V8        EVB1 net SARADC_AVDD_1V8          balls  1 vias  1 [((0.2, 0.4), 1)] tracks mm {'BOTTOM': 0.2, 'TOP': 0.46, 'L4-S1': 5.24}
+VCCA_1V8        EVB1 net SYSPLL_AVDD_1V8          balls  1 vias  1 [((0.2, 0.4), 1)] tracks mm {'L4-S1': 7.9, 'TOP': 0.38, 'BOTTOM': 0.22}
+VCCA_1V8        EVB1 net MULTI_PHY_AVDD_1V8       balls  1 vias  1 [((0.2, 0.4), 1)] tracks mm {'TOP': 0.46, 'BOTTOM': 0.31, 'L4-S1': 3.2}
+VCCA_1V8        EVB1 net PCIE30_AVDD_1V8          balls  1 vias  1 [((0.2, 0.4), 1)] tracks mm {'L4-S1': 4.45, 'TOP': 0.46, 'BOTTOM': 0.4}
+VCC_1V8         EVB1 net OTP_VCC18                balls  1 vias  1 [((0.2, 0.4), 1)] tracks mm {'L4-S1': 8.91, 'BOTTOM': 0.31, 'TOP': 0.46}
+VCC_1V8         EVB1 net VCCIO6                   balls  2 vias  1 [((0.2, 0.4), 1)] tracks mm {'TOP': 1.57, 'BOTTOM': 0.67, 'L4-S1': 6.6}
+VDDA0V9_IMAGE   EVB1 net EDP_TX_AVDD_0V9          balls  1 vias  1 [((0.2, 0.4), 1)] tracks mm {'BOTTOM': 0.46, 'L4-S1': 6.2, 'TOP': 0.46}
+VDDA0V9_IMAGE   EVB1 net HDMI_TX_AVDD_0V9         balls  2 vias  2 [((0.2, 0.4), 2)] tracks mm {'BOTTOM': 1.39, 'TOP': 1.84, 'L3-POWER': 13.08}
+MIPI_AVDD_0V9   EVB1 net MIPI_CSI_RX_AVDD_0V9     balls  1 vias  1 [((0.2, 0.4), 1)] tracks mm {'BOTTOM': 0.61, 'TOP': 0.46, 'L4-S1': 8.62}
+MIPI_AVDD_0V9   EVB1 net MIPI_DSI_TX1_AVDD_0V9    balls  1 vias  1 [((0.2, 0.4), 1)] tracks mm {'BOTTOM': 0.34, 'TOP': 0.46, 'L4-S1': 5.77}
+MIPI_AVDD_0V9   EVB1 net MIPI_DSI_TX0/LVDS_TX0_AVDD_0V9 balls  1 vias  1 [((0.2, 0.4), 1)] tracks mm {'TOP': 0.46, 'BOTTOM': 0.43, 'L3-POWER': 7.26}
+MIPI_AVDD_1V8   EVB1 net MIPI_CSI_RX_AVDD_1V8     balls  1 vias  1 [((0.2, 0.4), 1)] tracks mm {'BOTTOM': 0.37, 'TOP': 0.46, 'L4-S1': 8.02}
+MIPI_AVDD_1V8   EVB1 net MIPI_DSI_TX1_AVDD_1V8    balls  1 vias  1 [((0.2, 0.4), 1)] tracks mm {'BOTTOM': 0.31, 'TOP': 0.46, 'L4-S1': 8.65}
+MIPI_AVDD_1V8   EVB1 net MIPI_DSI_TX0/LVDS_TX0_AVDD_1V8 balls  1 vias  1 [((0.2, 0.4), 1)] tracks mm {'TOP': 0.46, 'BOTTOM': 0.39, 'L3-POWER': 6.31}
+VCCA1V8_IMAGE   EVB1 net EDP_TX_AVDD_1V8          balls  1 vias  1 [((0.2, 0.4), 1)] tracks mm {'BOTTOM': 1.03, 'TOP': 0.46}
+      zone ['BOTTOM'] area 1.0 own balls inside 0 box [4.3, -3.4, 5.7, -1.7] minw 0.25
+VCCA1V8_IMAGE   EVB1 net HDMI_TX_AVDD_1V8         balls  1 vias  1 [((0.2, 0.4), 1)] tracks mm {'BOTTOM': 0.31, 'TOP': 0.46, 'L3-POWER': 7.48}
+USB_AVDD_1V8    EVB1 net USB2_AVDD_1V8            balls  1 vias  1 [((0.2, 0.4), 1)] tracks mm {'TOP': 0.46, 'BOTTOM': 0.48, 'L4-S1': 7.04}
+USB_AVDD_1V8    EVB1 net USB3_AVDD_1V8            balls  1 vias  1 [((0.2, 0.4), 1)] tracks mm {'TOP': 0.46, 'BOTTOM': 0.33, 'L4-S1': 3.41}
+USB_AVDD_0V9    EVB1 net USB3_AVDD_0V9            balls  1 vias  1 [((0.2, 0.4), 1)] tracks mm {'BOTTOM': 0.36, 'TOP': 0.46, 'L4-S1': 4.65}
+USB_AVDD_0V9    EVB1 net USB2_AVDD_0V9            balls  1 vias  1 [((0.2, 0.4), 1)] tracks mm {'BOTTOM': 6.58, 'TOP': 0.46}
+VDDA0V9_PMU     EVB1 net VDD_PMU_LOGIC_0V9        balls  1 vias  1 [((0.2, 0.4), 1)] tracks mm {'BOTTOM': 0.27, 'TOP': 0.46, 'L4-S1': 6.4}
+VDDA0V9_PMU     EVB1 net PMUPLL_AVDD_0V9          balls  1 vias  1 [((0.2, 0.4), 1)] tracks mm {'L4-S1': 4.99, 'BOTTOM': 0.43, 'TOP': 0.65}
+VCC3V3_PMU      EVB1 net PMUIO2                   balls  1 vias  1 [((0.2, 0.4), 1)] tracks mm {'BOTTOM': 0.6, 'TOP': 1.11, 'L4-S1': 6.53}
+VCC3V3_PMU      EVB1 net PMUIO1                   balls  1 vias  1 [((0.2, 0.4), 1)] tracks mm {'BOTTOM': 0.32, 'TOP': 0.46, 'L4-S1': 6.7}
+VCCIO_ACODEC    EVB1 net VCCIO1                   balls  1 vias  1 [((0.2, 0.4), 1)] tracks mm {'L4-S1': 10.21, 'BOTTOM': 0.31, 'TOP': 0.46}
+VCCIO_FLASH     EVB1 net VCCIO2                   balls  1 vias  1 [((0.2, 0.4), 1)] tracks mm {'L4-S1': 5.03, 'TOP': 0.46, 'BOTTOM': 0.4}
+VCCIO_WL        EVB1 net VCCIO4                   balls  1 vias  1 [((0.2, 0.4), 1)] tracks mm {'BOTTOM': 0.43, 'TOP': 0.46, 'L4-S1': 5.28}
+VCCIO_SD        EVB1 net VCCIO3                   balls  1 vias  1 [((0.2, 0.4), 1)] tracks mm {'BOTTOM': 0.72, 'TOP': 0.46, 'L4-S1': 4.24}
+VCCA1V8_PMU     EVB1 net PMUPLL_AVDD_1V8          balls  1 vias  1 [((0.2, 0.4), 1)] tracks mm {'TOP': 0.46, 'BOTTOM': 0.35, 'L4-S1': 3.79}
+zones of GND: [(['L2-GND1', 'L5-GND2'], 35590.9), (['L3-POWER'], 35550.2)]
+two-pad parts within outline + 2 mm: Counter({'BOTTOM': 75, 'TOP': 1}) pad pitch [(0.55, 38), (0.9, 15), (0.551, 12), (1.4, 5), (0.901, 5)]

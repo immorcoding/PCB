@@ -1,0 +1,19 @@
+# PROTOTYPE issue 52, near: L3 blocks, mm, origin at the SoC centre (x east, y south).
+# Written by draw.py from variants.py; borders pulled back by gap / 2 from the drawn partition.
+layers 6
+planes L2 L3 L5
+gap 0.5
+clearance 0.2
+plane_clearance 0.127
+minwidth 0.2
+
+region L3_VCC_DDR VCC_DDR L3
+  -26,-26  4.3,-26  4.3,-10.975  0.4,-10.975  0.4,-4.15  -0.25,-4.15  -0.25,-3.5  -2.85,-3.5  -2.85,-1.55  -13.11,-1.55  -14.55,-0.11  -14.55,1.7  -26,1.7
+region L3_VDD_CPU VDD_CPU L3
+  4.8,-26  17,-26  17,-5.45  12.24,-5.45  8.99,-2.2  2.35,-2.2  2.35,-1.55  0.9,-1.55  0.9,-2.2  -0.4,-2.2  -0.4,-3  0.25,-3  0.25,-3.65  0.9,-3.65  0.9,-10.475  4.8,-10.475
+region L3_VDD_NPU VDD_NPU L3
+  2.85,-1.7  9.21,-1.7  12.46,-4.95  17,-4.95  17,0.4  2.2,0.4  2.2,-1.05  2.85,-1.05
+region L3_VDD_LOGIC VDD_LOGIC L3
+  -2.35,-3  -0.9,-3  -0.9,-1.7  0.4,-1.7  0.4,-1.05  1.7,-1.05  1.7,0.9  17,0.9  17,17  0.25,17  0.25,-0.25  -1.55,-0.25  -1.55,1.05  -2.35,1.05
+region L3_VDD_GPU VDD_GPU L3
+  -2.35,1.55  -1.05,1.55  -1.05,0.25  -0.25,0.25  -0.25,17  -7.55,17  -7.55,16.36  -2.35,11.16

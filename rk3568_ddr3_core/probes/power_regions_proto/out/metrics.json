@@ -1,0 +1,834 @@
+[
+ {
+  "key": "near",
+  "title": "方案 1　就近出边",
+  "blurb": "五路大电源各自朝最近的空边直出：VCC_DDR 占西北（两颗颗粒和 SoC 的 DDR 球在同一块里，到北边和西边），VDD_CPU 向东北，VDD_NPU 向东，VDD_LOGIC 向东南，VDD_GPU 向南。L3 余下的西南角铺地。17 路小电源不在 L3 上分块：球的过孔到背面电容，再照官方 EVB1 的做法从 L4 走线出球区（图上的虚线只表示方向和长度）。",
+  "entry": {
+   "VCC_DDR": "北边、西边",
+   "VDD_CPU": "北边东段、东边北段",
+   "VDD_NPU": "东边",
+   "VDD_LOGIC": "东边南段、南边东段",
+   "VDD_GPU": "南边"
+  },
+  "blocks": [
+   {
+    "net": "VCC_DDR",
+    "area": 673.2,
+    "edge": {
+     "北": 30.3,
+     "西": 27.7
+    },
+    "soc_vias": 13,
+    "soc_joined": 13,
+    "soc_min": 0.6,
+    "soc_med": 0.6,
+    "ddr_vias": 36,
+    "ddr_joined": 36,
+    "ddr_min": 0.5,
+    "cut": [],
+    "core": {
+     "groups": 4,
+     "balls": 14,
+     "big": {
+      "joined": 13,
+      "fed": 14,
+      "unfed": []
+     },
+     "small": {
+      "joined": 14,
+      "fed": 14,
+      "unfed": []
+     }
+    }
+   },
+   {
+    "net": "VDD_CPU",
+    "area": 287.6,
+    "edge": {
+     "北": 12.2,
+     "东": 20.6
+    },
+    "soc_vias": 9,
+    "soc_joined": 9,
+    "soc_min": 0.3,
+    "soc_med": 0.3,
+    "ddr_vias": 0,
+    "ddr_joined": 0,
+    "ddr_min": null,
+    "cut": [],
+    "core": {
+     "groups": 1,
+     "balls": 10,
+     "big": {
+      "joined": 9,
+      "fed": 10,
+      "unfed": []
+     },
+     "small": {
+      "joined": 10,
+      "fed": 10,
+      "unfed": []
+     }
+    }
+   },
+   {
+    "net": "VDD_NPU",
+    "area": 46.5,
+    "edge": {
+     "东": 5.4
+    },
+    "soc_vias": 5,
+    "soc_joined": 5,
+    "soc_min": 0.3,
+    "soc_med": 0.3,
+    "ddr_vias": 0,
+    "ddr_joined": 0,
+    "ddr_min": null,
+    "cut": [],
+    "core": {
+     "groups": 1,
+     "balls": 5,
+     "big": {
+      "joined": 5,
+      "fed": 5,
+      "unfed": []
+     },
+     "small": {
+      "joined": 5,
+      "fed": 5,
+      "unfed": []
+     }
+    }
+   },
+   {
+    "net": "VDD_LOGIC",
+    "area": 251.5,
+    "edge": {
+     "东": 16.1,
+     "南": 16.8
+    },
+    "soc_vias": 8,
+    "soc_joined": 0,
+    "soc_min": 0.0,
+    "soc_med": 0.0,
+    "ddr_vias": 0,
+    "ddr_joined": 0,
+    "ddr_min": null,
+    "cut": [
+     "soc:L12",
+     "soc:M12",
+     "soc:N13",
+     "soc:P13",
+     "soc:P16",
+     "soc:R16",
+     "soc:T12",
+     "soc:T16"
+    ],
+    "core": {
+     "groups": 4,
+     "balls": 10,
+     "big": {
+      "joined": 0,
+      "fed": 0,
+      "unfed": [
+       "L12",
+       "M12",
+       "N13",
+       "N16",
+       "P13",
+       "P16",
+       "R12",
+       "R16",
+       "T12",
+       "T16"
+      ]
+     },
+     "small": {
+      "joined": 10,
+      "fed": 10,
+      "unfed": []
+     }
+    }
+   },
+   {
+    "net": "VDD_GPU",
+    "area": 44.5,
+    "edge": {
+     "南": 7.3
+    },
+    "soc_vias": 4,
+    "soc_joined": 0,
+    "soc_min": 0.0,
+    "soc_med": 0.0,
+    "ddr_vias": 0,
+    "ddr_joined": 0,
+    "ddr_min": null,
+    "cut": [
+     "soc:R13",
+     "soc:T13",
+     "soc:U11",
+     "soc:U13"
+    ],
+    "core": {
+     "groups": 1,
+     "balls": 5,
+     "big": {
+      "joined": 0,
+      "fed": 0,
+      "unfed": [
+       "R13",
+       "T13",
+       "U11",
+       "U12",
+       "U13"
+      ]
+     },
+     "small": {
+      "joined": 5,
+      "fed": 5,
+      "unfed": []
+     }
+    }
+   }
+  ],
+  "no_site": [
+   "H15",
+   "J15",
+   "N16",
+   "R12",
+   "U12"
+  ],
+  "caps": {
+   "VDD_CPU": [
+    3,
+    3
+   ],
+   "VDD_LOGIC": [
+    4,
+    4
+   ],
+   "VDD_GPU": [
+    3,
+    3
+   ],
+   "VDD_NPU": [
+    2,
+    2
+   ],
+   "VCC_DDR": [
+    4,
+    5
+   ],
+   "MIPI_AVDD_0V9": [
+    2,
+    3
+   ],
+   "MIPI_AVDD_1V8": [
+    1,
+    3
+   ],
+   "USB_AVDD_0V9": [
+    2,
+    2
+   ],
+   "USB_AVDD_1V8": [
+    2,
+    2
+   ],
+   "VCC3V3_PMU": [
+    1,
+    2
+   ],
+   "VCCA1V8_IMAGE": [
+    1,
+    2
+   ],
+   "VCCA1V8_PMU": [
+    0,
+    1
+   ],
+   "VCCA_1V8": [
+    2,
+    4
+   ],
+   "VCCIO_ACODEC": [
+    1,
+    1
+   ],
+   "VCCIO_FLASH": [
+    0,
+    1
+   ],
+   "VCCIO_SD": [
+    0,
+    1
+   ],
+   "VCCIO_WL": [
+    1,
+    1
+   ],
+   "VCC_1V8": [
+    2,
+    3
+   ],
+   "VCC_3V3": [
+    3,
+    5
+   ],
+   "VDDA0V9_IMAGE": [
+    1,
+    3
+   ],
+   "VDDA0V9_PMU": [
+    1,
+    2
+   ],
+   "VDDA_0V9": [
+    0,
+    5
+   ]
+  },
+  "cap_sizes": {
+   "0402": 28,
+   "0201": 8
+  },
+  "exits": {
+   "n": 41,
+   "sides": {
+    "北": 3,
+    "东": 18,
+    "西": 8,
+    "南": 12
+   },
+   "total": 283.2,
+   "max": 9.1,
+   "longest": [
+    "VCCA_1V8",
+    "N10"
+   ],
+   "by_net": {
+    "MIPI_AVDD_0V9": [
+     23.0,
+     3
+    ],
+    "MIPI_AVDD_1V8": [
+     21.1,
+     3
+    ],
+    "USB_AVDD_0V9": [
+     12.3,
+     2
+    ],
+    "USB_AVDD_1V8": [
+     12.2,
+     2
+    ],
+    "VCC3V3_PMU": [
+     13.9,
+     2
+    ],
+    "VCCA1V8_IMAGE": [
+     13.8,
+     2
+    ],
+    "VCCA1V8_PMU": [
+     5.9,
+     1
+    ],
+    "VCCA_1V8": [
+     25.6,
+     4
+    ],
+    "VCCIO_ACODEC": [
+     7.5,
+     1
+    ],
+    "VCCIO_FLASH": [
+     7.2,
+     1
+    ],
+    "VCCIO_SD": [
+     5.3,
+     1
+    ],
+    "VCCIO_WL": [
+     6.6,
+     1
+    ],
+    "VCC_1V8": [
+     20.4,
+     3
+    ],
+    "VCC_3V3": [
+     36.9,
+     5
+    ],
+    "VDDA0V9_IMAGE": [
+     23.1,
+     3
+    ],
+    "VDDA0V9_PMU": [
+     13.8,
+     2
+    ],
+    "VDDA_0V9": [
+     34.6,
+     5
+    ]
+   }
+  },
+  "vias": {
+   "gnd": 208,
+   "pwr": 85,
+   "sig": 125
+  }
+ },
+ {
+  "key": "diag",
+  "title": "方案 2　朝东南角汇聚，小电源在球区外落到 L3",
+  "blurb": "按完整板子上 PMIC 放在东南角（DDR 的对角）来画：五路大电源都从东边和南边进来，VCC_DDR 多一条沿西边下到南边的带子；东北角和西南角不再给大电源。小电源出球区后在东侧、南侧各落到一条 L3 的窄条上（按电压分组），球区内仍是 L4 走线，出了规则区就打孔落到窄条上。",
+  "entry": {
+   "VCC_DDR": "南边西端（沿西边上来）",
+   "VDD_CPU": "东边北段",
+   "VDD_NPU": "东边",
+   "VDD_LOGIC": "东边南段、南边东段",
+   "VDD_GPU": "南边",
+   "VDDA_0V9": "东边",
+   "VCCA_1V8": "东边",
+   "VCC_3V3": "南边",
+   "VCC_1V8": "南边"
+  },
+  "blocks": [
+   {
+    "net": "VCC_DDR",
+    "area": 768.9,
+    "edge": {
+     "北": 30.3,
+     "南": 6.2,
+     "西": 43.0
+    },
+    "soc_vias": 13,
+    "soc_joined": 13,
+    "soc_min": 0.6,
+    "soc_med": 0.6,
+    "ddr_vias": 36,
+    "ddr_joined": 36,
+    "ddr_min": 0.5,
+    "cut": [],
+    "core": {
+     "groups": 4,
+     "balls": 14,
+     "big": {
+      "joined": 13,
+      "fed": 14,
+      "unfed": []
+     },
+     "small": {
+      "joined": 14,
+      "fed": 14,
+      "unfed": []
+     }
+    }
+   },
+   {
+    "net": "VDD_CPU",
+    "area": 120.4,
+    "edge": {
+     "东": 7.0
+    },
+    "soc_vias": 9,
+    "soc_joined": 9,
+    "soc_min": 0.3,
+    "soc_med": 0.3,
+    "ddr_vias": 0,
+    "ddr_joined": 0,
+    "ddr_min": null,
+    "cut": [],
+    "core": {
+     "groups": 1,
+     "balls": 10,
+     "big": {
+      "joined": 9,
+      "fed": 10,
+      "unfed": []
+     },
+     "small": {
+      "joined": 10,
+      "fed": 10,
+      "unfed": []
+     }
+    }
+   },
+   {
+    "net": "VDD_NPU",
+    "area": 46.5,
+    "edge": {
+     "东": 5.4
+    },
+    "soc_vias": 5,
+    "soc_joined": 5,
+    "soc_min": 0.3,
+    "soc_med": 0.3,
+    "ddr_vias": 0,
+    "ddr_joined": 0,
+    "ddr_min": null,
+    "cut": [],
+    "core": {
+     "groups": 1,
+     "balls": 5,
+     "big": {
+      "joined": 5,
+      "fed": 5,
+      "unfed": []
+     },
+     "small": {
+      "joined": 5,
+      "fed": 5,
+      "unfed": []
+     }
+    }
+   },
+   {
+    "net": "VDD_LOGIC",
+    "area": 179.4,
+    "edge": {
+     "东": 11.6,
+     "南": 11.6
+    },
+    "soc_vias": 8,
+    "soc_joined": 0,
+    "soc_min": 0.0,
+    "soc_med": 0.0,
+    "ddr_vias": 0,
+    "ddr_joined": 0,
+    "ddr_min": null,
+    "cut": [
+     "soc:L12",
+     "soc:M12",
+     "soc:N13",
+     "soc:P13",
+     "soc:P16",
+     "soc:R16",
+     "soc:T12",
+     "soc:T16"
+    ],
+    "core": {
+     "groups": 4,
+     "balls": 10,
+     "big": {
+      "joined": 0,
+      "fed": 0,
+      "unfed": [
+       "L12",
+       "M12",
+       "N13",
+       "N16",
+       "P13",
+       "P16",
+       "R12",
+       "R16",
+       "T12",
+       "T16"
+      ]
+     },
+     "small": {
+      "joined": 10,
+      "fed": 10,
+      "unfed": []
+     }
+    }
+   },
+   {
+    "net": "VDD_GPU",
+    "area": 70.2,
+    "edge": {
+     "南": 7.3
+    },
+    "soc_vias": 4,
+    "soc_joined": 0,
+    "soc_min": 0.0,
+    "soc_med": 0.0,
+    "ddr_vias": 0,
+    "ddr_joined": 0,
+    "ddr_min": null,
+    "cut": [
+     "soc:R13",
+     "soc:T13",
+     "soc:U11",
+     "soc:U13"
+    ],
+    "core": {
+     "groups": 1,
+     "balls": 5,
+     "big": {
+      "joined": 0,
+      "fed": 0,
+      "unfed": [
+       "R13",
+       "T13",
+       "U11",
+       "U12",
+       "U13"
+      ]
+     },
+     "small": {
+      "joined": 5,
+      "fed": 5,
+      "unfed": []
+     }
+    }
+   },
+   {
+    "net": "VDDA_0V9",
+    "area": 10.1,
+    "edge": {
+     "东": 1.8
+    },
+    "soc_vias": 0,
+    "soc_joined": 0,
+    "soc_min": null,
+    "soc_med": null,
+    "ddr_vias": 0,
+    "ddr_joined": 0,
+    "ddr_min": null,
+    "cut": []
+   },
+   {
+    "net": "VCCA_1V8",
+    "area": 10.1,
+    "edge": {
+     "东": 1.8
+    },
+    "soc_vias": 0,
+    "soc_joined": 0,
+    "soc_min": null,
+    "soc_med": null,
+    "ddr_vias": 0,
+    "ddr_joined": 0,
+    "ddr_min": null,
+    "cut": []
+   },
+   {
+    "net": "VCC_3V3",
+    "area": 26.8,
+    "edge": {
+     "南": 4.7
+    },
+    "soc_vias": 0,
+    "soc_joined": 0,
+    "soc_min": null,
+    "soc_med": null,
+    "ddr_vias": 0,
+    "ddr_joined": 0,
+    "ddr_min": null,
+    "cut": []
+   },
+   {
+    "net": "VCC_1V8",
+    "area": 26.8,
+    "edge": {
+     "南": 4.7
+    },
+    "soc_vias": 0,
+    "soc_joined": 0,
+    "soc_min": null,
+    "soc_med": null,
+    "ddr_vias": 0,
+    "ddr_joined": 0,
+    "ddr_min": null,
+    "cut": []
+   }
+  ],
+  "no_site": [
+   "H15",
+   "J15",
+   "N16",
+   "R12",
+   "U12"
+  ],
+  "caps": {
+   "VDD_CPU": [
+    3,
+    3
+   ],
+   "VDD_LOGIC": [
+    4,
+    4
+   ],
+   "VDD_GPU": [
+    3,
+    3
+   ],
+   "VDD_NPU": [
+    2,
+    2
+   ],
+   "VCC_DDR": [
+    4,
+    5
+   ],
+   "MIPI_AVDD_0V9": [
+    2,
+    3
+   ],
+   "MIPI_AVDD_1V8": [
+    1,
+    3
+   ],
+   "USB_AVDD_0V9": [
+    2,
+    2
+   ],
+   "USB_AVDD_1V8": [
+    2,
+    2
+   ],
+   "VCC3V3_PMU": [
+    1,
+    2
+   ],
+   "VCCA1V8_IMAGE": [
+    1,
+    2
+   ],
+   "VCCA1V8_PMU": [
+    0,
+    1
+   ],
+   "VCCA_1V8": [
+    2,
+    4
+   ],
+   "VCCIO_ACODEC": [
+    1,
+    1
+   ],
+   "VCCIO_FLASH": [
+    0,
+    1
+   ],
+   "VCCIO_SD": [
+    0,
+    1
+   ],
+   "VCCIO_WL": [
+    1,
+    1
+   ],
+   "VCC_1V8": [
+    2,
+    3
+   ],
+   "VCC_3V3": [
+    3,
+    5
+   ],
+   "VDDA0V9_IMAGE": [
+    1,
+    3
+   ],
+   "VDDA0V9_PMU": [
+    1,
+    2
+   ],
+   "VDDA_0V9": [
+    0,
+    5
+   ]
+  },
+  "cap_sizes": {
+   "0402": 28,
+   "0201": 8
+  },
+  "exits": {
+   "n": 41,
+   "sides": {
+    "北": 2,
+    "南": 18,
+    "东": 19,
+    "西": 2
+   },
+   "total": 356.4,
+   "max": 21.0,
+   "longest": [
+    "VCC_1V8",
+    "H20"
+   ],
+   "by_net": {
+    "MIPI_AVDD_0V9": [
+     23.0,
+     3
+    ],
+    "MIPI_AVDD_1V8": [
+     21.1,
+     3
+    ],
+    "USB_AVDD_0V9": [
+     12.3,
+     2
+    ],
+    "USB_AVDD_1V8": [
+     12.2,
+     2
+    ],
+    "VCC3V3_PMU": [
+     13.9,
+     2
+    ],
+    "VCCA1V8_IMAGE": [
+     13.8,
+     2
+    ],
+    "VCCA1V8_PMU": [
+     5.9,
+     1
+    ],
+    "VCCA_1V8": [
+     41.6,
+     4
+    ],
+    "VCCIO_ACODEC": [
+     7.5,
+     1
+    ],
+    "VCCIO_FLASH": [
+     7.2,
+     1
+    ],
+    "VCCIO_SD": [
+     5.3,
+     1
+    ],
+    "VCCIO_WL": [
+     6.6,
+     1
+    ],
+    "VCC_1V8": [
+     45.9,
+     3
+    ],
+    "VCC_3V3": [
+     57.3,
+     5
+    ],
+    "VDDA0V9_IMAGE": [
+     23.1,
+     3
+    ],
+    "VDDA0V9_PMU": [
+     13.8,
+     2
+    ],
+    "VDDA_0V9": [
+     45.8,
+     5
+    ]
+   }
+  },
+  "vias": {
+   "gnd": 208,
+   "pwr": 85,
+   "sig": 125
+  }
+ }
+]
