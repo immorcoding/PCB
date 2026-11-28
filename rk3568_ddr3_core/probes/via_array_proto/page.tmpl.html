@@ -1,0 +1,91 @@
+<meta charset="utf-8">
+<meta name="claude:viewport-fit-sides" content="cover">
+<title>字节组换层过孔阵</title>
+<style>
+/* Layout: one reading column for text, drawings break out to the full width in L1 / L6 pairs. */
+:root{--bg:#f3f5f4;--fg:#18211f;--muted:#55635f;--line:#c9d2cf;--panel:#e6ebe9;--accent:#0f6b5f;--bad:#a8322b;
+--sans:"Inter","PingFang SC","Microsoft YaHei",system-ui,sans-serif;--num:"JetBrains Mono","Cascadia Mono",Consolas,monospace}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0e1413;--fg:#e4ebe8;--muted:#9aaaa5;--line:#2c3a37;--panel:#17201e;--accent:#58c9b6;--bad:#f0837a;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0e1413;--fg:#e4ebe8;--muted:#9aaaa5;--line:#2c3a37;--panel:#17201e;--accent:#58c9b6;--bad:#f0837a;color-scheme:dark}
+body{background:var(--bg);color:var(--fg);font:16px/1.7 var(--sans);padding-block:32px 64px;
+padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+main{max-width:1180px;margin:0 auto;display:flex;flex-direction:column;gap:20px}
+main>p,main>ul,main>ol,section>p,.note{max-width:46em;margin:0}
+h1{font-size:1.9rem;line-height:1.25;margin:0;text-wrap:balance}
+h2{font-size:1.3rem;line-height:1.35;margin:28px 0 0;padding-top:20px;border-top:1px solid var(--line);text-wrap:balance}
+h3{font-size:1rem;margin:12px 0 0;color:var(--accent)}
+section{display:flex;flex-direction:column;gap:14px}
+.tag{font-size:.8rem;letter-spacing:.08em;color:var(--muted);margin:0}
+.two{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr));gap:12px}
+.two svg{display:block;border-radius:4px}
+.scroll{overflow-x:auto}
+table{border-collapse:collapse;font-size:.86rem;font-variant-numeric:tabular-nums}
+td,th{border:1px solid var(--line);padding:5px 9px;text-align:right;vertical-align:top}
+th{background:var(--panel);font-weight:600;text-align:left}
+td.l{text-align:left;min-width:9em}
+.ok{color:var(--accent);font-weight:600}.bad{color:var(--bad);font-weight:600}
+.key{display:flex;flex-wrap:wrap;gap:6px 18px;font-size:.88rem;color:var(--muted);margin:0;padding:0;list-style:none}
+.key i{display:inline-block;width:22px;height:6px;margin-right:6px;vertical-align:middle}
+.key i.dot{width:12px;height:12px;border-radius:6px}
+.ask{background:var(--panel);border-radius:6px;padding:16px 20px;max-width:none}
+.ask ol{margin:8px 0 0;padding-left:1.4em;max-width:52em}
+.ask li{margin-bottom:8px}
+</style>
+<main>
+<p class="tag">原型，用完即弃 · RK3568 + 2 × DDR3 验证板 · 2026-11-28</p>
+<h1>字节组在 L1 和 L6 之间换层的过孔阵怎么排</h1>
+<p>一个字节组是 8 根 DQ、1 根 DM 和一对 DQS。表层按已定的宽地线包地，线带宽 7.51 mm。SoC 和颗粒的球区相距 7.5 mm，除去两头的规则区，中间的直线段约 3.5 mm，蛇形也要放在这一段。图按比例画，单位 mm；线在各自的位置上画成直线，两头从球区展开的一段没有画。</p>
+
+<h2>先看一个事实：没有哪个字节组能整组在球区外换层</h2>
+<p>RK3568 的最外两圈球可以在 L1 直接出线，第 3 圈起必须在球区里打孔下去。四个字节组的球都是两种混在一起的（按封装文件和官方引脚表数出）：</p>
+<div class="scroll"><table>
+<tr><th>字节组</th><th>SoC 的边</th><th>第 1、2 圈（L1 能出）</th><th>第 4 到 7 圈（球区内下孔）</th><th>DQS 对</th></tr>
+<tr><th>0</th><td>西</td><td>9</td><td>2（DQ7、DM0）</td><td>第 1、2 圈</td></tr>
+<tr><th>1</th><td>西</td><td>5</td><td>6（DM1、DQ10、11、13、14、15）</td><td>第 1、2 圈</td></tr>
+<tr><th>2</th><td>北</td><td>5</td><td>6（DM2、DQ18、19、21、22、23）</td><td>第 1、2 圈</td></tr>
+<tr><th>3</th><td>北</td><td>9</td><td>2（DQ30、DM3）</td><td>第 1、2 圈</td></tr>
+</table></div>
+<p>所以球区外的过孔阵最多只有外圈那几根。走 L6 的字节组里，内圈的线出球区时已经在 L6 上，要从过孔阵中间穿过去。走 L1 的字节组里，内圈那 2 到 6 根先下到 L6，再回到 L1，或者一直走 L6 到颗粒。官方 EVB1 的做法相同，见页面末尾。</p>
+
+<ul class="key">
+<li><i style="background:#e0564f"></i>L1 的信号线</li><li><i style="background:#5b93e6"></i>L6 的信号线</li><li><i style="background:#f2b134"></i>DQS 对</li>
+<li><i style="background:#1d5a53;height:12px"></i>这一层的地铺铜</li><li><i class="dot" style="background:#f4f1e8;border:1px solid #888"></i>信号换层过孔 0.4 / 0.2</li>
+<li><i class="dot" style="background:#7fd6c8"></i>回流地过孔</li><li>虚线圈：地平面上的避让圈，按直径 0.6 画</li>
+</ul>
+<p>每种排法画两张图：左边是 L1，右边是 L6，过孔的位置相同。地铺铜离信号 0.15 mm；每 2.54 mm 一个的包地过孔没有画，只画了换层用的回流地过孔。</p>
+
+{{BODY}}
+
+<h2>三种排法怎么比</h2>
+<div class="scroll"><table>
+<tr><th>排法</th><th>样子</th><th>好处</th><th>代价</th></tr>
+<tr><th>A 两排交错</th><td class="l">每个过孔打在线自己的位置上，线不拐弯；相邻的过孔前后错开 0.70 mm</td><td class="l">占长 1.10 mm，三种情形都一样；阵后还剩 2.25 mm 直线放蛇形；地铜条只在 DQS 对的两侧断开</td><td class="l">过孔旁的地铜条收窄到 0.275 mm（原宽 0.40）；同一格里另一根线离过孔盘 0.175 mm</td></tr>
+<tr><th>B 挪到地铜条上</th><td class="l">线斜着横移 0.425 mm，过孔坐在地铜条的位置；排距 0.80 mm</td><td class="l">占长 1.20 mm；过孔离同格另一根线更远，避让圈不贴着它</td><td class="l">每个过孔切断一条地铜条（情形 2 是 9 处，共 6.15 mm）；每根线多两个 45° 拐弯；过孔盘到两侧邻线正好 0.15 mm，没有余量</td></tr>
+<tr><th>C 人字形</th><td class="l">DQS 对在最前，两边的过孔依次后退，排成 V 形</td><td class="l">对称；避让圈不连成横排</td><td class="l">占长 3.10 mm（情形 1，阵后只剩 0.25 mm）到 4.61 mm（情形 2，伸进颗粒规则区，不过）</td></tr>
+<tr><th>一条斜线</th><td class="l">所有过孔排成一条斜线</td><td class="l">和 45° 拐弯的线带能嵌套</td><td class="l">占长 4.06 到 8.11 mm，这里是直线带，放不下</td></tr>
+</table></div>
+
+<h2>官方 EVB1 是怎么做的</h2>
+{{EVB1}}
+
+<div class="ask">
+<strong>要你定的事</strong>（每条后面是我的建议）
+<ol>
+<li><b>哪两个字节组走 L6。</b>建议字节组 1 和 2：球区外各 5 个信号过孔，换成 0 和 3 是各 9 个；走 L1 的字节组 0 和 3 各只有 2 根线带过孔，反过来是各 6 根。</li>
+<li><b>排法。</b>建议 A。你说过多数时候交错更好；它最短，三种情形都过检查。</li>
+<li><b>位置和排距。</b>建议第一排紧贴 SoC 规则区外（过孔盘边离规则区边 0.15 mm），排距 0.70 mm，阵后的直线全部留给蛇形。</li>
+<li><b>过孔旁地铜条收窄到 0.275 mm。</b>建议接受，并把这一段铺铜的最小宽度设成 0.25 mm，否则铜条在每个过孔旁断开约 0.6 mm。</li>
+<li><b>走 L1 的字节组里内圈那 2 根。</b>建议照 EVB1：出球区后用同样的排法回到 L1，和同组的线一起走。这 2 根有两个过孔，同组其余的线没有，和“同组过孔数相同”不一致，要记成例外。另一个做法是一直走 L6 到颗粒球下的过孔。</li>
+<li><b>外圈的球要不要也在球区里下孔，球区外不设过孔阵。</b>建议不这样做，照 EVB1 让外圈在 L1 出线后再换层；球区里的过孔位留给电源、地和内圈的球。</li>
+</ol>
+</div>
+
+<h2>没有核对的</h2>
+<ul>
+<li>线是画在位置上的直线，不是真实扇出；外圈和内圈的线在线带里怎么排位（图里是每格一根外圈一根内圈）要等扇出工具给出线头顺序。</li>
+<li>避让圈直径 0.6 mm 是按“中心距 0.8 留 0.2 铜”倒推的，板厂实际做出来的大小没有查。</li>
+<li>没有过 KiCad DRC；间距由脚本按名义尺寸算。</li>
+<li>EVB1 的数由子任务从板文件读出，我只复算了 DQS 对的过孔中心距一处。</li>
+<li>过孔阵在 SoC 北边（字节组 2、3）和西边画法相同，没有另画。</li>
+</ul>
+</main>

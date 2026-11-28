@@ -1,0 +1,13 @@
+<p>官方 EVB1（2 × 16 位 DDR4，6 层全通孔）的两个高字节组主体走 BOTTOM。下图是颗粒 A 的高字节组在 SoC 一侧的过孔群，从板文件读出后按比例重画，左 TOP 右 BOTTOM。白色是信号过孔，青色是地过孔，灰色是别的网络；左图的褐色圆是 SoC 的球。SoC 在这块板上转了 45°。</p>
+<div class="scroll"><table>
+<tr><th>项目</th><th>EVB1 读出的值</th><th>和我们的关系</th></tr>
+<tr><th>球区外换层的线</th><td class="l">每个高字节组 11 根里有 5 根：DQS 对加 3 根 DQ；其余 6 根在球区里下孔（离球 0.46 mm）</td><td class="l">和我们的字节组 1、2 数目相同</td></tr>
+<tr><th>过孔离球区</th><td class="l">2.3 到 5.7 mm；0 到 1 mm 内没有</td><td class="l">我们放在 1.85 到 2.95 mm</td></tr>
+<tr><th>排法</th><td class="l">不成排，前后都错开，是不规则的交错；只有 DQS 对的两个过孔并排</td><td class="l">A 是它的规则化</td></tr>
+<tr><th>信号过孔到最近的信号过孔</th><td class="l">单端 1.10 到 1.27 mm；DQS 对内 0.552 mm</td><td class="l">我们 ≥ 0.8，对内 0.60</td></tr>
+<tr><th>到最近的地过孔</th><td class="l">0.645 到 0.692 mm，每个信号过孔约配一个，都在包地的地线上</td><td class="l">我们 0.60，上限 0.635</td></tr>
+<tr><th>内圈的线怎么过</th><td class="l">DMU 从过孔群中间穿过，离一个过孔盘 0.135 mm；其余从两边绕过</td><td class="l">A 里同格的线离过孔盘 0.175 mm</td></tr>
+<tr><th>低字节组的例外</th><td class="l">DQL1、DML 在球区里下到 BOTTOM，走 3.9 到 10.3 mm 后在球区外 1.9 到 6.6 mm 处回到 TOP</td><td class="l">对应上面“要你定的事”第 5 条</td></tr>
+<tr><th>线宽</th><td class="l">DQ、DM 0.102 mm，DQS 0.097 mm，TOP 和 BOTTOM 相同</td><td class="l">我们按嘉立创叠层算是 0.15 和 0.104</td></tr>
+</table></div>
+<p>平面层上的避让圈大小从这份板文件读不出来。</p>
